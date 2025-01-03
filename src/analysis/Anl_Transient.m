@@ -76,16 +76,16 @@ classdef Anl_Transient < Anl
                         [K, C, Fint] = mdl.globalMatrices(X);
         
                         % Set transient system
-                        J =  K * this.dt + C;
+                        J =  K + C / this.dt;
         
                         % Residual force vector
-                        R = (Fint - Fext) * this.dt;
-                        R = R + C * DX;
+                        R = Fint - Fext;
+                        R = R + C * DX / this.dt;
 
                         % Apply BC
                         R(mdl.doffixed) = 0.0;
     
-                        % Decompose residual vector
+                        % Compute the residual norm
                         normRp = norm(R);
 
                         % Print result
@@ -133,9 +133,6 @@ classdef Anl_Transient < Anl
                 % Update the state variables
                 mdl.updateStateVar();
                 DX = zeros(size(XOld,1),1);
-
-%                 this.printStep(X,mdl);
-
 
                 % if attempt > 1
                 %     brokenStep = true;
