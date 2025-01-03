@@ -451,9 +451,13 @@ classdef Model < handle
         % Print the nodal displacements
         function printResults(this)
             fprintf('\n******** NODAL RESULTS ********\n');
-            fprintf('\nNode         Ux               Uy                 P\n');
-            for nd = 1:this.nnodes
-                fprintf('%2d     %13.5e     %13.5e     %13.10e\n',nd,this.U(this.ID(nd,:)'));
+            fprintf('\n  Node           Pl        Pg\n');
+            for i = 1:this.nnodes
+                fprintf("  %4d: \t",i);
+                for j = 1:this.ndof_nd
+                    fprintf("  %8.4f ",this.U(this.ID(i,j)))
+                end
+                fprintf("\n");
             end
         end
 

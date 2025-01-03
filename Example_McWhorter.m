@@ -101,7 +101,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 0.1;    % Initial time
 dt    = 0.1;   % Time step (constant)
-tf    = 1000;    % Final time
+tf    = 10;    % Final time
 
 % Solve the problem
 anl = Anl_Transient(result);
@@ -111,15 +111,8 @@ anl.process(mdl);
 %% ========================= CHECK THE RESULTS ============================
 
 % Print the results in the command window
-% mdl.printResults();
+mdl.printResults();
 % mdl.plotDeformedMesh();
-for i = 1:mdl.nnodes
-    fprintf("  %4d: \t",i);
-    for j = 1:mdl.ndof_nd
-        fprintf("  %8.4f ",mdl.U(mdl.ID(i,j)))
-    end
-    fprintf("\n");
-end
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
