@@ -13,7 +13,7 @@ classdef Anl_TransientPicard < Anl
         dtMax = 0.001;
         dtMin = 0.001;
         adaptStep = false;
-        maxIter = 10;
+        maxIter = 200;
         maxAttempts = 10;
     end
     
@@ -40,6 +40,7 @@ classdef Anl_TransientPicard < Anl
 
             % Initialize solution vector
             XOld = mdl.U;
+            X0 = mdl.U;
             X    = XOld;
 
             % Add contribution of the nodal forces to the external force
@@ -57,8 +58,8 @@ classdef Anl_TransientPicard < Anl
                 fprintf("\t Time: %12.5f s \n",t);
 
                 % Update transient solution
-                X0   = X;
-                XOld = X;
+                X0(mdl.doffree)   = X(mdl.doffree);
+                XOld(mdl.doffree) = X(mdl.doffree);
 
                 % Iterative solution
                 convFlg = false;

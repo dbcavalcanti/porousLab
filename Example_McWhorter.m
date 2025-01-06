@@ -105,7 +105,7 @@ tf    = 1000;    % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,5.0,0.0000001,true);
+anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,false);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
