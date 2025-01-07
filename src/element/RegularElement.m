@@ -162,9 +162,7 @@ classdef RegularElement < handle
 
 
             % Assemble element internal force vector
-            fe = zeros(this.ngle, 1);
-            fe(1:this.nglp)     = Hll*pl;
-            fe(1+this.nglp:end) = Hgg*pg;
+            fe = Ke * this.ue;
             
         end
 
