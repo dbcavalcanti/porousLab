@@ -13,7 +13,7 @@ initWorkspace;
 mdl = Model();
 
 % --- Physics -------------------------------------------------------------
-mdl.physics = 'hydraulicTwoPhase';
+mdl.physics = 'hydraulicTwoPhasePcPg';
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -56,16 +56,16 @@ mdl.mat  = struct( ...
 % In case it is prescribed a pressure value different than zero, don't 
 % forget also that you need to constraint these degrees of freedom.
 
-% Liquid pressure boundary conditions
+% Capillary pressure boundary conditions
 CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
 CoordLoad  = [];                      % [q cx cy] If cx,cy<0, line [m3/s]
-CoordPresc = [195.0 0 -1];            % [p cx cy] If cx,cy<0, line [kPa]
+CoordPresc = [5.0 0 -1];              % [p cx cy] If cx,cy<0, line [kPa]
 CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
            
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = -50.0*ones(size(mdl.INITCOND_p,1),1);
+mdl.INITCOND_p = 50.0*ones(size(mdl.INITCOND_p,1),1);
 
 % Gas pressure boundary conditions
 CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
@@ -100,7 +100,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
 % Transient analysis parameters
 tinit = 0.1;   % Initial time
-dt    = 0.1;   % Time step (constant)
+dt    = 0.1;   % Time step
 tf    = 1000;    % Final time
 
 % Solve the problem
