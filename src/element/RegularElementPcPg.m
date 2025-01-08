@@ -17,26 +17,27 @@
 classdef RegularElementPcPg < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        type       = 'ISOQ4';       % type of element
-        shape      = [];            % Object of the Shape class
-        node       = [];            % Nodes of the fem mesh
-        connect    = [];            % Nodes connectivity
-        t          = 1.0;           % Thickness
-        mat        = [];            % Vector with material properties
-        intOrder   = 2;             % Order of the numerical integration
-        nnd_el     = 4;             % Number of nodes per element
-        ndof_nd    = 1;             % Number of dof per node
+        type       = 'ISOQ4';                % type of element
+        shape      = [];                     % Object of the Shape class
+        node       = [];                     % Nodes of the fem mesh
+        connect    = [];                     % Nodes connectivity
+        t          = 1.0;                    % Thickness
+        mat        = [];                     % Vector with material properties
+        intOrder   = 2;                      % Order of the numerical integration
+        nnd_el     = 4;                      % Number of nodes per element
+        ndof_nd    = 1;                      % Number of dof per node
         glp        = [];            
-        glpg       = [];            % Vector of the regular degrees of freedom
-        gle        = [];            % Vector of the degrees of freedom
-        nglp       = 0;             % Number of regular p-dof
-        ngle       = 0;             % Number of total dof
-        ue         = [];            % Element's displacement vector
-        due        = [];            % Element's increment displacement
-        nIntPoints = 1;             % Number of integration points
-        intPoint   = [];            % Vector with integration point objects
-        result     = [];            % Result object to plot the results
-        isEnriched = false;         % Flag to check if the element is enriched
+        glpg       = [];                     % Vector of the regular degrees of freedom
+        gle        = [];                     % Vector of the degrees of freedom
+        nglp       = 0;                      % Number of regular p-dof
+        ngle       = 0;                      % Number of total dof
+        ue         = [];                     % Element's displacement vector
+        due        = [];                     % Element's increment displacement
+        nIntPoints = 1;                      % Number of integration points
+        intPoint   = [];                     % Vector with integration point objects
+        result     = [];                     % Result object to plot the results
+        isEnriched = false;                  % Flag to check if the element is enriched
+        CompressibilityLumped = false;       % Flag to apply a diagonalization of the compressibility matrix
     end
     
     %% Constructor method
@@ -132,7 +133,7 @@ classdef RegularElementPcPg < handle
                 Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
         
                 % Compute the permeability matrix
-                [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcsPgPc(Sl);
+                [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcs(Sl);
 
                 % Get compressibility coefficients
                 [cgc,ccc] = this.intPoint(i).constitutiveMdl.compressibilityCoeffsPgPc(pcIP);
@@ -146,8 +147,14 @@ classdef RegularElementPcPg < handle
                 Hgg = Hgg + Bp' * kg * Bp * c;
 
                 % Compute compressibility matrices
-                Sgc = Sgc + Np' * cgc * Np * c;
-                Scc = Scc + Np' * ccc * Np * c;
+                if (this.CompressibilityLumped)
+                    Sgc = Sgc + diag(cgc*Np*c);
+                    Scc = Scc + diag(ccc*Np*c);
+                else
+                    Sgc = Sgc + Np' * cgc * Np * c;
+                    Scc = Scc + Np' * ccc * Np * c;
+                end
+
             end
 
             % Assemble the element matrices
