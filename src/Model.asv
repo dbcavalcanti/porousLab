@@ -400,6 +400,10 @@ classdef Model < handle
             C  = sparse(iDof,jDof,Cij);
             Fi = sparse(eDof,ones(this.nDofElemTot,1),fi);
 
+            % Apply the boundary conditions
+            K = this.applyDirichletBC(K);
+            C = this.applyDirichletBC(C);
+
         end
 
         function A = applyDirichletBC(this, A)

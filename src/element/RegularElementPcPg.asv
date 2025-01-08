@@ -17,26 +17,27 @@
 classdef RegularElementPcPg < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        type       = 'ISOQ4';       % type of element
-        shape      = [];            % Object of the Shape class
-        node       = [];            % Nodes of the fem mesh
-        connect    = [];            % Nodes connectivity
-        t          = 1.0;           % Thickness
-        mat        = [];            % Vector with material properties
-        intOrder   = 2;             % Order of the numerical integration
-        nnd_el     = 4;             % Number of nodes per element
-        ndof_nd    = 1;             % Number of dof per node
+        type       = 'ISOQ4';                % type of element
+        shape      = [];                     % Object of the Shape class
+        node       = [];                     % Nodes of the fem mesh
+        connect    = [];                     % Nodes connectivity
+        t          = 1.0;                    % Thickness
+        mat        = [];                     % Vector with material properties
+        intOrder   = 2;                      % Order of the numerical integration
+        nnd_el     = 4;                      % Number of nodes per element
+        ndof_nd    = 1;                      % Number of dof per node
         glp        = [];            
-        glpg       = [];            % Vector of the regular degrees of freedom
-        gle        = [];            % Vector of the degrees of freedom
-        nglp       = 0;             % Number of regular p-dof
-        ngle       = 0;             % Number of total dof
-        ue         = [];            % Element's displacement vector
-        due        = [];            % Element's increment displacement
-        nIntPoints = 1;             % Number of integration points
-        intPoint   = [];            % Vector with integration point objects
-        result     = [];            % Result object to plot the results
-        isEnriched = false;         % Flag to check if the element is enriched
+        glpg       = [];                     % Vector of the regular degrees of freedom
+        gle        = [];                     % Vector of the degrees of freedom
+        nglp       = 0;                      % Number of regular p-dof
+        ngle       = 0;                      % Number of total dof
+        ue         = [];                     % Element's displacement vector
+        due        = [];                     % Element's increment displacement
+        nIntPoints = 1;                      % Number of integration points
+        intPoint   = [];                     % Vector with integration point objects
+        result     = [];                     % Result object to plot the results
+        isEnriched = false;                  % Flag to check if the element is enriched
+        CompressibilityLumped = true;       % Flag to apply a diagonalization of the compressibility matrix
     end
     
     %% Constructor method
@@ -115,7 +116,6 @@ classdef RegularElementPcPg < handle
             
             % Vector of the nodal pore-pressure dofs
             pc = this.ue(1:this.nglp);
-            pg = this.ue(1+this.nglp:end);
 
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
@@ -149,6 +149,23 @@ classdef RegularElementPcPg < handle
                 % Compute compressibility matrices
                 Sgc = Sgc + Np' * cgc * Np * c;
                 Scc = Scc + Np' * ccc * Np * c;
+
+            end
+
+            % Compute compressibility matrices
+            if (this.CompressibilityLumped)
+                for i = 1:this.nglp
+                    for j = 1:this.nglp
+                        if (i~=j)
+                            Sgc(i,i) = Sgc(i,i) + Sgc(i,j);
+                            Sgc(i,j) = 0.0;
+                            Scc(i,i) = Scc(i,i) + Scc(i,j);
+                            Scc(i,j) = 0.0;
+                        end
+                    end
+                end
+                Sgc = eye(this.nglp) * mean(diag(Sgc));
+                Scc = eye(this.nglp) * mean(diag(Scc));
             end
 
             % Assemble the element matrices
@@ -160,72 +177,7 @@ classdef RegularElementPcPg < handle
 
 
             % Assemble element internal force vector
-            fe = zeros(this.ngle, 1);
-            fe(1:this.nglp)     = Hll*pl;
-            fe(1+this.nglp:end) = Hgg*pg + K;
-            
-        end
-
-        %------------------------------------------------------------------
-        % Returns the internal force vector
-        function fe = elementInternalForceVector(this,Ue)
-
-            fe = zeros(this.ngle, 1);
-            fi = zeros(this.nglp, 1);
-
-            % Initialize Fluid-flow matrix
-            H = zeros(this.nglpg, this.nglpg);    
-
-            % Initialize 2D identity vector
-            m = [1.0 ; 1.0 ; 0.0];
-
-            % Vector of the nodal pore-pressure dofs
-            pe = Ue(1+this.nglp:end);
-
-            % Numerical integration of the sub-matrices
-            for i = 1:this.nIntPoints
-                
-                % Shape function matrix
-                Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
-
-                % Pore pressure at the integration point
-                pIP = Np * pe;
-
-                % Compute the B matrix at the int. point and the detJ
-                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-
-                % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
-
-                % Compute the increment of the strain vector
-                strain = Bu*Ue(1:this.nglp);
-        
-                % Compute the stress vector and the constitutive matrix
-                [stress,~] = this.intPoint(i).constitutiveModel(strain); 
-
-                % Compute the permeability matrix
-                Dh = this.intPoint(i).constitutiveMdl.permeabilityMtrx();
-
-                % Get Biot's coefficient
-                biot = this.intPoint(i).constitutiveMdl.biotCoeff();
-        
-                % Numerical integration coefficient
-                c = this.intPoint(i).w * detJ * this.t; 
-
-                % Fluid-flow matrix
-                H = H + Bp' *  Dh  * Bp * c;
-
-                % Numerical integration of the internal force vector
-                fi = fi + Bu' * (stress - biot * pIP * m) * c;
-
-            end
-
-            % Hydraulic part of the internal force vector
-            fp = H*pe;
-
-            % Assemble element internal force vector
-            fe(1:this.nglp)     = fi;
-            fe(1+this.nglp:end) = fp;
+            fe = Ke * this.ue;
             
         end
 
@@ -247,10 +199,11 @@ classdef RegularElementPcPg < handle
             Nm = this.shape.shapeFncMtrx(Xn);
 
             % Get nodal pressures
-            pl = this.ue(1:this.nglp);
+            pc = this.ue(1:this.nglp);
+            pg = this.ue(1+this.nglp:end);
 
             % capillary field
-            p = Nm*pl;
+            p = Nm*(pg - pc);
         
         end
 
@@ -297,11 +250,10 @@ classdef RegularElementPcPg < handle
             Nm = this.shape.shapeFncMtrx(Xn);
 
             % Get nodal pressures
-            pl = this.ue(1:this.nglp);
-            pg = this.ue(1+this.nglp:end);
+            pc = this.ue(1:this.nglp);
 
             % capillary field
-            p = Nm*(pg - pl);
+            p = Nm*pc;
         
         end
 

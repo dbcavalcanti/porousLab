@@ -73,7 +73,7 @@ classdef Anl_TransientPicard < Anl
                     while true
     
                         % Compute model global matrices
-                        [K, C] = mdl.globalMatrices(XOld);
+                        [K, C] = mdl.globalMatrices(X);
         
                         % Set transient system
                         A =  K + C / this.dt;
@@ -81,16 +81,16 @@ classdef Anl_TransientPicard < Anl
                         % Right-handside vector
                         b = Fext + C * X0 / this.dt;
 
-                        % Apply BC
-                        b(mdl.doffixed) = 0.0;
+                        % % Apply BC
+                        % A = mdl.applyDirichletBC(A);
+                        % b(mdl.doffixed) = 0.0;
 
                         % Solve linear system
-                        X = -A\b;
+                        X(mdl.doffree) = -A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
     
                         % Update variables
                         DX = X - XOld;
                         XOld(mdl.doffree) = X(mdl.doffree);
-                        DX(mdl.doffixed) = 0.0;
 
                         % Compute the residual norm
                         normDX = norm(DX);
