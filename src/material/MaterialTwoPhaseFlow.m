@@ -55,24 +55,6 @@ classdef MaterialTwoPhaseFlow < handle
         end
 
         %------------------------------------------------------------------
-        % Compute the permeability matrices
-        function [Kl,Kg] = permeabilityMtrcsPgPc(this,Sl)
-            K = this.porousMedia.intrinsicPermeabilityMatrix();
-            % Get fluids dynamic viscosity
-            mul = this.fluids(1).mu;
-            mug = this.fluids(2).mu;
-            % Get fluids density
-            rhoL = this.fluids(1).rho/1000.0;
-            rhoG = this.fluids(2).rho/1000.0;
-            % Compute relative permeability coefficients
-            klr = this.relativePermeability.liquidRelativePermeability(Sl, this.porousMedia);
-            kgr = this.relativePermeability.gasRelativePermeability(Sl, this.porousMedia);
-            % Permeability matrices
-            Kl = K * klr * rhoL / mul;
-            Kg = K * kgr * rhoG / mug;
-        end
-
-        %------------------------------------------------------------------
         % Compute compressibility coefficients
         function [cll,cgg,clg,cgl] = compressibilityCoeffs(this,pc,Sl)
             % Get porous media parameters
@@ -98,14 +80,11 @@ classdef MaterialTwoPhaseFlow < handle
         function [cgc,ccc] = compressibilityCoeffsPgPc(this,pc)
             % Get porous media parameters
             phi  = this.porousMedia.phi;
-            % Get fluids density
-            rhoL = this.fluids(1).rho/1000.0;
-            rhoG = this.fluids(2).rho/1000.0;
             % Derivative of the liquid saturation degree wrt pc
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
             % Compressibility coefficients
-            cgc = -phi * rhoG * dSldpc;
-            ccc =  phi * rhoL * dSldpc;
+            cgc = -phi * dSldpc;
+            ccc =  phi * dSldpc;
         end
     end
 end
