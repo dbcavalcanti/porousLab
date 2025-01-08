@@ -20,10 +20,12 @@ classdef PorousMedia < handle
         Slr                  = 0.0;             % Residual liquid saturation       
         Pb                   = 0.0;             % Gas-entry pressure (kPa)
         lambda               = 0.0;             % Curve-fitting parameter
-        klrmin               = 1.0e-5;          % Minimun liquid relative permeability
-        kgrmin               = 1.0e-5;          % Minimun gas relative permeability
         relativePermeability = 'BrooksCorey';
         capillaryPressure    = 'BrooksCorey';
+    end
+    properties (SetAccess = protected, GetAccess = public)
+        klrmin               = 1.0e-5;          % Minimun liquid relative permeability
+        kgrmin               = 1.0e-5;          % Minimun gas relative permeability
     end
     
     %% Constructor method
@@ -56,6 +58,14 @@ classdef PorousMedia < handle
 
         function Km = intrinsicPermeabilityMatrix(this)
             Km = this.K * eye(2);
+        end
+
+        function setMinLiquidRelPermeability(this,klrmin)
+            this.klrmin = klrmin;
+        end
+
+        function setMinGasRelPermeability(this,kgrmin)
+            this.kgrmin = kgrmin;
         end
     end
 end
