@@ -13,9 +13,8 @@ classdef Anl_TransientPicard < Anl
         dtMax = 0.001;
         dtMin = 0.001;
         adaptStep = false;
-        maxIter = 250;
+        maxIter = 200;
         maxAttempts = 10;
-        relax = 0.6;
     end
     
     %% Constructor method
@@ -68,7 +67,7 @@ classdef Anl_TransientPicard < Anl
                 attempt    = 1;
                 
                 while attempt < this.maxAttempts
-                    fprintf("\t Attempt %3d: \n",attempt);
+
                     iter = 1;
                     % Iterative process
                     while true
@@ -86,14 +85,14 @@ classdef Anl_TransientPicard < Anl
                         b(mdl.doffree) = b(mdl.doffree) - A(mdl.doffree,mdl.doffixed)*X(mdl.doffixed);
 
                         % Solve linear system
-                        X(mdl.doffree) = this.relax*XOld(mdl.doffree) + (1.0 - this.relax)*A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
+                        X(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
     
                         % Update variables
                         DX = X - XOld;
                         XOld(mdl.doffree) = X(mdl.doffree);
 
                         % Compute the residual norm
-                        normDX = norm(DX(mdl.doffree));
+                        normDX = norm(DX);
                         errorDX = normDX / norm(X(mdl.doffree));
 
                         % Print result
