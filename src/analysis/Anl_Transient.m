@@ -81,13 +81,9 @@ classdef Anl_Transient < Anl
                         % Residual force vector
                         R = Fint - Fext;
                         R = R + C * DX / this.dt;
-
-                        % Apply BC
-                        R(mdl.doffixed) = 0.0;
-                        J = mdl.applyDirichletBC(J);
     
                         % Compute the residual norm
-                        normRp = norm(R);
+                        normRp = norm(R(mdl.doffree));
 
                         % Print result
                         fprintf("\t\t iter.: %3d , ||Rpl|| = %7.3e \n",iter,normRp);
@@ -98,11 +94,11 @@ classdef Anl_Transient < Anl
                             break
                         end
 
-                        % Solve linear system 
-                        dX = -J\R;
+                        % Apply BC and solve linear system 
+                        dX = -J(mdl.doffree,mdl.doffree)\R(mdl.doffree);
     
                         % Update variables
-                        X  = X + dX;
+                        X(mdl.doffree)  = X(mdl.doffree) + dX;
                         DX = X - XOld;
     
                         % Check maximum number of iterations
