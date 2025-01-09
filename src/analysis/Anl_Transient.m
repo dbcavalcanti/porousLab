@@ -84,6 +84,7 @@ classdef Anl_Transient < Anl
 
                         % Apply BC
                         R(mdl.doffixed) = 0.0;
+                        J = mdl.applyDirichletBC(J);
     
                         % Compute the residual norm
                         normRp = norm(R);
@@ -97,7 +98,7 @@ classdef Anl_Transient < Anl
                             break
                         end
 
-                        % Solve linear system
+                        % Solve linear system 
                         dX = -J\R;
     
                         % Update variables
