@@ -23,6 +23,7 @@ classdef Anl_TransientPicard < Anl
         maxAttempts = 10;
         applyRelax = false;
         relax = 1.0;
+        useRelativeError = false;
     end
     
     %% Constructor method
@@ -186,10 +187,13 @@ classdef Anl_TransientPicard < Anl
         end
 
         %------------------------------------------------------------------
-        function [absError, normError] = evaluateError(~,DX,X,mdl)
+        function [absError, normError] = evaluateError(this,DX,X,mdl)
 
             absError = [max(abs(DX(mdl.pFreeDof))) , max(abs(DX(mdl.pgFreeDof)))];
-            normError = norm(DX(mdl.doffree))/norm(X(mdl.doffree));
+            normError = norm(DX(mdl.doffree));
+            if (this.useRelativeError)
+                normError = normError / norm(X(mdl.doffree));
+            end
 
         end
 
