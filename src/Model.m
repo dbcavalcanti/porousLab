@@ -47,6 +47,7 @@ classdef Model < handle
         element             = [];            % Array with the element's objects
         nDofElemTot         = 0.0;
         sqrNDofElemTot      = 0.0;
+        matID               = [];
     end
     
     %% Constructor method
@@ -110,7 +111,10 @@ classdef Model < handle
             this.nelem      = size(this.ELEM,1);     
             this.nnd_el     = size(this.ELEM,2);    
             this.ndof_nd    = 2;               
-            this.ndof       = this.ndof_nd * this.nnodes;         
+            this.ndof       = this.ndof_nd * this.nnodes; 
+            if isempty(this.matID)
+                this.matID  = ones(this.nelem,1);
+            end
         end
 
         %------------------------------------------------------------------

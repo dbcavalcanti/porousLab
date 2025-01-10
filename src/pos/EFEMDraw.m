@@ -225,12 +225,15 @@ classdef EFEMDraw < handle
         end
 
         function elements(draw)
+            nmaterials = size(unique(draw.model.matID),1);
+            colors = parula(nmaterials);
             for el = 1:draw.model.nelem
                 res = draw.model.element(el).type.result;
+                materialID = draw.model.matID(el);
                 patch('Faces',res.faces,...
                     'Vertices',res.vertices,...
                     'FaceVertexCData',res.vertexData,...
-                    'FaceColor',res.faceColor,...
+                    'FaceColor',colors(materialID,:),...
                     'LineWidth',res.edgesThickness,...
                     'LineStyle','-',...
                     'Marker',res.markerType,...
@@ -305,17 +308,6 @@ classdef EFEMDraw < handle
 
             % Draw fractures
             % draw.fractures();
-
-            % Draw supports
-            dim = max(abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1))),abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1))));
-            supsize = dim * EFEMDraw.supsize_fac;
-            % for i = 1:draw.model.nnodes
-            %     if draw.model.SUPP(i,1)==1
-            %         posx = draw.model.NODE(i,1);
-            %         posy = draw.model.NODE(i,2);
-            %         EFEMDraw.triangle(posx,posy,supsize,supsize,-pi/2,[0 0 1]);
-            %     end
-            % end
 
             % Get the bounding box
             bbox = draw.EFEMBoundBox();
