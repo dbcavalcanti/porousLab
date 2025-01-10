@@ -80,7 +80,7 @@ classdef Anl_TransientPicard < Anl
                         A =  K + C / this.dt;
         
                         % Right-handside vector
-                        b = Fext + C * X / this.dt;
+                        b = Fext + C * X0 / this.dt;
 
                         % % Apply BC
                         b(mdl.doffree) = b(mdl.doffree) - A(mdl.doffree,mdl.doffixed)*X(mdl.doffixed);
@@ -137,7 +137,7 @@ classdef Anl_TransientPicard < Anl
                 % end
 
                 % Update time step
-                if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1) && (iter < 5)
+                if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
                     this.dt = min(this.dt * 2,this.dtMax);
                 end
 

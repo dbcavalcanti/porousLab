@@ -20,7 +20,7 @@ mdl.physics = 'hydraulicTwoPhasePcPg';
 % Mesh properties
 Lx = 2.6;      % Horizontal dimension (m)
 Ly = 0.5;      % Vertical dimension (m)
-Nx = 1;      % Number of elements in the x-direction
+Nx = 260;      % Number of elements in the x-direction
 Ny = 1;        % Number of elements in the y-direction
 
 % Generate the mesh
@@ -45,8 +45,8 @@ fluids = [Fluid('water',1000.0,1.0e-3,1.0e25),...
           Fluid('CO2',  rhog,1.0e-3,Kg)];
 
 rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,5.0e3,2.0,'BrooksCorey','BrooksCorey');
-rock.setMinLiquidRelPermeability(1.0e-9);
-rock.setMinGasRelPermeability(1.0e-9);
+rock.setMinLiquidRelPermeability(1.0e-5);
+rock.setMinGasRelPermeability(1.0e-5);
 
 % Material parameters vector
 % Same material for all elements
@@ -103,7 +103,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 0.1;   % Initial time
 dt    = 0.1;   % Time step
-tf    = 100;  % Final time
+tf    = 1000;  % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
