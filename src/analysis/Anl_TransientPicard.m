@@ -132,10 +132,6 @@ classdef Anl_TransientPicard < Anl
                 % Update the state variables
                 mdl.updateStateVar();
 
-                % if attempt > 1
-                %     brokenStep = true;
-                % end
-
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
                     this.dt = min(this.dt * 2,this.dtMax);
@@ -172,7 +168,6 @@ classdef Anl_TransientPicard < Anl
 
             % Remove unused steps in the output vectors
             this.result.p = this.result.p(1:(step-1));
-            % this.result.ST(:) = this.result.ST(:,1:(step-1));
             this.result.time = this.result.time(1:(step-1));
 
         end
