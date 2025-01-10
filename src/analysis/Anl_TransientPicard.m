@@ -15,7 +15,7 @@ classdef Anl_TransientPicard < Anl
         adaptStep = false;
         maxIter = 250;
         maxAttempts = 10;
-        relax = 0.6;
+        relax = 0.0;
     end
     
     %% Constructor method
@@ -93,11 +93,10 @@ classdef Anl_TransientPicard < Anl
                         XOld(mdl.doffree) = X(mdl.doffree);
 
                         % Compute the residual norm
-                        normDX = norm(DX(mdl.doffree));
-                        errorDX = normDX / norm(X(mdl.doffree));
+                        [absError, errorDX] = this.evaluateError(DX,mdl);
 
                         % Print result
-                        fprintf("\t\t iter.: %3d , ||Rdp|| = %7.3e \n",iter,errorDX);
+                        fprintf("\t\t iter.: %3d , Dp = %7.3e , Dpg = %7.3e , ||Rdp|| = %7.3e \n",iter,absError(1),absError(2),errorDX);
     
                         % Check convergence
                         if (errorDX < 1.0e-5) && (iter > 1)
@@ -178,6 +177,15 @@ classdef Anl_TransientPicard < Anl
 
         end
 
+        %------------------------------------------------------------------
+        function [absError, normError] = evaluateError(~,DX,mdl)
+
+            absError = [max(abs(DX(mdl.pFreeDof))) , max(abs(DX(mdl.pgFreeDof)))];
+            normError = norm(DX(mdl.doffree));
+
+        end
+
+        %------------------------------------------------------------------
         function printStep(~,X,mdl)
 
             for i = 1:mdl.nnodes
@@ -190,7 +198,7 @@ classdef Anl_TransientPicard < Anl
 
         end
 
-
+        %------------------------------------------------------------------
         function [normRp , normRpg] = decomposeResidualVct(~,r, Fext,mdl)
 
             rp = r(mdl.pFreeDof);
@@ -207,6 +215,7 @@ classdef Anl_TransientPicard < Anl
 
         end
 
+        %------------------------------------------------------------------
         function setUpTransientSolver(this,tinit,dt,tf,dtMax,dtMin,adaptStep)
             if nargin == 4
                 dtMax = dt;
