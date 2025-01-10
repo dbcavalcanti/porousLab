@@ -1,7 +1,13 @@
-%% Anl_Nonlinear Class
+%% Anl_TransientPicard Class
 %
-% This is a sub-class in the NUMA-TF program that implements abstract 
-% methods declared in super-class Anl to deal with linear-elastic analysis.
+% Performs a transient analysis combined with the Picard method to solve
+% the nonlinear system.
+%
+% Reference:
+% Li, W., & Wei, C. (2015). An efficient finite element procedure for
+% analyzing three‐phase porous media based on the relaxed Picard method.
+% International Journal for Numerical Methods in Engineering, 101(11),
+% 825-846.
 %
 classdef Anl_TransientPicard < Anl
     %% Public properties
@@ -15,7 +21,8 @@ classdef Anl_TransientPicard < Anl
         adaptStep = false;
         maxIter = 250;
         maxAttempts = 10;
-        relax = 0.0;
+        applyRelax = false;
+        relax = 1.0;
     end
     
     %% Constructor method
@@ -86,14 +93,20 @@ classdef Anl_TransientPicard < Anl
                         b(mdl.doffree) = b(mdl.doffree) - A(mdl.doffree,mdl.doffixed)*X(mdl.doffixed);
 
                         % Solve linear system
-                        X(mdl.doffree) = this.relax*XOld(mdl.doffree) + (1.0 - this.relax)*A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
+                        X(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
+                        if (this.applyRelax)
+                            if (iter > 1)
+                                this.computePicardRelaxation(X, XOld, DX);
+                            end
+                            X(mdl.doffree) = (1.0 - this.relax)*XOld(mdl.doffree) + this.relax*X(mdl.doffree);
+                        end
     
                         % Update variables
                         DX = X - XOld;
                         XOld(mdl.doffree) = X(mdl.doffree);
 
                         % Compute the residual norm
-                        [absError, errorDX] = this.evaluateError(DX,mdl);
+                        [absError, errorDX] = this.evaluateError(DX,X,mdl);
 
                         % Print result
                         fprintf("\t\t iter.: %3d , Dp = %7.3e , Dpg = %7.3e , ||Rdp|| = %7.3e \n",iter,absError(1),absError(2),errorDX);
@@ -173,10 +186,10 @@ classdef Anl_TransientPicard < Anl
         end
 
         %------------------------------------------------------------------
-        function [absError, normError] = evaluateError(~,DX,mdl)
+        function [absError, normError] = evaluateError(~,DX,X,mdl)
 
             absError = [max(abs(DX(mdl.pFreeDof))) , max(abs(DX(mdl.pgFreeDof)))];
-            normError = norm(DX(mdl.doffree));
+            normError = norm(DX(mdl.doffree))/norm(X(mdl.doffree));
 
         end
 
@@ -224,6 +237,27 @@ classdef Anl_TransientPicard < Anl
             this.dtMax = dtMax;
             this.dtMin = dtMin;
         end
+
+        %------------------------------------------------------------------
+        function setPicardRelaxation(this)
+            this.applyRelax = true;
+        end
+
+        %------------------------------------------------------------------
+        function computePicardRelaxation(this, Xnew, XOld, DXOld)
+            % Compute the current increment
+            DX = Xnew - XOld;
+            % Compute the generalized angle between successive increments
+            gamma = acos((DX'*DXOld)/(norm(DX)*norm(DXOld)));
+            % Update relaxation parameter
+            if (gamma < pi/4.0)
+                this.relax = min(this.relax * 2.0,1.0);
+            elseif (gamma > pi/2.0)
+                this.relax = this.relax / 2.0;
+            end
+        end
+
+
     end
     
 end
