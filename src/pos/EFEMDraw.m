@@ -224,16 +224,21 @@ classdef EFEMDraw < handle
             max_load = max(draw.model.F);
         end
 
-        function elements(draw)
+        function elements(draw,plotMatId)
             nmaterials = size(unique(draw.model.matID),1);
             colors = parula(nmaterials);
             for el = 1:draw.model.nelem
                 res = draw.model.element(el).type.result;
-                materialID = draw.model.matID(el);
+                if plotMatId
+                    materialID = draw.model.matID(el);
+                    fieldFaceColor = colors(materialID,:);
+                else
+                    fieldFaceColor = res.faceColor;
+                end
                 patch('Faces',res.faces,...
                     'Vertices',res.vertices,...
                     'FaceVertexCData',res.vertexData,...
-                    'FaceColor',colors(materialID,:),...
+                    'FaceColor',fieldFaceColor,...
                     'LineWidth',res.edgesThickness,...
                     'LineStyle','-',...
                     'Marker',res.markerType,...
@@ -297,14 +302,17 @@ classdef EFEMDraw < handle
         % Draws a continuous beam model with applied loads.
         % Input:
         % - cnv: graphics context (owning canvas)
-        function mesh(draw)
+        function mesh(draw,plotMatId)
+            if nargin == 1
+                plotMatId = false;
+            end
 
             figure
             hold on, box on, grid on
             axis equal
             
             % Draw continuous mesh
-            draw.elements();
+            draw.elements(plotMatId);
 
             % Draw fractures
             % draw.fractures();

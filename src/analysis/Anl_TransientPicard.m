@@ -52,10 +52,6 @@ classdef Anl_TransientPicard < Anl
             X0 = mdl.U;
             X    = XOld;
 
-            % Add contribution of the nodal forces to the external force
-            % vector
-            Fext = mdl.addNodalLoad(mdl.F);
-
             % Initialize the output vectors
             this.result.time = zeros(maxSteps,1);
             this.result.p    = zeros(maxSteps,1);
@@ -82,7 +78,7 @@ classdef Anl_TransientPicard < Anl
                     while true
     
                         % Compute model global matrices
-                        [K, C] = mdl.globalMatrices(X);
+                        [K, C, ~, Fext] = mdl.globalMatrices(X);
         
                         % Set transient system
                         A =  K + C / this.dt;

@@ -193,14 +193,18 @@ classdef Model < handle
 
             % Assemble the properties to the elements' objects
             for el = 1 : this.nelem
+                % Create the material for the element
+                emat =struct( ...
+                        'porousMedia',this.mat.porousMedia(this.matID(el)), ...
+                        'fluids',this.mat.fluids);
                 if strcmp(this.physics,'hydraulicTwoPhase')
                     elements(el) = RegularElement(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, this.mat, this.intOrder,this.GLP(el,:),this.GLPg(el,:));
+                            this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:));
                 elseif strcmp(this.physics,'hydraulicTwoPhasePcPg')
                     elements(el) = RegularElementPcPg(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, this.mat, this.intOrder,this.GLP(el,:),this.GLPg(el,:));
+                            this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:));
                 end
 
                 elements(el).type.initializeIntPoints();
@@ -347,7 +351,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Global system matrices
-        function [K, C, Fi] = globalMatrices(this,U)   
+        function [K, C, Fi, Fe] = globalMatrices(this,U)   
 
             % Indices for the assembling the matrices and vector
             iDof = zeros(this.sqrNDofElemTot,1);
@@ -403,6 +407,10 @@ classdef Model < handle
             K  = sparse(iDof,jDof,Kij);
             C  = sparse(iDof,jDof,Cij);
             Fi = sparse(eDof,ones(this.nDofElemTot,1),fi);
+
+            % Add contribution of the nodal forces to the external force
+            % vector
+            Fe = this.addNodalLoad(this.F);
 
         end
 
@@ -485,9 +493,9 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot the mesh with the boundary conditions
-        function plotMeshWithBC(this)
+        function plotMeshWithMatId(this)
             EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            EFEMdraw.mesh(true);
         end
 
         % -----------------------------------------------------------------
@@ -584,6 +592,12 @@ classdef Model < handle
                     elseif strcmp(type,'Pressure')
                         p = this.element(el).type.pressureField(X);
                         vertexData(i) = p;
+                    elseif strcmp(type,'CapillaryPressure')
+                        p = this.element(el).type.capillaryPressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'GasPressure')
+                        p = this.element(el).type.gasPressureField(X);
+                        vertexData(i) = p;    
                     elseif strcmp(type,'Ux')
                         u = this.element(el).type.displacementField(X);
                         vertexData(i) = u(1);
