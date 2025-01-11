@@ -41,13 +41,16 @@ classdef Model < handle
         Dof                 = [];            % Vector with all regular dofs
         ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs (DX, DY)
         GLP                 = [];            % Matrix with the regular dof of each element
-        GLPg                 = [];            % Matrix with the regular dof of each element
+        GLPg                 = [];           % Matrix with the regular dof of each element
         F                   = [];            % Global force vector
         U                   = [];            % Global displacement vector
         element             = [];            % Array with the element's objects
         nDofElemTot         = 0.0;
         sqrNDofElemTot      = 0.0;
-        matID               = [];
+        matID               = [];            % Vector with the material id of each element
+        hasGravity          = false;         % Flag to consider gravity forces
+        g                   = 9.81;          % Gravity accelaration (m/s2)
+        b                   = [0.0;-1.0];    % Gravity force direction vector
     end
     
     %% Constructor method
@@ -359,9 +362,10 @@ classdef Model < handle
             eDof = zeros(this.nDofElemTot,1);
 
             % Initialize the components of the matrices and vector
-            Kij  = zeros(this.sqrNDofElemTot,1);
-            Cij  = zeros(this.sqrNDofElemTot,1);
-            fi   = zeros(this.nDofElemTot,1);
+            K_ij  = zeros(this.sqrNDofElemTot,1);
+            C_ij  = zeros(this.sqrNDofElemTot,1);
+            fi_i  = zeros(this.nDofElemTot,1);
+            fe_i  = zeros(this.nDofElemTot,1);
 
             % Initialize auxiliar variables
             counterK = 0;
@@ -390,12 +394,13 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [Ke,Ce,fe] = this.element(el).type.elementData();
+                [K_e,C_e,fi_e,fe_e] = this.element(el).type.elementData();
 
                 % Store in the global vectors
-                Kij(counterK+1:counterK+nGleij) = Ke(:);
-                Cij(counterK+1:counterK+nGleij) = Ce(:);
-                fi(counterF+1:counterF+nGlei)   = fe(:);
+                K_ij(counterK+1:counterK+nGleij) = K_e(:);
+                C_ij(counterK+1:counterK+nGleij) = C_e(:);
+                fi_i(counterF+1:counterF+nGlei)  = fi_e(:);
+                fe_i(counterF+1:counterF+nGlei)  = fe_e(:);
             
                 % Update auxiliar variables
                 counterK = counterK + nGleij;
@@ -404,13 +409,14 @@ classdef Model < handle
             end
 
             % Assemble the matrices and vector
-            K  = sparse(iDof,jDof,Kij);
-            C  = sparse(iDof,jDof,Cij);
-            Fi = sparse(eDof,ones(this.nDofElemTot,1),fi);
+            K  = sparse(iDof,jDof,K_ij);
+            C  = sparse(iDof,jDof,C_ij);
+            Fi = sparse(eDof,ones(this.nDofElemTot,1),fi_i);
+            Fe = sparse(eDof,ones(this.nDofElemTot,1),fe_i);
 
             % Add contribution of the nodal forces to the external force
             % vector
-            Fe = this.addNodalLoad(this.F);
+            Fe = Fe + this.addNodalLoad(this.F);
 
         end
 

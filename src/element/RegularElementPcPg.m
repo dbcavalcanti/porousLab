@@ -104,7 +104,7 @@ classdef RegularElementPcPg < handle
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fe] = elementData(this)
+        function [Ke, Ce, fi, fe] = elementData(this)
 
             % Initialize the sub-matrices
             Hcc = zeros(this.nglp, this.nglp);
@@ -113,6 +113,10 @@ classdef RegularElementPcPg < handle
             Sgc = zeros(this.nglp, this.nglp);
             Scc = zeros(this.nglp, this.nglp);
             O   = zeros(this.nglp, this.nglp);
+
+            % Initialize external force vector
+            fec = zeros(this.nglp, 1);
+            feg = zeros(this.nglp, 1);
             
             % Vector of the nodal pore-pressure dofs
             pc = this.ue(1:this.nglp);
@@ -164,9 +168,11 @@ classdef RegularElementPcPg < handle
             Ce = [ Scc , O;
                    Sgc , O ];
 
-
             % Assemble element internal force vector
-            fe = Ke * this.ue;
+            fi = Ke * this.ue;
+
+            % Assemble element external force vector
+            fe = [fec; feg];
             
         end
 

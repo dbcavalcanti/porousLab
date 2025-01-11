@@ -44,10 +44,6 @@ classdef Anl_Transient < Anl
             dX   = zeros(size(XOld,1),1);
             DX   = dX;
 
-            % Add contribution of the nodal forces to the external force
-            % vector
-            Fext = mdl.addNodalLoad(mdl.F);
-
             % Initialize the output vectors
             this.result.time = zeros(maxSteps,1);
             this.result.p    = zeros(maxSteps,1);
@@ -73,7 +69,7 @@ classdef Anl_Transient < Anl
                     while true
     
                         % Compute model global matrices
-                        [K, C, Fint] = mdl.globalMatrices(X);
+                        [K, C, Fint, Fext] = mdl.globalMatrices(X);
         
                         % Set transient system
                         J =  K + C / this.dt;

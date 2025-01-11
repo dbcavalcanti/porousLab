@@ -103,7 +103,7 @@ classdef RegularElement < handle
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fe] = elementData(this)
+        function [Ke, Ce, fi, fe] = elementData(this)
 
             % Initialize the sub-matrices
             Hll = zeros(this.nglp, this.nglp);
@@ -113,6 +113,10 @@ classdef RegularElement < handle
             Sgl = zeros(this.nglp, this.nglp);
             Slg = zeros(this.nglp, this.nglp);
             O   = zeros(this.nglp, this.nglp);
+
+            % Initialize external force vector
+            fel = zeros(this.nglp, 1);
+            feg = zeros(this.nglp, 1);
             
             % Vector of the nodal pore-pressure dofs
             pl = this.ue(1:this.nglp);
@@ -162,7 +166,10 @@ classdef RegularElement < handle
 
 
             % Assemble element internal force vector
-            fe = Ke * this.ue;
+            fi = Ke * this.ue;
+
+            % Assemble element external force vector
+            fe = [fel; feg];
             
         end
 
