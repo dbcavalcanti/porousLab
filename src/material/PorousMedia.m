@@ -24,8 +24,8 @@ classdef PorousMedia < handle
         capillaryPressure    = 'BrooksCorey';
     end
     properties (SetAccess = protected, GetAccess = public)
-        klrmin               = 1.0e-5;          % Minimun liquid relative permeability
-        kgrmin               = 1.0e-5;          % Minimun gas relative permeability
+        klrmin               = 1.0e-9;          % Minimun liquid relative permeability
+        kgrmin               = 1.0e-9;          % Minimun gas relative permeability
     end
     
     %% Constructor method

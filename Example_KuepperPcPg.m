@@ -65,22 +65,16 @@ reg = isInsideRectangle(Xc,[0.35,0.25],[0.60,0.30]); mdl.matID(reg==1) = 4;
 
 % --- Material properties of the domain -----------------------------------
 
-% Gas compressibility
-R = 8.3144598;      % Universal gas constant (J/(mol*K)
-T = 293.15;         % Temperature (K)
-Mg = 0.0289;        % Molar mass (kg/mol)
-rhog = 1630.0;      % Density (kg/m3)
-Kg = (rhog * T * R) /  Mg;
-
+% Fluid properties
 fluids = [Fluid('water', 1000.0, 1.0e-3, 1.0e25),...
-          Fluid('DNAPL', 1630.0, 0.9e-3, Kg)];
+          Fluid('DNAPL', 1630.0, 0.9e-3, 1.0e25)];
 
 % Porous media properties
-%                          |   K(m2)   | phi | biot|  Ks   | Slr |   Pb   | lambda |  relPerm   |  capPressure
-sand1 = PorousMedia('sand1', 5.041e-10, 0.40,  1.0, 1.0e25, 0.078, 369.73,   3.86, 'BrooksCorey','BrooksCorey');
-sand2 = PorousMedia('sand2', 2.051e-10, 0.39,  1.0, 1.0e25, 0.069, 434.45,   3.51, 'BrooksCorey','BrooksCorey');
-sand3 = PorousMedia('sand3', 5.261e-11, 0.39,  1.0, 1.0e25, 0.098, 1323.95,  2.49, 'BrooksCorey','BrooksCorey');
-sand4 = PorousMedia('sand4', 8.191e-12, 0.41,  1.0, 1.0e25, 0.189, 3246.15,  3.30, 'BrooksCorey','BrooksCorey');
+% -----------------------  |   K(m2)   | phi | biot|  Ks   | Slr |   Pb   | lambda |  relPerm   |  capPressure
+sand1 = PorousMedia('sand1', 5.04e-10, 0.40,  1.0, 1.0e25, 0.078, 369.73,   3.86, 'BrooksCorey','BrooksCorey');
+sand2 = PorousMedia('sand2', 2.05e-10, 0.39,  1.0, 1.0e25, 0.069, 434.45,   3.51, 'BrooksCorey','BrooksCorey');
+sand3 = PorousMedia('sand3', 5.26e-11, 0.39,  1.0, 1.0e25, 0.098, 1323.95,  2.49, 'BrooksCorey','BrooksCorey');
+sand4 = PorousMedia('sand4', 8.19e-12, 0.41,  1.0, 1.0e25, 0.189, 3246.15,  3.30, 'BrooksCorey','BrooksCorey');
 
 rock = [sand1, sand2, sand3, sand4];
 
@@ -118,6 +112,12 @@ CoordInit  = [];
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 mdl.INITCOND_p = 369.73*ones(size(mdl.INITCOND_p,1),1);
 
+% Add prescribed gas pressure at the infiltration zone
+tol = 1.0e-4;
+reg = isInsideRectangle(mdl.NODE,[0.3-tol,0.5-tol],[0.4+tol,0.5+tol]);
+mdl.SUPP_pg(reg == 1) = 1;
+mdl.PRESCDISPL_pg(reg == 1) = 639.35;
+
 % --- Order of the integration rule for the domain ------------------------
 
 % Using Gauss quadrature
@@ -130,8 +130,7 @@ mdl.intOrder = 2;
 mdl.preComputations();
 
 % Plot the mesh with the supports
-mdl.plotMeshWithBC();
-return
+mdl.plotMeshWithMatId();
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -143,22 +142,14 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 0.1;   % Initial time
 dt    = 0.1;   % Time step
-tf    = 1000;  % Final time
+tf    = 184;  % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,5.0,0.0000001,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = false;
+anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
 
-% Print the results in the command window
-mdl.printResults();
-
-% Plot pressure along a segment
-Xi  = [0.0 , 0.0];
-Xf  = [Lx , 0.0];
-npts = 500;
-mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
+mdl.plotField('CapillaryPressure');
+% mdl.plotField('GasPressure');
