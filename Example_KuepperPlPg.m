@@ -94,17 +94,16 @@ mdl.mat  = struct( ...
 % In case it is prescribed a pressure value different than zero, don't 
 % forget also that you need to constraint these degrees of freedom.
 
-% Capillary pressure boundary conditions
+% Liquid pressure boundary conditions
 CoordSupp  = [1 0 Ly;1 Lx Ly];                
 CoordLoad  = [];                     
-CoordPresc = [369.73 0 Ly;
-              369.73 Lx Ly];
+CoordPresc = [];
 CoordInit  = [];                      
            
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 369.73*ones(size(mdl.INITCOND_p,1),1);
+mdl.INITCOND_p = zeros(size(mdl.INITCOND_p,1),1);
 
 % Gas pressure boundary conditions
 CoordSupp  = [1 0 Ly;1 Lx Ly];                
@@ -154,7 +153,7 @@ tf    = 34;  % Final time
 anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.setPicardRelaxation();
-anl.useRelativeError = false;
+anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

@@ -155,6 +155,11 @@ classdef RegularElement < handle
                 Sgg = Sgg + Np' * cgg * Np * c;
                 Slg = Slg + Np' * clg * Np * c;
                 Sgl = Sgl + Np' * cgl * Np * c;
+
+                % Compute the gravity forces
+                if (this.mat.porousMedia.gravityOn)
+                    [fel,feg] = this.addGravityForces(fel,feg,Bp,kl,kg,c);
+                end
             end
 
             % Assemble the element matrices
@@ -171,6 +176,19 @@ classdef RegularElement < handle
             % Assemble element external force vector
             fe = [fel; feg];
             
+        end
+
+        %------------------------------------------------------------------
+        % Add contribution of the gravity forces to the external force vct
+        function [fel,feg] = addGravityForces(this,fel,feg,Bp,kl,kg,c)
+            % Get gravity vector
+            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+            % Get fluid densities
+            rhol = this.mat.fluids(1).rho;
+            rhog = this.mat.fluids(2).rho;
+            % Compute the contribution of the gravitational forces
+            fel = fel + Bp' * kl * rhol * grav * c;
+            feg = feg + Bp' * kg * rhog * grav * c;
         end
 
         %------------------------------------------------------------------

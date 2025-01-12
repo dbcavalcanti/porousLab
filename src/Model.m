@@ -48,9 +48,6 @@ classdef Model < handle
         nDofElemTot         = 0.0;
         sqrNDofElemTot      = 0.0;
         matID               = [];            % Vector with the material id of each element
-        hasGravity          = false;         % Flag to consider gravity forces
-        g                   = 9.81;          % Gravity accelaration (m/s2)
-        b                   = [0.0;-1.0];    % Gravity force direction vector
     end
     
     %% Constructor method

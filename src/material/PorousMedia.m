@@ -22,10 +22,13 @@ classdef PorousMedia < handle
         lambda               = 0.0;             % Curve-fitting parameter
         relativePermeability = 'BrooksCorey';
         capillaryPressure    = 'BrooksCorey';
+        gravityOn            = false;           % Flag to consider gravity forces
+        g                    = 9.81;            % Gravity accelaration (m/s2)
+        b                    = [0.0;-1.0];      % Gravity force direction vector        
     end
     properties (SetAccess = protected, GetAccess = public)
-        klrmin               = 1.0e-9;          % Minimun liquid relative permeability
-        kgrmin               = 1.0e-9;          % Minimun gas relative permeability
+        klrmin               = 1.0e-5;          % Minimum liquid relative permeability
+        kgrmin               = 1.0e-5;          % Minimum gas relative permeability
     end
     
     %% Constructor method
