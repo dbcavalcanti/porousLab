@@ -37,14 +37,15 @@ classdef RegularElement < handle
         intPoint   = [];            % Vector with integration point objects
         result     = [];            % Result object to plot the results
         isEnriched = false;         % Flag to check if the element is enriched
-        CompressibilityLumped = false;  % Flag to apply a diagonalization of the compressibility matrix
+        massLumping = false;        % Flag to apply a diagonalization of the compressibility matrix
+        lumpStrategy = 1;
     end
     
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = RegularElement(type, node, elem, t, ...
-                mat, intOrder, glp, glpg)
+                mat, intOrder, glp, glpg, massLumping, lumpStrategy)
             if (nargin > 0)
                 if strcmp(type,'ISOQ4')
                     this.shape = Shape_ISOQ4();
@@ -69,6 +70,8 @@ classdef RegularElement < handle
                 end
                 this.nglp     = length(this.glp);
                 this.ngle     = length(this.gle);
+                this.massLumping = massLumping;
+                this.lumpStrategy = lumpStrategy;
                 order = this.sortCounterClockWise(this.node);
                 this.result   = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
             end
@@ -123,6 +126,9 @@ classdef RegularElement < handle
             pl = this.ue(1:this.nglp);
             pg = this.ue(1+this.nglp:end);
 
+            % Initialize the volume of the element
+            vol = 0.0;
+
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
 
@@ -152,7 +158,7 @@ classdef RegularElement < handle
                 Hgg = Hgg + Bp' * kg * Bp * c;
 
                 % Compute compressibility matrices
-                if (this.CompressibilityLumped)
+                if ((this.massLumping) && (this.lumpStrategy == 1))
                     Sll = Sll + diag(cll*Np*c);
                     Sgg = Sgg + diag(cgg*Np*c);
                     Slg = Slg + diag(clg*Np*c);
@@ -169,6 +175,11 @@ classdef RegularElement < handle
                 if (this.mat.porousMedia.gravityOn)
                     [fel,feg] = this.addGravityForces(fel,feg,Bp,kl,kg,c);
                 end
+            end
+
+            % Compute the lumped mass matrix
+            if ((this.massLumping) && (this.lumpStrategy == 2))
+                [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pg-pl, vol);
             end
 
             % Assemble the element matrices
@@ -188,16 +199,45 @@ classdef RegularElement < handle
         end
 
         %------------------------------------------------------------------
+        % Compute the lumped mass matrices
+        % Using the OGS strategy
+        function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, vol)
+
+            % Shape function matrix
+            Np = this.shape.shapeFncMtrx([0.0,0.0]);
+
+            % Capillary pressure at the integration point
+            pcIP = Np * pc;
+
+            % Get compressibility coefficients
+            [cll,cgg,clg,cgl] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP);
+
+            % Mass distribution factor
+            factor = vol / this.nnd_el;
+
+            % Compressibility matrices
+            Sll = cll * factor * eye(this.nglp,this.nglp);
+            Slg = clg * factor * eye(this.nglp,this.nglp);
+            Sgl = cgl * factor * eye(this.nglp,this.nglp);
+            Sgg = cgg * factor * eye(this.nglp,this.nglp);
+
+        end
+
+        %------------------------------------------------------------------
         % Add contribution of the gravity forces to the external force vct
         function [fel,feg] = addGravityForces(this,fel,feg,Bp,kl,kg,c)
+
             % Get gravity vector
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+
             % Get fluid densities
             rhol = this.mat.fluids(1).rho;
             rhog = this.mat.fluids(2).rho;
+
             % Compute the contribution of the gravitational forces
             fel = fel + Bp' * kl * rhol * grav * c;
             feg = feg + Bp' * kg * rhog * grav * c;
+            
         end
 
         %------------------------------------------------------------------
