@@ -328,6 +328,94 @@ classdef EFEMDraw < handle
 
         %------------------------------------------------------------------
         % Plot the pressure field along a segment
+        function plotGasPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                P(i) = draw.model.element(elem).type.gasPressureField(X(i,:));
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(P,S,'-b','LineWidth',1.5);
+                xlabel('Gas pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,P,'-b','LineWidth',1.5);
+                ylabel('Gas pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %------------------------------------------------------------------
+        % Plot the pressure field along a segment
+        function plotCapillaryPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                P(i) = draw.model.element(elem).type.capillaryPressureField(X(i,:));
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(P,S,'-b','LineWidth',1.5);
+                xlabel('Capillary pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,P,'-b','LineWidth',1.5);
+                ylabel('Capillary pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %------------------------------------------------------------------
+        % Plot the pressure field along a segment
         function plotPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
 
             % Coordinates of the points where the pressure field is going

@@ -496,6 +496,22 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot the mesh with the boundary conditions
+        function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
+            if nargin < 4, npts = 10; end
+            EFEMdraw = EFEMDraw(this);
+            EFEMdraw.plotGasPressureAlongSegment(Xi, Xf, npts,axisPlot);
+        end
+
+        % -----------------------------------------------------------------
+        % Plot the mesh with the boundary conditions
+        function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
+            if nargin < 4, npts = 10; end
+            EFEMdraw = EFEMDraw(this);
+            EFEMdraw.plotCapillaryPressureAlongSegment(Xi, Xf, npts,axisPlot);
+        end
+
+        % -----------------------------------------------------------------
+        % Plot the mesh with the boundary conditions
         function plotMeshWithMatId(this)
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.mesh(true);

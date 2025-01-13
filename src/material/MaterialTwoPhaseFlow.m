@@ -27,7 +27,12 @@ classdef MaterialTwoPhaseFlow < handle
             this.porousMedia = matData.porousMedia;
             if strcmp('BrooksCorey',matData.porousMedia.relativePermeability)
                 this.relativePermeability = RelativePermeabilityBrooksCorey();
-                this.capillaryPressure    = CapillaryPressureBrooksCorey();
+            end
+            if strcmp('BrooksCorey',matData.porousMedia.capillaryPressure)
+                this.capillaryPressure = CapillaryPressureBrooksCorey();
+            elseif strcmp('UMAT',matData.porousMedia.capillaryPressure)
+                curve = matData.porousMedia.SlPc_umat;
+                this.capillaryPressure = CapillaryPressureUMAT(curve(:,1),curve(:,2));
             end
         end
     end

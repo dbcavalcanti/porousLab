@@ -24,11 +24,12 @@ classdef PorousMedia < handle
         capillaryPressure    = 'BrooksCorey';
         gravityOn            = false;           % Flag to consider gravity forces
         g                    = 9.81;            % Gravity accelaration (m/s2)
-        b                    = [0.0;-1.0];      % Gravity force direction vector        
+        b                    = [0.0;-1.0];      % Gravity force direction vector       
+        SlPc_umat           = [];
     end
     properties (SetAccess = protected, GetAccess = public)
-        klrmin               = 1.0e-5;          % Minimum liquid relative permeability
-        kgrmin               = 1.0e-5;          % Minimum gas relative permeability
+        klrmin               = 1.0e-9;          % Minimum liquid relative permeability
+        kgrmin               = 1.0e-9;          % Minimum gas relative permeability
     end
     
     %% Constructor method
@@ -69,6 +70,10 @@ classdef PorousMedia < handle
 
         function setMinGasRelPermeability(this,kgrmin)
             this.kgrmin = kgrmin;
+        end
+
+        function setUMATCapillaryPressureCurve(this,curve)
+            this.SlPc_umat = curve;
         end
     end
 end
