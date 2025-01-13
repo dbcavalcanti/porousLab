@@ -160,6 +160,9 @@ classdef Anl_TransientPicard < Anl
                 
                 % Update time
                 t0 = t;
+                if abs(t - this.tf) < 1.0e-10
+                    break
+                end
                 if (t + this.dt) > this.tf
                     this.dt = this.tf - t;
                 end
