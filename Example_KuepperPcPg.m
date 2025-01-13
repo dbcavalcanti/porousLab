@@ -116,7 +116,7 @@ CoordInit  = [];
 % Define supports and loads
 [mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 369.73*ones(size(mdl.INITCOND_p,1),1);
+mdl.INITCOND_pg = 369.73*ones(size(mdl.INITCOND_p,1),1);
 
 % Add prescribed gas pressure at the infiltration zone
 tol = 1.0e-4;
@@ -129,6 +129,10 @@ mdl.PRESCDISPL_pg(reg == 1) = 639.35;
 % Using Gauss quadrature
 mdl.intOrder = 2;
 
+% Diagonalize compressibility matrix (mass lumping)
+mdl.massLumping = true;
+mdl.lumpStrategy = 2;
+
 %% ========================= INITIALIZATION ===============================
 
 % Perform the basic pre-computations associated to the model (dof
@@ -136,7 +140,7 @@ mdl.intOrder = 2;
 mdl.preComputations();
 
 % Plot the mesh with the supports
-mdl.plotMeshWithMatId();
+% mdl.plotMeshWithMatId();
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -148,7 +152,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
-tf    = 34;  % Final time
+tf    = 184;  % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
@@ -160,4 +164,4 @@ anl.process(mdl);
 %% ========================= CHECK THE RESULTS ============================
 
 mdl.plotField('CapillaryPressure');
-% mdl.plotField('GasPressure');
+mdl.plotField('GasPressure');

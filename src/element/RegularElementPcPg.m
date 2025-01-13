@@ -223,14 +223,18 @@ classdef RegularElementPcPg < handle
         %------------------------------------------------------------------
         % Add contribution of the gravity forces to the external force vct
         function [fec,feg] = addGravityForces(this,fec,feg,Bp,kl,kg,c)
+
             % Get gravity vector
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+
             % Get fluid densities
             rhol = this.mat.fluids(1).rho;
             rhog = this.mat.fluids(2).rho;
+
             % Compute the contribution of the gravitational forces
             fec = fec + Bp' * kl * rhol * grav * c;
-            feg = feg + Bp' * kg * rhog * grav * c;
+            feg = feg + Bp' * kg * rhog * grav * c * (rhog/rhol);
+
         end
 
         %------------------------------------------------------------------
