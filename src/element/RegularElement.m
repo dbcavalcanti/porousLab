@@ -37,6 +37,7 @@ classdef RegularElement < handle
         intPoint   = [];            % Vector with integration point objects
         result     = [];            % Result object to plot the results
         isEnriched = false;         % Flag to check if the element is enriched
+        CompressibilityLumped = false;  % Flag to apply a diagonalization of the compressibility matrix
     end
     
     %% Constructor method
@@ -151,10 +152,18 @@ classdef RegularElement < handle
                 Hgg = Hgg + Bp' * kg * Bp * c;
 
                 % Compute compressibility matrices
-                Sll = Sll + Np' * cll * Np * c;
-                Sgg = Sgg + Np' * cgg * Np * c;
-                Slg = Slg + Np' * clg * Np * c;
-                Sgl = Sgl + Np' * cgl * Np * c;
+                if (this.CompressibilityLumped)
+                    Sll = Sll + diag(cll*Np*c);
+                    Sgg = Sgg + diag(cgg*Np*c);
+                    Slg = Slg + diag(clg*Np*c);
+                    Sgl = Sgl + diag(cgl*Np*c);
+                else
+                    Sll = Sll + Np' * cll * Np * c;
+                    Sgg = Sgg + Np' * cgg * Np * c;
+                    Slg = Slg + Np' * clg * Np * c;
+                    Sgl = Sgl + Np' * cgl * Np * c;
+                end
+                
 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
