@@ -45,8 +45,8 @@ fluids = [Fluid('water',1000.0,1.0e-3,1.0e25),...
           Fluid('CO2',  rhog,1.0e-3,Kg)];
 
 rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,5.0e3,2.0,'BrooksCorey','BrooksCorey');
-rock.setMinLiquidRelPermeability(1.0e-5);
-rock.setMinGasRelPermeability(1.0e-5);
+rock.setMinLiquidRelPermeability(1.0e-9);
+rock.setMinGasRelPermeability(1.0e-9);
 
 % Material parameters vector
 % Same material for all elements
@@ -82,7 +82,7 @@ CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
 % --- Order of the integration rule for the domain ------------------------
 
 % Using Gauss quadrature
-mdl.intOrder = 2;
+mdl.intOrder = 3;
 
 %% ========================= INITIALIZATION ===============================
 
@@ -107,7 +107,7 @@ tf    = 1000;  % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,10.0,0.0000001,true);
+anl.setUpTransientSolver(tinit,dt,tf,5.0,0.0000001,true);
 anl.setPicardRelaxation();
 anl.useRelativeError = false;
 anl.process(mdl);
