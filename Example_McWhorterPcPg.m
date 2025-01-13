@@ -84,6 +84,10 @@ CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
 % Using Gauss quadrature
 mdl.intOrder = 3;
 
+% Diagonalize compressibility matrix
+mdl.massLumping = true;
+mdl.lumpStrategy = 2;
+
 %% ========================= INITIALIZATION ===============================
 
 % Perform the basic pre-computations associated to the model (dof
@@ -103,12 +107,12 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 0.1;   % Initial time
 dt    = 0.1;   % Time step
-tf    = 1000;  % Final time
+tf    = 50;  % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,5.0,0.0000001,true);
-anl.setPicardRelaxation();
+anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
+% anl.setPicardRelaxation();
 anl.useRelativeError = false;
 anl.process(mdl);
 
@@ -122,3 +126,4 @@ Xi  = [0.0 , 0.0];
 Xf  = [Lx , 0.0];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
+
