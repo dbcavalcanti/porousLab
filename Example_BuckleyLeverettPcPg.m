@@ -85,6 +85,10 @@ mdl.INITCOND_pg = 200003*ones(size(mdl.INITCOND_pg,1),1);
 % Using Gauss quadrature
 mdl.intOrder = 3;
 
+% Diagonalize compressibility matrix (mass lumping)
+mdl.massLumping = true;
+mdl.lumpStrategy = 2;
+
 %% ========================= INITIALIZATION ===============================
 
 % Perform the basic pre-computations associated to the model (dof
@@ -111,7 +115,7 @@ dtmin = 0.0000001*day;     % Minimum time step
 % Solve the problem
 anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
+% anl.setPicardRelaxation();
 anl.useRelativeError = false;
 anl.process(mdl);
 
