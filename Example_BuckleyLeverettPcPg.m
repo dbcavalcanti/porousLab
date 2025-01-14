@@ -39,14 +39,14 @@ fluids = [Fluid('water',1000.0,1.0e-3,1.0e25),...
           Fluid('gas',  1000.0,1.0e-3,1.0e25)];
 
 % Create the porous media
-rock = PorousMedia('rock',1.0e-7,0.2,1.0,1.0e25,0.2,0.0,2.0,'BrooksCorey','UMAT');
+rock = PorousMedia('rock',1.0e-7,0.2,1.0,1.0e25,0.2,0.2,0.0,2.0,'BrooksCorey','UMAT');
 rock.setMinLiquidRelPermeability(1.0e-9);
 rock.setMinGasRelPermeability(1.0e-9);
 
 % Set the user material capillary pressure vs. saturation law
 % --------- Pc  |  Sl
 SlPcUMAT = [3.0 , 0.2;
-            0.0 , 0.84];
+            0.0 , 0.8];
 rock.setUMATCapillaryPressureCurve(SlPcUMAT);
 
 % Material parameters vector
@@ -83,7 +83,7 @@ mdl.INITCOND_pg = 200003*ones(size(mdl.INITCOND_pg,1),1);
 % --- Order of the integration rule for the domain ------------------------
 
 % Using Gauss quadrature
-mdl.intOrder = 3;
+mdl.intOrder = 2;
 
 % Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
@@ -106,11 +106,11 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 day = 60*60*24;
 
 % Transient analysis parameters
-tinit = 0.01*day;          % Initial time
-dt    = 0.01*day;          % Time step
-tf    = 500*day;           % Final time
-dtmax = 5.0*day;           % Maximum time step
-dtmin = 0.0000001*day;     % Minimum time step
+tinit = 0.1*day;          % Initial time
+dt    = 0.1*day;          % Time step
+tf    = 50*day;           % Final time
+dtmax = 0.1*day;          % Maximum time step
+dtmin = 0.1*day;          % Minimum time step
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
@@ -122,7 +122,7 @@ anl.process(mdl);
 %% ========================= CHECK THE RESULTS ============================
 
 % Print the results in the command window
-mdl.printResults();
+% mdl.printResults();
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];

@@ -43,6 +43,10 @@ classdef CapillaryPressureUMAT < CapillaryPressure
         %------------------------------------------------------------------
         % Compute the gas phase relative permeability
         function dSldpc = derivativeSaturationDegree(this, pc, porousMedia)
+            % if (pc > this.pc_curve(1)) || (pc < this.pc_curve(end))
+            %     dSldpc = 0.0;
+            %     return
+            % end
             % Pertubation for the numerical derivative
             h = 0.0001;
             % Compute the saturation degree at the perturbed values

@@ -17,7 +17,8 @@ classdef PorousMedia < handle
         phi                  = 0.0;             % Porosity
         biot                 = 0.0;             % Biot's coefficient
         Ks                   = 1.0e25;          % Solid bulk modulus (kPa)
-        Slr                  = 0.0;             % Residual liquid saturation       
+        Slr                  = 0.0;             % Residual liquid saturation
+        Sgr                  = 0.0;             % Residual gas saturation 
         Pb                   = 0.0;             % Gas-entry pressure (kPa)
         lambda               = 0.0;             % Curve-fitting parameter
         relativePermeability = 'BrooksCorey';
@@ -38,6 +39,7 @@ classdef PorousMedia < handle
         function this = PorousMedia(id, permeability, porosity, ...
                 biotCoefficient, solidBulkModulus, ...
                 residualLiquidSaturationDegree, ...
+                residualGasSaturationDegree,...
                 gasEntryPressure,curveFittingParameter, ...
                 relativePermeability,capillaryPressure)
             if nargin > 0
@@ -47,6 +49,7 @@ classdef PorousMedia < handle
                 this.biot                 = biotCoefficient;
                 this.Ks                   = solidBulkModulus;
                 this.Slr                  = residualLiquidSaturationDegree;
+                this.Sgr                  = residualGasSaturationDegree;
                 this.Pb                   = gasEntryPressure;
                 this.lambda               = curveFittingParameter;
                 this.relativePermeability = relativePermeability;
@@ -57,7 +60,7 @@ classdef PorousMedia < handle
     %% Public methods
     methods
         function Se = effectiveSaturationDegree(this,Sl)
-            Se = (Sl - this.Slr)/(1.0 - this.Slr);
+            Se = (Sl - this.Slr)/(1.0 - this.Slr - this.Sgr);
         end
 
         function Km = intrinsicPermeabilityMatrix(this)

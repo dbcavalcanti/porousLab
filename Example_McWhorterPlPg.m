@@ -44,7 +44,7 @@ Kg = (rhog * T * R) /  Mg;
 fluids = [Fluid('water',1000.0,1.0e-6,1.0e25),...
           Fluid('CO2',  rhog,1.0e-6,Kg)];
 
-rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,5.0,2.0,'BrooksCorey','BrooksCorey');
+rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,0.0,5.0,2.0,'BrooksCorey','BrooksCorey');
 rock.setMinLiquidRelPermeability(1.0e-5);
 rock.setMinGasRelPermeability(1.0e-5);
 
