@@ -123,6 +123,7 @@ classdef RegularElementPcPg < handle
             
             % Vector of the nodal pore-pressure dofs
             pc = this.ue(1:this.nglp);
+            pg = this.ue((1+this.nglp):end);
 
             % Initialize the volume of the element
             vol = 0.0;
@@ -138,6 +139,7 @@ classdef RegularElementPcPg < handle
 
                 % Capillary pressure at the integration point
                 pcIP = Np * pc;
+                pgIP = Np * pg;
 
                 % Compute the saturation degree at the integration point
                 Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
@@ -168,7 +170,7 @@ classdef RegularElementPcPg < handle
 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
-                    [fec,feg] = this.addGravityForces(fec,feg,Bp,kl,kg,c);
+                    [fec,feg] = this.addGravityForces(fec,feg,Bp,kl,kg,pgIP-pcIP,pgIP,c);
                 end
 
                 % Compute the element volume
@@ -222,14 +224,14 @@ classdef RegularElementPcPg < handle
 
         %------------------------------------------------------------------
         % Add contribution of the gravity forces to the external force vct
-        function [fec,feg] = addGravityForces(this,fec,feg,Bp,kl,kg,c)
+        function [fec,feg] = addGravityForces(this,fec,feg,Bp,kl,kg,pl,pg,c)
 
             % Get gravity vector
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
 
             % Get fluid densities
-            rhol = this.mat.liquidFluid.getDensity();
-            rhog = this.mat.gasFluid.getDensity();
+            rhol = this.mat.liquidFluid.getDensity(pl);
+            rhog = this.mat.gasFluid.getDensity(pg);
 
             % Compute the contribution of the gravitational forces
             fec = fec + Bp' * kl * rhol * grav * c;
