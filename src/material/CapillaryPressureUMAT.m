@@ -50,9 +50,9 @@ classdef CapillaryPressureUMAT < CapillaryPressure
             % Pertubation for the numerical derivative
             h = 0.0001;
             % Compute the saturation degree at the perturbed values
-            pc_back = this.saturationDegree(pc-h, porousMedia);
-            pc_forw = this.saturationDegree(pc+h, porousMedia);
-            dSldpc = (pc_forw - pc_back)/(2.0*h);
+            Sl_back = this.saturationDegree(pc-h, porousMedia);
+            Sl_forw = this.saturationDegree(pc+h, porousMedia);
+            dSldpc = (Sl_forw - Sl_back)/(2.0*h);
         end
         
     end
