@@ -65,6 +65,7 @@ CoordInit  = [];
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+mdl.INITCOND_p = 100.0*ones(size(mdl.INITCOND_p,1),1);  % Based on OGS6
 
 % Gas pressure boundary conditions
 CoordSupp  = [1 -1 0;

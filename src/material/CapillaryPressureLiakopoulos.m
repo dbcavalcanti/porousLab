@@ -34,12 +34,18 @@ classdef CapillaryPressureLiakopoulos < CapillaryPressure
         
         %------------------------------------------------------------------
         % Compute the gas phase relative permeability
-        function dSldpc = derivativeSaturationDegree(~, pc, ~)
-            if (pc <= 0.0)
-                dSldpc = 0.0;
-            else
-                dSldpc = - 2.4279 * 1.9722e-11 * pc^(1.4279);
-            end
+        function dSldpc = derivativeSaturationDegree(this, pc, porousMedia)
+            % if (pc <= 0.0)
+            %     dSldpc = 0.0;
+            % else
+            %     dSldpc = - 2.4279 * 1.9722e-11 * pc^(1.4279);
+            % end
+            % Pertubation for the numerical derivative
+            h = 0.0001;
+            % Compute the saturation degree at the perturbed values
+            Sl_back = this.saturationDegree(pc-h, porousMedia);
+            Sl_forw = this.saturationDegree(pc+h, porousMedia);
+            dSldpc = (Sl_forw - Sl_back)/(2.0*h);
         end
         
     end
