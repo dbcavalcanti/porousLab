@@ -148,7 +148,7 @@ classdef RegularElementPcPg < handle
                 [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcs(Sl);
 
                 % Get compressibility coefficients
-                [cgc,ccc] = this.intPoint(i).constitutiveMdl.compressibilityCoeffsPgPc(pcIP);
+                [cgc,ccc] = this.intPoint(i).constitutiveMdl.compressibilityCoeffsPgPc(pcIP,pgIP);
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
@@ -180,7 +180,7 @@ classdef RegularElementPcPg < handle
 
             % Compute the lumped mass matrix
             if ((this.massLumping) && (this.lumpStrategy == 2))
-                [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, vol);
+                [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, pg, vol);
             end
 
             % Assemble the element matrices
@@ -201,16 +201,17 @@ classdef RegularElementPcPg < handle
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
         % Using the OGS strategy
-        function [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, vol)
+        function [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, pg, vol)
 
             % Shape function matrix
             Np = this.shape.shapeFncMtrx([0.0,0.0]);
 
             % Capillary pressure at the integration point
             pcIP = Np * pc;
+            pgIP = Np * pg;
 
             % Get compressibility coefficients
-            [cgc,ccc] = this.intPoint(1).constitutiveMdl.compressibilityCoeffsPgPc(pcIP);
+            [cgc,ccc] = this.intPoint(1).constitutiveMdl.compressibilityCoeffsPgPc(pcIP, pgIP);
 
             % Mass distribution factor
             factor = vol / this.nnd_el;

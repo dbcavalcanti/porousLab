@@ -94,13 +94,16 @@ classdef MaterialTwoPhaseFlow < handle
 
         %------------------------------------------------------------------
         % Compute compressibility coefficients
-        function [cgc,ccc] = compressibilityCoeffsPgPc(this,pc)
+        function [cgc,ccc] = compressibilityCoeffsPgPc(this,pc,pg)
             % Get porous media parameters
             phi  = this.porousMedia.phi;
+            % Get fluid densities
+            rhol = this.liquidFluid.getDensity(pg-pc);
+            rhog = this.gasFluid.getDensity(pg);
             % Derivative of the liquid saturation degree wrt pc
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
             % Compressibility coefficients
-            cgc = -phi * dSldpc;
+            cgc = -phi * dSldpc * (rhog / rhol);
             ccc =  phi * dSldpc;
         end
     end
