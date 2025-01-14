@@ -66,15 +66,15 @@ reg = isInsideRectangle(Xc,[0.35,0.25],[0.60,0.30]); mdl.matID(reg==1) = 4;
 % --- Material properties of the domain -----------------------------------
 
 % Fluid properties
-fluids = [Fluid('water', 1000.0, 1.0e-3, 1.0e25),...
-          Fluid('DNAPL', 1630.0, 0.9e-3, 1.0e25)];
+water = Fluid('water',1000.0,1.0e-3,1.0e25);
+gas   = Fluid('gas'  ,1630.0,0.9e-3,1.0e25);
 
 % Porous media properties
 % -----------------------  |   K(m2)  | phi | biot|  Ks   | Slr |   Pb   | lambda |  relPerm   |  capPressure
-sand1 = PorousMedia('sand1', 5.04e-10, 0.40,  1.0, 1.0e25, 0.078, 369.73,   3.86, 'BrooksCorey','BrooksCorey');
-sand2 = PorousMedia('sand2', 2.05e-10, 0.39,  1.0, 1.0e25, 0.069, 434.45,   3.51, 'BrooksCorey','BrooksCorey');
-sand3 = PorousMedia('sand3', 5.26e-11, 0.39,  1.0, 1.0e25, 0.098, 1323.95,  2.49, 'BrooksCorey','BrooksCorey');
-sand4 = PorousMedia('sand4', 8.19e-12, 0.41,  1.0, 1.0e25, 0.189, 3246.15,  3.30, 'BrooksCorey','BrooksCorey');
+sand1 = PorousMedia('sand1', 5.04e-10, 0.40,  1.0, 1.0e25, 0.078,0.0, 369.73,   3.86, 'BrooksCorey','BrooksCorey');
+sand2 = PorousMedia('sand2', 2.05e-10, 0.39,  1.0, 1.0e25, 0.069,0.0, 434.45,   3.51, 'BrooksCorey','BrooksCorey');
+sand3 = PorousMedia('sand3', 5.26e-11, 0.39,  1.0, 1.0e25, 0.098,0.0, 1323.95,  2.49, 'BrooksCorey','BrooksCorey');
+sand4 = PorousMedia('sand4', 8.19e-12, 0.41,  1.0, 1.0e25, 0.189,0.0, 3246.15,  3.30, 'BrooksCorey','BrooksCorey');
 
 % Activate gravity
 sand1.gravityOn = true;
@@ -88,7 +88,8 @@ rock = [sand1, sand2, sand3, sand4];
 % Same material for all elements
 mdl.mat  = struct( ...
     'porousMedia',rock, ...
-    'fluids',fluids);
+    'liquidFluid',water,...
+    'gasFluid',gas);
 
 % --- Boundary conditions -------------------------------------------------
 % In case it is prescribed a pressure value different than zero, don't 
@@ -140,7 +141,7 @@ mdl.lumpStrategy = 2;
 mdl.preComputations();
 
 % Plot the mesh with the supports
-% mdl.plotMeshWithMatId();
+mdl.plotMeshWithMatId();
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -157,7 +158,7 @@ tf    = 184;  % Final time
 % Solve the problem
 anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
-anl.setPicardRelaxation();
+% anl.setPicardRelaxation();
 anl.useRelativeError = false;
 anl.process(mdl);
 

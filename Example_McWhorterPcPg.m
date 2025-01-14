@@ -34,15 +34,9 @@ mdl.t = 1.0;
 
 % --- Material properties of the domain -----------------------------------
 
-% Gas compressibility
-R = 8.3144598;      % Universal gas constant (J/(mol*K)
-T = 293.15;         % Temperature (K)
-Mg = 0.0289;        % Molar mass (kg/mol)
-rhog = 1000.0;      % Density (kg/m3)
-Kg = (rhog * T * R) /  Mg;
-
-fluids = [Fluid('water',1000.0,1.0e-3,1.0e25),...
-          Fluid('CO2',  rhog,1.0e-3,Kg)];
+% Create the fluids
+water = Fluid('water',1000.0,1.0e-3,1.0e25);
+gas   = Fluid('gas'  ,1000.0,1.0e-3,1.0e25);
 
 rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,0.0,5.0e3,2.0,'BrooksCorey','BrooksCorey');
 rock.setMinLiquidRelPermeability(1.0e-9);
@@ -52,7 +46,8 @@ rock.setMinGasRelPermeability(1.0e-9);
 % Same material for all elements
 mdl.mat  = struct( ...
     'porousMedia',rock, ...
-    'fluids',fluids);
+    'liquidFluid',water,...
+    'gasFluid',gas);
 
 % --- Boundary conditions -------------------------------------------------
 % In case it is prescribed a pressure value different than zero, don't 

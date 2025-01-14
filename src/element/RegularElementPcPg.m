@@ -228,8 +228,8 @@ classdef RegularElementPcPg < handle
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
 
             % Get fluid densities
-            rhol = this.mat.fluids(1).rho;
-            rhog = this.mat.fluids(2).rho;
+            rhol = this.mat.liquidFluid.getDensity();
+            rhog = this.mat.gasFluid.getDensity();
 
             % Compute the contribution of the gravitational forces
             fec = fec + Bp' * kl * rhol * grav * c;

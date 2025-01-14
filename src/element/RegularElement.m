@@ -231,75 +231,12 @@ classdef RegularElement < handle
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
 
             % Get fluid densities
-            rhol = this.mat.fluids(1).rho;
-            rhog = this.mat.fluids(2).rho;
+            rhol = this.mat.liquidFluid.getDensity();
+            rhog = this.mat.gasFluid.getDensity();
 
             % Compute the contribution of the gravitational forces
             fel = fel + Bp' * kl * rhol * grav * c;
             feg = feg + Bp' * kg * rhog * grav * c;
-            
-        end
-
-        %------------------------------------------------------------------
-        % Returns the internal force vector
-        function fe = elementInternalForceVector(this,Ue)
-
-            fe = zeros(this.ngle, 1);
-            fi = zeros(this.nglp, 1);
-
-            % Initialize Fluid-flow matrix
-            H = zeros(this.nglpg, this.nglpg);    
-
-            % Initialize 2D identity vector
-            m = [1.0 ; 1.0 ; 0.0];
-
-            % Vector of the nodal pore-pressure dofs
-            pe = Ue(1+this.nglp:end);
-
-            % Numerical integration of the sub-matrices
-            for i = 1:this.nIntPoints
-                
-                % Shape function matrix
-                Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
-
-                % Pore pressure at the integration point
-                pIP = Np * pe;
-
-                % Compute the B matrix at the int. point and the detJ
-                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-
-                % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
-
-                % Compute the increment of the strain vector
-                strain = Bu*Ue(1:this.nglp);
-        
-                % Compute the stress vector and the constitutive matrix
-                [stress,~] = this.intPoint(i).constitutiveModel(strain); 
-
-                % Compute the permeability matrix
-                Dh = this.intPoint(i).constitutiveMdl.permeabilityMtrx();
-
-                % Get Biot's coefficient
-                biot = this.intPoint(i).constitutiveMdl.biotCoeff();
-        
-                % Numerical integration coefficient
-                c = this.intPoint(i).w * detJ * this.t; 
-
-                % Fluid-flow matrix
-                H = H + Bp' *  Dh  * Bp * c;
-
-                % Numerical integration of the internal force vector
-                fi = fi + Bu' * (stress - biot * pIP * m) * c;
-
-            end
-
-            % Hydraulic part of the internal force vector
-            fp = H*pe;
-
-            % Assemble element internal force vector
-            fe(1:this.nglp)     = fi;
-            fe(1+this.nglp:end) = fp;
             
         end
 

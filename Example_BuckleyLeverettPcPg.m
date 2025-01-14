@@ -35,8 +35,8 @@ mdl.t = 1.0;
 % --- Material properties of the domain -----------------------------------
 
 % Create the fluids
-fluids = [Fluid('water',1000.0,1.0e-3,1.0e25),...
-          Fluid('gas',  1000.0,1.0e-3,1.0e25)];
+water = Fluid('water',1000.0,1.0e-3,1.0e25);
+gas   = Fluid('gas'  ,1000.0,1.0e-3,1.0e25);
 
 % Create the porous media
 rock = PorousMedia('rock',1.0e-7,0.2,1.0,1.0e25,0.2,0.2,0.0,2.0,'BrooksCorey','UMAT');
@@ -52,7 +52,8 @@ rock.setUMATCapillaryPressureCurve(SlPcUMAT);
 % Material parameters vector
 mdl.mat  = struct( ...
     'porousMedia',rock, ...
-    'fluids',fluids);
+    'liquidFluid',water,...
+    'gasFluid',gas);
 
 % --- Boundary conditions -------------------------------------------------
 % In case it is prescribed a pressure value different than zero, don't 

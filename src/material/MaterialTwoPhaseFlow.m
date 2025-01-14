@@ -14,7 +14,8 @@ classdef MaterialTwoPhaseFlow < handle
     properties (SetAccess = public, GetAccess = public)
         relativePermeability = [];   
         capillaryPressure    = [];
-        fluids(2,1)          = Fluid();
+        liquidFluid          = Fluid();
+        gasFluid             = Fluid();
         porousMedia          = PorousMedia();
     end
     
@@ -22,8 +23,8 @@ classdef MaterialTwoPhaseFlow < handle
     methods
         %------------------------------------------------------------------
         function this = MaterialTwoPhaseFlow(matData)
-            this.fluids(1) = matData.fluids(1);
-            this.fluids(2) = matData.fluids(2);
+            this.liquidFluid = matData.liquidFluid;
+            this.gasFluid    = matData.gasFluid;
             this.porousMedia = matData.porousMedia;
             if strcmp('BrooksCorey',matData.porousMedia.relativePermeability)
                 this.relativePermeability = RelativePermeabilityBrooksCorey();
@@ -49,8 +50,8 @@ classdef MaterialTwoPhaseFlow < handle
         function [Kl,Kg] = permeabilityMtrcs(this,Sl)
             K = this.porousMedia.intrinsicPermeabilityMatrix();
             % Get fluids dynamic viscosity
-            mul = this.fluids(1).mu;
-            mug = this.fluids(2).mu;
+            mul = this.liquidFluid.mu;
+            mug = this.gasFluid.mu;
             % Compute relative permeability coefficients
             klr = this.relativePermeability.liquidRelativePermeability(Sl, this.porousMedia);
             kgr = this.relativePermeability.gasRelativePermeability(Sl, this.porousMedia);
@@ -67,8 +68,8 @@ classdef MaterialTwoPhaseFlow < handle
             phi  = this.porousMedia.phi;
             Ks   = this.porousMedia.Ks;
             % Get the fluids bulk modulus
-            Klb  = this.fluids(1).K;
-            Kgb  = this.fluids(2).K;
+            Klb  = this.liquidFluid.K;
+            Kgb  = this.gasFluid.K;
             % Gas saturation degree
             Sg   = 1.0 - Sl;
             % Derivative of the liquid saturation degree wrt pc
