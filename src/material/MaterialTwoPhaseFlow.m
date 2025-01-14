@@ -30,6 +30,8 @@ classdef MaterialTwoPhaseFlow < handle
             % Liquid phase relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.liqRelPermeability)
                 this.liqRelativePermeability = RelativePermeabilityBrooksCoreyLiquid();
+            elseif strcmp('Liakopoulos',matData.porousMedia.liqRelPermeability)
+                this.liqRelativePermeability = RelativePermeabilityLiakopoulosLiquid();
             end
             % Gas phase relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.gasRelPermeability)
@@ -41,6 +43,8 @@ classdef MaterialTwoPhaseFlow < handle
             elseif strcmp('UMAT',matData.porousMedia.capillaryPressure)
                 curve = matData.porousMedia.SlPc_umat;
                 this.capillaryPressure = CapillaryPressureUMAT(curve(:,1),curve(:,2));
+            elseif strcmp('Liakopoulos',matData.porousMedia.capillaryPressure)
+                this.capillaryPressure = CapillaryPressureLiakopoulos();
             end
         end
     end
