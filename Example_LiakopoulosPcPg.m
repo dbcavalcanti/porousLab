@@ -39,15 +39,12 @@ water = Fluid('water',1000.0,1.0e-3,1.0e25);
 gas = IdealGas('gas', 1.8e-5, 1.0e25);
 
 % Create the porous media
-rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'BrooksCorey','BrooksCorey','UMAT');
+rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
 rock.setMinLiquidRelPermeability(1.0e-9);
 rock.setMinGasRelPermeability(1.0e-9);
 
-% Set the user material capillary pressure vs. saturation law
-% --------- Pc  |  Sl
-SlPcUMAT = [3.0 , 0.2;
-            0.0 , 0.8];
-rock.setUMATCapillaryPressureCurve(SlPcUMAT);
+% Activate gravity
+rock.gravityOn = true;
 
 % Material parameters vector
 mdl.mat  = struct( ...
@@ -105,14 +102,14 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Conversion from days to seconds
-day = 60*60*24;
+minute = 60;
 
 % Transient analysis parameters
-tinit = 0.1*day;          % Initial time
-dt    = 0.1*day;          % Time step
-tf    = 50*day;           % Final time
-dtmax = 0.1*day;          % Maximum time step
-dtmin = 0.1*day;          % Minimum time step
+tinit = 0.001*minute;          % Initial time
+dt    = 0.001*minute;          % Time step
+tf    = 120 * minute;          % Final time
+dtmax = 120*minute;            % Time step
+dtmin = 0.0001*minute;         % Time step
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
@@ -128,10 +125,10 @@ anl.process(mdl);
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
-Xf  = [Lx , 0.0];
+Xf  = [0.0 , Ly];
 npts = 500;
-mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
-mdl.plotGasPressureAlongSegment(Xi, Xf, npts,'x')
-mdl.plotCapillaryPressureAlongSegment(Xi, Xf, npts,'x')
+mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
+mdl.plotGasPressureAlongSegment(Xi, Xf, npts,'y')
+mdl.plotCapillaryPressureAlongSegment(Xi, Xf, npts,'y')
 mdl.plotField('CapillaryPressure');
 mdl.plotField('GasPressure');
