@@ -39,7 +39,7 @@ water = Fluid('water',1000.0,1.0e-3,1.0e25);
 gas   = Fluid('gas'  ,1000.0,1.0e-3,1.0e25);
 
 % Create the porous media
-rock = PorousMedia('rock',1.0e-7,0.2,1.0,1.0e25,0.2,0.2,0.0,2.0,'BrooksCorey','UMAT');
+rock = PorousMedia('rock',1.0e-7,0.2,1.0,1.0e25,0.2,0.2,0.0,2.0,'BrooksCorey','BrooksCorey','UMAT');
 rock.setMinLiquidRelPermeability(1.0e-9);
 rock.setMinGasRelPermeability(1.0e-9);
 

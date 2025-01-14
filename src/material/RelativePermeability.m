@@ -27,12 +27,8 @@ classdef RelativePermeability < handle
     methods(Abstract)
 
         %------------------------------------------------------------------
-        % Liquid relative permeability
-        krL = liquidRelativePermeability(this, Sw, porousMedia);
-
-        %------------------------------------------------------------------
-        % Gas relative permeability
-        krG = gasRelativePermeability(this, Sw, porousMedia);
+        % compute the relative permeability
+        kr = calculate(this, Sw, porousMedia);
         
     end
 

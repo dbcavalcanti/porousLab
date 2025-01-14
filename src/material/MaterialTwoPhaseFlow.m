@@ -12,11 +12,12 @@
 classdef MaterialTwoPhaseFlow < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        relativePermeability = [];   
-        capillaryPressure    = [];
-        liquidFluid          = Fluid();
-        gasFluid             = Fluid();
-        porousMedia          = PorousMedia();
+        liqRelativePermeability = [];
+        gasRelativePermeability = [];
+        capillaryPressure       = [];
+        liquidFluid             = Fluid();
+        gasFluid                = Fluid();
+        porousMedia             = PorousMedia();
     end
     
     %% Constructor method
@@ -26,9 +27,15 @@ classdef MaterialTwoPhaseFlow < handle
             this.liquidFluid = matData.liquidFluid;
             this.gasFluid    = matData.gasFluid;
             this.porousMedia = matData.porousMedia;
-            if strcmp('BrooksCorey',matData.porousMedia.relativePermeability)
-                this.relativePermeability = RelativePermeabilityBrooksCorey();
+            % Liquid phase relative permeability function
+            if strcmp('BrooksCorey',matData.porousMedia.liqRelPermeability)
+                this.liqRelativePermeability = RelativePermeabilityBrooksCoreyLiquid();
             end
+            % Gas phase relative permeability function
+            if strcmp('BrooksCorey',matData.porousMedia.gasRelPermeability)
+                this.gasRelativePermeability = RelativePermeabilityBrooksCoreyGas();
+            end
+            % Saturation degree relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.capillaryPressure)
                 this.capillaryPressure = CapillaryPressureBrooksCorey();
             elseif strcmp('UMAT',matData.porousMedia.capillaryPressure)
@@ -53,8 +60,8 @@ classdef MaterialTwoPhaseFlow < handle
             mul = this.liquidFluid.mu;
             mug = this.gasFluid.mu;
             % Compute relative permeability coefficients
-            klr = this.relativePermeability.liquidRelativePermeability(Sl, this.porousMedia);
-            kgr = this.relativePermeability.gasRelativePermeability(Sl, this.porousMedia);
+            klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
+            kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
             % Permeability matrices
             Kl = K * klr / mul;
             Kg = K * kgr / mug;

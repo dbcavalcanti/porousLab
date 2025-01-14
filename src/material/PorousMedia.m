@@ -21,8 +21,9 @@ classdef PorousMedia < handle
         Sgr                  = 0.0;             % Residual gas saturation 
         Pb                   = 0.0;             % Gas-entry pressure (kPa)
         lambda               = 0.0;             % Curve-fitting parameter
-        relativePermeability = 'BrooksCorey';
-        capillaryPressure    = 'BrooksCorey';
+        liqRelPermeability   = 'BrooksCorey';   % Liquid relative permeability
+        gasRelPermeability   = 'BrooksCorey';   % Gas relative permeability
+        capillaryPressure    = 'BrooksCorey';   % Saturation degree function
         gravityOn            = false;           % Flag to consider gravity forces
         g                    = 9.81;            % Gravity accelaration (m/s2)
         b                    = [0.0;-1.0];      % Gravity force direction vector       
@@ -41,7 +42,8 @@ classdef PorousMedia < handle
                 residualLiquidSaturationDegree, ...
                 residualGasSaturationDegree,...
                 gasEntryPressure,curveFittingParameter, ...
-                relativePermeability,capillaryPressure)
+                liqRelPermeability, gasRelPermeability, ...
+                capillaryPressure)
             if nargin > 0
                 this.id                   = id;
                 this.K                    = permeability;
@@ -52,7 +54,8 @@ classdef PorousMedia < handle
                 this.Sgr                  = residualGasSaturationDegree;
                 this.Pb                   = gasEntryPressure;
                 this.lambda               = curveFittingParameter;
-                this.relativePermeability = relativePermeability;
+                this.liqRelPermeability   = liqRelPermeability;
+                this.gasRelPermeability   = gasRelPermeability;
                 this.capillaryPressure    = capillaryPressure;
             end
         end
