@@ -28,6 +28,8 @@ classdef PorousMedia < handle
         g                    = 9.81;            % Gravity accelaration (m/s2)
         b                    = [0.0;-1.0];      % Gravity force direction vector       
         SlPc_umat           = [];
+        klr_umat            = [];
+        kgr_umat            = [];
     end
     properties (SetAccess = protected, GetAccess = public)
         klrmin               = 1.0e-9;          % Minimum liquid relative permeability
@@ -79,7 +81,18 @@ classdef PorousMedia < handle
         end
 
         function setUMATCapillaryPressureCurve(this,curve)
+            curve = sortrows(curve, 2);
             this.SlPc_umat = curve;
+        end
+
+        function setUMATLiquidRelPermCurve(this,curve)
+            curve = sortrows(curve, 1);
+            this.klr_umat = curve;
+        end
+
+        function setUMATGasRelPermCurve(this,curve)
+            curve = sortrows(curve, 1);
+            this.kgr_umat = curve;
         end
     end
 end
