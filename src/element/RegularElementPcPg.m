@@ -113,8 +113,10 @@ classdef RegularElementPcPg < handle
             Hcc = zeros(this.nglp, this.nglp);
             Hcg = zeros(this.nglp, this.nglp);  
             Hgg = zeros(this.nglp, this.nglp);  
-            Sgc = zeros(this.nglp, this.nglp);
             Scc = zeros(this.nglp, this.nglp);
+            Scg = zeros(this.nglp, this.nglp);
+            Sgc = zeros(this.nglp, this.nglp);
+            Sgg = zeros(this.nglp, this.nglp);
             O   = zeros(this.nglp, this.nglp);
 
             % Initialize external force vector
@@ -145,10 +147,10 @@ classdef RegularElementPcPg < handle
                 Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
         
                 % Compute the permeability matrix
-                [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcs(Sl);
+                [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcsPgPc(Sl, pgIP, pcIP);
 
                 % Get compressibility coefficients
-                [cgc,ccc] = this.intPoint(i).constitutiveMdl.compressibilityCoeffsPgPc(pcIP,pgIP);
+                [ccc, ccg, cgc, cgg] = this.intPoint(i).constitutiveMdl.compressibilityCoeffsPgPc(Sl,pcIP,pgIP);
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
@@ -161,11 +163,15 @@ classdef RegularElementPcPg < handle
                 % Compute compressibility matrices
                 if ((this.massLumping) && (this.lumpStrategy == 1))
                     % Row-sum lumping process
-                    Sgc = Sgc + diag(cgc*Np*c);
                     Scc = Scc + diag(ccc*Np*c);
-                else
-                    Sgc = Sgc + Np' * cgc * Np * c;
+                    Scg = Scg + diag(ccg*Np*c);
+                    Sgc = Sgc + diag(cgc*Np*c);
+                    Sgg = Sgg + diag(cgg*Np*c);
+                elseif (this.massLumping == false)
                     Scc = Scc + Np' * ccc * Np * c;
+                    Scg = Scg + Np' * ccg * Np * c;
+                    Sgc = Sgc + Np' * cgc * Np * c;
+                    Sgg = Sgg + Np' * cgg * Np * c;
                 end
 
                 % Compute the gravity forces
@@ -180,15 +186,15 @@ classdef RegularElementPcPg < handle
 
             % Compute the lumped mass matrix
             if ((this.massLumping) && (this.lumpStrategy == 2))
-                [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, pg, vol);
+                [Scc, Scg, Sgc, Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
             end
 
             % Assemble the element matrices
             Ke = [ Hcc, Hcg;
                     O , Hgg ];
 
-            Ce = [ Scc , O;
-                   Sgc , O ];
+            Ce = [ Scc , Scg;
+                   Sgc , Sgg ];
 
             % Assemble element internal force vector
             fi = Ke * this.ue;
@@ -201,7 +207,7 @@ classdef RegularElementPcPg < handle
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
         % Using the OGS strategy
-        function [Scc, Sgc] = lumpedCompressibilityMatrices(this, pc, pg, vol)
+        function [Scc, Scg, Sgc, Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol)
 
             % Shape function matrix
             Np = this.shape.shapeFncMtrx([0.0,0.0]);
@@ -210,15 +216,20 @@ classdef RegularElementPcPg < handle
             pcIP = Np * pc;
             pgIP = Np * pg;
 
+            % Compute the saturation degree at the integration point
+            Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pcIP);
+
             % Get compressibility coefficients
-            [cgc,ccc] = this.intPoint(1).constitutiveMdl.compressibilityCoeffsPgPc(pcIP, pgIP);
+            [ccc, ccg, cgc, cgg] = this.intPoint(1).constitutiveMdl.compressibilityCoeffsPgPc(Sl, pcIP, pgIP);
 
             % Mass distribution factor
             factor = vol / this.nnd_el;
 
             % Compressibility matrices
             Scc = ccc * factor * eye(this.nglp,this.nglp);
+            Scg = ccg * factor * eye(this.nglp,this.nglp);
             Sgc = cgc * factor * eye(this.nglp,this.nglp);
+            Sgg = cgg * factor * eye(this.nglp,this.nglp);
 
         end
 

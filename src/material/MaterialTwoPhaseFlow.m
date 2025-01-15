@@ -32,10 +32,16 @@ classdef MaterialTwoPhaseFlow < handle
                 this.liqRelativePermeability = RelativePermeabilityBrooksCoreyLiquid();
             elseif strcmp('Liakopoulos',matData.porousMedia.liqRelPermeability)
                 this.liqRelativePermeability = RelativePermeabilityLiakopoulosLiquid();
+            elseif strcmp('UMAT',matData.porousMedia.liqRelPermeability)
+                curve = matData.porousMedia.klr_umat;
+                this.liqRelativePermeability = RelativePermeabilityUMAT(curve(:,1),curve(:,2));
             end
             % Gas phase relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.gasRelPermeability)
                 this.gasRelativePermeability = RelativePermeabilityBrooksCoreyGas();
+            elseif strcmp('UMAT',matData.porousMedia.gasRelPermeability)
+                curve = matData.porousMedia.kgr_umat;
+                this.gasRelativePermeability = RelativePermeabilityUMAT(curve(:,1),curve(:,2));
             end
             % Saturation degree relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.capillaryPressure)
@@ -72,8 +78,26 @@ classdef MaterialTwoPhaseFlow < handle
         end
 
         %------------------------------------------------------------------
+        % Compute the permeability matrices
+        function [Kl,Kg] = permeabilityMtrcsPgPc(this,Sl,pg,pc)
+            K = this.porousMedia.intrinsicPermeabilityMatrix();
+            % Get fluids dynamic viscosity
+            mul = this.liquidFluid.mu;
+            mug = this.gasFluid.mu;
+            % Get fluid densities
+            rhol = this.liquidFluid.getDensity(pg-pc);
+            rhog = this.gasFluid.getDensity(pg);
+            % Compute relative permeability coefficients
+            klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
+            kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
+            % Permeability matrices
+            Kl = K * klr / mul;
+            Kg = K * kgr / mug * (rhog / rhol);
+        end
+
+        %------------------------------------------------------------------
         % Compute compressibility coefficients
-        function [cll,cgg,clg,cgl] = compressibilityCoeffs(this,pc,Sl)
+        function [cll, clg, cgl, cgg] = compressibilityCoeffs(this,pc,Sl)
             % Get porous media parameters
             biot = this.porousMedia.biot;
             phi  = this.porousMedia.phi;
@@ -94,7 +118,7 @@ classdef MaterialTwoPhaseFlow < handle
 
         %------------------------------------------------------------------
         % Compute compressibility coefficients
-        function [cgc,ccc] = compressibilityCoeffsPgPc(this,pc,pg)
+        function [ccc, ccg, cgc,cgg] = compressibilityCoeffsPgPc(this,Sl,pc,pg)
             % Get porous media parameters
             phi  = this.porousMedia.phi;
             % Get fluid densities
@@ -102,9 +126,24 @@ classdef MaterialTwoPhaseFlow < handle
             rhog = this.gasFluid.getDensity(pg);
             % Derivative of the liquid saturation degree wrt pc
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
+            % Derivative of the gas density wrt to pg
+            drhogdpg = this.derivativeGasDensityWrtGasPressure(rhog,pg);
             % Compressibility coefficients
-            cgc = -phi * dSldpc * (rhog / rhol);
             ccc =  phi * dSldpc;
+            ccg = 0.0;
+            cgc = -phi * dSldpc * (rhog / rhol);
+            cgg =  phi * (1.0 - Sl) * drhogdpg / rhol;
         end
+        %------------------------------------------------------------------
+        % Compute the derivative of the gas density wrt to the gas pressure
+        function drhogdpg = derivativeGasDensityWrtGasPressure(this,rhog,pg)
+            % Pertubation value
+            pert = sqrt(eps);
+            % Compute the gas density given a pertubation at the gas pressure
+            rhogPert = this.gasFluid.getDensity(pg + pert);
+            % Compute the derivative
+            drhogdpg = (rhogPert - rhog)/(pert);
+        end
+
     end
 end

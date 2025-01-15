@@ -148,7 +148,7 @@ classdef RegularElement < handle
                 [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcs(Sl);
 
                 % Get compressibility coefficients
-                [cll,cgg,clg,cgl] = this.intPoint(i).constitutiveMdl.compressibilityCoeffs(pcIP,Sl);
+                [cll, clg, cgl, cgg] = this.intPoint(i).constitutiveMdl.compressibilityCoeffs(pcIP,Sl);
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
@@ -210,7 +210,7 @@ classdef RegularElement < handle
             pcIP = Np * pc;
 
             % Get compressibility coefficients
-            [cll,cgg,clg,cgl] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP);
+            [cll, clg, cgl, cgg] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP);
 
             % Mass distribution factor
             factor = vol / this.nnd_el;
