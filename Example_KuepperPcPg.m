@@ -70,11 +70,11 @@ water = Fluid('water',1000.0,1.0e-3,1.0e25);
 gas   = Fluid('gas'  ,1630.0,0.9e-3,1.0e25);
 
 % Porous media properties
-% -----------------------  |   K(m2)  | phi | biot|  Ks   | Slr |   Pb   | lambda |  relPerm   |  capPressure
-sand1 = PorousMedia('sand1', 5.04e-10, 0.40,  1.0, 1.0e25, 0.078,0.0, 369.73,   3.86,'BrooksCorey', 'BrooksCorey','BrooksCorey');
-sand2 = PorousMedia('sand2', 2.05e-10, 0.39,  1.0, 1.0e25, 0.069,0.0, 434.45,   3.51,'BrooksCorey', 'BrooksCorey','BrooksCorey');
-sand3 = PorousMedia('sand3', 5.26e-11, 0.39,  1.0, 1.0e25, 0.098,0.0, 1323.95,  2.49,'BrooksCorey', 'BrooksCorey','BrooksCorey');
-sand4 = PorousMedia('sand4', 8.19e-12, 0.41,  1.0, 1.0e25, 0.189,0.0, 3246.15,  3.30,'BrooksCorey', 'BrooksCorey','BrooksCorey');
+% -----------------------  |   K(m2) | phi | biot |  Ks   | Slr | Sgr |   Pb  | lambda | LiqRelPerm |  GasRelPerm  |  capPressure
+sand1 = PorousMedia('sand1', 5.04e-10, 0.40, 1.0,  1.0e25, 0.078, 0.0, 369.73,  3.86,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
+sand2 = PorousMedia('sand2', 2.05e-10, 0.39, 1.0,  1.0e25, 0.069, 0.0, 434.45,  3.51,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
+sand3 = PorousMedia('sand3', 5.26e-11, 0.39, 1.0,  1.0e25, 0.098, 0.0, 1323.95, 2.49,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
+sand4 = PorousMedia('sand4', 8.19e-12, 0.41, 1.0,  1.0e25, 0.189, 0.0, 3246.15, 3.30,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
 
 % Activate gravity
 sand1.gravityOn = true;
@@ -153,7 +153,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
-tf    = 184;  % Final time
+tf    = 184;    % Final time
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
