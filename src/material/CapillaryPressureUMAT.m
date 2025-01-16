@@ -33,23 +33,15 @@ classdef CapillaryPressureUMAT < CapillaryPressure
         % Compute the liquid phase relative permeability
         function Sl = saturationDegree(this, pc, porousMedia)
             Sl = interp1(this.pc_curve,this.Sl_curve,pc,'linear', 'extrap');
-            % Sl = max(min(Sl, 1.0-porousMedia.Sgr), porousMedia.Slr);
-            Sl = max(min(Sl, 1.0-eps), eps);
+            Sl = max(min(Sl, 1.0-porousMedia.Sgr-eps), porousMedia.Slr+eps);
         end
         
         %------------------------------------------------------------------
         % Compute the gas phase relative permeability
         function dSldpc = derivativeSaturationDegree(this, pc, porousMedia)
-            % if (pc > this.pc_curve(1)) || (pc < this.pc_curve(end))
-            %     dSldpc = 0.0;
-            %     return
-            % end
             % Compute the saturation degree at the perturbed values
             Sl = this.saturationDegree(pc, porousMedia);
             dSldpc = this.GetCurveDerivative(Sl);
-            % Sl_back = this.saturationDegree(pc-eps, porousMedia);
-            % Sl_forw = this.saturationDegree(pc+eps, porousMedia);
-            % dSldpc = (Sl_forw - Sl_back)/(2.0*eps);
         end
 
         %------------------------------------------------------------------
