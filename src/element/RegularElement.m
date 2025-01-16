@@ -1,17 +1,11 @@
-%% Element class
+%% RegularElement class
 %
-% This class defines a finite element model (consider a ISOQ4 element)
+% This class defines a finite element of a two-phase flow formulation using
+% the liquid pressure (Pl) and the gas pressure (Pg) as primary
+% variables.
 %
 %% Author
 % Danilo Cavalcanti
-%
-%% History
-% @version 1.00
-%
-% Initial version: December 2022
-%%%
-% Initially prepared for the course CIV 2801 - Fundamentos de Computação
-% Gráfica, 2022, second term, Department of Civil Engineering, PUC-Rio.
 %
 %% Class definition
 classdef RegularElement < handle    
@@ -111,20 +105,21 @@ classdef RegularElement < handle
 
             % Initialize the sub-matrices
             Hll = zeros(this.nglp, this.nglp);
+            Hlg = zeros(this.nglp, this.nglp);
+            Hgl = zeros(this.nglp, this.nglp);
             Hgg = zeros(this.nglp, this.nglp);  
             Sll = zeros(this.nglp, this.nglp);
-            Sgg = zeros(this.nglp, this.nglp);
-            Sgl = zeros(this.nglp, this.nglp);
             Slg = zeros(this.nglp, this.nglp);
-            O   = zeros(this.nglp, this.nglp);
+            Sgl = zeros(this.nglp, this.nglp);
+            Sgg = zeros(this.nglp, this.nglp);
 
             % Initialize external force vector
             fel = zeros(this.nglp, 1);
             feg = zeros(this.nglp, 1);
             
             % Vector of the nodal pore-pressure dofs
-            pl = this.ue(1:this.nglp);
-            pg = this.ue(1+this.nglp:end);
+            pc = this.getNodalCapillaryPressure();
+            pg = this.getNodalGasPressure();
 
             % Initialize the volume of the element
             vol = 0.0;
@@ -138,24 +133,27 @@ classdef RegularElement < handle
                 % Compute the B matrix at the int. point and the detJ
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
-                % Capillary pressure at the integration point
-                pcIP = Np * (pg - pl);
+                % Pressure values at the integration point
+                pcIP = Np * pc;
+                pgIP = Np * pg;
 
                 % Compute the saturation degree at the integration point
                 Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
         
                 % Compute the permeability matrix
-                [kl, kg] = this.intPoint(i).constitutiveMdl.permeabilityMtrcs(Sl);
+                [kll, klg, kgl, kgg] = this.permeabilityTensors(this.intPoint(i),pgIP,pcIP,Sl);
 
                 % Get compressibility coefficients
-                [cll, clg, cgl, cgg] = this.intPoint(i).constitutiveMdl.compressibilityCoeffs(pcIP,Sl);
+                [cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(i),pgIP,pcIP,Sl);
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
         
                 % Compute permeability sub-matrices
-                Hll = Hll + Bp' * kl * Bp * c;
-                Hgg = Hgg + Bp' * kg * Bp * c;
+                Hll = Hll + Bp' * kll * Bp * c;
+                Hlg = Hlg + Bp' * klg * Bp * c;
+                Hgl = Hgl + Bp' * kgl * Bp * c;
+                Hgg = Hgg + Bp' * kgg * Bp * c;
 
                 % Compute compressibility matrices
                 if ((this.massLumping) && (this.lumpStrategy == 1))
@@ -172,7 +170,7 @@ classdef RegularElement < handle
                 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
-                    [fel,feg] = this.addGravityForces(fel,feg,Bp,kl,kg,c);
+                    [fel,feg] = this.addGravityForces(fel,feg,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
                 end
 
                 % Compute the element volume
@@ -181,16 +179,16 @@ classdef RegularElement < handle
 
             % Compute the lumped mass matrix
             if ((this.massLumping) && (this.lumpStrategy == 2))
-                [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pg-pl, vol);
+                [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
             end
 
-            % Assemble the element matrices
-            Ke = [ Hll, O;
-                    O , Hgg ];
+            % Assemble the element permeability
+            Ke = [ Hll, Hlg;
+                   Hgl, Hgg ];
 
+            % Assemble the element compressibility matrix
             Ce = [ Sll , Slg;
                    Sgl , Sgg ];
-
 
             % Assemble element internal force vector
             fi = Ke * this.ue;
@@ -200,21 +198,34 @@ classdef RegularElement < handle
             
         end
 
+        % -----------------------------------------------------------------
+        % Compute the permeability tensors
+        function [kll, klg, kgl, kgg] = permeabilityTensors(~,ip,pg,pc,Sl)
+             [kll, klg, kgl, kgg] = ip.constitutiveMdl.permeabilityMtrcs(Sl,pg-pc,pg);
+        end
+
+        % -----------------------------------------------------------------
+        % Compute the compressibility coefficients
+        function [cll, clg, cgl, cgg] = compressibilityCoeffs(~,ip,pg,pc,Sl)
+             [cll, clg, cgl, cgg] =  ip.constitutiveMdl.compressibilityCoeffs(Sl,pg-pc,pg);
+        end
+
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
-        function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, vol)
+        function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol)
 
             % Shape function matrix
             Np = this.shape.shapeFncMtrx([0.0,0.0]);
 
-            % Capillary pressure at the integration point
+            % Pressure values at the integration point
             pcIP = Np * pc;
+            pgIP = Np * pg;
 
             % Compute the saturation degree at the integration point
             Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pcIP);
 
             % Get compressibility coefficients
-            [cll, clg, cgl, cgg] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP,Sl);
+            [cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(1),pgIP,pcIP,Sl);
 
             % Mass distribution factor
             factor = vol / this.nnd_el;
@@ -229,7 +240,7 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Add contribution of the gravity forces to the external force vct
-        function [fel,feg] = addGravityForces(this,fel,feg,Bp,kl,kg,c)
+        function [fel,feg] = addGravityForces(this,fel,feg,Bp,kl,kg,pl,pg,c)
 
             % Get gravity vector
             grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
@@ -242,6 +253,26 @@ classdef RegularElement < handle
             fel = fel + Bp' * kl * rhol * grav * c;
             feg = feg + Bp' * kg * rhog * grav * c;
             
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the liquid pressure
+        function pl = getNodalLiquidPressure(this)
+            pl = this.ue(1:this.nglp);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the gas pressure
+        function pg = getNodalGasPressure(this)
+            pg = this.ue(1+this.nglp:end);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the capillary pressure
+        function pc = getNodalCapillaryPressure(this)
+            pl = this.getNodalLiquidPressure();
+            pg = this.getNodalGasPressure();
+            pc = pg - pl;
         end
 
         %------------------------------------------------------------------
@@ -262,7 +293,7 @@ classdef RegularElement < handle
             Nm = this.shape.shapeFncMtrx(Xn);
 
             % Get nodal pressures
-            pl = this.ue(1:this.nglp);
+            pl = this.getNodalLiquidPressure();
 
             % capillary field
             p = Nm*pl;
@@ -287,7 +318,7 @@ classdef RegularElement < handle
             Nm = this.shape.shapeFncMtrx(Xn);
 
             % Get nodal pressures
-            pg = this.ue(1+this.nglp:end);
+            pg = this.getNodalGasPressure();
 
             % capillary field
             p = Nm*pg;
@@ -312,11 +343,10 @@ classdef RegularElement < handle
             Nm = this.shape.shapeFncMtrx(Xn);
 
             % Get nodal pressures
-            pl = this.ue(1:this.nglp);
-            pg = this.ue(1+this.nglp:end);
+            pc = this.getNodalCapillaryPressure();
 
             % capillary field
-            p = Nm*(pg - pl);
+            p = Nm*pc;
         
         end
 

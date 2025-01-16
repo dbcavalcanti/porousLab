@@ -64,7 +64,7 @@ classdef MaterialTwoPhaseFlow < handle
 
         %------------------------------------------------------------------
         % Compute the permeability matrices
-        function [Kl,Kg] = permeabilityMtrcs(this,Sl)
+        function [Kll, Klg, Kgl, Kgg] = permeabilityMtrcs(this,Sl,pl,pg)
             K = this.porousMedia.intrinsicPermeabilityMatrix();
             % Get fluids dynamic viscosity
             mul = this.liquidFluid.mu;
@@ -73,31 +73,35 @@ classdef MaterialTwoPhaseFlow < handle
             klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
             kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
             % Permeability matrices
-            Kl = K * klr / mul;
-            Kg = K * kgr / mug;
+            Kll = K * klr / mul;
+            Klg = zeros(2);
+            Kgl = zeros(2);
+            Kgg = K * kgr / mug;
         end
 
         %------------------------------------------------------------------
         % Compute the permeability matrices
-        function [Kl,Kg] = permeabilityMtrcsPgPc(this,Sl,pg,pc)
+        function [Kll, Klg, Kgl, Kgg] = permeabilityMtrcsPgPc(this,Sl,pl,pg)
             K = this.porousMedia.intrinsicPermeabilityMatrix();
             % Get fluids dynamic viscosity
             mul = this.liquidFluid.mu;
             mug = this.gasFluid.mu;
             % Get fluid densities
-            rhol = this.liquidFluid.getDensity(pg-pc);
+            rhol = this.liquidFluid.getDensity(pl);
             rhog = this.gasFluid.getDensity(pg);
             % Compute relative permeability coefficients
             klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
             kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
             % Permeability matrices
-            Kl = K * klr / mul;
-            Kg = K * kgr / mug * (rhog / rhol);
+            Kll = - K * klr / mul;
+            Klg = K * klr / mul;
+            Kgl = zeros(2);
+            Kgg = K * kgr / mug * (rhog / rhol);
         end
 
         %------------------------------------------------------------------
         % Compute compressibility coefficients
-        function [cll, clg, cgl, cgg] = compressibilityCoeffs(this,pc,Sl)
+        function [cll, clg, cgl, cgg] = compressibilityCoeffs(this,Sl,pl,pg)
             % Get porous media parameters
             biot = this.porousMedia.biot;
             phi  = this.porousMedia.phi;
@@ -107,6 +111,8 @@ classdef MaterialTwoPhaseFlow < handle
             Kgb  = this.gasFluid.K;
             % Gas saturation degree
             Sg   = 1.0 - Sl;
+            % Capillary pressure
+            pc = pg - pl;
             % Derivative of the liquid saturation degree wrt pc
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
             % Compressibility coefficients
@@ -118,12 +124,14 @@ classdef MaterialTwoPhaseFlow < handle
 
         %------------------------------------------------------------------
         % Compute compressibility coefficients
-        function [ccc, ccg, cgc,cgg] = compressibilityCoeffsPgPc(this,Sl,pc,pg)
+        function [ccc, ccg, cgc,cgg] = compressibilityCoeffsPgPc(this,Sl,pl,pg)
             % Get porous media parameters
             phi  = this.porousMedia.phi;
             % Get fluid densities
-            rhol = this.liquidFluid.getDensity(pg-pc);
+            rhol = this.liquidFluid.getDensity(pl);
             rhog = this.gasFluid.getDensity(pg);
+            % Capillary pressure
+            pc = pg - pl;
             % Derivative of the liquid saturation degree wrt pc
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
             % Derivative of the gas density wrt to pg
