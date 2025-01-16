@@ -39,11 +39,11 @@ water = Fluid('water',1000.0,1.0e-3,1.0e25);
 gas = IdealGas('gas', 1.8e-5, 1.0e25);
 
 % Create the porous media
-rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'UMAT','BrooksCorey','UMAT');
+rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
 rock.setMinLiquidRelPermeability(0.0001);
 rock.setMinGasRelPermeability(0.0001);
 
-% Set the user material capillary pressure vs. saturation law
+% Set the user material capillary pressure vs. saturation law (NOT BEING USED)
 % --------- Pc  |  Sl
 SlPcUMAT = [
     9938.064, 0.900000007;
@@ -66,7 +66,7 @@ SlPcUMAT = [
        0.000, 1.0];
 rock.setUMATCapillaryPressureCurve(SlPcUMAT);
 
-% Set the user material capillary pressure vs. saturation law
+% Set the user material capillary pressure vs. saturation law (NOT BEING USED)
 % -- Sl  |  klr
 krlUMAT = [
     0.575, 0.00000;

@@ -158,8 +158,8 @@ tf    = 184;    % Final time
 % Solve the problem
 anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
-% anl.setPicardRelaxation();
-anl.useRelativeError = false;
+anl.setPicardRelaxation();
+anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
