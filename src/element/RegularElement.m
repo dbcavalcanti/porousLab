@@ -163,18 +163,20 @@ classdef RegularElement < handle
                     Sgg = Sgg + diag(cgg*Np*c);
                     Slg = Slg + diag(clg*Np*c);
                     Sgl = Sgl + diag(cgl*Np*c);
-                else
+                elseif (this.massLumping == false)
                     Sll = Sll + Np' * cll * Np * c;
                     Sgg = Sgg + Np' * cgg * Np * c;
                     Slg = Slg + Np' * clg * Np * c;
                     Sgl = Sgl + Np' * cgl * Np * c;
                 end
                 
-
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
                     [fel,feg] = this.addGravityForces(fel,feg,Bp,kl,kg,c);
                 end
+
+                % Compute the element volume
+                vol = vol + c;
             end
 
             % Compute the lumped mass matrix
@@ -200,7 +202,6 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
-        % Using the OGS strategy
         function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, vol)
 
             % Shape function matrix
@@ -209,8 +210,11 @@ classdef RegularElement < handle
             % Capillary pressure at the integration point
             pcIP = Np * pc;
 
+            % Compute the saturation degree at the integration point
+            Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pcIP);
+
             % Get compressibility coefficients
-            [cll, clg, cgl, cgg] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP);
+            [cll, clg, cgl, cgg] = this.intPoint(1).constitutiveMdl.compressibilityCoeffs(pcIP,Sl);
 
             % Mass distribution factor
             factor = vol / this.nnd_el;
@@ -313,40 +317,6 @@ classdef RegularElement < handle
 
             % capillary field
             p = Nm*(pg - pl);
-        
-        end
-
-        %------------------------------------------------------------------
-        % Function to compute the body force vector of the element.
-        function Fb = bodyForce(this)
-        
-            Fb = zeros(this.nglp, 1);
-
-            grav = [0.0; -1.0];
-
-            % Numerical integration of the sub-matrices
-            for i = 1:this.nIntPoints
-
-                % Shape function matrix
-                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
-
-                % Compute the B matrix at the int. point and the detJ
-                [~, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-               
-                % Compute the B matrix at the int. point and the detJ
-                Nu = this.shape.NuMtrx(N);
-                
-                % Specific mass of the bulk
-                rhoBulk = this.intPoint(i).constitutiveMdl.rhoBulk();
-                gAcc = this.intPoint(i).constitutiveMdl.gravityAcc();
-
-                % Numerical integration coefficient
-                c = this.intPoint(i).w * detJ * this.t;
-
-                % Numerical integration of the internal force vector
-                Fb = Fb + Nu' *grav * rhoBulk * gAcc * c;
-
-            end
         
         end
 
