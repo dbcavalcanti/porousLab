@@ -45,6 +45,8 @@ classdef RegularElementPcPg < RegularElement
             rhol = this.mat.liquidFluid.getDensity(pl);
             rhog = this.mat.gasFluid.getDensity(pg);
 
+            kl = -kl;
+
             % Compute the contribution of the gravitational forces
             fec = fec + Bp' * kl * rhol * grav * c;
             feg = feg + Bp' * kg * rhog * grav * c * (rhog/rhol);
