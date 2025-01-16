@@ -34,6 +34,8 @@ classdef CapillaryPressureUMAT < CapillaryPressure
         function Sl = saturationDegree(this, pc, porousMedia)
             Sl = interp1(this.pc_curve,this.Sl_curve,pc,'linear', 'extrap');
             Sl = max(min(Sl, 1.0-porousMedia.Sgr-eps), porousMedia.Slr+eps);
+            % Smax = max(this.Sl_curve);
+            % Sl = max(min(Sl, Smax-eps), eps);
         end
         
         %------------------------------------------------------------------
