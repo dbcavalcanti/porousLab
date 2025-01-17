@@ -418,7 +418,7 @@ classdef Model < handle
 
             % Add contribution of the nodal forces to the external force
             % vector
-            Fe = Fe + this.addNodalLoad(this.F);
+            Fe = Fe + this.addNodalLoad(Fe);
 
         end
 
@@ -539,9 +539,9 @@ classdef Model < handle
             this.updateResultVertexData(fieldPlot)
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.mesh();
-            % clim([0.0 10]); % set your range here
+%             clim([0.0 0.8]); % set your range here
             c = colorbar;
-            % set(c,'Limits',[0.0 10])
+%             set(c,'Limits',[0.0 0.8])
 
         end
 
@@ -621,7 +621,13 @@ classdef Model < handle
                         vertexData(i) = p;
                     elseif strcmp(type,'GasPressure')
                         p = this.element(el).type.gasPressureField(X);
-                        vertexData(i) = p;    
+                        vertexData(i) = p;
+                    elseif strcmp(type,'LiquidSaturation')
+                        Sl = this.element(el).type.liquidSaturationField(X);
+                        vertexData(i) = Sl;
+                    elseif strcmp(type,'GasSaturation')
+                        Sg = this.element(el).type.gasSaturationField(X);
+                        vertexData(i) = Sg;
                     elseif strcmp(type,'Ux')
                         u = this.element(el).type.displacementField(X);
                         vertexData(i) = u(1);

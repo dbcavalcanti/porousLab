@@ -350,6 +350,49 @@ classdef RegularElement < handle
         
         end
 
+        %------------------------------------------------------------------
+        % Function to compute the liquid saturation field inside a given element
+        function Sl = liquidSaturationField(this,X,ue)
+
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % Capillary pressure at the given point
+            pc = Nm*this.getNodalCapillaryPressure();
+
+            % Compute the liquid saturation degree
+            Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pc);
+        
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the gas saturation field inside a given element
+        function Sg = gasSaturationField(this,X,ue)
+            
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % Capillary pressure at the given point
+            pc = Nm*this.getNodalCapillaryPressure();
+
+            % Compute the liquid saturation degree
+            Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pc);
+
+            % Gas saturation degree
+            Sg = 1.0 - Sl;
+        
+        end
+
         % -----------------------------------------------------------------
         % Function to update the state variables
         function updateStateVar(this)
