@@ -91,7 +91,6 @@ classdef Anl_TransientPicard < Anl
 
                         % Solve linear system
                         X(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
-%                         X(mdl.doffree) = bicg(A(mdl.doffree,mdl.doffree), b(mdl.doffree), 1.0e-12, 2000);
                         if (this.applyRelax)
                             if (iter > 1)
                                 this.computePicardRelaxation(X, XOld, DX);

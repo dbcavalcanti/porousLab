@@ -30,6 +30,7 @@ classdef PorousMedia < handle
         SlPc_umat           = [];
         klr_umat            = [];
         kgr_umat            = [];
+        m                   = 1;                % Expoent for the polynomial relationships
     end
     properties (SetAccess = protected, GetAccess = public)
         klrmin               = 1.0e-9;          % Minimum liquid relative permeability

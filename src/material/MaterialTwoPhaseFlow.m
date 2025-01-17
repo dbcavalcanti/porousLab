@@ -32,6 +32,8 @@ classdef MaterialTwoPhaseFlow < handle
                 this.liqRelativePermeability = RelativePermeabilityBrooksCoreyLiquid();
             elseif strcmp('Liakopoulos',matData.porousMedia.liqRelPermeability)
                 this.liqRelativePermeability = RelativePermeabilityLiakopoulosLiquid();
+            elseif strcmp('PolynomialLiquid',matData.porousMedia.liqRelPermeability)
+                this.liqRelativePermeability = RelativePermeabilityPolynomialLiquid();
             elseif strcmp('UMAT',matData.porousMedia.liqRelPermeability)
                 curve = matData.porousMedia.klr_umat;
                 this.liqRelativePermeability = RelativePermeabilityUMAT(curve(:,1),curve(:,2));
@@ -39,11 +41,13 @@ classdef MaterialTwoPhaseFlow < handle
             % Gas phase relative permeability function
             if strcmp('BrooksCorey',matData.porousMedia.gasRelPermeability)
                 this.gasRelativePermeability = RelativePermeabilityBrooksCoreyGas();
+            elseif strcmp('PolynomialGas',matData.porousMedia.gasRelPermeability)
+                this.gasRelativePermeability = RelativePermeabilityPolynomialGas();
             elseif strcmp('UMAT',matData.porousMedia.gasRelPermeability)
                 curve = matData.porousMedia.kgr_umat;
                 this.gasRelativePermeability = RelativePermeabilityUMAT(curve(:,1),curve(:,2));
             end
-            % Saturation degree relative permeability function
+            % Saturation degree function
             if strcmp('BrooksCorey',matData.porousMedia.capillaryPressure)
                 this.capillaryPressure = CapillaryPressureBrooksCorey();
             elseif strcmp('UMAT',matData.porousMedia.capillaryPressure)
