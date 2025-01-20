@@ -16,6 +16,9 @@ classdef Model < handle
         t                   = 1.0;           % Thickness
         mat                 = [];            % Vector with material properties
         type                = 'ISOQ4';       % Typf of element used
+        SUPP_u              = [];            % Matrix with support conditions
+        LOAD_u              = [];            % Matrix with load conditions
+        PRESCDISPL_u        = [];            % With with prescribed displacements
         SUPP_p              = [];            % Matrix with support conditions
         LOAD_p              = [];            % Matrix with load conditions
         PRESCDISPL_p        = [];            % With with prescribed displacements
@@ -34,14 +37,17 @@ classdef Model < handle
         ndof                = 1;             % Number of regular degrees of freedom
         ndoffree            = 0;             % Number of free degrees of freedom
         ndoffixed           = 0;             % Number of fixed degrees of freedom
+        uDof                = [];            % Vector with the pressure regular dofs
         pDof                = [];            % Vector with the pressure regular dofs
         pgDof               = [];            % Vector with the pressure regular dofs
+        uFreeDof            = [];            % Vector with the pressure regular dofs
         pFreeDof            = [];            % Vector with the pressure regular dofs
         pgFreeDof           = [];            % Vector with the pressure regular dofs
         Dof                 = [];            % Vector with all regular dofs
         ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs (DX, DY)
+        GLU                 = [];            % Matrix with the regular dof of each element
         GLP                 = [];            % Matrix with the regular dof of each element
-        GLPg                 = [];           % Matrix with the regular dof of each element
+        GLPg                = [];           % Matrix with the regular dof of each element
         F                   = [];            % Global force vector
         U                   = [];            % Global displacement vector
         element             = [];            % Array with the element's objects
@@ -112,8 +118,14 @@ classdef Model < handle
         function initializeBasicVariables(this)
             this.nnodes     = size(this.NODE,1);
             this.nelem      = size(this.ELEM,1);     
-            this.nnd_el     = size(this.ELEM,2);    
-            this.ndof_nd    = 2;               
+            this.nnd_el     = size(this.ELEM,2);
+            if strcmp(this.physics,'H2')||strcmp(this.physics,'H2_PcPg')
+                this.ndof_nd = 2;  
+            elseif strcmp(this.physics,'H2M')
+                this.ndof_nd = 4;  
+            elseif strcmp(this.physics,'TH2M')
+                this.ndof_nd = 5; 
+            end               
             this.ndof       = this.ndof_nd * this.nnodes; 
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -129,7 +141,11 @@ classdef Model < handle
             this.ID = zeros(this.nnodes,this.ndof_nd);
             this.ndoffixed = 0;
 
-            SUPP = [this.SUPP_p , this.SUPP_pg];
+            if (strcmp(this.physics,'H2')||strcmp(this.physics,'H2_PcPg'))
+                SUPP = [this.SUPP_p , this.SUPP_pg];
+            elseif strcmp(this.physics,'H2M')
+                SUPP = [this.SUPP_u ,this.SUPP_p , this.SUPP_pg];  
+            end
             
             % Assemble the ID matrix
             for i = 1:this.nnodes
@@ -167,26 +183,58 @@ classdef Model < handle
         %------------------------------------------------------------------
         function assembleElementsRegularDofs(this)
 
-            this.GLP = zeros(this.nelem, this.nnd_el);
-            for el = 1:this.nelem
-                this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),1)',1,...
-                    this.nnd_el);
+            if strcmp(this.physics,'H2')||strcmp(this.physics,'H2_PcPg')
+
+                this.GLP = zeros(this.nelem, this.nnd_el);
+                for el = 1:this.nelem
+                    this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),1)',1,...
+                        this.nnd_el);
+                end
+                this.GLPg = zeros(this.nelem, this.nnd_el);
+                for el = 1:this.nelem
+                    this.GLPg(el,:) = reshape(this.ID(this.ELEM(el,:),2)',1,...
+                        this.nnd_el);
+                end
+                % Vector with all regular dofs
+                this.pDof = unique(this.GLP);
+                this.pgDof = unique(this.GLPg);
+                this.Dof  = [this.pDof(:); this.pgDof(:)];
+    
+                % Vector will free regular dofs
+                this.pFreeDof  = intersect(this.pDof,this.doffree);
+                this.pgFreeDof = intersect(this.pgDof,this.doffree);
+
+            elseif strcmp(this.physics,'H2M')
+
+                this.GLU = zeros(this.nelem, this.nnd_el*2);
+                for el = 1:this.nelem
+                    this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
+                        this.nnd_el*2);
+                end
+                this.GLP = zeros(this.nelem, this.nnd_el);
+                for el = 1:this.nelem
+                    this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),3)',1,...
+                        this.nnd_el);
+                end
+                this.GLPg = zeros(this.nelem, this.nnd_el);
+                for el = 1:this.nelem
+                    this.GLPg(el,:) = reshape(this.ID(this.ELEM(el,:),4)',1,...
+                        this.nnd_el);
+                end
+
+                % Vector with all regular dofs
+                this.uDof = unique(this.GLU);
+                this.pDof = unique(this.GLP);
+                this.pgDof = unique(this.GLPg);
+                this.Dof  = [this.uDof(:); this.pDof(:); this.pgDof(:)];
+    
+                % Vector will free regular dofs
+                this.uFreeDof  = intersect(this.uDof,this.doffree);
+                this.pFreeDof  = intersect(this.pDof,this.doffree);
+                this.pgFreeDof = intersect(this.pgDof,this.doffree);
             end
 
-            this.GLPg = zeros(this.nelem, this.nnd_el);
-            for el = 1:this.nelem
-                this.GLPg(el,:) = reshape(this.ID(this.ELEM(el,:),2)',1,...
-                    this.nnd_el);
-            end
-
-            % Vector with all regular dofs
-            this.pDof = unique(this.GLP);
-            this.pgDof = unique(this.GLPg);
-            this.Dof  = [this.pDof(:); this.pgDof(:)];
-
-            % Vector will free regular dofs
-            this.pFreeDof  = intersect(this.pDof,this.doffree);
-            this.pgFreeDof = intersect(this.pgDof,this.doffree);
+            
         end
 
         %------------------------------------------------------------------
@@ -201,15 +249,20 @@ classdef Model < handle
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'liquidFluid',this.mat.liquidFluid,...
                         'gasFluid',this.mat.gasFluid);
-                if strcmp(this.physics,'hydraulicTwoPhase')
+                if strcmp(this.physics,'H2')
                     elements(el) = RegularElement_H2(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
-                elseif strcmp(this.physics,'hydraulicTwoPhasePcPg')
+                elseif strcmp(this.physics,'H2_PcPg')
                     elements(el) = RegularElement_H2_PcPg(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                elseif strcmp(this.physics,'H2M')
+                    elements(el) = RegularElement_H2M(...
+                            this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
+                            this.t, emat, this.intOrder,this.GLU(el,:),this.GLP(el,:),this.GLPg(el,:), ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 end
                 

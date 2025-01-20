@@ -13,13 +13,16 @@ classdef PorousMedia < handle
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         id                   = '';
+        Young                = [];              % Young modulus (Pa)
+        nu                   = [];              % Poisson ratio
+        rho                  = [];              % Density (kg/m3)
         K                    = 0.0;             % Intrinsic permeability (m2)  
         phi                  = 0.0;             % Porosity
         biot                 = 0.0;             % Biot's coefficient
-        Ks                   = 1.0e25;          % Solid bulk modulus (kPa)
+        Ks                   = 1.0e25;          % Solid bulk modulus (Pa)
         Slr                  = 0.0;             % Residual liquid saturation
         Sgr                  = 0.0;             % Residual gas saturation 
-        Pb                   = 0.0;             % Gas-entry pressure (kPa)
+        Pb                   = 0.0;             % Gas-entry pressure (Pa)
         lambda               = 0.0;             % Curve-fitting parameter
         liqRelPermeability   = 'BrooksCorey';   % Liquid relative permeability
         gasRelPermeability   = 'BrooksCorey';   % Gas relative permeability
@@ -94,6 +97,15 @@ classdef PorousMedia < handle
         function setUMATGasRelPermCurve(this,curve)
             curve = sortrows(curve, 1);
             this.kgr_umat = curve;
+        end
+
+        function setMechanicalProperties(this,E,nu)
+            this.Young = E;
+            this.nu = nu;
+        end
+
+        function setDensity(this,rho)
+            this.rho = rho;
         end
     end
 end

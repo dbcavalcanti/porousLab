@@ -18,7 +18,7 @@ initWorkspace;
 mdl = Model();
 
 % --- Physics -------------------------------------------------------------
-mdl.physics = 'hydraulicTwoPhase';
+mdl.physics = 'H2';
 
 % --- Mesh of continuum elements ------------------------------------------
 

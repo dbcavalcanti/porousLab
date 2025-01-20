@@ -13,7 +13,7 @@ initWorkspace;
 mdl = Model();
 
 % --- Physics -------------------------------------------------------------
-mdl.physics = 'H2';
+mdl.physics = 'H2_PcPg';
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -59,16 +59,16 @@ mdl.mat  = struct( ...
 % In case it is prescribed a pressure value different than zero, don't 
 % forget also that you need to constraint these degrees of freedom.
 
-% Liq pressure boundary conditions
+% Capillary pressure boundary conditions
 CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
 CoordLoad  = [];                      % [q cx cy] If cx,cy<0, line [m3/s]
-CoordPresc = [200000.0 0 -1];      % [p cx cy] If cx,cy<0, line [kPa]
+CoordPresc = [0.230769231 0 -1];      % [p cx cy] If cx,cy<0, line [kPa]
 CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
            
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 200000.0*ones(size(mdl.INITCOND_p,1),1);
+mdl.INITCOND_p = 3.0*ones(size(mdl.INITCOND_p,1),1);
 
 % Gas pressure boundary conditions
 CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
@@ -115,8 +115,9 @@ dtmin = 0.1*day;          % Minimum time step
 
 % Solve the problem
 anl = Anl_TransientPicard(result);
+% anl = Anl_Transient(result);
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-% anl.setPicardRelaxation();
+anl.setPicardRelaxation();
 anl.useRelativeError = false;
 anl.process(mdl);
 

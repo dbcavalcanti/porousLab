@@ -41,8 +41,7 @@ classdef Anl_Transient < Anl
             % Initialize solution vector
             XOld = mdl.U;
             X    = XOld;
-            dX   = zeros(size(XOld,1),1);
-            DX   = dX;
+            DX   = zeros(size(XOld,1),1);
 
             % Initialize the output vectors
             this.result.time = zeros(maxSteps,1);
@@ -60,7 +59,7 @@ classdef Anl_Transient < Anl
                 % Iterative solution
                 convFlg = false;
                 attemptOld = attempt;
-                attempt    = 1;
+                attempt = 1;
                 
                 while attempt < this.maxAttempts
 

@@ -28,7 +28,7 @@ initWorkspace;
 mdl = Model();
 
 % --- Physics -------------------------------------------------------------
-mdl.physics = 'hydraulicTwoPhasePcPg';
+mdl.physics = 'H2_PcPg';
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -161,10 +161,10 @@ dtmax = 20.0;
 dtmin = 0.01;
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient(result);
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = true;
+% anl.setPicardRelaxation();
+% anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

@@ -13,7 +13,7 @@ initWorkspace;
 mdl = Model();
 
 % --- Physics -------------------------------------------------------------
-mdl.physics = 'hydraulicTwoPhasePcPg';
+mdl.physics = 'H2_PcPg';
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -77,7 +77,7 @@ CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
 % --- Order of the integration rule for the domain ------------------------
 
 % Using Gauss quadrature
-mdl.intOrder = 3;
+mdl.intOrder = 2;
 
 % Diagonalize compressibility matrix
 mdl.massLumping = true;
@@ -105,10 +105,10 @@ dt    = 0.1;   % Time step
 tf    = 50;  % Final time
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
+anl = Anl_Transient(result);
+anl.setUpTransientSolver(tinit,dt,tf,5.0,0.0000001,true);
 % anl.setPicardRelaxation();
-anl.useRelativeError = false;
+% anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
