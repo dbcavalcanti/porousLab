@@ -7,11 +7,11 @@
 % storage–code comparison for fluid flow and geomechanical processes.
 % Energy Procedia, 37, 3663-3671.
 %
+%% References to similar problems
+%
 % Graupner, B. J., Li, D., & Bauer, S. (2011). The coupled simulator 
 % ECLIPSE–OpenGeoSys for the simulation of CO2 storage in saline 
 % formations. Energy Procedia, 4, 3794-3800.
-%
-%% References to similar problems
 %
 % Class, H., Ebigbo, A., Helmig, R. et al.
 % A benchmark study on problems related to CO2 storage in geologic
@@ -46,11 +46,11 @@ mdl.physics = 'hydraulicTwoPhasePcPg';
 % Mesh properties
 Lx = 200.0;      % Horizontal dimension (m)
 Ly = 6.0;       % Vertical dimension (m)
-Nx = 200;         % Number of elements in the x-direction
-Ny = 20;          % Number of elements in the y-direction
+Nx = 30;         % Number of elements in the x-direction
+Ny = 60;          % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny,[],[],'ISOQ4',true,false);
 
 % Type of elements
 mdl.type = 'ISOQ4';
@@ -101,7 +101,7 @@ mdl.INITCOND_p = 1.0e4*ones(size(mdl.INITCOND_p,1),1);
 
 % Gas pressure boundary conditions
 day = 60 * 60 * 24;
-qinj = (1600 / day) * Ly / (Ny + 1);
+qinj = (1.0 / day) * Ly / (Ny + 1);
 CoordSupp  = [1 Lx -1];      % Fix the pressure at the right border        
 CoordLoad  = [qinj 0 -1];                     
 CoordPresc = [];         
@@ -142,7 +142,7 @@ mdl.preComputations();
 
 % Plot the mesh with the supports
 % mdl.plotMeshWithBC();
-% mdl.plotField('LiquidSaturation');
+mdl.plotField('LiquidSaturation');
 % mdl.plotField('GasSaturation');
 
 % Create the result object for the analysis
@@ -153,10 +153,10 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Transient analysis parameters
-tinit = 0.001*day;   % Initial time
-dt    = 0.001*day;   % Time step
-tf    = 100*day;  % Final time
-dtmax = 1.0e1*day;
+tinit = 0.05*day;   % Initial time
+dt    = 0.05*day;   % Time step
+tf    = 41*day;  % Final time
+dtmax = 0.1*day;
 dtmin = 1.0e-3*day;
 
 % Solve the problem

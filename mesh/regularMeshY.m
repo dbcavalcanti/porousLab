@@ -1,4 +1,4 @@
-function [Node,ELEM] = regularMeshY(Lx,Ly,Nx,Ny,xo,yo,type)
+function [Node,ELEM] = regularMeshY(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 % -------------------------------------------------------------------------
 % This function generates a regular finite element mesh with quadrilateral
 % elements.
@@ -17,10 +17,24 @@ function [Node,ELEM] = regularMeshY(Lx,Ly,Nx,Ny,xo,yo,type)
 
 if nargin < 5, xo = []; yo = []; end
 if nargin < 7, type = 'Q4'; end
+if nargin < 9, quadDistrX = false; quadDistrY = false; end
 
 % Generate the NODE matrix
-xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
-ycoord = getUniquePoints(linspace(0,Ly,Ny+1),yo, 0.2*Ly/Ny);
+if quadDistrX == false
+    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
+else
+    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.2*Lx/Nx);
+    xcoord = xcoord.^2;
+    xcoord = xcoord * Lx;
+end
+if quadDistrY == false
+    ycoord = getUniquePoints(linspace(0,Ly,Ny+1),yo, 0.2*Ly/Ny);
+else
+    ycoord = getUniquePoints(linspace(0,1,Ny+1),yo, 0.2*Ly/Ny);
+    ycoord = ycoord.^2;
+    ycoord = ycoord * Ly;
+end
+
 Nx = length(xcoord) - 1;
 Ny = length(ycoord) - 1;
 [Y,X]= meshgrid(ycoord,xcoord);
