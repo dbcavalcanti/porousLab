@@ -50,6 +50,7 @@ classdef Model < handle
         matID               = [];            % Vector with the material id of each element
         massLumping         = false;
         lumpStrategy        = 1;
+        isAxisSymmetric     = false;
     end
     
     %% Constructor method
@@ -204,12 +205,12 @@ classdef Model < handle
                     elements(el) = RegularElement(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
-                            this.massLumping, this.lumpStrategy);
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 elseif strcmp(this.physics,'hydraulicTwoPhasePcPg')
                     elements(el) = RegularElementPcPg(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
-                            this.massLumping, this.lumpStrategy);
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 end
                 
                 elements(el).type.initializeIntPoints();

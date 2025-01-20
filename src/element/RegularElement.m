@@ -33,13 +33,14 @@ classdef RegularElement < handle
         isEnriched = false;         % Flag to check if the element is enriched
         massLumping = false;        % Flag to apply a diagonalization of the compressibility matrix
         lumpStrategy = 1;
+        isAxisSymmetric = false;
     end
     
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = RegularElement(type, node, elem, t, ...
-                mat, intOrder, glp, glpg, massLumping, lumpStrategy)
+                mat, intOrder, glp, glpg, massLumping, lumpStrategy,isAxisSymmetric)
             if (nargin > 0)
                 if strcmp(type,'ISOQ4')
                     this.shape = Shape_ISOQ4();
@@ -66,6 +67,7 @@ classdef RegularElement < handle
                 this.ngle     = length(this.gle);
                 this.massLumping = massLumping;
                 this.lumpStrategy = lumpStrategy;
+                this.isAxisSymmetric = isAxisSymmetric;
                 order = this.sortCounterClockWise(this.node);
                 this.result   = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
             end
@@ -148,6 +150,9 @@ classdef RegularElement < handle
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                end
         
                 % Compute permeability sub-matrices
                 Hll = Hll + Bp' * kll * Bp * c;

@@ -13,9 +13,11 @@ classdef RegularElementPcPg < RegularElement
     methods
         %------------------------------------------------------------------
         function this = RegularElementPcPg(type, node, elem, t, ...
-                mat, intOrder, glp, glpg, massLumping, lumpStrategy)
+                mat, intOrder, glp, glpg, massLumping, lumpStrategy, ...
+                isAxisSymmetric)
             this = this@RegularElement(type, node, elem, t, ...
-                mat, intOrder, glp, glpg, massLumping, lumpStrategy);
+                mat, intOrder, glp, glpg, massLumping, lumpStrategy, ...
+                isAxisSymmetric);
         end
     end
     

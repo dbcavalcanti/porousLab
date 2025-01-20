@@ -47,13 +47,14 @@ mdl.physics = 'hydraulicTwoPhasePcPg';
 Lx = 200.0;      % Horizontal dimension (m)
 Ly = 6.0;       % Vertical dimension (m)
 Nx = 200;         % Number of elements in the x-direction
-Ny = 10;          % Number of elements in the y-direction
+Ny = 20;          % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
 % Type of elements
 mdl.type = 'ISOQ4';
+mdl.isAxisSymmetric = true;
 
 % Thickness (m)
 mdl.t = 1.0;
@@ -67,8 +68,8 @@ co2   = Fluid('co2'  ,848.0,8.1e-5,1.0e25);
 % Porous media properties
 % --------------------------   |   K(m2) | phi | biot |  Ks   | Slr | Sgr |   Pb  | lambda | LiqRelPerm |  GasRelPerm  |  capPressure
 aquifer = PorousMedia('aquifer', 3.0e-12 , 0.26 , 1.0 , 1.0e25 , 0.35 , 0.0 , 1.0e4 , 2.0 , 'BrooksCorey', 'BrooksCorey','BrooksCorey');
-aquifer.setMinLiquidRelPermeability(1.0e-5);
-aquifer.setMinGasRelPermeability(1.0e-5);
+aquifer.setMinLiquidRelPermeability(1.0e-9);
+aquifer.setMinGasRelPermeability(1.0e-9);
 
 % Activate gravity
 aquifer.gravityOn = true;
@@ -87,11 +88,27 @@ mdl.mat  = struct( ...
 % Capillary pressure boundary conditions
 CoordSupp  = [1 Lx -1];    % Fix the pressure at the right border         
 CoordLoad  = []; 
-CoordPresc = [];
+CoordPresc = [1.0e4 Lx -1];
 CoordInit  = [];
            
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
+    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+
+% The aquifer is initially saturated with brine. Then, the capillary
+% pressure is set to be equal to the gas entry pressure
+mdl.INITCOND_p = 1.0e4*ones(size(mdl.INITCOND_p,1),1);
+
+% Gas pressure boundary conditions
+day = 60 * 60 * 24;
+qinj = (1600 / day) * Ly / (Ny + 1);
+CoordSupp  = [1 Lx -1];      % Fix the pressure at the right border        
+CoordLoad  = [qinj 0 -1];                     
+CoordPresc = [];         
+CoordInit  = [];
+           
+% Define supports and loads
+[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
 % Set hydrostatic pressure 
@@ -101,23 +118,12 @@ grav   = 9.81;           % Gravity acceleration (m/s2)
 for i = 1:size(mdl.NODE,1)
     h = depth0 - mdl.NODE(i,2);
     pl = grav * brine.rho * h;
-    mdl.INITCOND_p(i) = -pl;
-    if (mdl.NODE(i,1) == Lx)
-        mdl.PRESCDISPL_p(i) = -pl;
+    pc = 1.0e4;
+    mdl.INITCOND_pg(i) = pc + pl;
+    if (mdl.SUPP_pg(i) == 1)
+        mdl.PRESCDISPL_pg(i) = pc + pl;
     end
 end
-
-% Gas pressure boundary conditions
-day = 60 * 60 * 24;
-qinj = 1600 / day;
-CoordSupp  = [1 Lx -1];      % Fix the pressure at the right border        
-CoordLoad  = [qinj 0 -1];                     
-CoordPresc = [];         
-CoordInit  = [];
-           
-% Define supports and loads
-[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
 % --- Order of the integration rule for the domain ------------------------
 
@@ -136,6 +142,8 @@ mdl.preComputations();
 
 % Plot the mesh with the supports
 % mdl.plotMeshWithBC();
+% mdl.plotField('LiquidSaturation');
+% mdl.plotField('GasSaturation');
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -145,8 +153,8 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Transient analysis parameters
-tinit = 0.1*day;   % Initial time
-dt    = 0.1*day;   % Time step
+tinit = 0.001*day;   % Initial time
+dt    = 0.001*day;   % Time step
 tf    = 100*day;  % Final time
 dtmax = 1.0e1*day;
 dtmin = 1.0e-3*day;
@@ -154,7 +162,7 @@ dtmin = 1.0e-3*day;
 % Solve the problem
 anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-% anl.setPicardRelaxation();
+anl.setPicardRelaxation();
 anl.useRelativeError = true;
 anl.process(mdl);
 

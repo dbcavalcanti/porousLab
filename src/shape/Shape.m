@@ -68,5 +68,10 @@ classdef Shape < handle
             [xc,yc] = centroid(polyin);
             Xc = [xc yc];
         end
+
+        function af = axisSymmetricFactor(~,N,X)
+            r = N*X(:,1);
+            af = 2.0 * r * pi;
+        end
     end
 end
