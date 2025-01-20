@@ -14,10 +14,12 @@ TwoPhaseFlowFEMLab is a MATLAB program for performing numerical simulation of tw
   - Brooks and Corey
   - User-defined law (UMAT)
   - Liakopoulos
+  - Polynomial
 
 ### Gas relative permeability
   - Brooks and Corey
   - User-defined law (UMAT)
+  - Polynomial
 
 ## Nonlinear solvers
   - Newton-Raphson
