@@ -39,6 +39,24 @@ classdef RegularElement_H2 < RegularElement
     methods
 
         %------------------------------------------------------------------
+        % Initialize the elements integration points
+        function initializeIntPoints(this)
+
+            % Get integration points coordinates and weights
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+
+            % Initialize the integration points objects
+            
+            intPts(this.nIntPoints,1) = IntPoint();
+            for i = 1:this.nIntPoints
+                constModel = Material_H2(this.mat);
+                intPts(i) = IntPoint(X(:,i),w(i), constModel);
+            end
+            this.intPoint = intPts;
+
+        end
+
+        %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
         %
         % Output:

@@ -66,24 +66,6 @@ classdef RegularElement < handle
     %% Public methods
     methods
 
-        %------------------------------------------------------------------
-        % Initialize the elements integration points
-        function initializeIntPoints(this)
-
-            % Get integration points coordinates and weights
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
-
-            % Initialize the integration points objects
-            
-            intPts(this.nIntPoints,1) = IntPoint();
-            for i = 1:this.nIntPoints
-                constModel = MaterialTwoPhaseFlow(this.mat);
-                intPts(i) = IntPoint(X(:,i),w(i), constModel);
-            end
-            this.intPoint = intPts;
-
-        end
-
         % -----------------------------------------------------------------
         % Function to update the state variables
         function updateStateVar(this)

@@ -9,7 +9,7 @@
 % @version 1.00
 %
 %% Class definition
-classdef MaterialTwoPhaseFlow < handle    
+classdef Material_H2 < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         liqRelativePermeability = [];
@@ -23,7 +23,7 @@ classdef MaterialTwoPhaseFlow < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = MaterialTwoPhaseFlow(matData)
+        function this = Material_H2(matData)
             this.liquidFluid = matData.liquidFluid;
             this.gasFluid    = matData.gasFluid;
             this.porousMedia = matData.porousMedia;
