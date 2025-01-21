@@ -57,7 +57,6 @@ classdef RegularElement_H2M < RegularElement
             [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
 
             % Initialize the integration points objects
-            
             intPts(this.nIntPoints,1) = IntPoint();
             for i = 1:this.nIntPoints
                 constModel = Material_H2M(this.mat);
@@ -193,18 +192,30 @@ classdef RegularElement_H2M < RegularElement
                 [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
             end
 
+            % % Assemble the element permeability
+            % Ke = [ Kuu , -Qul', -Qug'; 
+            %        Opu ,  Hll , Hlg;
+            %        Opu ,  Hgl , Hgg ];
+            % 
+            % % Assemble the element compressibility matrix
+            % Ce = [ Ouu , Opu', Opu';
+            %        Qul , Sll , Slg ;
+            %        Qug , Sgl , Sgg ];
+
             % Assemble the element permeability
-            Ke = [ Kuu , -Qul', -Qug'; 
+            Ke = [ Ouu ,  Opu', Opu'; 
                    Opu ,  Hll , Hlg;
                    Opu ,  Hgl , Hgg ];
 
             % Assemble the element compressibility matrix
-            Ce = [ Ouu , Opu', Opu';
-                   Qul , Sll , Slg ;
-                   Qug , Sgl , Sgg ];
+            Ce = [ -Kuu , Qul', Qug';
+                    Qul , Sll , Slg ;
+                    Qug , Sgl , Sgg ];
+
 
             % Add contribution of the pressure to the internal force vector
-            fiu = fiu - Qul' * pl - Qug' * pg;
+            % fiu = fiu - Qul' * pl - Qug' * pg;
+            fiu = -fiu + Qul' * pl + Qug' * pg;
             fil = Hll * pl + Hlg * pg;
             fig = Hgl * pl + Hgg * pg;
 
@@ -212,7 +223,8 @@ classdef RegularElement_H2M < RegularElement
             fi = [fiu; fil; fig];
 
             % Assemble element external force vector
-            fe = [feu; fel; feg];
+            % fe = [feu; fel; feg];
+            fe = [-feu; fel; feg];
             
         end
 
