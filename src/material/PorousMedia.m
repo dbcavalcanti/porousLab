@@ -27,6 +27,7 @@ classdef PorousMedia < handle
         liqRelPermeability   = 'BrooksCorey';   % Liquid relative permeability
         gasRelPermeability   = 'BrooksCorey';   % Gas relative permeability
         capillaryPressure    = 'BrooksCorey';   % Saturation degree function
+        mechanical           = 'elastic';       % Mechanical constitutive law
         gravityOn            = false;           % Flag to consider gravity forces
         g                    = 9.81;            % Gravity accelaration (m/s2)
         b                    = [0.0;-1.0];      % Gravity force direction vector       
@@ -99,6 +100,10 @@ classdef PorousMedia < handle
             this.kgr_umat = curve;
         end
 
+        function setMechanicalConstitutiveLaw(this,law)
+            this.mechanical = law;
+        end
+
         function setMechanicalProperties(this,E,nu)
             this.Young = E;
             this.nu = nu;
@@ -106,6 +111,10 @@ classdef PorousMedia < handle
 
         function setDensity(this,rho)
             this.rho = rho;
+        end
+
+        function rho = getDensity(this)
+            rho = this.rho;
         end
     end
 end

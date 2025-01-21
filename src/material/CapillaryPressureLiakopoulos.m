@@ -10,6 +10,17 @@
 %
 %% Class definition
 classdef CapillaryPressureLiakopoulos < CapillaryPressure  
+    %% Properties
+    % Parameters taken from OGS-6. 
+    % OGS reference:
+    % Asadi, R., Ataie-Ashtiani, B. (2015): A Comparison of finite volume
+    % formulations and coupling strategies for two-phase flow in deforming
+    % porous media. Comput. Geosci., p. 24ff.
+    properties (SetAccess = public, GetAccess = public)
+        a     = 1.9722e-11;
+        b     = 2.4279;
+        Slmin = 0.2;
+    end
     %% Constructor method
     methods
         %------------------------------------------------------------------
@@ -23,29 +34,25 @@ classdef CapillaryPressureLiakopoulos < CapillaryPressure
 
         %------------------------------------------------------------------
         % Compute the liquid phase relative permeability
-        function Sl = saturationDegree(~, pc, porousMedia)
-            if (pc <= 0.0)
+        function Sl = saturationDegree(this, pc, ~)
+            if (pc < 0.0)
                 Sl = 1.0;
             else
-                Sl = 1.0 - 1.9722e-11 * pc^(2.4279);
+                Sl = 1.0 - this.a * pc^(this.b);
             end
-            Sl = max(Sl, porousMedia.Slr);
+            Sl = max(Sl, this.Slmin);
         end
         
         %------------------------------------------------------------------
         % Compute the gas phase relative permeability
-        function dSldpc = derivativeSaturationDegree(this, pc, porousMedia)
-            % if (pc <= 0.0)
-            %     dSldpc = 0.0;
-            % else
-            %     dSldpc = - 2.4279 * 1.9722e-11 * pc^(1.4279);
-            % end
-            % Pertubation for the numerical derivative
-            h = 0.0001;
-            % Compute the saturation degree at the perturbed values
-            Sl_back = this.saturationDegree(pc-h, porousMedia);
-            Sl_forw = this.saturationDegree(pc+h, porousMedia);
-            dSldpc = (Sl_forw - Sl_back)/(2.0*h);
+        function dSldpc = derivativeSaturationDegree(this, pc, ~)
+            if (pc < 0.0)
+                dSldpc = 0.0;
+            else
+                pcmax  = ((1.0 - this.Slmin)/this.a)^(1.0/this.b);
+                pc     = min(pc,pcmax);
+                dSldpc = - this.a * this.b * pc^(this.b - 1.0);
+            end
         end
         
     end

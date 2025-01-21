@@ -16,13 +16,14 @@ classdef RegularElement_H2M < RegularElement
         glpg       = [];            % Gas phase pressure dofs
         nglu       = 0;             % Number of regular u-dof
         nglp       = 0;             % Number of regular p-dof
+        anm        = 'PlaneStrain'; % Analysis model
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = RegularElement_H2M(type, node, elem, t, ...
                 mat, intOrder, glu, glp, glpg, massLumping, lumpStrategy, ...
-                isAxisSymmetric)
+                isAxisSymmetric,isPlaneStress)
             this = this@RegularElement(type, node, elem, t, ...
                 mat, intOrder, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
@@ -36,6 +37,12 @@ classdef RegularElement_H2M < RegularElement
             this.nglu     = length(this.glu);
             this.nglp     = length(this.glp);
             this.ngle     = length(this.gle);
+            if isPlaneStress
+                this.anm = 'PlaneStress';
+            end
+            if isAxisSymmetric
+                this.anm = 'AxisSymmetrical';
+            end
         end
     end
     
@@ -55,6 +62,7 @@ classdef RegularElement_H2M < RegularElement
             for i = 1:this.nIntPoints
                 constModel = Material_H2M(this.mat);
                 intPts(i) = IntPoint(X(:,i),w(i), constModel);
+                intPts(i).initializeMechanicalAnalysisModel(this.anm);
             end
             this.intPoint = intPts;
 
@@ -76,14 +84,14 @@ classdef RegularElement_H2M < RegularElement
             Hlg = zeros(this.nglp, this.nglp);
             Hgl = zeros(this.nglp, this.nglp);
             Hgg = zeros(this.nglp, this.nglp);
-            Qul = zeros(this.nglu, this.nglp);
-            Qug = zeros(this.nglu, this.nglp);
+            Qul = zeros(this.nglp, this.nglu);
+            Qug = zeros(this.nglp, this.nglu);
             Sll = zeros(this.nglp, this.nglp);
             Slg = zeros(this.nglp, this.nglp);
             Sgl = zeros(this.nglp, this.nglp);
             Sgg = zeros(this.nglp, this.nglp);
             Opu = zeros(this.nglp, this.nglu);
-            Ouu = zeros(this.nglp, this.nglu);
+            Ouu = zeros(this.nglu, this.nglu);
 
             % Initialize external force vector
             feu = zeros(this.nglu, 1);
@@ -97,6 +105,7 @@ classdef RegularElement_H2M < RegularElement
             u  = this.getNodalDisplacement();
             pc = this.getNodalCapillaryPressure();
             pg = this.getNodalGasPressure();
+            pl = this.getNodalLiquidPressure();
 
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 0.0];
@@ -121,10 +130,10 @@ classdef RegularElement_H2M < RegularElement
                 pgIP = Np * pg;
 
                 % Compute the strain vector
-                strain = Bu * u;
+                this.intPoint(i).strain = Bu * u;
 
                 % Compute the stress vector and the constitutive matrix
-                [stress,Duu] = this.intPoint(i).constitutiveModel(strain);
+                [stress,Duu] = this.intPoint(i).mechanicalLaw();
 
                 % Compute the saturation degree at the integration point
                 Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
@@ -215,8 +224,9 @@ classdef RegularElement_H2M < RegularElement
 
         % -----------------------------------------------------------------
         % Compute the compressibility coefficients
-        function [cll, clg, cgl, cgg] = compressibilityCoeffs(~,ip,pg,pc,Sl)
+        function [cul, cug, cll, clg, cgl, cgg] = compressibilityCoeffs(~,ip,pg,pc,Sl)
              [cll, clg, cgl, cgg] =  ip.constitutiveMdl.compressibilityCoeffs(Sl,pg-pc,pg);
+             [cul, cug] = ip.constitutiveMdl.mechanicalCompressibilityCoeffs(Sl);
         end
 
         %------------------------------------------------------------------
@@ -261,8 +271,8 @@ classdef RegularElement_H2M < RegularElement
             rhos = this.mat.porousMedia.getDensity();
 
             % Get fluid densities
-            rhol = this.mat.liquidFluid.getDensity();
-            rhog = this.mat.gasFluid.getDensity();
+            rhol = this.mat.liquidFluid.getDensity(pl);
+            rhog = this.mat.gasFluid.getDensity(pg);
 
             % Compute the contribution of the gravitational forces
             feu = feu + Nu' * rhos * grav * c;

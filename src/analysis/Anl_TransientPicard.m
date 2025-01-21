@@ -86,7 +86,7 @@ classdef Anl_TransientPicard < Anl
                         % Right-handside vector
                         b = Fext + C * X0 / this.dt;
 
-                        % % Apply BC
+                        % Apply BC
                         b(mdl.doffree) = b(mdl.doffree) - A(mdl.doffree,mdl.doffixed)*X(mdl.doffixed);
 
                         % Solve linear system

@@ -57,6 +57,7 @@ classdef Model < handle
         massLumping         = false;
         lumpStrategy        = 1;
         isAxisSymmetric     = false;
+        isPlaneStress       = false;
     end
     
     %% Constructor method
@@ -263,9 +264,9 @@ classdef Model < handle
                     elements(el) = RegularElement_H2M(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLU(el,:),this.GLP(el,:),this.GLPg(el,:), ...
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                            this.isPlaneStress);
                 end
-                
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
@@ -312,21 +313,41 @@ classdef Model < handle
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
 
-            % Set the initial values
-            for i = 1:this.nnodes
-                this.U(this.ID(i,1)) = this.INITCOND_p(i,1);
-                this.U(this.ID(i,2)) = this.INITCOND_pg(i,1);
+            if strcmp(this.physics,'H2')||strcmp(this.physics,'H2_PcPg')
+                % Set the initial values
+                for i = 1:this.nnodes
+                    this.U(this.ID(i,1)) = this.INITCOND_p(i,1);
+                    this.U(this.ID(i,2)) = this.INITCOND_pg(i,1);
+                end
+    
+                % Set the prescribed values
+                for i = 1:this.nnodes
+                    if (this.SUPP_p(i,1) == 1.0)
+                        this.U(this.ID(i,1)) = this.PRESCDISPL_p(i,1);
+                    end
+                    if (this.SUPP_pg(i,1) == 1.0)
+                        this.U(this.ID(i,2)) = this.PRESCDISPL_pg(i,1);
+                    end
+                end
+            elseif strcmp(this.physics,'H2M')
+                % Set the initial values
+                for i = 1:this.nnodes
+                    this.U(this.ID(i,3)) = this.INITCOND_p(i,1);
+                    this.U(this.ID(i,4)) = this.INITCOND_pg(i,1);
+                end
+    
+                % Set the prescribed values
+                for i = 1:this.nnodes
+                    if (this.SUPP_p(i,1) == 1.0)
+                        this.U(this.ID(i,3)) = this.PRESCDISPL_p(i,1);
+                    end
+                    if (this.SUPP_pg(i,1) == 1.0)
+                        this.U(this.ID(i,4)) = this.PRESCDISPL_pg(i,1);
+                    end
+                end
             end
 
-            % Set the prescribed values
-            for i = 1:this.nnodes
-                if (this.SUPP_p(i,1) == 1.0)
-                    this.U(this.ID(i,1)) = this.PRESCDISPL_p(i,1);
-                end
-                if (this.SUPP_pg(i,1) == 1.0)
-                    this.U(this.ID(i,2)) = this.PRESCDISPL_pg(i,1);
-                end
-            end
+            
 
             % Save initial dofs to the elements
             for el = 1 : this.nelem
@@ -343,9 +364,18 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Add contribution of nodal loads to reference load vector.
         function Fref = addNodalLoad(this,Fref)
-            for i = 1:this.nnodes
-                Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_p(i,1);
-                Fref(this.ID(i,2)) = Fref(this.ID(i,2)) + this.LOAD_pg(i,1);
+            if strcmp(this.physics,'H2')||strcmp(this.physics,'H2_PcPg')
+                for i = 1:this.nnodes
+                    Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_p(i,1);
+                    Fref(this.ID(i,2)) = Fref(this.ID(i,2)) + this.LOAD_pg(i,1);
+                end
+            elseif strcmp(this.physics,'H2M')
+                for i = 1:this.nnodes
+                    Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_u(i,1);
+                    Fref(this.ID(i,2)) = Fref(this.ID(i,2)) + this.LOAD_u(i,2);
+                    Fref(this.ID(i,3)) = Fref(this.ID(i,3)) + this.LOAD_p(i,1);
+                    Fref(this.ID(i,4)) = Fref(this.ID(i,4)) + this.LOAD_pg(i,1);
+                end
             end
         end
 
@@ -667,7 +697,7 @@ classdef Model < handle
                     X = this.element(el).type.result.vertices(i,:);
                     if strcmp(type,'Model')
                         vertexData(i) = 0.0;
-                    elseif strcmp(type,'Pressure')
+                    elseif strcmp(type,'LiquidPressure')
                         p = this.element(el).type.pressureField(X);
                         vertexData(i) = p;
                     elseif strcmp(type,'CapillaryPressure')
