@@ -53,6 +53,22 @@ classdef Shape_ISOQ8 < Shape
          end
 
          % -----------------------------------------------------------------
+         % Get the linear shape function matrix
+         function Nm = linearShapeFncMtrx(~,Xn)
+
+            % Natural coordinates of the given point
+            xi = Xn(1); eta = Xn(2);
+
+            % Shape functions
+            N1 = (1.0 - xi)*(1.0 - eta)/4.0;
+            N2 = (1.0 + xi)*(1.0 - eta)/4.0;
+            N3 = (1.0 + xi)*(1.0 + eta)/4.0;
+            N4 = (1.0 - xi)*(1.0 + eta)/4.0;
+            Nm   = [ N1  N2  N3  N4 ];
+
+         end
+
+         % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,N)
 
@@ -95,12 +111,43 @@ classdef Shape_ISOQ8 < Shape
          end
 
          % -----------------------------------------------------------------
+         % Compute the derivatives of the shape functions wrt to the
+         % natural coordinate s
+         function dNdxn = linearShapeFncDrv(~,Xn)
+
+            % Natural coordinates of the given point
+            xi = Xn(1); eta = Xn(2);
+
+            % Derivatives of the shape functions
+            dN1_dxi = -(1-eta)/4;    dN1_deta = -(1-xi)/4;
+            dN2_dxi =  (1-eta)/4;    dN2_deta = -(1+xi)/4;
+            dN3_dxi =  (1+eta)/4;    dN3_deta =  (1+xi)/4;
+            dN4_dxi = -(1+eta)/4;    dN4_deta =  (1-xi)/4;
+            dNdxn   = [ dN1_dxi   dN2_dxi   dN3_dxi   dN4_dxi ;
+                        dN1_deta  dN2_deta  dN3_deta  dN4_deta ];
+
+         end
+
+         % -----------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
 
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
+              
+            % Jacobian matrix
+            J = dNdxn * X;
+
+         end
+
+         % -----------------------------------------------------------------
+         % Compute the jacobian matrix
+         function J = linearJacobianMtrx(this,X,Xn)
+
+            % Compute the shape function derivatives wrt to the natural
+            % coordinate system
+            dNdxn = this.linearShapeFncDrv(Xn);
               
             % Jacobian matrix
             J = dNdxn * X;
@@ -136,6 +183,24 @@ classdef Shape_ISOQ8 < Shape
             dNdx = J\dNdxn;
 
          end
+
+         % -----------------------------------------------------------------
+         % Compute the derivatives of the shape functions matrix
+         function [dNdx] = lineardNdxMatrix(this,X,Xn)
+
+            % Jacobian matrix
+            J = this.linearJacobianMtrx(X,Xn);
+
+            % Compute the derivatives of the shape functions wrt to the
+            % natural coordinate system
+            dNdxn = this.linearShapeFncDrv(Xn);
+
+            % Compute the derivatives of the shape functions wrt to the
+            % global cartesian coordinate system
+            dNdx = J\dNdxn;
+
+         end
+
 
          % -----------------------------------------------------------------
          % Compute the strain-displacement matrix

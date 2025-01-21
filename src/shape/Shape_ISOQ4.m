@@ -49,6 +49,15 @@ classdef Shape_ISOQ4 < Shape
          end
 
          % -----------------------------------------------------------------
+         % Get the linear shape function matrix
+         function Nm = linearShapeFncMtrx(~,Xn)
+
+            % Vector with the shape functions
+            Nm = this.shapeFnc(Xn);
+
+         end
+
+         % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,Nm)
 
