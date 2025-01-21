@@ -29,7 +29,7 @@ classdef PorousMedia < handle
         capillaryPressure    = 'BrooksCorey';   % Saturation degree function
         mechanical           = 'elastic';       % Mechanical constitutive law
         gravityOn            = false;           % Flag to consider gravity forces
-        g                    = 9.81;            % Gravity accelaration (m/s2)
+        g                    = 9.806;           % Gravity accelaration (m/s2)
         b                    = [0.0;-1.0];      % Gravity force direction vector       
         SlPc_umat           = [];
         klr_umat            = [];
