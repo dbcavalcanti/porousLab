@@ -10,10 +10,7 @@ initWorkspace;
 %
 %% ========================== MODEL CREATION ==============================
 
-mdl = Model();
-
-% --- Physics -------------------------------------------------------------
-mdl.physics = 'H2_PcPg';
+mdl = Model_H2_PcPg();
 
 % --- Mesh of continuum elements ------------------------------------------
 
