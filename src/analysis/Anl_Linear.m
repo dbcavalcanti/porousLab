@@ -23,35 +23,22 @@ classdef Anl_Linear < Anl
         % Process model data to compute results.
         function process(~,mdl)
 
-            % Add contribution of the nodal forces to the external force
-            % vector
-            F = mdl.addNodalLoad(mdl.F);     
-            
-            % Add contribution of the load applied at the middle-plane of
-            % the discontinuity
-            % F = mdl.addNodalLoadEnrichMidPlane(F);
-
             % Compute the global stiffness matrix
-%             U0 = mdl.U;       % To check the computation of the stresses
-            [K,f] = mdl.setLinearSystem(mdl.U,F); 
+            [K, ~, ~, Fext] = mdl.globalMatrices(mdl.U);
 
-            % Compute pre-conditioner matrix
-            % S = Anl.SIPICpreconditioner(K);
+            % Set linear system
+            A = K(mdl.doffree,mdl.doffree);
+            b = Fext(mdl.doffree) - K(mdl.doffree,mdl.doffixed)*mdl.U(mdl.doffixed);
 
             % Solve linear system
-            % mdl.U(mdl.totFreeDof) = S'*((S*K*S')\(S*f));
-            mdl.U(mdl.totFreeDof) = K\f;
+            mdl.U(mdl.doffree) = A\b;
 
             % Save final result
             for el = 1:mdl.nelem
                 gle = mdl.element(el).type.gle;
                 mdl.element(el).type.ue = mdl.U(gle);
             end
-
-            mdl.setLinearSystem(mdl.U,F); 
             mdl.updateStateVar();
-
-
         end
 
     end
