@@ -168,3 +168,7 @@ mdl.plotGasPressureAlongSegment(Xi, Xf, npts,'y')
 mdl.plotCapillaryPressureAlongSegment(Xi, Xf, npts,'y')
 mdl.plotField('CapillaryPressure');
 mdl.plotField('GasPressure');
+
+
+
+% testing gitkraken commits
