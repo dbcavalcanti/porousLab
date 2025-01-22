@@ -54,6 +54,22 @@ classdef Model_H2 < Model
         end
 
         %------------------------------------------------------------------
+        function LOAD = neumannConditionMatrix(this)
+            LOAD = [this.LOAD_p , this.LOAD_pg];  
+        end
+
+        %------------------------------------------------------------------
+        function INITCOND = initialConditionMatrix(this)
+            INITCOND = [this.INITCOND_p , this.INITCOND_pg];  
+        end
+
+        %------------------------------------------------------------------
+        function PRESCDISPL = prescribedDirichletMatrix(this)
+            PRESCDISPL = [this.PRESCDISPL_p , this.PRESCDISPL_pg];  
+        end
+
+
+        %------------------------------------------------------------------
         function assembleElementDofs(this)
 
             this.GLP = zeros(this.nelem, this.nnd_el);
@@ -96,43 +112,6 @@ classdef Model_H2 < Model
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
-        end
-        
-        %------------------------------------------------------------------
-        function initializeDisplacementVct(this)
-
-            % Initialize the displacement vector 
-            this.U = zeros(this.ndof,1);
-
-            % Set the initial values
-            for i = 1:this.nnodes
-                this.U(this.ID(i,1)) = this.INITCOND_p(i,1);
-                this.U(this.ID(i,2)) = this.INITCOND_pg(i,1);
-            end
-
-            % Set the prescribed values
-            for i = 1:this.nnodes
-                if (this.SUPP_p(i,1) == 1.0)
-                    this.U(this.ID(i,1)) = this.PRESCDISPL_p(i,1);
-                end
-                if (this.SUPP_pg(i,1) == 1.0)
-                    this.U(this.ID(i,2)) = this.PRESCDISPL_pg(i,1);
-                end
-            end
-
-            % Save initial dofs to the elements
-            for el = 1 : this.nelem
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
-            end
-
-        end
- 
-        %------------------------------------------------------------------
-        function Fref = addNodalLoad(this,Fref)
-            for i = 1:this.nnodes
-                Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_p(i,1);
-                Fref(this.ID(i,2)) = Fref(this.ID(i,2)) + this.LOAD_pg(i,1);
-            end
         end
 
         % -----------------------------------------------------------------

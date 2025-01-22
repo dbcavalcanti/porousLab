@@ -48,20 +48,23 @@ classdef Model < handle
     %% Abstract methods
     methods(Abstract)
        
-        % Assemble the nodes Dirichlet conditions matrix
-        dirichletConditionMatrix(this);
+        % Assemble the nodes' Dirichlet conditions matrix
+        SUPP = dirichletConditionMatrix(this);
+
+        % Assemble the nodes' Neumann conditions matrix
+        LOAD = neumannConditionMatrix(this);
+
+        % Assemble the nodes' initial condition matrix
+        INITCOND = initialConditionMatrix(this)
+
+        % Assemble the nodes' prescribed Dirichlet condition values matrix
+        PRESCDISPL = prescribedDirichletMatrix(this);
 
         % Assemble the degrees of freedom to the elements
         assembleElementDofs(this);
 
         % Initialize the elements objects
         initializeElements(this);
-
-        % Initialize the dofs variable vector
-        initializeDisplacementVct(this);
-
-        % Add the Neumann BC's to the external force vector
-        addNodalLoad(this,Fref);
 
         % Set the fields available for visualization
         updateResultVertexData(this,type);
@@ -149,6 +152,53 @@ classdef Model < handle
             this.ndof     = this.ndof_nd * this.nnodes; 
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
+            end
+        end
+
+        %------------------------------------------------------------------
+        function initializeDisplacementVct(this)
+
+            % Initialize the displacement vector 
+            this.U = zeros(this.ndof,1);
+
+            % Get initial conditions matrix
+            INITCOND = this.initialConditionMatrix();
+
+            % Set the initial values
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    this.U(this.ID(i,j)) = INITCOND(i,j);
+                end
+            end
+
+            % Get the Dirichlet conditions matrix
+            SUPP = this.dirichletConditionMatrix();
+            PRESCDISPL = this.prescribedDirichletMatrix();
+
+            % Set the prescribed values
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    if (SUPP(i,j) == 1.0)
+                        this.U(this.ID(i,j)) = PRESCDISPL(i,j);
+                    end
+                end
+            end
+
+            % Save initial dofs to the elements
+            for el = 1 : this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle);
+            end
+
+        end
+
+        %------------------------------------------------------------------
+        % Add contribution of nodal loads to reference load vector.
+        function Fref = addNodalLoad(this,Fref)
+            LOAD = this.neumannConditionMatrix();
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    Fref(this.ID(i,j)) = Fref(this.ID(i,j)) + LOAD(i,j);
+                end
             end
         end
 
@@ -348,16 +398,6 @@ classdef Model < handle
         function plotMeshWithMatId(this)
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.mesh(true);
-        end
-
-        % -----------------------------------------------------------------
-        % Plot the deformed mesh
-        function plotDeformedMesh(this,amplFactor)
-
-            this.updateResultVertices('Deformed',amplFactor);
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
-
         end
 
         % -----------------------------------------------------------------
