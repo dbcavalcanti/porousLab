@@ -1,0 +1,200 @@
+%% RegularElement_M class
+%
+% This class defines a mechanical finite element 
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Class definition
+classdef RegularElement_M < RegularElement    
+    %% Public attributes
+    properties (SetAccess = public, GetAccess = public)
+        glu        = [];            % Displacement dofs
+        nglu       = 0;             % Number of regular u-dof
+        anm        = 'PlaneStrain'; % Analysis model
+    end
+    %% Constructor method
+    methods
+        %------------------------------------------------------------------
+        function this = RegularElement_M(type, node, elem, t, ...
+                mat, intOrder, glu, massLumping, lumpStrategy, ...
+                isAxisSymmetric,isPlaneStress)
+            this = this@RegularElement(type, node, elem, t, ...
+                mat, intOrder, massLumping, lumpStrategy, ...
+                isAxisSymmetric);
+            this.glu      = glu;
+            this.gle      = glu;
+            this.nglu     = length(this.glu);
+            this.ngle     = length(this.gle);
+            if isPlaneStress
+                this.anm = 'PlaneStress';
+            end
+            if isAxisSymmetric
+                this.anm = 'AxisSymmetrical';
+            end
+        end
+    end
+    
+    %% Public methods
+    methods
+
+        %------------------------------------------------------------------
+        % Initialize the elements integration points
+        function initializeIntPoints(this)
+
+            % Get integration points coordinates and weights
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+
+            % Initialize the integration points objects
+            intPts(this.nIntPoints,1) = IntPoint();
+            for i = 1:this.nIntPoints
+                constModel = Material_M(this.mat);
+                intPts(i) = IntPoint(X(:,i),w(i), constModel);
+                intPts(i).initializeMechanicalAnalysisModel(this.anm);
+            end
+            this.intPoint = intPts;
+
+        end
+
+        %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        %
+        % Output:
+        %   Ke : element "stiffness" matrix
+        %   Ce : element "damping" matrix
+        %   fe : element "internal force" vector
+        %
+        function [Ke, Ce, fi, fe] = elementData(this)
+
+            % Initialize the matrices
+            Ke = zeros(this.nglu, this.nglu);
+            Ce = zeros(this.nglu, this.nglu);
+
+            % Initialize external force vector
+            fe = zeros(this.nglu, 1);
+
+            % Initialize the internal force vector
+            fi = zeros(this.nglu, 1);
+            
+            % Vector of the nodal dofs
+            u  = this.getNodalDisplacement();
+
+            % Numerical integration of the sub-matrices
+            for i = 1:this.nIntPoints
+               
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.shape.BMatrix(dNdx);
+
+                % Compute the strain vector
+                this.intPoint(i).strain = Bu * u;
+
+                % Compute the stress vector and the constitutive matrix
+                [stress,Duu] = this.intPoint(i).mechanicalLaw();
+        
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                end
+                
+                % Compute the stiffness sub-matrix
+                Ke = Ke + Bu' * Duu * Bu * c;
+
+                % Internal force vector
+                fi = fi + Bu' * stress * c;
+                
+                % Compute the gravity forces
+                if (this.mat.porousMedia.gravityOn)
+                    fe = this.addGravityForces(fe,this.intPoint(i).X,c);
+                end
+            end
+            
+        end
+
+        %------------------------------------------------------------------
+        % Add contribution of the gravity forces to the external force vct
+        function fe = addGravityForces(this, fe, Xn, c)
+
+            % Get gravity vector
+            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+
+            % Shape function matrix
+            N  = this.shape.shapeFncMtrx(Xn);
+            Nu = this.shape.NuMtrx(N);
+
+            % Get the porous matrix density
+            rhos = this.mat.porousMedia.getDensity();
+
+            % Compute the contribution of the gravitational forces
+            fe = fe + Nu' * rhos * grav * c;
+            
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the displacement
+        function u = getNodalDisplacement(this)
+            u = this.ue(1:this.nglu);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the liquid pressure
+        function pl = getNodalPressure(this)
+            a = this.nglu + 1;
+            b = this.nglu + this.nglp;
+            pl = this.ue(a:b);
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the displacement field in the element.
+        function u = displacementField(this,X)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   u   : displacement vector evaluated in "X"
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+            Nu = this.shape.NuMtrx(Nm);
+
+            % Displacement dof vector
+            uv  = this.getNodalDisplacement();
+            
+            % Regular displacement field
+            u = Nu*uv;
+        
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the pressure field inside a given element
+        function p = pressureField(this,X,ue)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   p   : pressure evaluated in "X"
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % Get nodal pressures
+            pl = this.getNodalPressure();
+
+            % capillary field
+            p = Nm*pl;
+        
+        end
+    end
+end

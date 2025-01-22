@@ -1,0 +1,44 @@
+%% Material_M class
+%
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% History
+% @version 1.00
+%
+%% Class definition
+classdef Material_M < handle
+    %% Public attributes
+    properties (SetAccess = public, GetAccess = public)
+        porousMedia = PorousMedia();
+        mechanical  = [];
+    end  
+    %% Constructor method
+    methods
+        %------------------------------------------------------------------
+        function this = Material_M(matData)
+            this.porousMedia = matData.porousMedia;
+            % Mechanical constitutive behavior
+            if strcmp('elastic',matData.porousMedia.mechanical)
+                this.mechanical = MechanicalLinearElastic();
+            end
+        end
+    end
+    %% Public methods
+    methods
+        % -----------------------------------------------------------------
+        % Evaluate the mechanical constitutive law
+        function [stress,D] = mechanicalLaw(this,ip)
+            [stress,D] = this.mechanical.eval(this.porousMedia,ip);
+        end
+
+        % -----------------------------------------------------------------
+        % Get the number of state variables associated with the mechanical
+        % constitutive law
+        function nstVar = getNumberStateVar(this)
+            nstVar = this.mechanical.nstVar;
+        end
+
+    end
+end

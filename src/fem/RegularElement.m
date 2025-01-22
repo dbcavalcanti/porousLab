@@ -72,6 +72,8 @@ classdef RegularElement < handle
 
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
+                this.intPoint(i).updateStressVct();
+                this.intPoint(i).updateStrainVct();
             end
 
         end
