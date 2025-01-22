@@ -18,7 +18,7 @@ classdef PorousMedia < handle
         rho                  = [];              % Density (kg/m3)
         K                    = 0.0;             % Intrinsic permeability (m2)  
         phi                  = 0.0;             % Porosity
-        biot                 = 0.0;             % Biot's coefficient
+        biot                 = 1.0;             % Biot's coefficient
         Ks                   = 1.0e25;          % Solid bulk modulus (Pa)
         Slr                  = 0.0;             % Residual liquid saturation
         Sgr                  = 0.0;             % Residual gas saturation 
@@ -51,7 +51,8 @@ classdef PorousMedia < handle
                 gasEntryPressure,curveFittingParameter, ...
                 liqRelPermeability, gasRelPermeability, ...
                 capillaryPressure)
-            if nargin > 0
+            if nargin == 1, this.id = id; end
+            if nargin > 1
                 this.id                   = id;
                 this.K                    = permeability;
                 this.phi                  = porosity;

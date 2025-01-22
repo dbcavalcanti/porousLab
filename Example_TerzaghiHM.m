@@ -17,10 +17,10 @@ mdl = Model_HM();
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 1.0;     % Horizontal dimension (m)
+Lx = 0.1;     % Horizontal dimension (m)
 Ly = 1.0;     % Vertical dimension (m)
-Nx = 10;       % Number of elements in the x-direction
-Ny = 10;      % Number of elements in the y-direction
+Nx = 5;       % Number of elements in the x-direction
+Ny = 50;      % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -37,9 +37,11 @@ mdl.t = 1.0;
 water = Fluid('water',1000.0,1.0e-3,1.0e25);
 
 % Create the porous media
-rock = PorousMedia('rock',1.15741e-12,0.3,1.0,1.0e25,0.0,0.0,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
-rock.setMechanicalProperties(1.0e6,0.3);
-rock.setDensity(2000.0);
+rock = PorousMedia('rock');
+rock.K     = 1.15741e-12;   % Intrinsic permeability (m2)
+rock.phi   = 0.3;           % Porosity
+rock.Young = 1.0e6;         % Young modulus (Pa)
+rock.nu    = 0.3;           % Poisson ratio
 
 % Material parameters vector
 mdl.mat  = struct( ...
@@ -96,8 +98,8 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 tinit = 1.0;          % Initial time
 dt    = 1.0;          % Time step
 tf    = 100;          % Final time
-dtmax = 1.0;          % Time step
-dtmin = 0.001;        % Time step
+dtmax = 1.0;          % Maximum time step
+dtmin = 0.001;        % Minimum time step
 
 % Solve the problem
 anl = Anl_Transient(result);
@@ -105,9 +107,6 @@ anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
-
-% Print the results in the command window
-% mdl.printResults();
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
