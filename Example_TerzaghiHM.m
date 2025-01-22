@@ -44,8 +44,7 @@ rock.setDensity(2000.0);
 % Material parameters vector
 mdl.mat  = struct( ...
     'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',water);
+    'fluid',water);
 
 %% ======================= BOUNDARY CONDITIONS ============================
 % In case it is prescribed a pressure value different than zero, don't 
@@ -115,5 +114,5 @@ Xi  = [0.0 , 0.0];
 Xf  = [0.0 , Ly];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
-mdl.plotField('LiquidPressure');
+mdl.plotField('Pressure');
 
