@@ -1,6 +1,9 @@
 %% Model_H2 class
 %
-% Two-phase flow finite element model
+% Two-phase flow finite element model.
+%
+% Each node has two degrees of freedom (dof). The liquid phase pressure (p)
+% and the gas phase pressure (pg).
 %
 %% Author
 % Danilo Cavalcanti
@@ -10,29 +13,35 @@
 classdef Model_H2 < Model    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        SUPP_p              = [];            % Matrix with support conditions
-        LOAD_p              = [];            % Matrix with load conditions
-        PRESCDISPL_p        = [];            % With with prescribed displacements
-        INITCOND_p          = [];            % Initial displacement 
-        SUPP_pg             = [];            % Matrix with support conditions
-        LOAD_pg             = [];            % Matrix with load conditions
-        PRESCDISPL_pg       = [];            % With with prescribed displacements
-        INITCOND_pg         = [];            % Initial displacement 
-        pDof                = [];            % Vector with the pressure dofs
-        pgDof               = [];            % Vector with the pressure dofs
-        pFreeDof            = [];            % Vector with the pressure dofs
-        pgFreeDof           = [];            % Vector with the pressure dofs
-        GLP                 = [];            % Matrix with the regular dof of each element
-        GLPg                = [];            % Matrix with the regular dof of each element
+        %% Degrees of freedom vectors
+        % Vector with all the dofs of each type
+        pDof                = [];
+        pgDof               = [];
+        % Vector with all the FREE dofs of each type
+        pFreeDof            = [];
+        pgFreeDof           = [];
+        % Matrix with the dofs of each type of each element
+        GLP                 = [];
+        GLPg                = [];
+        %% Matrix indicating the Dirichlet BCs 
+        SUPP_p              = [];
+        SUPP_pg             = [];
+        %% Matrix with the prescribed BC values 
+        PRESCDISPL_p        = [];
+        PRESCDISPL_pg       = [];
+        %% Matrix with the Neumann BCs
+        LOAD_p              = [];
+        LOAD_pg             = [];
+        %% Matrix with the initial conditions
+        INITCOND_p          = []; 
+        INITCOND_pg         = [];
     end
-    
     %% Constructor method
     methods
-        %------------------------------------------------------------------
         function this = Model_H2()
             this = this@Model();
-            this.ndof_nd = 2;
-            this.physics = 'H2';
+            this.ndof_nd = 2;       % Number of dofs per node
+            this.physics = 'H2';    % Tag with the physics name
         end
     end
     
@@ -40,49 +49,10 @@ classdef Model_H2 < Model
     methods
 
         %------------------------------------------------------------------
-        %  Assemble nodes DOF ids matrix
-        %   Each line of the ID matrix contains the global numbers for 
-        %   the node DOFs (P). Free DOFs are numbered first.
-        function createNodeDofIdMtrx(this)
-            % Initialize the ID matrix and the number of fixed dof
-            this.ID = zeros(this.nnodes,this.ndof_nd);
-            this.ndoffixed = 0;
-
+        function SUPP = dirichletConditionMatrix(this)
             SUPP = [this.SUPP_p , this.SUPP_pg];
-            
-            % Assemble the ID matrix
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
-                    if (SUPP(i,j) == 1)
-                        this.ndoffixed = this.ndoffixed + 1;
-                    end
-                end
-            end
-            
-            % Number of free dof
-            this.ndoffree = this.ndof - this.ndoffixed;
-            
-            % Initialize the counters
-            this.doffixed = zeros(this.ndoffixed,1);
-            this.doffree  = zeros(this.ndoffree,1);
-            
-            % Update the ID matrix with the free dof numbered first
-            countFree = 1;
-            countFixed = 1;
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    if SUPP(i,j) == 1
-                        this.doffixed(countFixed) = this.ID(i,j);
-                        countFixed = countFixed + 1;
-                    else 
-                        this.doffree(countFree) = this.ID(i,j);
-                        countFree = countFree + 1;
-                    end
-                end
-            end
         end
-        
+
         %------------------------------------------------------------------
         function assembleElementDofs(this)
 
@@ -119,17 +89,10 @@ classdef Model_H2 < Model
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'liquidFluid',this.mat.liquidFluid,...
                         'gasFluid',this.mat.gasFluid);
-                if strcmp(this.physics,'H2')
-                    elements(el) = RegularElement_H2(...
+                elements(el) = RegularElement_H2(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
-                elseif strcmp(this.physics,'H2_PcPg')
-                    elements(el) = RegularElement_H2_PcPg(...
-                            this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
-                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
@@ -165,7 +128,6 @@ classdef Model_H2 < Model
         end
  
         %------------------------------------------------------------------
-        % Add contribution of nodal loads to reference load vector.
         function Fref = addNodalLoad(this,Fref)
             for i = 1:this.nnodes
                 Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_p(i,1);
@@ -174,7 +136,6 @@ classdef Model_H2 < Model
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -182,7 +143,6 @@ classdef Model_H2 < Model
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
         function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -190,7 +150,6 @@ classdef Model_H2 < Model
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
         function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -198,7 +157,6 @@ classdef Model_H2 < Model
         end
 
         %------------------------------------------------------------------
-        % Update the result nodes data of each element
         function updateResultVertexData(this,type)
             for el = 1:this.nelem
                 % Update the nodal displacement vector associated to the

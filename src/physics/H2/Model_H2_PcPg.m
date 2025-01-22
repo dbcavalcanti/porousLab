@@ -14,7 +14,6 @@ classdef Model_H2_PcPg < Model_H2
         function this = Model_H2_PcPg()
             this = this@Model_H2();
             this.physics = 'H2_PcPg';
-            this.ndof_nd = 2;
         end
     end
     

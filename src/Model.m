@@ -1,6 +1,6 @@
 %% Model class
 %
-% This class defines a finite element model that has a strong discontinuity
+% Abstract class to create a Finite Element model.
 %
 %% Author
 % Danilo Cavalcanti
@@ -15,28 +15,28 @@ classdef Model < handle
         ELEM                = [];            % Nodes connectivity
         t                   = 1.0;           % Thickness
         mat                 = [];            % Vector with material properties
-        type                = 'ISOQ4';       % Typf of element used
-        intOrder            = 2;             % Number of integration points
+        type                = 'ISOQ4';       % Type of element used
+        intOrder            = 2;             % Order of the numerical integration quadrature
         nnodes              = 1;             % Number of nodes
         nelem               = 1;             % Number of elements
         nnd_el              = 4;             % Number of nodes per element
-        doffree             = [];
-        doffixed            = [];
+        doffree             = [];            % Vector with the free dofs
+        doffixed            = [];            % Vector with the fixed dofs
         ndof_nd             = 2;             % Number of dof per node
-        ndof                = 1;             % Number of regular degrees of freedom
+        ndof                = 1;             % Number of degrees of freedom
         ndoffree            = 0;             % Number of free degrees of freedom
         ndoffixed           = 0;             % Number of fixed degrees of freedom
         Dof                 = [];            % Vector with all regular dofs
-        ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs (DX, DY)
+        ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs
         F                   = [];            % Global force vector
         U                   = [];            % Global displacement vector
         element             = [];            % Array with the element's objects
-        nDofElemTot         = 0.0;
-        sqrNDofElemTot      = 0.0;
+        nDofElemTot         = 0.0;           % Aux value used to sparse matrix assemblage
+        sqrNDofElemTot      = 0.0;           % Aux value used to sparse matrix assemblage
         matID               = [];            % Vector with the material id of each element
-        massLumping         = false;
-        lumpStrategy        = 1;
-        isAxisSymmetric     = false;
+        massLumping         = false;         % Tag for applying a mass lumping process
+        lumpStrategy        = 1;             % Id of the mass lumping strategy
+        isAxisSymmetric     = false;         % Flag for axissymetric models
     end
     
     %% Constructor method
@@ -47,17 +47,73 @@ classdef Model < handle
 
     %% Abstract methods
     methods(Abstract)
-        createNodeDofIdMtrx(this);
+       
+        % Assemble the nodes Dirichlet conditions matrix
+        dirichletConditionMatrix(this);
+
+        % Assemble the degrees of freedom to the elements
         assembleElementDofs(this);
+
+        % Initialize the elements objects
         initializeElements(this);
+
+        % Initialize the dofs variable vector
         initializeDisplacementVct(this);
+
+        % Add the Neumann BC's to the external force vector
         addNodalLoad(this,Fref);
+
+        % Set the fields available for visualization
         updateResultVertexData(this,type);
+
+        % Configure the header to printed when printing results
         printResultsHeader();
     end
     
     %% Public methods
     methods
+
+        %------------------------------------------------------------------
+        function createNodeDofIdMtrx(this)
+            % Initialize the ID matrix and the number of fixed dof
+            this.ID = zeros(this.nnodes,this.ndof_nd);
+            this.ndoffixed = 0;
+
+            % Get the Dirichlet conditions matrix
+            SUPP = this.dirichletConditionMatrix();
+            
+            % Assemble the ID matrix
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
+                    if (SUPP(i,j) == 1)
+                        this.ndoffixed = this.ndoffixed + 1;
+                    end
+                end
+            end
+            
+            % Number of free dof
+            this.ndoffree = this.ndof - this.ndoffixed;
+            
+            % Initialize the counters
+            this.doffixed = zeros(this.ndoffixed,1);
+            this.doffree  = zeros(this.ndoffree,1);
+            
+            % Update the ID matrix with the free dof numbered first
+            countFree = 1;
+            countFixed = 1;
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    if SUPP(i,j) == 1
+                        this.doffixed(countFixed) = this.ID(i,j);
+                        countFixed = countFixed + 1;
+                    else 
+                        this.doffree(countFree) = this.ID(i,j);
+                        countFree = countFree + 1;
+                    end
+                end
+            end
+        end
 
         %------------------------------------------------------------------
         function preComputations(this)
@@ -246,6 +302,7 @@ classdef Model < handle
 
         end
 
+        %------------------------------------------------------------------
         function A = applyDirichletBC(this, A)
             % Iterate over all fixed DOFs
             for i = 1:this.ndoffixed
@@ -304,15 +361,20 @@ classdef Model < handle
         end
 
         % -----------------------------------------------------------------
-        % Plot the deformed mesh
-        function plotField(this,fieldPlot)
+        % Plot given field over the mesh
+        function plotField(this,fieldPlot,range)
+            if nargin < 3, range = []; end
 
             this.updateResultVertexData(fieldPlot)
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.mesh();
-%             clim([0.0 0.8]); % set your range here
-            c = colorbar;
-%             set(c,'Limits',[0.0 0.8])
+            if isempty(range)
+                colorbar;
+            else
+                clim(range);
+                c = colorbar;
+                set(c,'Limits',range)
+            end
 
         end
 
