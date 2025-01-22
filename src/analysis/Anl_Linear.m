@@ -38,6 +38,9 @@ classdef Anl_Linear < Anl
                 gle = mdl.element(el).type.gle;
                 mdl.element(el).type.ue = mdl.U(gle);
             end
+            
+            % Call it again to update the state variables
+            mdl.globalMatrices(mdl.U);
             mdl.updateStateVar();
         end
 

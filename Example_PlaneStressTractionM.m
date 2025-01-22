@@ -46,7 +46,7 @@ mdl.mat  = struct('porousMedia',rock);
 % forget also that you need to constraint these degrees of freedom.
 
 % Displacement boundary conditions
-CoordSupp  = [1 0 0 -1;
+CoordSupp  = [1 1 0 -1;
               1 1 0 0];
 CoordLoad  = [];
 CoordPresc = [];                                   
@@ -56,7 +56,7 @@ CoordPresc = [];
     CoordSupp, CoordLoad, CoordPresc, Lx, Ly, Nx, Ny);
 
 % Apply pressure at the top (Pa)
-[mdl.LOAD_u] = pressureLoad(1.0e4,[Lx, Ly],1,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
+[mdl.LOAD_u] = pressureLoad(1.0e6,[Lx, Ly],1,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
 
 %% ===================== MODEL CONFIGURATION ==============================
 
@@ -86,5 +86,9 @@ anl.process(mdl);
 Xi  = [0.0 , 0.0];
 Xf  = [0.0 , Ly];
 npts = 500;
+mdl.plotDeformedMesh(1.0);
 mdl.plotField('Ux');
+mdl.plotField('Sx');
+mdl.plotField('Sy');
+mdl.plotField('Sxy');
 

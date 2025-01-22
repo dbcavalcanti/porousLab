@@ -164,6 +164,9 @@ classdef Model_M < Model
                     elseif strcmp(type,'Sy')
                         s = this.element(el).type.stressField(X);
                         vertexData(i) = s(2);
+                    elseif strcmp(type,'Sxy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(3);
                     end
                 end
                 this.element(el).type.result.setVertexData(vertexData);

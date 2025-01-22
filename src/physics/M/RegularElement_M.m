@@ -174,27 +174,51 @@ classdef RegularElement_M < RegularElement
 
         %------------------------------------------------------------------
         % Function to compute the pressure field inside a given element
-        function p = pressureField(this,X,ue)
+        function stress = stressField(this,X,ue)
         %
         % Input:
         %   X   : position vector in the global cartesian coordinate system
-        %
-        % Output:
-        %   p   : pressure evaluated in "X"
             if nargin > 2, this.ue = ue; end
         
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
-            
-            % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
 
-            % Get nodal pressures
-            pl = this.getNodalPressure();
+            %Extrapolation matrix
+            Q = ones(3,this.nIntPoints);
+            for i = 1:this.nIntPoints
+                Q(2,i) = this.intPoint(i).X(1);
+                Q(3,i) = this.intPoint(i).X(2);
+            end
+            P = zeros(3,3);
+            for i = 1:this.nIntPoints
+                P(1,1) = P(1,1) + 1.0;
+                P(1,2) = P(1,2) + this.intPoint(i).X(1);
+                P(1,3) = P(1,3) + this.intPoint(i).X(2);
+                P(2,1) = P(2,1) + this.intPoint(i).X(1);
+                P(2,2) = P(2,2) + this.intPoint(i).X(1) * this.intPoint(i).X(1);
+                P(2,3) = P(2,3) + this.intPoint(i).X(1) * this.intPoint(i).X(2); 
+                P(3,1) = P(3,1) + this.intPoint(i).X(2);
+                P(3,2) = P(3,2) + this.intPoint(i).X(2) * this.intPoint(i).X(1);
+                P(3,3) = P(3,3) + this.intPoint(i).X(2) * this.intPoint(i).X(2);
+            end
+            S = P\Q;
 
-            % capillary field
-            p = Nm*pl;
-        
+            % Matrix with the stress at the integration points
+            % Each column corresponds to a stress component:
+            % sxx, syy, and tauxy
+            stressIP = zeros(this.nIntPoints,3);
+            for i = 1:this.nIntPoints
+                stressIP(i,1) = this.intPoint(i).stress(1);
+                stressIP(i,2) = this.intPoint(i).stress(2);
+                stressIP(i,3) = this.intPoint(i).stress(3);
+            end
+
+            % Coefficients for the polynomial approximation 
+            c = S * stressIP;
+
+            % Interpolated stress field at the given node
+            stress = c' * [1.0 ; Xn(1); Xn(2)];
+
         end
     end
 end
