@@ -94,6 +94,9 @@ classdef Model < handle
                     end
                 end
             end
+
+            % Vector with all the dofs
+            this.Dof = 1:this.ndof;
             
             % Number of free dof
             this.ndoffree = this.ndof - this.ndoffixed;

@@ -37,46 +37,24 @@ classdef Model_H < Model
     methods
 
         %------------------------------------------------------------------
-        function createNodeDofIdMtrx(this)
-            % Initialize the ID matrix and the number of fixed dof
-            this.ID = zeros(this.nnodes,this.ndof_nd);
-            this.ndoffixed = 0;
-
-            SUPP = [this.SUPP_p];
-            
-            % Assemble the ID matrix
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
-                    if (SUPP(i,j) == 1)
-                        this.ndoffixed = this.ndoffixed + 1;
-                    end
-                end
-            end
-            
-            % Number of free dof
-            this.ndoffree = this.ndof - this.ndoffixed;
-            
-            % Initialize the counters
-            this.doffixed = zeros(this.ndoffixed,1);
-            this.doffree  = zeros(this.ndoffree,1);
-            
-            % Update the ID matrix with the free dof numbered first
-            countFree = 1;
-            countFixed = 1;
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    if SUPP(i,j) == 1
-                        this.doffixed(countFixed) = this.ID(i,j);
-                        countFixed = countFixed + 1;
-                    else 
-                        this.doffree(countFree) = this.ID(i,j);
-                        countFree = countFree + 1;
-                    end
-                end
-            end
+        function SUPP = dirichletConditionMatrix(this)
+            SUPP = this.SUPP_p;  
         end
-        
+
+        %------------------------------------------------------------------
+        function LOAD = neumannConditionMatrix(this)
+            LOAD = this.LOAD_p;  
+        end
+
+        %------------------------------------------------------------------
+        function INITCOND = initialConditionMatrix(this)
+            INITCOND = this.INITCOND_p;  
+        end
+
+        %------------------------------------------------------------------
+        function PRESCDISPL = prescribedDirichletMatrix(this)
+            PRESCDISPL = this.PRESCDISPL_p;  
+        end
         %------------------------------------------------------------------
         function assembleElementDofs(this)
 
@@ -85,9 +63,6 @@ classdef Model_H < Model
                 this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),1)',1,...
                     this.nnd_el);
             end
-
-            % Vector with all regular dofs
-            this.Dof = unique(this.GLP);
             
         end
 
@@ -101,47 +76,14 @@ classdef Model_H < Model
                 % Create the material for the element
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
-                        'liquidFluid',this.mat.liquidFluid,...
-                        'gasFluid',this.mat.gasFluid);
-                elements(el) = RegularElement_H2(...
+                        'fluid',this.mat.fluid);
+                elements(el) = RegularElement_H(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
+                            this.t, emat, this.intOrder,this.GLP(el,:), ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
-        end
-        
-        %------------------------------------------------------------------
-        function initializeDisplacementVct(this)
-
-            % Initialize the displacement vector 
-            this.U = zeros(this.ndof,1);
-
-            % Set the initial values
-            for i = 1:this.nnodes
-                this.U(this.ID(i,1)) = this.INITCOND_p(i,1);
-            end
-
-            % Set the prescribed values
-            for i = 1:this.nnodes
-                if (this.SUPP_p(i,1) == 1.0)
-                    this.U(this.ID(i,1)) = this.PRESCDISPL_p(i,1);
-                end
-            end
-
-            % Save initial dofs to the elements
-            for el = 1 : this.nelem
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
-            end
-
-        end
- 
-        %------------------------------------------------------------------
-        function Fref = addNodalLoad(this,Fref)
-            for i = 1:this.nnodes
-                Fref(this.ID(i,1)) = Fref(this.ID(i,1)) + this.LOAD_p(i,1);
-            end
         end
 
         % -----------------------------------------------------------------
