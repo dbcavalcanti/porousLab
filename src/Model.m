@@ -14,7 +14,7 @@ classdef Model < handle
         NODE                = [];            % Nodes of the fem mesh
         ELEM                = [];            % Nodes connectivity
         t                   = 1.0;           % Thickness
-        mat                 = [];            % Vector with material properties
+        mat                 = [];            % Struct with material properties
         type                = 'ISOQ4';       % Type of element used
         intOrder            = 2;             % Order of the numerical integration quadrature
         nnodes              = 1;             % Number of nodes

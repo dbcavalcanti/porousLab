@@ -68,7 +68,6 @@ classdef Model_H2 < Model
             PRESCDISPL = [this.PRESCDISPL_p , this.PRESCDISPL_pg];  
         end
 
-
         %------------------------------------------------------------------
         function assembleElementDofs(this)
 
