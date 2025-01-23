@@ -107,7 +107,7 @@ classdef RegularElement_H2M < RegularElement
             pl = this.getNodalLiquidPressure();
 
             % Initialize 2D identity vector
-            m = [1.0 ; 1.0 ; 0.0];
+            m = [1.0 ; 1.0 ; 1.0 ; 0.0];
 
             % Initialize the volume of the element
             vol = 0.0;

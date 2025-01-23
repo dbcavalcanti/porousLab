@@ -50,18 +50,48 @@ classdef MechanicalLinearElastic < handle
 
             if strcmp(ip.anm,'PlaneStress')
 
-                De = [ 1.0    nu    0.0;
-                       nu    1.0    0.0;
-                       0.0   0.0  (1-nu)/2.0 ] * E/(1.0 - (nu*nu));
+                c = E/(1.0 - (nu*nu));
+                De = [  c   ,   c*nu , 0.0  ,  0.0;
+                       c*nu ,    c   , 0.0  ,  0.0;
+                       0.0  ,   0.0  , 1.0  ,  0.0;
+                       0.0  ,   0.0  , 0.0  , c*(1-nu)/2.0 ];
+                
 
             elseif strcmp(ip.anm,'PlaneStrain')
 
-                De = [ 1.0-nu    nu       0.0;
-                         nu    1.0-nu     0.0;
-                        0.0     0.0    (1-2.0*nu)/2.0 ] * E/(1.0 + nu)/(1.0 - 2.0*nu);
+                De = [ 1.0-nu ,   nu   ,   nu   ,    0.0;
+                         nu   , 1.0-nu ,   nu   ,    0.0;
+                         nu   ,  nu    , 1.0-nu ,    0.0;
+                        0.0   ,  0.0   ,   0.0  , (1-2.0*nu)/2.0 ];
+
+                De = De * E/(1.0 + nu)/(1.0 - 2.0*nu);
 
             else
                 De = [];
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Compute the elastic flexibility matrix
+        function Ce = elasticFlexibilityMatrix(material,ip)
+
+            % Elastic material properties
+            E  = material.Young;
+            nu = material.nu;
+
+            if strcmp(ip.anm,'PlaneStress')
+
+                Ce = [ 1.0    -nu    0.0;
+                       -nu    1.0    0.0;
+                       0.0    0.0  2.0*(1+nu) ] / E;
+
+            elseif strcmp(ip.anm,'PlaneStrain')
+
+                Ce = [ (1.0-nu)       -nu     0.0;
+                           -nu    (1.0-nu)    0.0;
+                           0.0        0.0     2.0 ] * (1.0 + nu)/ E;
+            else
+                Ce = [];
             end
         end
 

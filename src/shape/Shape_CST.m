@@ -118,11 +118,11 @@ classdef Shape_CST < Shape
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
 
-            B = zeros(3,3*2);
+            B = zeros(4,3*2);
             for i = 1:3
                 B(1,2*i-1) = dNdx(1,i); 
                 B(2,2*i)   = dNdx(2,i);
-                B(3,2*i-1) = dNdx(2,i); B(3,2*i) = dNdx(1,i);
+                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
             end
 
          end
