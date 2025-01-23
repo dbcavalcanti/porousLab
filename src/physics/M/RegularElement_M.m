@@ -173,7 +173,8 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Function to compute the pressure field inside a given element
+        % Evaluate the stress tensor in a given point by extrapolating the
+        % results from the integration points
         function stress = stressField(this,X,ue)
         %
         % Input:
@@ -205,12 +206,13 @@ classdef RegularElement_M < RegularElement
 
             % Matrix with the stress at the integration points
             % Each column corresponds to a stress component:
-            % sxx, syy, and tauxy
-            stressIP = zeros(this.nIntPoints,3);
+            % sxx, syy, szz and tauxy
+            stressIP = zeros(this.nIntPoints,4);
             for i = 1:this.nIntPoints
                 stressIP(i,1) = this.intPoint(i).stress(1);
                 stressIP(i,2) = this.intPoint(i).stress(2);
                 stressIP(i,3) = this.intPoint(i).stress(3);
+                stressIP(i,4) = this.intPoint(i).stress(4);
             end
 
             % Coefficients for the polynomial approximation 
@@ -218,6 +220,46 @@ classdef RegularElement_M < RegularElement
 
             % Interpolated stress field at the given node
             stress = c' * [1.0 ; Xn(1); Xn(2)];
+
+        end
+
+        %------------------------------------------------------------------
+        function sn = stressCylindrical(~,stress,X)
+
+            % Get the stress tensor components
+            sx = stress(1);
+            sy = stress(2);
+            tauxy = stress(4);
+
+            % Compute the angle theta
+            theta = atan2(X(2), X(1)); % Angle in radians
+            
+            % Transform the stresses
+            sr = sx * cos(theta)^2 + sy * sin(theta)^2 + 2 * tauxy * cos(theta) * sin(theta);
+            stheta = sx * sin(theta)^2 + sy * cos(theta)^2 - 2 * tauxy * cos(theta) * sin(theta);
+            taurtheta = (sy - sx) * cos(theta) * sin(theta) + tauxy * (cos(theta)^2 - sin(theta)^2);
+
+            sn = [sr, stheta, taurtheta];
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the principal stresses
+        function [s1,s2] = principalStress(~,stress)
+
+            % Get the stress tensor components
+            sxx = stress(1);
+            syy = stress(2);
+            sxy = stress(4);
+
+            % Mohr's circle center
+            c = (sxx + syy) / 2.0;
+
+            % Mohr's circle radius
+            r = sqrt(((sxx - syy)/2.0)^2 + sxy^2);
+
+            % Principal stresses
+            s1 = c + r;
+            s2 = c - r;
 
         end
     end

@@ -167,6 +167,18 @@ classdef Model_M < Model
                     elseif strcmp(type,'Sxy')
                         s = this.element(el).type.stressField(X);
                         vertexData(i) = s(3);
+                    elseif strcmp(type,'S1')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'S2')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(2);
+                    elseif strcmp(type,'Sr')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.stressCylindrical(s,X);
+                        vertexData(i) = sp(1);
                     end
                 end
                 this.element(el).type.result.setVertexData(vertexData);
