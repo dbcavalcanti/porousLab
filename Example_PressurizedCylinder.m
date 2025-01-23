@@ -42,8 +42,11 @@ mdl.t = 1.0;
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.Young = 2.1e11;         % Young modulus (Pa)
-rock.nu    = 0.3;           % Poisson ratio
+rock.mechanical = 'vonMises'; % Elastoplastic with von Mises criteria 
+rock.Young = 2.1e11;          % Young modulus (Pa)
+rock.nu    = 0.3;             % Poisson ratio
+rock.sy0   = 2.40e8;          % Initial yield stress (Pa)
+rock.Kp    = 0.0;             % Plastic modulus (Pa)
 
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);

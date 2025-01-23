@@ -35,10 +35,92 @@ classdef MechanicalLinearElastic < handle
             stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
         end
+
+        %% Stress utilities
+        % Considering a 2D stress tensor: Stress = [sxx, syy, szz, sxy]
+
+        % Hydrostatic stress
+        function sh = hydrostaticStress(this,stress)
+            sh = this.stressInvariantI1(stress) / 3.0;
+        end
+
+        % Hydrostatic stress
+        function sd = deviatoricStress(~,stress)
+            sxx = stress(1);
+            syy = stress(2);
+            szz = stress(3);
+            sxy = stress(4);
+            sd = [(2.0*sxx - syy - szz)/3.0;
+                  (2.0*syy - sxx - szz)/3.0;
+                  (2.0*szz - sxx - syy)/3.0;
+                  sxy];
+        end
+
+        % I1 stress invariant
+        function I1 = stressInvariantI1(~,stress)
+            I1 = stress(1) + stress(2) + stress(3);
+        end
+
+        % I2 stress invariant
+        function I2 = stressInvariantI2(~,stress)
+            sxx = stress(1);
+            syy = stress(2);
+            szz = stress(3);
+            sxy = stress(4);
+            I2 =  sxx*syy + syy*szz + sxx*szz - sxy*sxy;
+        end
+        
+        % J2 stress invariant
+        function J2 = stressInvariantJ2(this,stress)
+            I1 = this.stressInvariantI1(stress);
+            I2 = this.stressInvariantI2(stress);
+            J2 = I1 * I1 / 3.0 - I2;
+            J2 = max(J2,0.0);
+        end
+
+        % Gradient of the J2 stress invariant
+        function dJ2 = gradientJ2(this,stress)
+            dJ2 = this.deviatoricStress(stress);
+        end
+
+        % Hessian of the J2 stress invariant
+        function d2J2 = hessianJ2(~)
+            d2J2 = [  2.0 , -1.0 , -1.0 , 0.0;
+                     -1.0 ,  2.0 , -1.0 , 0.0;
+                     -1.0 , -1.0 ,  2.0 , 0.0;
+                      0.0 ,  0.0  , 0.0 , 3.0 ]/3.0;
+        end
+
+        % von Mises stress
+        function sVM = vonMisesStress(this,stress)
+            J2 = this.stressInvariantJ2(stress);
+            sVM = sqrt(3.0 * J2);
+        end
+
+        % von Mises stress gradient
+        function dsVM = vonMisesStressGradient(this,stress)
+            J2      = this.stressInvariantJ2(stress);
+            dsVMdJ2 = 0.5*sqrt(3.0/J2);
+            dJ2     = this.gradientJ2(stress);
+            dsVM    = dsVMdJ2 * dJ2;
+        end
+
+        % von Mises stress hessian matrix
+        function d2sVM = vonMisesStressHessian(this,stress)
+            J2    = this.stressInvariantJ2(stress);
+            dJ2    = this.gradientJ2(stress);
+            d2J2  = this.hessianJ2();
+            dsVMdJ2 = 0.5*sqrt(3.0/J2);
+            d2sVM = dsVMdJ2 * d2J2 - (0.25 * sqrt(3.0/J2/J2/J2))*(dJ2 * dJ2');
+        end
+        
     end
 
     %% Public methods
     methods (Static)
+        function flag = isElastoPlastic()
+            flag = false;
+        end
         %% Elastic tensors
         % Compute the elastic constitutive matrix
         function De = elasticConstitutiveMatrix(material,ip)
@@ -94,43 +176,6 @@ classdef MechanicalLinearElastic < handle
             else
                 Ce = [];
             end
-        end
-
-        %% Stress invariants
-        % Considering a 2D stress tensor: Stress = [sxx, syy, szz, sxy]
-
-        % I1 stress invariant
-        function I1 = stressInvariantI1(stress)
-            I1 = stress(1) + stress(2) + stress(3);
-        end
-
-        % I2 stress invariant
-        function I2 = stressInvariantI3(stress)
-            sxx = stress(1);
-            syy = stress(2);
-            szz = stress(3);
-            sxy = stress(4);
-            I2 =  sxx*syy + syy*szz + sxx*szz - sxy*sxy;
-        end
-        
-        % J2 stress invariant
-        function J2 = stressInvariantJ2(stress)
-            I1 = stressInvariantI1(stress);
-            I2 = stressInvariantI2(stress);
-            J2 = I1 * I1 / 3.0 - I2;
-            J2 = max(J2,0.0);
-        end
-
-        % Hydrostatic stress
-        function sh = stressHydrostatic(stress)
-            sh = stressInvariantI1(stress) / 3.0;
-        end
-
-        % von Mises stress
-        function svm = stressVonMises(stress)
-            J2 = stressInvariantJ2(stress);
-            svm = sqrt(3.0 * J2);
-        end
-
+        end   
     end
 end
