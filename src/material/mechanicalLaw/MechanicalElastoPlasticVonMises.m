@@ -23,12 +23,12 @@ classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic
     methods
 
         %------------------------------------------------------------------
+        % f = ||s - beta|| - sqrt(2/3) * K(alpha)
         % Radial return
         function [stress,Dt] = eval(this,material,ip)
 
             % Constitutive matrix
             De = this.elasticConstitutiveMatrix(material,ip);
-            Ce = this.elasticFlexibilityMatrix(material,ip);
             Dt = De;
 
             % Trial stress vector
@@ -40,56 +40,41 @@ classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic
             % Elastic step
             if f < 0.0, return, end
 
+            svmTrial = this.vonMisesStress(stress);
+            Iv = [1.0;1.0;1.0;0.0];
+
             % Hardening variables
-            alphaOld  = this.statevarOld(1);         % Isotropic hardening
-            beta      = this.statevarOld(2:end);     % Backstress
+            % alphaOld  = this.statevarOld(1);         % Isotropic hardening
+            % betaOld   = this.statevarOld(2:end);     % Backstress
 
             % Decompose the stress tensor
             p  = this.hydrostaticStress(stress);
-            sd = this.deviatoricStress(stress);
-            xi = sd - beta;
+            sdtrial = this.deviatoricStress(stress);
+
+            n = this.flowVector(material,ip,stress);
+
+            % Relative stress
+            % xi = sd - betaOld;
 
             % Initialize variables for the return mapping
             lambda    = 0.0;
-            ep        = ip.plasticstrainOld;
-            epOld     = ip.plasticstrainOld;
             iter      = 1;
+            G         = this.shearModulus(material);
 
             % Return mapping: closest point projection
             while (abs(f) > this.returnYieldConditionTol)
 
-                % Flow vector
-                n = xi / norm(xi);
+                % Get the isotropic hardening
+                H = 0.0;
 
-                % Gradient of the yield condition
-                df = this.yieldStressGradient(material,ip,stress);
+                % Residual derivative
+                d = -3.0*G - H;
 
-                % Gradient of the flow rule vector
-                dn = this.flowVectorGradient(material,ip,stress);
-                
-                % Hardening
-                h = this.hardening(material,ip,stress);
-
-                % Auxiliary matrix
-                Psi = Ce + lambda * dn;
-
-                % Increment of the plastic multiplier
-                dlambda = (f - df'*(Psi \ r)) / (df' * (Psi \ n) + h);
-
-                % Update the stress vector
-                dstress = -Psi \ (r + dlambda * n);
-                stress = stress + dstress;
-
-                % Update variables
-                lambda = lambda + dlambda;
-                ep     = ep - Ce * dstress;
-                alpha  = alphaOld + sqrt(2.0/3.0) * lambda;
+                % Update the plastic multiplier
+                lambda = lambda - f / d;
 
                 % Check yield condition
-                f = this.yieldCondition(material,ip,stress);
-
-                % Residual of the flow rule
-                r = -ep + epOld + lambda * n;
+                f = svmTrial - 3.0 * G * lambda - material.sy0;
 
                 % Update iteration counter
                 if iter > this.returnMappingMaxIter, break, end
@@ -98,20 +83,21 @@ classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic
             end
 
             % Update variables
-            beta = betaOld + sqrt(2.0/3.0)* lambada;
-
-            % Compute the flow vector at the final stress state
-            n  = this.flowVector(material,ip,stress);
-            df = this.yieldStressGradient(material,ip,stress);
-            dn = this.flowVectorGradient(material,ip,stress);
+            factor = (1.0 - 3.0*G*lambda/svmTrial);
+            sd = sdtrial * factor;
+            stress = p * Iv + sd;
 
             % Update the plastic strain
-            ip.plasticstrain = ep;
+            ip.plasticstrain = ip.plasticstrainOld + lambda * sqrt(3.0/2.0) * n;
 
-            % Compute algorithmic tangent constitutive tensor
-            Psi = inv(Ce + lambda * dn);
-            Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
-            % Dt  = De - (De * (n * df') * De)/(df' * (De * n));
+            % Tangent tensor
+            K = this.bulkModulus(material);
+            Im = Iv * Iv';
+            Id = this.hessianJ2();
+            
+            Dt = K * Im;
+            Dt = Dt + 2.0 * G * (1.0 - 3.0 * G * lambda /svmTrial) * Id;
+            Dt = Dt + 6.0 * G * G * (lambda/svmTrial - 1.0 / (3.0*G)) * (n * n');
 
         end
 
@@ -119,7 +105,7 @@ classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic
         % Yield function definition
         function f = yieldCondition(this,material,ip,stress)
             sVM = this.vonMisesStress(stress);
-            sy = material.sy0 + material.Kp * ip.statevar;
+            sy = material.sy0 + material.Kp * ip.statevar(1);
             f  = sVM - sy;
         end
 
@@ -145,8 +131,8 @@ classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Hardening law
-        function h = hardening(~,~,~,~)
-            h = 0.0;
+        function h = hardening(~,material,~,~)
+            h = material.Kp;
         end
 
         %------------------------------------------------------------------

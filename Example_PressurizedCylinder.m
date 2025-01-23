@@ -109,7 +109,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
 % Solve the problem
 % anl = Anl_Linear(result);
-anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.1,2.0,100,100,4,1.0e-3);
+anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,2.0,100,100,4,1.0e-5);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
