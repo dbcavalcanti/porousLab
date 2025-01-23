@@ -86,7 +86,7 @@ classdef Model_H2 < Model
             this.pgDof = unique(this.GLPg);
             this.Dof  = [this.pDof(:); this.pgDof(:)];
 
-            % Vector will free regular dofs
+            % Vector with free regular dofs
             this.pFreeDof  = intersect(this.pDof,this.doffree);
             this.pgFreeDof = intersect(this.pgDof,this.doffree);
             
