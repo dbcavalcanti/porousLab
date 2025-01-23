@@ -55,15 +55,10 @@ classdef MechanicalLinearElastic < handle
         end
 
         % Deviatoric stress
-        function sd = deviatoricStress(~,stress)
-            sxx = stress(1);
-            syy = stress(2);
-            szz = stress(3);
-            sxy = stress(4);
-            sd = [(2.0*sxx - syy - szz)/3.0;
-                  (2.0*syy - sxx - szz)/3.0;
-                  (2.0*szz - sxx - syy)/3.0;
-                  sxy];
+        function sd = deviatoricStress(this,stress)
+            sh = this.hydrostaticStress(stress);
+            Im = [1.0;1.0;1.0;0.0];
+            sd = stress - sh * Im;
         end
 
 
@@ -83,10 +78,10 @@ classdef MechanicalLinearElastic < handle
         
         % J2 stress invariant
         function J2 = stressInvariantJ2(this,stress)
-            I1 = this.stressInvariantI1(stress);
-            I2 = this.stressInvariantI2(stress);
-            J2 = I1 * I1 / 3.0 - I2;
-            J2 = max(J2,0.0);
+            sd  = this.deviatoricStress(stress);
+            nsd2 = sd(1)*sd(1)+sd(2)*sd(2)+sd(3)*sd(3)+2.0*sd(4)*sd(4);
+            J2  = 0.5*nsd2;
+            J2  = max(J2,0.0);
         end
 
         % Gradient of the J2 stress invariant
