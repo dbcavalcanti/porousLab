@@ -36,6 +36,16 @@ classdef MechanicalLinearElastic < handle
 
         end
 
+        %% Elastic constants
+ 
+        function G = shearModulus(~,material)
+            G = material.Young / (2.0 * (1.0 + material.nu));
+        end
+
+        function K = bulkModulus(~,material)
+            K = material.Young / (3.0 * (1.0 - 2.0*material.nu));
+        end
+        
         %% Stress utilities
         % Considering a 2D stress tensor: Stress = [sxx, syy, szz, sxy]
 
@@ -44,7 +54,7 @@ classdef MechanicalLinearElastic < handle
             sh = this.stressInvariantI1(stress) / 3.0;
         end
 
-        % Hydrostatic stress
+        % Deviatoric stress
         function sd = deviatoricStress(~,stress)
             sxx = stress(1);
             syy = stress(2);
@@ -55,6 +65,7 @@ classdef MechanicalLinearElastic < handle
                   (2.0*szz - sxx - syy)/3.0;
                   sxy];
         end
+
 
         % I1 stress invariant
         function I1 = stressInvariantI1(~,stress)

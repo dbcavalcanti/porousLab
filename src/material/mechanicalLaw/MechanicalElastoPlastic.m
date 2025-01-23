@@ -11,8 +11,9 @@
 %% Class definition
 classdef MechanicalElastoPlastic < MechanicalLinearElastic  
     properties (SetAccess = public, GetAccess = public)
-        returnMappingMaxIter = 20;
+        returnMappingMaxIter = 100;
         returnYieldConditionTol = 1.0e-8;
+        returnNormResidualFlowRuleTol = 1.0e-8;
     end
     %% Constructor method
     methods
@@ -46,10 +47,11 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
 
             % Constitutive matrix
             De = this.elasticConstitutiveMatrix(material,ip);
+            Ce = this.elasticFlexibilityMatrix(material,ip);
             Dt = De;
 
             % Trial stress vector
-            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
+            stress = De * (ip.strain - ip.plasticstrain);
 
             % Evaluate the yield condition
             f = this.yieldCondition(material,ip,stress);
@@ -59,11 +61,13 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
 
             % Initialize variables for the return mapping
             lambda = 0.0;
-            strial = stress;
+            ep     = ip.plasticstrainOld;
+            epOld  = ip.plasticstrainOld;
             iter   = 1;
+            r      = zeros(4,1);
 
-            % Return mapping
-            while f > this.returnYieldConditionTol
+            % Return mapping: closest point projection
+            while (abs(f) > this.returnYieldConditionTol) || (norm(r) > this.returnNormResidualFlowRuleTol)
 
                 % Flow vector
                 n = this.flowVector(material,ip,stress);
@@ -74,27 +78,30 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
                 % Gradient of the flow rule vector
                 dn = this.flowVectorGradient(material,ip,stress);
                 
-                % Residual of the flow rule
-                r = stress - strial * lambda * De * n;
-
                 % Hardening
                 h = this.hardening(material,ip,stress);
 
                 % Auxiliary matrix
-                Psi = eye(4) + lambda * De * dn;
+                Psi = Ce + lambda * dn;
 
                 % Increment of the plastic multiplier
-                dlambda = (f - df'*(Psi \ r)) / (df' * (Psi \ (De * n)) + h);
+                dlambda = (f - df'*(Psi \ r)) / (df' * (Psi \ n) + h);
 
                 % Update the stress vector
-                dstress = -Psi \ (r + dlambda * De * n);
+                dstress = -Psi \ (r + dlambda * n);
                 stress = stress + dstress;
 
                 % Update the plastic multipler
                 lambda = lambda + dlambda;
 
+                % Update the plastic strain
+                ep = ep - Ce * dstress;
+
                 % Check yield condition
                 f = this.yieldCondition(material,ip,stress);
+
+                % Residual of the flow rule
+                r = -ep + epOld + lambda * n;
 
                 % Update iteration counter
                 if iter > this.returnMappingMaxIter, break, end
@@ -104,16 +111,16 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
 
             % Compute the flow vector at the final stress state
             n  = this.flowVector(material,ip,stress);
+            df = this.yieldStressGradient(material,ip,stress);
             dn = this.flowVectorGradient(material,ip,stress);
-            h  = this.hardening(material,ip,stress);
 
             % Update the plastic strain
-            ip.plasticStrain = ip.plasticStrainOld + lambda * n;
+            ip.plasticstrain = ep;
 
             % Compute algorithmic tangent constitutive tensor
-            Psi = eye(4) + lambda * De * dn;
-            H   = Psi \ De;
-            Dt  = H - (H * (n * df') * H)/(df' * (H * n) + h);
+            Psi = inv(Ce + lambda * dn);
+            Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
+            % Dt  = De - (De * (n * df') * De)/(df' * (De * n));
 
         end
     end
