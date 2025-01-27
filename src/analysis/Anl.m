@@ -41,21 +41,19 @@ classdef Anl < handle
         %
         function [U,Fext] = solveSystem(~,mdl,K,Fext,U)
 
-            freedof = 1:mdl.ndoffree;
-
             if nargin < 5
-                U = zeros(mdl.nTotDofs,1);
+                U = zeros(mdl.ndof,1);
             end
 
             % Partition system of equations
-            Kff = K(freedof, freedof);
-            Ff  = Fext(freedof);
+            Kff = K(mdl.doffree, mdl.doffree);
+            Ff  = Fext(mdl.doffree);
             
             % Solve the system of equilibrium equations
             Uf = Kff \ Ff;
 
             % Displacement vector
-            U(freedof)  = Uf;
+            U(mdl.doffree)  = Uf;
             
         end
 

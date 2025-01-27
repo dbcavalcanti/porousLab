@@ -85,18 +85,11 @@ classdef Anl_Nonlinear < Anl
             lbd   = 0;  % total load ratio (lambda)
             sign  = 1;  % sign of predicted increment of load ratio
             
-            % Initialize vector of total nodal displacements and reference 
-            % load vector
+            % Initialize vector of total nodal displacements
             U    = mdl.U;
-            Fref = zeros(mdl.nTotDofs,1);
 
             % Initialize vector of total increment displacement
-            D_U = zeros(mdl.nTotDofs,1);
-
-            % Add the contribution of the nodal forces and prescribed
-            % displacement to the reference load vector
-            Fref = mdl.addNodalLoad(Fref);
-            % Fref = mdl.addPrescDispl(Fref);
+            D_U = zeros(mdl.ndof,1);
             
             %==========================================================================
             % Start incremental process
@@ -104,8 +97,7 @@ classdef Anl_Nonlinear < Anl
                 step = step + 1;
                 
                 % Tangent stiffness matrix
-                % [K,~] = mdl.globalKF(D_U); 
-                [K, ~, ~] = mdl.globalMatrices(D_U,U);
+                [K, ~, ~, Fref] = mdl.globalMatrices(U);
 
                 % Tangent increment of displacements for predicted solution
                 d_Up0 = anl.solveSystem(mdl,K,Fref,U);
@@ -122,10 +114,10 @@ classdef Anl_Nonlinear < Anl
                     d_Up0_old = d_Up0;
                     
                     % Store squared value of the norm of tangent increment of displacements
-                    n2 = d_Up0(mdl.totFreeDof)'*d_Up0(mdl.totFreeDof);
+                    n2 = d_Up0(mdl.doffree)'*d_Up0(mdl.doffree);
                 else
                     % Generalized Stiffness Parameter
-                    GSP = n2/(d_Up0(mdl.totFreeDof)'*d_Up0_old(mdl.totFreeDof));
+                    GSP = n2/(d_Up0(mdl.doffree)'*d_Up0_old(mdl.doffree));
                     
                     % Adjust increment sign
                     if (GSP < 0)
@@ -170,15 +162,14 @@ classdef Anl_Nonlinear < Anl
                     
                     % Vector of external and internal forces
                     Fext = lbd * Fref;
-                    % [K,Fint] = mdl.globalKF(D_U);
-                    [K, ~, Fint] = mdl.globalMatrices(D_U,U);
+                    [K, ~, Fint] = mdl.globalMatrices(U);
                     
                     % Vector of unbalanced forces
                     R = Fext - Fint;
                     
                     % Check convergence
-                    unbNorm = norm(R(mdl.totFreeDof));
-                    forNorm = norm(Fref(mdl.totFreeDof));
+                    unbNorm = norm(R(mdl.doffree));
+                    forNorm = norm(Fref(mdl.doffree));
                     conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < anl.tol);
                     if conv == 1
                         break;
@@ -222,7 +213,7 @@ classdef Anl_Nonlinear < Anl
                     return;
                 end
 
-                D_U = zeros(mdl.nTotDofs,1);
+                fprintf('Step:%d | Iter:%d | ratio:%.2f\n',step,iter,lbd);
 
                 % Update the state variables
                 mdl.updateStateVar();
@@ -266,9 +257,9 @@ classdef Anl_Nonlinear < Anl
         % (first iteration)
         function d_lbd0 = predictedIncrement(anl,mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Pref)
             % Extract free d.o.f. components
-            Pref  = Pref(mdl.totFreeDof);
-            D_U   = D_U(mdl.totFreeDof);
-            d_Up0 = d_Up0(mdl.totFreeDof);
+            Pref  = Pref(mdl.doffree);
+            D_U   = D_U(mdl.doffree);
+            d_Up0 = d_Up0(mdl.doffree);
             
                 
             % LCM: Load Increment
@@ -322,13 +313,13 @@ classdef Anl_Nonlinear < Anl
         % (iterations to correct predicted solution).
         function d_lbd = correctedIncrement(anl,mdl,d_lbd0,D_lbd,d_Up0,d_U0,d_Up,d_Ur,D_U,Pref,R)
             % Extract free d.o.f. components
-            d_Up0 = d_Up0(mdl.totFreeDof);
-            d_U0  = d_U0(mdl.totFreeDof);
-            d_Up  = d_Up(mdl.totFreeDof);
-            d_Ur  = d_Ur(mdl.totFreeDof);
-            D_U   = D_U(mdl.totFreeDof);
-            Pref  = Pref(mdl.totFreeDof);
-            R     = R(mdl.totFreeDof);
+            d_Up0 = d_Up0(mdl.doffree);
+            d_U0  = d_U0(mdl.doffree);
+            d_Up  = d_Up(mdl.doffree);
+            d_Ur  = d_Ur(mdl.doffree);
+            D_U   = D_U(mdl.doffree);
+            Pref  = Pref(mdl.doffree);
+            R     = R(mdl.doffree);
             
             % LCM
             if strcmp(anl.method,'LoadControl')

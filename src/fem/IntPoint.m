@@ -48,8 +48,9 @@ classdef IntPoint < handle
         %------------------------------------------------------------------
         %  Initialize analysis model (mechanical part)
         function initializeMechanicalAnalysisModel(this,anm)
-            this.anm = anm;
-            nStvar   = this.constitutiveMdl.getNumberStateVar();
+            this.anm      = anm;
+            nStvar        = this.constitutiveMdl.getNumberStateVar();
+            elastoplastic = this.constitutiveMdl.hasPlasticStrain();
             if strcmp(anm,'PlaneStress')
                 this.nVar = 4;
             elseif strcmp(anm,'PlaneStrain')
@@ -65,12 +66,17 @@ classdef IntPoint < handle
             this.strainOld   = zeros(this.nVar,1);
             this.stressOld   = zeros(this.nVar,1);
             this.statevarOld = zeros(nStvar,1);
+            if elastoplastic
+                this.plasticstrain    = zeros(this.nVar,1);
+                this.plasticstrainOld = zeros(this.nVar,1);
+            end
         end
 
         %------------------------------------------------------------------
         %  Update the current strain vector
         function updateStrainVct(this)
-            this.strainOld = this.strain;
+            this.strainOld        = this.strain;
+            this.plasticstrainOld = this.plasticstrain;
         end
 
         %------------------------------------------------------------------

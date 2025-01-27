@@ -22,6 +22,8 @@ classdef Material_M < handle
             % Mechanical constitutive behavior
             if strcmp('elastic',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalLinearElastic();
+            elseif strcmp('vonMises',matData.porousMedia.mechanical)
+                this.mechanical = MechanicalElastoPlasticVonMises();
             end
         end
     end
@@ -38,6 +40,10 @@ classdef Material_M < handle
         % constitutive law
         function nstVar = getNumberStateVar(this)
             nstVar = this.mechanical.nstVar;
+        end
+
+        function flag = hasPlasticStrain(this)
+            flag = this.mechanical.isElastoPlastic();
         end
 
     end

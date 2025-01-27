@@ -15,6 +15,8 @@ classdef PorousMedia < handle
         id                   = '';
         Young                = [];              % Young modulus (Pa)
         nu                   = [];              % Poisson ratio
+        sy0                  = [];              % Initial yield stress (Pa)
+        Kp                   = [];              % Plastic modulus (Pa)
         rho                  = [];              % Density (kg/m3)
         K                    = 0.0;             % Intrinsic permeability (m2)  
         phi                  = 0.0;             % Porosity
