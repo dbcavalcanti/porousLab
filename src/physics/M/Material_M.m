@@ -17,13 +17,15 @@ classdef Material_M < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = Material_M(matData)
+        function this = Material_M(matData,lc)
             this.porousMedia = matData.porousMedia;
             % Mechanical constitutive behavior
             if strcmp('elastic',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalLinearElastic();
             elseif strcmp('vonMises',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalElastoPlasticVonMises();
+            elseif strcmp('isoDamage',matData.porousMedia.mechanical)
+                this.mechanical = MechanicalIsotropicDamage(lc);
             end
         end
     end

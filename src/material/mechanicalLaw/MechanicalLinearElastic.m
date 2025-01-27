@@ -84,7 +84,7 @@ classdef MechanicalLinearElastic < handle
         end
 
         % Gradient of the J2 stress invariant
-        function dJ2 = gradientJ2(this,stress)
+        function dJ2 = gradientJ2(~,stress)
             sxx = stress(1);
             syy = stress(2);
             szz = stress(3);
@@ -158,8 +158,23 @@ classdef MechanicalLinearElastic < handle
         end
 
         % Gradient of the J2 strain invariant
-        function dJ2 = gradientStrainInvariantJ2(this,stress)
-            dJ2 = this.deviatoricStress(stress);
+        function dJ2 = gradientStrainInvariantJ2(~,strain)
+            exx = strain(1);
+            eyy = strain(2);
+            ezz = strain(3);
+            exy = strain(4) / 2.0;
+            dJ2 = zeros(4,1);
+            dJ2(1) = (2.0 * exx - eyy - ezz)/3.0;
+            dJ2(2) = (2.0 * eyy - exx - ezz)/3.0;
+            dJ2(3) = (2.0 * ezz - eyy - exx)/3.0;
+            dJ2(4) = 2.0 * exy;
+        end
+
+        function I4 = fourthOrderSymTensor(~)
+            I4 = [ 1.0 , 0.0 , 0.0 , 0.0;
+                   0.0 , 1.0 , 0.0 , 0.0;
+                   0.0 , 0.0 , 1.0 , 0.0;
+                   0.0 , 0.0 , 0.0 , 0.5 ];
         end
         
     end

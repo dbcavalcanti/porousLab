@@ -79,6 +79,15 @@ classdef RegularElement < handle
         end
 
         %------------------------------------------------------------------
+        % Function to compute the element characteristic length
+        function lc = characteristicLength(this)
+            lc = this.getDomainArea();
+            if strcmp(this.shape.type,'CST') || strcmp(this.shape.type,'LST')
+                lc = lc * sqrt(2.0);
+            end 
+        end
+
+        %------------------------------------------------------------------
         % Function to compute the area of the element domain
         function A = getDomainArea(this)
             A = this.calculateArea(this.node);

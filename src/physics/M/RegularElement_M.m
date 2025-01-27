@@ -45,10 +45,13 @@ classdef RegularElement_M < RegularElement
             % Get integration points coordinates and weights
             [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
 
+            % Get characteristic length
+            lc = this.characteristicLength();
+
             % Initialize the integration points objects
             intPts(this.nIntPoints,1) = IntPoint();
             for i = 1:this.nIntPoints
-                constModel = Material_M(this.mat);
+                constModel = Material_M(this.mat,lc);
                 intPts(i) = IntPoint(X(:,i),w(i), constModel);
                 intPts(i).initializeMechanicalAnalysisModel(this.anm);
             end

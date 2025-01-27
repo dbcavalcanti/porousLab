@@ -208,25 +208,34 @@ classdef Model < handle
         %------------------------------------------------------------------
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(size(this.ELEM,1),1);
-            for el = 1:size(this.ELEM,1)
-            
-                % Vertices of the element el coordinates
-                vx = this.NODE(this.ELEM(el,:),1); 
-                vy = this.NODE(this.ELEM(el,:),2);
-            
-                % Number of vertices 
-                nv = length(this.ELEM(el,:)); 
-            
-                % Shifted vertices
-                vxS = vx([2:nv 1]);
-                vyS = vy([2:nv 1]); 
-            
-                % Compute the area of the element (trapezoidal rule)
-                temp = vx.*vyS - vy.*vxS;
-                Ae   = 0.5*sum(temp);
-                
+            for el = 1:size(this.ELEM,1 
                 % Characteristic lenght (quadrilateral elements)
-                Lce(el) = sqrt(Ae);
+                Lce(el) = this.getElementCharacteristicLength(el);
+            end
+        end
+
+        %------------------------------------------------------------------
+        function Lce = getElementCharacteristicLength(this,el)
+
+            % Vertices of the element el coordinates
+            vx = this.NODE(this.ELEM(el,:),1); 
+            vy = this.NODE(this.ELEM(el,:),2);
+        
+            % Number of vertices 
+            nv = length(this.ELEM(el,:)); 
+        
+            % Shifted vertices
+            vxS = vx([2:nv 1]);
+            vyS = vy([2:nv 1]); 
+        
+            % Compute the area of the element (trapezoidal rule)
+            temp = vx.*vyS - vy.*vxS;
+            Ae   = 0.5*sum(temp);
+            
+            % Characteristic lenght (quadrilateral elements)
+            Lce = sqrt(Ae);
+            if strcmp(this.type,'CST')||strcmp(this.type,'LST')
+                Lce = Lce * sqrt(2.0);
             end
         end
 

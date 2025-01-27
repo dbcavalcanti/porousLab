@@ -17,6 +17,9 @@ classdef PorousMedia < handle
         nu                   = [];              % Poisson ratio
         sy0                  = [];              % Initial yield stress (Pa)
         Kp                   = [];              % Plastic modulus (Pa)
+        kappa                = [];              % Ratio between the uniaxial compressive strength and the uniaxial tensile strength
+        DamageThreshold      = [];              % Damage threshold
+        FractureEnergyMode1  = [];              % Fracture energy associated with mode 1 (N/m)
         rho                  = [];              % Density (kg/m3)
         K                    = 0.0;             % Intrinsic permeability (m2)  
         phi                  = 0.0;             % Porosity

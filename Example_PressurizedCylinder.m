@@ -1,6 +1,6 @@
-%% ===================== Elastic plate problem ============================
+%% ================= Pressurized cylinder problem =========================
 %
-% Elastic traction of a elastic plate validation problem
+% Elastoplastic pressurized cylinder example.
 %
 % Author: Danilo Cavalcanti
 %
@@ -19,8 +19,8 @@ mdl = Model_M();
 % Mesh properties
 ri = 0.1;      % Internal radius of the cylinder
 re = 0.2;      % External radius of the cylinder
-Nx = 20;       % Number of elements in the x-direction
-Ny = 20;       % Number of elements in the y-direction
+Nx = 10;       % Number of elements in the x-direction
+Ny = 10;       % Number of elements in the y-direction
 
 % Generate the mesh
 [NODE,mdl.ELEM] = regularMeshY(1.0, 1.0, Nx, Ny);
