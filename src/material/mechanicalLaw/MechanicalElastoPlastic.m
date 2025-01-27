@@ -1,6 +1,6 @@
-%% Material_Elastic class
+%% MechanicalElastoPlastic class
 %
-% This class defines an linear elastic stress-strain constitutive law
+% This class defines a generic elastoplastic constitutive law
 %
 %% Author
 % Danilo Cavalcanti
