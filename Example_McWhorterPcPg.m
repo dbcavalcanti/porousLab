@@ -17,7 +17,7 @@ mdl = Model_H2_PcPg();
 % Mesh properties
 Lx = 2.6;      % Horizontal dimension (m)
 Ly = 0.5;      % Vertical dimension (m)
-Nx = 1;      % Number of elements in the x-direction
+Nx = 260;      % Number of elements in the x-direction
 Ny = 1;        % Number of elements in the y-direction
 
 % Generate the mesh
