@@ -19,8 +19,8 @@ mdl = Model_M();
 % Mesh properties
 Lx = 0.11;     % Horizontal dimension (m)
 Ly = 0.04;     % Vertical dimension (m)
-Nx = 11;       % Number of elements in the x-direction
-Ny = 4;       % Number of elements in the y-direction
+Nx = 22;       % Number of elements in the x-direction
+Ny = 8;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -80,7 +80,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Solve the problem
-anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,100,10,100,4,1.0e-5);
+anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,200,15,100,4,1.0e-5);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
