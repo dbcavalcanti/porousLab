@@ -17,10 +17,10 @@ mdl = Model_M();
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 2;       % Horizontal dimension (m)
-Ly = 1.0;     % Vertical dimension (m)
-Nx = 20;       % Number of elements in the x-direction
-Ny = 10;       % Number of elements in the y-direction
+Lx = 0.11;     % Horizontal dimension (m)
+Ly = 0.04;     % Vertical dimension (m)
+Nx = 11;       % Number of elements in the x-direction
+Ny = 4;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -35,11 +35,12 @@ mdl.t = 1.0;
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.mechanical = 'vonMises'; % Elastoplastic with von Mises criteria 
-rock.Young = 1.0e6;          % Young modulus (Pa)
-rock.nu    = 0.0;             % Poisson ratio
-rock.sy0   = 1.0e6;          % Initial yield stress (Pa)
-rock.Kp    = 0.0;             % Plastic modulus (Pa)
+rock.mechanical = 'isoDamage';      % Elastoplastic with von Mises criteria 
+rock.Young = 2.0e10;                % Young modulus (Pa)
+rock.nu    = 0.0;                   % Poisson ratio
+rock.kappa = 10.0;                  % Ratio of tensile and compressive strength
+rock.DamageThreshold = 1.0e-4;
+rock.FractureEnergyMode1 = 50.0;
 
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
@@ -49,8 +50,7 @@ mdl.mat  = struct('porousMedia',rock);
 % forget also that you need to constraint these degrees of freedom.
 
 % Displacement boundary conditions
-CoordSupp  = [1 0 0 -1;
-              1 1 0 0];
+CoordSupp  = [1 1 0 -1];
 CoordLoad  = [];
 CoordPresc = [];                                   
            
@@ -80,7 +80,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Solve the problem
-anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,1.0,10,100,4,1.0e-5);
+anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,100,10,100,4,1.0e-5);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

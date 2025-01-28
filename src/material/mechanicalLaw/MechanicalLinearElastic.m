@@ -127,8 +127,34 @@ classdef MechanicalLinearElastic < handle
             d2sVM = dsVMdJ2 * d2J2 - (0.25 * sqrt(3.0/J2/J2/J2))*(dJ2 * dJ2');
         end
 
+        % Get plane stress constitutive matrix
+        function D = planeStressConstitutiveMatrix(~,D)
+            % Get the sub-matrices
+            D11 = [ D(1,1) , D(1,2) , D(1,4) ;
+                    D(2,1) , D(2,2) , D(2,4) ;
+                    D(4,1) , D(4,2) , D(4,4) ];
+            D21 = [ D(3,1) ; D(3,2) ; D(3,4)];
+            D12 = [ D(1,3) ; D(2,3) ; D(4,3)];
+            D22 = D(3,3);
+            % Compute the plane stress matrix
+            Dt  = D11 - D12 * D21' / D22;
+            % Assemble
+            D = [ Dt(1,1) , Dt(1,2) , 0.0 , Dt(1,3) ;
+                  Dt(2,1) , Dt(2,2) , 0.0 , Dt(2,3) ;
+                   0.0    ,   0.0   , 1.0 ,   0.0   ;
+                  Dt(3,1) , Dt(3,2) , 0.0 , Dt(3,3) ];
+        end
+
         %% Strain utilities
         % Considering a 2D strain tensor: strain = [exx, eyy, ezz, 2exy]
+
+        % Compute the elastic out-of-plane strain
+        function elasticOutOfPlaneStrain(~,material,ip)
+            if strcmp(ip.anm,'PlaneStress')
+                nu = material.nu;
+                ip.strain(3) = -nu/(1.0-nu)*(ip.strain(1)+ip.strain(2));
+            end
+        end
 
         % I1 strain invariant
         function I1 = strainInvariantI1(~,strain)

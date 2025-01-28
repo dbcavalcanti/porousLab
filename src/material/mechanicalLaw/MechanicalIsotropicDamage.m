@@ -42,10 +42,10 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
             DdDr = this.damageLaw(material,ip);
 
             % Tangent constitutive matrix
-            Dt = this.tangentConstitutiveMatrix(material,ip,effstress,De,DrDstrain,DdDr);
+            Dt = this.tangentConstitutiveMatrix(ip,effstress,De,DrDstrain,DdDr);
 
             % Update the stress vector
-            stress = (1.0 - d) * effstress;
+            stress = (1.0 - ip.statevar(1)) * effstress;
 
         end
 
@@ -56,6 +56,8 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
             % Get the material parameters
             k = material.kappa;
             nu = material.nu;
+            % Compute out-of-plane strain (plane stress problems)
+            this.elasticOutOfPlaneStrain(material,ip)
             % Compute the strain invariants
             I1 = this.strainInvariantI1(ip.strain);
             J2 = this.strainInvariantJ2(ip.strain);
@@ -79,7 +81,7 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
         % the entire load history
         function DrDstrain = damageCriteria(this,material,ip)
             [eqstrain,Deqstrain] = this.equivalentStrain(material,ip);
-            ip.statevarOld(2) = max(statevarOld(2),material.DamageThreshold);
+            ip.statevarOld(2) = max(ip.statevarOld(2),material.DamageThreshold);
             if eqstrain > ip.statevarOld(2)
                 ip.statevar(2) = eqstrain;
                 DrDstrain = Deqstrain;
@@ -98,6 +100,7 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
             Gf   = material.FractureEnergyMode1;
             beta = E * r0 * this.lc / Gf;
             % Scalar damage
+            r = ip.statevar(2);
             d = 1.0 - r0 / r * exp(-beta * (r - r0));
             if d < eps
                 d = eps;
@@ -112,9 +115,12 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
 
         %------------------------------------------------------------------
         % Damage exponential law
-        function Dt = tangentConstitutiveMatrix(this,material,ip,effstress,De,DrDstrain,DdDr)
+        function Dt = tangentConstitutiveMatrix(this,ip,effstress,De,DrDstrain,DdDr)
             d = ip.statevar(1);
             Dt = (1.0 - d) * De - DdDr * effstress * DrDstrain';
+            if strcmp(ip.anm,'PlaneStress')
+                Dt = this.planeStressConstitutiveMatrix(Dt);
+            end
         end
 
     end
