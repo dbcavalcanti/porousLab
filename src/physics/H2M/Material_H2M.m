@@ -46,5 +46,10 @@ classdef Material_H2M < Material_H2
             cul = this.porousMedia.biot * Sl;
             cug = this.porousMedia.biot * (1.0 - Sl);
         end
+
+        % -----------------------------------------------------------------
+        function flag = hasPlasticStrain(this)
+            flag = this.mechanical.isElastoPlastic();
+        end
     end
 end

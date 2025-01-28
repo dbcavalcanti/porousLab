@@ -66,5 +66,10 @@ classdef Material_HM < handle
             % Compute teh compressibility
             comp = (biot - phi)/Ks + phi/Kf;
         end
+        
+        % -----------------------------------------------------------------
+        function flag = hasPlasticStrain(this)
+            flag = this.mechanical.isElastoPlastic();
+        end
     end
 end

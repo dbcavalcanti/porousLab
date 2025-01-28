@@ -126,7 +126,7 @@ mdl.preComputations();
 % Initialize the stress tensor
 for el = 1:mdl.nelem
     for i = 1:mdl.element(el).type.nIntPoints
-        mdl.element(el).type.intPoint(i).stressOld = [101325.0;101325.0;0.0];
+        mdl.element(el).type.intPoint(i).stressOld = [101325.0;101325.0;101325.0;0.0];
     end
 end
 

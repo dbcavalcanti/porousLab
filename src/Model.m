@@ -208,7 +208,7 @@ classdef Model < handle
         %------------------------------------------------------------------
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(size(this.ELEM,1),1);
-            for el = 1:size(this.ELEM,1 
+            for el = 1:size(this.ELEM,1)
                 % Characteristic lenght (quadrilateral elements)
                 Lce(el) = this.getElementCharacteristicLength(el);
             end
