@@ -23,6 +23,7 @@ classdef RegularElement < handle
         gle          = [];            % Vector of the degrees of freedom
         ngle         = 0;             % Total number of dofs
         ue           = [];            % Element's displacement vector
+        ueOld        = [];            % Element's old displacement vector
         due          = [];            % Element's increment displacement
         nIntPoints   = 1;             % Number of integration points
         intPoint     = [];            % Vector with integration point objects
@@ -31,6 +32,7 @@ classdef RegularElement < handle
         massLumping  = false;         % Flag to apply a diagonalization of the compressibility matrix
         lumpStrategy = 1;             % Id of the diagonalization strategy
         isAxisSymmetric = false;      % Flag to axissymetric models
+        DTime        = [];            % Time increment          
     end
     
     %% Constructor method

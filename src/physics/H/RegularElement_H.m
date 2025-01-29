@@ -17,7 +17,7 @@ classdef RegularElement_H < RegularElement
         %------------------------------------------------------------------
         function this = RegularElement_H(type, node, elem, t, ...
                 mat, intOrder, glp, massLumping, lumpStrategy, ...
-                isAxisSymmetric,isPlaneStress)
+                isAxisSymmetric)
             this = this@RegularElement(type, node, elem, t, ...
                 mat, intOrder, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
@@ -50,20 +50,32 @@ classdef RegularElement_H < RegularElement
 
         %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
+        function [Ae, be] = elementLinearSystem(this,nlscheme)
+
+            [Ke, Ce, fi, fe, dfidu] = this.elementData();
+
+            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+
+        end
+
+        %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
         %
         % Output:
         %   Ke : element "stiffness" matrix
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fi, fe] = elementData(this)
+        function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
             % Initialize the sub-matrices
-            Ke   = zeros(this.nglp, this.nglp);
-            Ce   = zeros(this.nglp, this.nglp);
+            Ke    = zeros(this.nglp, this.nglp);
+            Ce    = zeros(this.nglp, this.nglp);
+            dfidu = zeros(this.nglp, this.nglp);
 
             % Initialize external force vector
             fe = zeros(this.nglp, 1);
+            fi = zeros(this.nglp, 1);
             
             % Vector of the nodal dofs
             pl = this.getNodalPressure();
@@ -119,10 +131,6 @@ classdef RegularElement_H < RegularElement
                 Ce = lumpedCompressibilityMatrix(this, vol);
             end
 
-            % Add contribution of the pressure to the internal force vector
-            fi = Ke * pl;
-
-            
         end
 
         %------------------------------------------------------------------

@@ -6,7 +6,6 @@
 classdef Anl_Transient < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        theta = 1.0;    % Implicit time integration scheme
         dt    = 0.001;  % Time increment;
         tf    = 1.0;    % Final time
         tinit = 0.01;

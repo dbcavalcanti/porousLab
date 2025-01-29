@@ -360,23 +360,79 @@ classdef Model < handle
 
             % Add contribution of the nodal forces to the external force
             % vector
-            Fe = Fe + this.addNodalLoad(Fe);
+            Fe = this.addNodalLoad(Fe);
 
         end
 
         %------------------------------------------------------------------
-        function A = applyDirichletBC(this, A)
-            % Iterate over all fixed DOFs
-            for i = 1:this.ndoffixed
-                fixedDOF = this.doffixed(i); 
-                
-                % Set the row and column of the fixed DOF to zero
-                A(fixedDOF, :) = 0; % Clear the row
-                A(:, fixedDOF) = 0; % Clear the column
-                
-                % Set the diagonal entry to 1
-                A(fixedDOF, fixedDOF) = 1.0;
+        % Global system matrices
+        function [A,b] = getLinearSystem(this,U,UOld,nonlinearScheme,dt)   
+
+            % Indices for the assembling the matrices and vector
+            iDof = zeros(this.sqrNDofElemTot,1);
+            jDof = zeros(this.sqrNDofElemTot,1);
+            eDof = zeros(this.nDofElemTot,1);
+
+            % Initialize the components of the matrices and vector
+            A_ij  = zeros(this.sqrNDofElemTot,1);
+            b_i  = zeros(this.nDofElemTot,1);
+
+            % Initialize auxiliar variables
+            counterK = 0;
+            counterF = 0;
+
+            % Update the element displacement vector of each element
+            for el = 1:this.nelem
+                this.element(el).type.DTime = dt;
+                this.element(el).type.ue    = U(this.element(el).type.gle);
+                this.element(el).type.ueOld = UOld(this.element(el).type.gle);
             end
+            
+            % Compute and assemble element data
+            for el = 1:this.nelem
+
+                % Get the vector of the element dof  
+                gle_i  = this.element(el).type.gle;
+                gle_j  = gle_i;
+                nGlei  = length(gle_i);
+                nGlej  = length(gle_j);
+                nGleij = nGlei*nGlej;
+
+                % Get the indices for assemblage
+                iDofEl = repmat(gle_i',1,nGlej);
+                jDofEl = repmat(gle_j,nGlei,1);
+                iDof(counterK+1:counterK+nGleij) = iDofEl(:);
+                jDof(counterK+1:counterK+nGleij) = jDofEl(:);
+                eDof(counterF+1:counterF+nGlei)  = gle_i';
+            
+                % Get local matrices and vector
+                [A_e,b_e] = this.element(el).type.elementLinearSystem(nonlinearScheme);
+
+                % Store in the global vectors
+                A_ij(counterK+1:counterK+nGleij) = A_e(:);
+                b_i(counterF+1:counterF+nGlei)   = b_e(:);
+            
+                % Update auxiliar variables
+                counterK = counterK + nGleij;
+                counterF = counterF + nGlei;
+                
+            end
+
+            % Assemble the matrices and vector
+            A = sparse(iDof,jDof,A_ij);
+            b = sparse(eDof,ones(this.nDofElemTot,1),b_i);
+            b = full(b);
+
+            % Add contribution of the nodal forces to the external force
+            % vector
+            b = this.addNodalLoad(b);
+
+        end
+
+        %------------------------------------------------------------------
+        function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
+            Aff = A(this.doffree,this.doffree);
+            bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
         end
 
         %------------------------------------------------------------------

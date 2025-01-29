@@ -158,10 +158,10 @@ dtmax = 20.0;
 dtmin = 0.01;
 
 % Solve the problem
-anl = Anl_Transient(result);
+anl = Anl_TransientPicard(result);
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-% anl.setPicardRelaxation();
-% anl.useRelativeError = true;
+anl.setPicardRelaxation();
+anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
