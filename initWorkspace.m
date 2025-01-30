@@ -18,6 +18,13 @@ function initWorkspace()
     clear EFEMDraw
     % Clear the workspace and the command window
     clear; clc;
+    % porousLab header
+    fprintf('**********************************************************\n');
+    fprintf('*                        porousLab                       *\n');
+    fprintf('*                                                        *\n');
+    fprintf('* Created by: Danilo Cavalcanti                          *\n');
+    fprintf('* Last update: Jan/2025                                  *\n');
+    fprintf('**********************************************************\n\n');
     %Use all folders and subfolders
     addpath(genpath('./'));
 end
