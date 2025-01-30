@@ -67,11 +67,12 @@ classdef RegularElement_M < RegularElement
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fi, fe] = elementData(this)
+        function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
             % Initialize the matrices
-            Ke = zeros(this.nglu, this.nglu);
-            Ce = zeros(this.nglu, this.nglu);
+            Ke    = zeros(this.nglu, this.nglu);
+            Ce    = zeros(this.nglu, this.nglu);
+            dfidu = zeros(this.nglu, this.nglu);
 
             % Initialize external force vector
             fe = zeros(this.nglu, 1);

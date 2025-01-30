@@ -1,6 +1,6 @@
-%% ===================== Elastic plate problem ============================
+%% ========================================================================
 %
-% Elastic traction of a elastic plate validation problem
+% Script to test and validate mechanical constitutive models
 %
 % Author: Danilo Cavalcanti
 %
@@ -31,15 +31,15 @@ ip.initializeMechanicalAnalysisModel('PlaneStrain');
 %% ========================= STRAIN INCREMENT =============================
 
 % Direction of the strain increment
-dstrain0 = [1.0;  % exx
+dstrain0 = [0.0;  % exx
             0.0;  % eyy
             0.0;  % ezz
-            0.0]; % gxy
+            1.0]; % gxy
 
 mag = 1.0e-5;
 ninc = 150;
 
-idplot       = 1;
+idplot       = 4;
 stressplot   = zeros(ninc+1,1);
 strainplot   = zeros(ninc+1,1);
 pstrainplot  = zeros(ninc+1,1);
@@ -59,14 +59,15 @@ end
 %  --- Tensão vs. deformação total ----------------------------------------
 figure
 grid on, box on, hold on
-plot(strainplot,stressplot/rock.sy0,'b-','LineWidth',1.5);
+tauy = rock.sy0 / sqrt(3.0);
+plot(strainplot,stressplot/tauy,'b-','LineWidth',1.5);
 xlabel('$\gamma_{xy}$'); ylabel('$\tau_{xy}$/$\tau_Y$');
 set(gca,'fontsize',18,'TickLabelInterpreter','latex');
 
 % --- Tensão vs. deformação plástica --------------------------------------
 figure
 grid on, box on, hold on
-plot(pstrainplot,stressplot/rock.sy0,'r-','LineWidth',1.5);
+plot(pstrainplot,stressplot/tauy,'r-','LineWidth',1.5);
 xlabel('$\gamma_{xy}^p$'); ylabel('$\tau_{xy}$/$\tau_Y$'); 
 set(gca,'fontsize',18,'TickLabelInterpreter','latex');
 

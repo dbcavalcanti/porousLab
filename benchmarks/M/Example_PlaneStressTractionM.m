@@ -17,10 +17,10 @@ mdl = Model_M();
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 2;       % Horizontal dimension (m)
-Ly = 1.0;     % Vertical dimension (m)
-Nx = 20;       % Number of elements in the x-direction
-Ny = 10;       % Number of elements in the y-direction
+Lx = 0.11;     % Horizontal dimension (m)
+Ly = 0.04;     % Vertical dimension (m)
+Nx = 22;       % Number of elements in the x-direction
+Ny = 8;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -35,8 +35,12 @@ mdl.t = 1.0;
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.Young = 1.0e6;         % Young modulus (Pa)
-rock.nu    = 0.3;           % Poisson ratio
+rock.mechanical = 'isoDamage';      % Elastoplastic with von Mises criteria 
+rock.Young = 2.0e10;                % Young modulus (Pa)
+rock.nu    = 0.0;                   % Poisson ratio
+rock.kappa = 10.0;                  % Ratio of tensile and compressive strength
+rock.DamageThreshold = 1.0e-4;
+rock.FractureEnergyMode1 = 50.0;
 
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
@@ -46,8 +50,7 @@ mdl.mat  = struct('porousMedia',rock);
 % forget also that you need to constraint these degrees of freedom.
 
 % Displacement boundary conditions
-CoordSupp  = [1 1 0 -1;
-              1 1 0 0];
+CoordSupp  = [1 1 0 -1];
 CoordLoad  = [];
 CoordPresc = [];                                   
            
@@ -56,7 +59,7 @@ CoordPresc = [];
     CoordSupp, CoordLoad, CoordPresc, Lx, Ly, Nx, Ny);
 
 % Apply pressure at the top (Pa)
-[mdl.LOAD_u] = pressureLoad(1.0e6,[Lx, Ly],1,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
+[mdl.LOAD_u] = pressureLoad(2.0e6,[Lx, Ly],1,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
 
 %% ===================== MODEL CONFIGURATION ==============================
 
@@ -77,7 +80,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Solve the problem
-anl = Anl_Linear(result);
+anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,200,15,100,4,1.0e-5);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

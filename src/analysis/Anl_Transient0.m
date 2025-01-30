@@ -121,7 +121,7 @@ classdef Anl_Transient0 < Anl
                 mdl.updateStateVar();
 
                 % Update time step
-                if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1) && (iter < 5)
+                if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
                     this.dt = min(this.dt * 2,this.dtMax);
                 end
 
