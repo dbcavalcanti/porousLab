@@ -1,5 +1,7 @@
 %% NonlinearScheme_Newton Class
 %
+% Considers a fully implicit time integration scheme.
+%
 classdef NonlinearScheme_Newton < NonlinearScheme 
     %% Constructor method
     methods
@@ -37,7 +39,7 @@ classdef NonlinearScheme_Newton < NonlinearScheme
     methods
 
         %------------------------------------------------------------------
-        function convFlg = convergence(this,~,~,~,r,iter)
+        function convFlg = convergence(this,~,~,~,r,~,iter)
             fprintf("\t\t iter.: %3d , ||R|| = %7.3e \n",iter,norm(r));
             if (norm(r) < this.tol) && (iter > 1)
                 convFlg = true;

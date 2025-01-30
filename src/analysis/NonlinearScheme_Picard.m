@@ -1,5 +1,13 @@
 %% NonlinearScheme_Newton Class
 %
+% Considers a fully implicit time integration scheme.
+%
+% Reference:
+% Li, W., & Wei, C. (2015). An efficient finite element procedure for
+% analyzing three‐phase porous media based on the relaxed Picard method.
+% International Journal for Numerical Methods in Engineering, 101(11),
+% 825-846.
+%
 classdef NonlinearScheme_Picard < NonlinearScheme 
     %% Constructor method
     methods
@@ -13,23 +21,22 @@ classdef NonlinearScheme_Picard < NonlinearScheme
     methods (Static)
         %------------------------------------------------------------------
         function [X, dx] = eval(A,b,X,freedof)
-            % Compute the increment of the variables
-            dx = -J\r;
-            % Update the variables
-            X(freedof) = X(freedof) + dx;
+            XOld = X;
+            X(freedof) = A\b;
+            dx = X - XOld;
         end
 
         %------------------------------------------------------------------
         function [A, b] = assembleLinearSystem(C, K, ~, fe, ~, ~, xOld, dt)
-            % Compute residual vector
+            % RHS vector
             b = C * xOld / dt + fe;
-            % Jacobian matrix
+            % LHS matrix
             A = K + C / dt;
         end
 
         %------------------------------------------------------------------
-        function bf = applyBCtoRHS(~, b, ~, doffree, ~)
-            bf = b(doffree);
+        function bf = applyBCtoRHS(A, b, x, doffree, doffixed)
+            bf = b(doffree) - A(doffree,doffixed)*x(doffixed);
         end
 
     end
@@ -37,9 +44,17 @@ classdef NonlinearScheme_Picard < NonlinearScheme
     methods
 
         %------------------------------------------------------------------
-        function convFlg = convergence(this,~,~,~,r,iter)
-            fprintf("\t\t iter.: %3d , ||R|| = %7.3e \n",iter,norm(r));
-            if (norm(r) < this.tol) && (iter > 1)
+        function convFlg = convergence(this,X,~,dX,~, doffree,iter)
+            % Evaluate error
+            normError = norm(dX(doffree));
+            if this.normalizeError
+                normError = normError / norm(X(doffree));
+                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
+            else
+                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
+            end
+            % Check convergence
+            if (norm(normError) < this.tol) && (iter > 1)
                 convFlg = true;
             else
                 convFlg = false;

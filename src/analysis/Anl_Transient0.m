@@ -89,7 +89,7 @@ classdef Anl_Transient0 < Anl
                         [X, dx] = this.nlscheme.eval(A,b,X,mdl.doffree);
     
                         % Check convergence
-                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,iter);
+                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter);
                         if convFlg == true, break;  end
     
                         % Check maximum number of iterations
@@ -161,8 +161,8 @@ classdef Anl_Transient0 < Anl
 
         end
 
-        function convFlg = this.convergence(X,XOld,dx,b)
-
+        function setRelativeConvergenceCriteria(this,flag)
+            this.nlscheme.normalizeError = flag;
         end
 
         function printStep(~,X,mdl)

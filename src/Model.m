@@ -298,7 +298,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Global system matrices
-        function [K, C, Fi, Fe] = globalMatrices(this,U)   
+        function [K, C, Fi, Fe, dfidx] = globalMatrices(this,U)   
 
             % Indices for the assembling the matrices and vector
             iDof = zeros(this.sqrNDofElemTot,1);
@@ -306,10 +306,11 @@ classdef Model < handle
             eDof = zeros(this.nDofElemTot,1);
 
             % Initialize the components of the matrices and vector
-            K_ij  = zeros(this.sqrNDofElemTot,1);
-            C_ij  = zeros(this.sqrNDofElemTot,1);
-            fi_i  = zeros(this.nDofElemTot,1);
-            fe_i  = zeros(this.nDofElemTot,1);
+            K_ij      = zeros(this.sqrNDofElemTot,1);
+            C_ij      = zeros(this.sqrNDofElemTot,1);
+            dfidx_ij  = zeros(this.sqrNDofElemTot,1);
+            fi_i      = zeros(this.nDofElemTot,1);
+            fe_i      = zeros(this.nDofElemTot,1);
 
             % Initialize auxiliar variables
             counterK = 0;
@@ -338,13 +339,14 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [K_e,C_e,fi_e,fe_e] = this.element(el).type.elementData();
+                [K_e,C_e,fi_e,fe_e,dfidx_e] = this.element(el).type.elementData();
 
                 % Store in the global vectors
-                K_ij(counterK+1:counterK+nGleij) = K_e(:);
-                C_ij(counterK+1:counterK+nGleij) = C_e(:);
-                fi_i(counterF+1:counterF+nGlei)  = fi_e(:);
-                fe_i(counterF+1:counterF+nGlei)  = fe_e(:);
+                K_ij(counterK+1:counterK+nGleij)     = K_e(:);
+                C_ij(counterK+1:counterK+nGleij)     = C_e(:);
+                dfidx_ij(counterK+1:counterK+nGleij) = dfidx_e(:);
+                fi_i(counterF+1:counterF+nGlei)      = fi_e(:);
+                fe_i(counterF+1:counterF+nGlei)      = fe_e(:);
             
                 % Update auxiliar variables
                 counterK = counterK + nGleij;
@@ -353,10 +355,11 @@ classdef Model < handle
             end
 
             % Assemble the matrices and vector
-            K  = sparse(iDof,jDof,K_ij);
-            C  = sparse(iDof,jDof,C_ij);
-            Fi = sparse(eDof,ones(this.nDofElemTot,1),fi_i);
-            Fe = sparse(eDof,ones(this.nDofElemTot,1),fe_i);
+            K      = sparse(iDof,jDof,K_ij);
+            C      = sparse(iDof,jDof,C_ij);
+            dfidx  = sparse(iDof,jDof,dfidx_ij);
+            Fi     = sparse(eDof,ones(this.nDofElemTot,1),fi_i);
+            Fe     = sparse(eDof,ones(this.nDofElemTot,1),fe_i);
 
             % Add contribution of the nodal forces to the external force
             % vector

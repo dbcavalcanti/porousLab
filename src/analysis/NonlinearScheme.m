@@ -13,8 +13,9 @@
 %
 classdef NonlinearScheme < handle
     %% Properties
-    properties (SetAccess = private, GetAccess = public)
+    properties (SetAccess = public, GetAccess = public)
         tol = 1.0e-5;
+        normalizeError = false;
     end
     %% Constructor method
     methods
@@ -31,7 +32,7 @@ classdef NonlinearScheme < handle
     methods (Abstract)
         [X, dx] = eval(J,r,X,freedof);
         [A,b] = assembleLinearSystem(C, K, fi, fe, dfidx, x, xOld, dt);
-        bf = applyBCtoRHS(A, b, X, doffree, doffixed);
-        convFlg = convergence(X,XOld,dx,b,iter);
+        bf = applyBCtoRHS(A, b, x, doffree, doffixed);
+        convFlg = convergence(this,X,XOld,dx,b,doffree,iter);
     end
 end
