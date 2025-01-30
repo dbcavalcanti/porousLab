@@ -123,6 +123,8 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function preComputations(this)
+
+            disp("*** Pre-processing...");
             
             % Initialize basic variables
             this.initializeBasicVariables();
@@ -426,9 +428,10 @@ classdef Model < handle
             b = sparse(eDof,ones(this.nDofElemTot,1),b_i);
             b = full(b);
 
-            % Add contribution of the nodal forces to the external force
-            % vector
-            b = this.addNodalLoad(b);
+            % Add contribution of the nodal forces
+            Fe = sparse(this.ndof,1);
+            Fe = this.addNodalLoad(Fe);
+            b = b - Fe;
 
         end
 

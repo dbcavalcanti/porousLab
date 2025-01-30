@@ -65,21 +65,33 @@ classdef RegularElement_HM < RegularElement
 
         %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
+        function [Ae, be] = elementLinearSystem(this,nlscheme)
+
+            [Ke, Ce, fi, fe, dfidu] = this.elementData();
+
+            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+        end
+
+        %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
         %
         % Output:
         %   Ke : element "stiffness" matrix
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fi, fe] = elementData(this)
+        function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
             % Initialize the sub-matrices
             K   = zeros(this.nglu, this.nglu);
             H   = zeros(this.nglp, this.nglp);
             Q   = zeros(this.nglp, this.nglu);
             S   = zeros(this.nglp, this.nglp);
+
+            % Auxiliar zero-matrices and vectors
             Opu = zeros(this.nglp, this.nglu);
             Ouu = zeros(this.nglu, this.nglu);
+            Opp = zeros(this.nglp, this.nglp);
 
             % Initialize external force vector
             feu = zeros(this.nglu, 1);
@@ -87,6 +99,7 @@ classdef RegularElement_HM < RegularElement
 
             % Initialize the internal force vector
             fiu = zeros(this.nglu, 1);
+            fip = zeros(this.nglp, 1);
             
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
@@ -168,15 +181,15 @@ classdef RegularElement_HM < RegularElement
             end
 
             % Assemble the element permeability
-            Ke = [  K , -Q';
+            Ke = [ Ouu , Opu';
                    Opu,  H ];
+
+            dfidu = [ K , -Q';
+                     Opu, Opp ];
             
             % Assemble the element compressibility matrix
-            Ce = [ Ouu,  Opu';
+            Ce = [ Ouu , Opu';
                     Q ,   S ];
-
-            % Add contribution of the pressure to the internal force vector
-            fip = H * pl;
 
             % Assemble element internal force vector
             fi = [fiu; fip];
