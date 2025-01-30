@@ -224,42 +224,61 @@ classdef EFEMDraw < handle
             max_load = max(draw.model.F);
         end
 
-        function elements(draw,plotMatId)
-            nmaterials = size(unique(draw.model.matID),1);
-            colors = parula(nmaterials);
+        function elements(draw)
+        
+            % Initialize combined matrices
+            allFaces = [];          % Combined faces connectivity
+            allVertices = [];       % Combined vertices coordinates
+            allVertexData = [];     % Combined vertex data
+            vertexOffset = 0;       % Offset for face indices due to combined vertices
+        
+            % Loop through all elements to build combined matrices
             for el = 1:draw.model.nelem
-                res = draw.model.element(el).type.result;
-                if plotMatId
-                    materialID = draw.model.matID(el);
-                    fieldFaceColor = colors(materialID,:);
-                else
-                    fieldFaceColor = res.faceColor;
-                end
-                patch('Faces',res.faces,...
-                    'Vertices',res.vertices,...
-                    'FaceVertexCData',res.vertexData,...
-                    'FaceColor',fieldFaceColor,...
-                    'LineWidth',res.edgesThickness,...
-                    'LineStyle','-',...
-                    'Marker',res.markerType,...
-                    'MarkerFaceColor',res.markerFaceColor); 
-                colormap(res.colormapType);
-                if isa(draw.model.element(el).type,'EnrichedElement')
-                    res = draw.model.element(el).type.fracture{1}.result;
-                    patch('Faces',res.faces,...
-                        'Vertices',res.vertices,...
-                        'FaceColor','white',...
-                        'EdgeColor','k',...
-                        'EdgeAlpha',0.5,...
-                        'LineStyle','--',...
-                        'LineWidth',res.edgesThickness,...
-                        'Marker',res.markerType,...
-                        'MarkerFaceColor',res.markerFaceColor); 
-                end
+                % Get the current element and its results
+                element = draw.model.element(el).type;
+                res = element.result;
+        
+                % Adjust face indices for combined vertices
+                faces = res.faces + vertexOffset;
+        
+                % Append to combined matrices
+                allFaces = [allFaces; faces];
+                allVertices = [allVertices; res.vertices];
+                allVertexData = [allVertexData; res.vertexData];
 
+                % Update vertex offset for the next element
+                vertexOffset = vertexOffset + size(res.vertices, 1);
+            end
+        
+            % Draw all patches at once
+            patch('Faces', allFaces, ...
+                  'Vertices', allVertices, ...
+                  'FaceVertexCData', allVertexData, ...
+                  'FaceColor', 'interp', ...  % Use 'interp' for vertex-based colors
+                  'LineWidth', draw.model.element(1).type.result.edgesThickness, ...
+                  'LineStyle', '-', ...
+                  'Marker', 'none');  % Disable markers for batch plotting
+        
+            % Set the colormap
+            colormap(draw.model.element(1).type.result.colormapType);
+        
+            % If there are enriched elements, draw fractures separately
+            for el = 1:draw.model.nelem
+                element = draw.model.element(el).type;
+                if isa(element, 'EnrichedElement')
+                    fractureRes = element.fracture{1}.result;
+                    patch('Faces', fractureRes.faces, ...
+                          'Vertices', fractureRes.vertices, ...
+                          'FaceColor', 'white', ...
+                          'EdgeColor', 'k', ...
+                          'EdgeAlpha', 0.5, ...
+                          'LineStyle', '--', ...
+                          'LineWidth', fractureRes.edgesThickness, ...
+                          'Marker', fractureRes.markerType, ...
+                          'MarkerFaceColor', fractureRes.markerFaceColor);
+                end
             end
         end
-
         function fractures(draw)
             for el = 1:size(draw.model.FRACT,1)
                 x = [draw.model.NODE_D(draw.model.FRACT(el,:),1)];
@@ -302,17 +321,14 @@ classdef EFEMDraw < handle
         % Draws a continuous beam model with applied loads.
         % Input:
         % - cnv: graphics context (owning canvas)
-        function mesh(draw,plotMatId)
-            if nargin == 1
-                plotMatId = false;
-            end
+        function mesh(draw)
 
             figure
             hold on, box on, grid on
             axis equal
             
             % Draw continuous mesh
-            draw.elements(plotMatId);
+            draw.elements();
 
             % Draw fractures
             % draw.fractures();

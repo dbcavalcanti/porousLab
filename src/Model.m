@@ -463,14 +463,6 @@ classdef Model < handle
             end
         end
 
-
-        % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
-        function plotMeshWithMatId(this)
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh(true);
-        end
-
         % -----------------------------------------------------------------
         % Plot given field over the mesh
         function plotField(this,fieldPlot,range)

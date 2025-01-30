@@ -152,7 +152,7 @@ classdef Model_M < Model
                 for i = 1:length(this.element(el).type.result.faces)
                     X = this.element(el).type.result.vertices(i,:);
                     if strcmp(type,'Model')
-                        vertexData(i) = 0.0;
+                        vertexData(i) = this.matID(el);
                     elseif strcmp(type,'Ux')
                         u = this.element(el).type.displacementField(X);
                         vertexData(i) = u(1);

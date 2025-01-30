@@ -214,7 +214,7 @@ classdef Model_H2M < Model
                 for i = 1:length(this.element(el).type.result.faces)
                     X = this.element(el).type.result.vertices(i,:);
                     if strcmp(type,'Model')
-                        vertexData(i) = 0.0;
+                        vertexData(i) = this.matID(el);
                     elseif strcmp(type,'LiquidPressure')
                         p = this.element(el).type.pressureField(X);
                         vertexData(i) = p;

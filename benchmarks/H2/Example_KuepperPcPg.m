@@ -137,8 +137,8 @@ mdl.lumpStrategy = 2;
 % definition, etc.)
 mdl.preComputations();
 
-% Plot the mesh with the supports
-mdl.plotMeshWithMatId();
+% Plot the mesh
+mdl.plotField("Model");
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -153,13 +153,11 @@ dt    = 1.0;   % Time step
 tf    = 184;    % Final time
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient0(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = true;
+anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
 
-mdl.plotField('CapillaryPressure');
-mdl.plotField('GasPressure');
+mdl.plotField('GasSaturation',[0.0, 1.0]);
