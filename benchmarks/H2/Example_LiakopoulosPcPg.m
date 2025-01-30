@@ -36,7 +36,8 @@ water = Fluid('water',1000.0,1.0e-3,1.0e25);
 gas = IdealGas('gas', 1.8e-5, 1.0e25);
 
 % Create the porous media
-rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
+% OBS: UPDATE THE UMAT_CAPILLARY_LAW COMPUTATION OF THE LIQUID SATURATION
+rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'UMAT','BrooksCorey','UMAT');
 rock.setMinLiquidRelPermeability(0.0001);
 rock.setMinGasRelPermeability(0.0001);
 
@@ -157,10 +158,8 @@ dtmax = 0.001*minute;            % Time step
 dtmin = 0.001*minute;         % Time step
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient0(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = true;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
