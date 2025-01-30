@@ -137,11 +137,6 @@ mdl.lumpStrategy = 2;
 % definition, etc.)
 mdl.preComputations();
 
-% Plot the mesh with the supports
-% mdl.plotMeshWithBC();
-mdl.plotField('LiquidSaturation');
-% mdl.plotField('GasSaturation');
-
 % Create the result object for the analysis
 ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
@@ -157,10 +152,9 @@ dtmax = 0.1*day;
 dtmin = 1.0e-3*day;
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient0(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = true;
+anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
