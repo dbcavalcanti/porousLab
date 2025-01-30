@@ -13,7 +13,7 @@ classdef Anl_Transient0 < Anl
         dtMax = 0.001;
         dtMin = 0.001;
         adaptStep = false;
-        maxIter = 10;
+        maxIter = 250;
         maxAttempts = 10;
         nlscheme = [];
     end

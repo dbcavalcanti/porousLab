@@ -105,10 +105,8 @@ dtmax = 10.0;       % Maximum time step
 dtmin = 0.0000001;  % Minimun time step
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
-anl.setUpTransientSolver(tinit,dt,tf,10.0,0.0000001,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = false;
+anl = Anl_Transient0(result,"Picard");
+anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

@@ -111,11 +111,8 @@ dtmax = 0.1*day;          % Maximum time step
 dtmin = 0.1*day;          % Minimum time step
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
-% anl = Anl_Transient(result);
+anl = Anl_Transient0(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = false;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

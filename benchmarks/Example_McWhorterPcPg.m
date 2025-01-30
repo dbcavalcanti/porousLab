@@ -102,10 +102,8 @@ dt    = 0.1;   % Time step
 tf    = 50;  % Final time
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient0(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
-% anl.setPicardRelaxation();
-anl.useRelativeError = false;
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================

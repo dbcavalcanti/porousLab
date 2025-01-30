@@ -56,6 +56,16 @@ classdef RegularElement_H2 < RegularElement
 
         end
 
+
+        %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        function [Ae, be] = elementLinearSystem(this,nlscheme)
+
+            [Ke, Ce, fi, fe, dfidu] = this.elementData();
+
+            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+        end
+
         %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
         %
@@ -64,7 +74,7 @@ classdef RegularElement_H2 < RegularElement
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fi, fe] = elementData(this)
+        function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
             % Initialize the sub-matrices
             Hll = zeros(this.nglp, this.nglp);
@@ -75,10 +85,14 @@ classdef RegularElement_H2 < RegularElement
             Slg = zeros(this.nglp, this.nglp);
             Sgl = zeros(this.nglp, this.nglp);
             Sgg = zeros(this.nglp, this.nglp);
+            dfidu = zeros(2*this.nglp, 2*this.nglp);
 
             % Initialize external force vector
             fel = zeros(this.nglp, 1);
             feg = zeros(this.nglp, 1);
+
+            % Initialize internal force vector
+            fi = zeros(2*this.nglp, 1);
             
             % Vector of the nodal pore-pressure dofs
             pc = this.getNodalCapillaryPressure();
@@ -155,9 +169,6 @@ classdef RegularElement_H2 < RegularElement
             % Assemble the element compressibility matrix
             Ce = [ Sll , Slg;
                    Sgl , Sgg ];
-
-            % Assemble element internal force vector
-            fi = Ke * this.ue;
 
             % Assemble element external force vector
             fe = [fel; feg];
