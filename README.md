@@ -1,40 +1,64 @@
-# TwoPhaseFlowFEMLab 
+# porousLab
 
-TwoPhaseFlowFEMLab is a MATLAB program for performing numerical simulation of two-phase flow in porous media using the Finite Element Method (FEM).
+**porousLab** is a MATLAB program for performing numerical simulation of two-phase flow in porous media using the Finite Element Method (FEM).
 
-# Features
+---
 
-## Material models
-  ### Saturation law
-  - Brooks and Corey
-  - User-defined law (UMAT)
-  - Liakopoulos
+### **Navigation**
+- [Features](#features)
+  - [Material Models](#material-models)
+    - [Saturation Law](#saturation-law)
+    - [Liquid Relative Permeability](#liquid-relative-permeability)
+    - [Gas Relative Permeability](#gas-relative-permeability)
+  - [Nonlinear Solvers](#nonlinear-solvers)
+  - [Benchmark Examples](#benchmark-examples)
+- [License](#license)
+- [Authors and Acknowledgment](#authors-and-acknowledgment)
 
-### Liquid relative permeability
-  - Brooks and Corey
-  - User-defined law (UMAT)
-  - Liakopoulos
-  - Polynomial
+---
 
-### Gas relative permeability
-  - Brooks and Corey
-  - User-defined law (UMAT)
-  - Polynomial
+## **Features**
 
-## Nonlinear solvers
-  - Newton-Raphson
-  - Picard
+### **Material Models**
 
-## Benchmark examples
-  - McWhorter problem
-  - Buckley-Leverett problem
-  - Liakopoulos problem
-  - Kueper and Frind problem
+#### **Saturation Law**
+- Brooks and Corey
+- User-defined law (UMAT)
+- Liakopoulos
+
+#### **Liquid Relative Permeability**
+- Brooks and Corey
+- User-defined law (UMAT)
+- Liakopoulos
+- Polynomial
+
+#### **Gas Relative Permeability**
+- Brooks and Corey
+- User-defined law (UMAT)
+- Polynomial
+
+---
+
+### **Nonlinear Solvers**
+- Newton-Raphson
+- Picard
+
+---
+
+### **Benchmark Examples**
+- McWhorter problem
+- Buckley-Leverett problem
+- Liakopoulos problem
+- Kueper and Frind problem
+
+---
 
 ## **License**
 
-Project Title is released under the MIT License. See the **[LICENSE](https://www.blackbox.ai/share/LICENSE)** file for details.
+porousLab is released under the MIT License. See the **[LICENSE](https://www.blackbox.ai/share/LICENSE)** file for details.
+
+---
 
 ## **Authors and Acknowledgment**
 
-Project Title was created by **[Danilo Cavalcanti](https://github.com/dbcavalcanti)**.
+porousLab was created by **[Danilo Cavalcanti](https://github.com/dbcavalcanti)**.
