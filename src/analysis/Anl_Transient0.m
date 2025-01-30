@@ -46,6 +46,8 @@ classdef Anl_Transient0 < Anl
         % Process model data to compute results.
         function process(this,mdl)
 
+            disp("*** Initialize nonlinear transient analysis...")
+
             % Initialize transient analysis parameters
             t        = this.tinit;
             t0       = this.tinit;
@@ -158,6 +160,8 @@ classdef Anl_Transient0 < Anl
             this.result.p = this.result.p(1:(step-1));
             % this.result.ST(:) = this.result.ST(:,1:(step-1));
             this.result.time = this.result.time(1:(step-1));
+
+            disp("*** Analysis completed.")
 
         end
 
