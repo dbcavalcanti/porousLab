@@ -431,7 +431,7 @@ classdef Model < handle
             % Add contribution of the nodal forces
             Fe = sparse(this.ndof,1);
             Fe = this.addNodalLoad(Fe);
-            b = b - Fe;
+            b = nonlinearScheme.addNodalForces(b,Fe);
 
         end
 

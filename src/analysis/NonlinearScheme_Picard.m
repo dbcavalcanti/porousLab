@@ -27,16 +27,21 @@ classdef NonlinearScheme_Picard < NonlinearScheme
         end
 
         %------------------------------------------------------------------
-        function [A, b] = assembleLinearSystem(C, K, ~, fe, ~, ~, xOld, dt)
+        function [A, b] = assembleLinearSystem(C, K, ~, fe, dfidx, ~, xOld, dt)
             % RHS vector
             b = C * xOld / dt + fe;
             % LHS matrix
-            A = K + C / dt;
+            A = K + dfidx + C / dt;
         end
 
         %------------------------------------------------------------------
         function bf = applyBCtoRHS(A, b, x, doffree, doffixed)
             bf = b(doffree) - A(doffree,doffixed)*x(doffixed);
+        end
+
+        %------------------------------------------------------------------
+        function b = addNodalForces(b,fe)
+            b = b + fe;
         end
 
     end

@@ -34,6 +34,11 @@ classdef NonlinearScheme_Newton < NonlinearScheme
             bf = b(doffree);
         end
 
+        %------------------------------------------------------------------
+        function b = addNodalForces(b,fe)
+            b = b - fe;
+        end
+
     end
 
     methods

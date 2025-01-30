@@ -34,5 +34,6 @@ classdef NonlinearScheme < handle
         [A,b] = assembleLinearSystem(C, K, fi, fe, dfidx, x, xOld, dt);
         bf = applyBCtoRHS(A, b, x, doffree, doffixed);
         convFlg = convergence(this,X,XOld,dx,b,doffree,iter);
+        b = addNodalForces(b,fe);
     end
 end
