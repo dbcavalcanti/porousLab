@@ -75,7 +75,7 @@ classdef RegularElement_H2M < RegularElement
         %   Ce : element "damping" matrix
         %   fe : element "internal force" vector
         %
-        function [Ke, Ce, fi, fe] = elementData(this)
+        function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
             % Initialize the sub-matrices
             Kuu = zeros(this.nglu, this.nglu);
@@ -89,8 +89,11 @@ classdef RegularElement_H2M < RegularElement
             Slg = zeros(this.nglp, this.nglp);
             Sgl = zeros(this.nglp, this.nglp);
             Sgg = zeros(this.nglp, this.nglp);
+
+            % Auxiliar zero-matrices and vectors
             Opu = zeros(this.nglp, this.nglu);
             Ouu = zeros(this.nglu, this.nglu);
+            Opp = zeros(this.nglp, this.nglp);
 
             % Initialize external force vector
             feu = zeros(this.nglu, 1);
@@ -98,7 +101,9 @@ classdef RegularElement_H2M < RegularElement
             feg = zeros(this.nglp, 1);
 
             % Initialize the internal force vector
-            fiu = zeros(this.nglu, 1);
+            fiu  = zeros(this.nglu, 1);
+            fil = zeros(this.nglp, 1);
+            fig = zeros(this.nglp, 1);
             
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
@@ -127,6 +132,7 @@ classdef RegularElement_H2M < RegularElement
                 % Pressure values at the integration point
                 pcIP = Np * pc;
                 pgIP = Np * pg;
+                plIP = Np * pl;
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u;
@@ -142,6 +148,12 @@ classdef RegularElement_H2M < RegularElement
 
                 % Get compressibility coefficients
                 [cul, cug, cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(i),pgIP,pcIP,Sl);
+
+                % Get Biot's coefficient
+                biot = this.intPoint(i).constitutiveMdl.biotCoeff();
+
+                % Total pore-pressure acting at the solid matrix
+                psIP = plIP * Sl + pgIP * (1.0 - Sl);
         
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
@@ -153,7 +165,7 @@ classdef RegularElement_H2M < RegularElement
                 Kuu = Kuu + Bu' * Duu * Bu * c;
 
                 % Internal force vector
-                fiu = fiu + Bu' * stress * c;
+                fiu = fiu + Bu' * (stress - biot * psIP * m) * c;
 
                 % Compute the hydromechanical coupling matrices
                 Qul = Qul + Np' * cul * m' * Bu * c;
@@ -192,39 +204,24 @@ classdef RegularElement_H2M < RegularElement
                 [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
             end
 
-            % % Assemble the element permeability
-            % Ke = [ Kuu , -Qul', -Qug'; 
-            %        Opu ,  Hll , Hlg;
-            %        Opu ,  Hgl , Hgg ];
-            % 
-            % % Assemble the element compressibility matrix
-            % Ce = [ Ouu , Opu', Opu';
-            %        Qul , Sll , Slg ;
-            %        Qug , Sgl , Sgg ];
-
-            % Assemble the element permeability
+            % Assemble the element matrices
             Ke = [ Ouu ,  Opu', Opu'; 
                    Opu ,  Hll , Hlg;
                    Opu ,  Hgl , Hgg ];
 
-            % Assemble the element compressibility matrix
-            Ce = [ -Kuu , Qul', Qug';
+            Ce = [  Ouu , Opu', Opu';
                     Qul , Sll , Slg ;
                     Qug , Sgl , Sgg ];
 
-
-            % Add contribution of the pressure to the internal force vector
-            % fiu = fiu - Qul' * pl - Qug' * pg;
-            fiu = -fiu + Qul' * pl + Qug' * pg;
-            fil = Hll * pl + Hlg * pg;
-            fig = Hgl * pl + Hgg * pg;
+            dfidu = [ Kuu , -Qul', -Qug';
+                      Opu,   Opp ,  Opp ;
+                      Opu,   Opp ,  Opp ;];
 
             % Assemble element internal force vector
             fi = [fiu; fil; fig];
 
             % Assemble element external force vector
-            % fe = [feu; fel; feg];
-            fe = [-feu; fel; feg];
+            fe = [feu; fel; feg];
             
         end
 

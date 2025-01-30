@@ -41,6 +41,12 @@ classdef Material_H2M < Material_H2
         end
 
         % -----------------------------------------------------------------
+        % Returns the biot coefficient
+        function biot = biotCoeff(this)
+            biot = this.porousMedia.biot;
+        end
+
+        % -----------------------------------------------------------------
         % Evaluate the mechanical constitutive law
         function [cul,cug] = mechanicalCompressibilityCoeffs(this,Sl)
             cul = this.porousMedia.biot * Sl;
