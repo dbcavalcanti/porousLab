@@ -56,16 +56,6 @@ classdef RegularElement_H2 < RegularElement
 
         end
 
-
-        %------------------------------------------------------------------
-        % This function assembles the element matrices and vectors 
-        function [Ae, be] = elementLinearSystem(this,nlscheme)
-
-            [Ke, Ce, fi, fe, dfidu] = this.elementData();
-
-            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
-        end
-
         %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
         %

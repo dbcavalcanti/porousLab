@@ -64,9 +64,23 @@ classdef RegularElement < handle
             end
         end
     end
+
+    %% Abstract methods
+    methods(Abstract)
+        [Ke, Ce, fi, fe, dfidu] = elementData(this);
+    end
     
     %% Public methods
     methods
+
+        %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        function [Ae, be] = elementLinearSystem(this,nlscheme)
+
+            [Ke, Ce, fi, fe, dfidu] = this.elementData();
+
+            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+        end
 
         % -----------------------------------------------------------------
         % Function to update the state variables
