@@ -13,13 +13,6 @@ classdef NonlinearScheme_Newton < NonlinearScheme
     %% Public methods
     % Implementation of the abstract methods declared in super-class
     methods (Static)
-        %------------------------------------------------------------------
-        function [X, dx] = eval(J,r,X,freedof)
-            % Compute the increment of the variables
-            dx = -J\r;
-            % Update the variables
-            X(freedof) = X(freedof) + dx;
-        end
 
         %------------------------------------------------------------------
         function [J, r] = assembleLinearSystem(C, K, fi, fe, dfidx, x, xOld, dt)
@@ -42,6 +35,14 @@ classdef NonlinearScheme_Newton < NonlinearScheme
     end
 
     methods
+
+        %------------------------------------------------------------------
+        function [X, dx] = eval(~,J,r,X,~,freedof,~)
+            % Compute the increment of the variables
+            dx = -J\r;
+            % Update the variables
+            X(freedof) = X(freedof) + dx;
+        end
 
         %------------------------------------------------------------------
         function convFlg = convergence(this,~,~,~,r,~,iter)

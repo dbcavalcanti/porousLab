@@ -9,6 +9,10 @@
 % 825-846.
 %
 classdef NonlinearScheme_Picard < NonlinearScheme 
+    properties(SetAccess = public,GetAccess = public)
+        relax = 1.0;
+        applyRelaxation = false;
+    end
     %% Constructor method
     methods
         %------------------------------------------------------------------
@@ -19,12 +23,7 @@ classdef NonlinearScheme_Picard < NonlinearScheme
     %% Public methods
     % Implementation of the abstract methods declared in super-class
     methods (Static)
-        %------------------------------------------------------------------
-        function [X, dx] = eval(A,b,X,freedof)
-            XOld = X;
-            X(freedof) = A\b;
-            dx = X - XOld;
-        end
+        
 
         %------------------------------------------------------------------
         function [A, b] = assembleLinearSystem(C, K, ~, fe, dfidx, ~, xOld, dt)
@@ -49,6 +48,19 @@ classdef NonlinearScheme_Picard < NonlinearScheme
     methods
 
         %------------------------------------------------------------------
+        function [X, dx] = eval(this,A,b,X,dxOld,freedof,iter)
+            XOld = X;
+            X(freedof) = A\b;
+            if this.applyRelaxation
+                if iter > 1
+                    this.updateRelaxation(X,XOld,dxOld);
+                    X(freedof) = this.relax * X(freedof) + (1.0 - this.relax) * XOld(freedof);
+                end
+            end
+            dx = X - XOld;
+        end
+
+        %------------------------------------------------------------------
         function convFlg = convergence(this,X,~,dX,~, doffree,iter)
             % Evaluate error
             normError = norm(dX(doffree));
@@ -63,6 +75,19 @@ classdef NonlinearScheme_Picard < NonlinearScheme
                 convFlg = true;
             else
                 convFlg = false;
+            end
+        end
+
+        %------------------------------------------------------------------
+        function updateRelaxation(this,X,XOld,dxOld)
+            dx = X - XOld;
+            % Compute the generalized angle between successive increments
+            gamma = acos((dx'*dxOld)/norm(dx)*norm(dxOld));
+            % Update relaxation parameter
+            if (gamma < pi/4.0)
+                this.relax = min(this.relax * 2.0,1.0);
+            elseif (gamma > pi/2.0)
+                this.relax = this.relax / 2.0;
             end
         end
 

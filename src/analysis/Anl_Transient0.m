@@ -55,7 +55,8 @@ classdef Anl_Transient0 < Anl
             step     = 1;
 
             % Initialize solution vector
-            X = mdl.U;
+            X  = mdl.U;
+            dx = zeros(mdl.ndof);
 
             % Initialize the output vectors
             this.result.time = zeros(maxSteps,1);
@@ -88,7 +89,7 @@ classdef Anl_Transient0 < Anl
                         [A,b] = mdl.applyDirichletBC(A, b, X, this.nlscheme);
 
                         % Update variables
-                        [X, dx] = this.nlscheme.eval(A,b,X,mdl.doffree);
+                        [X, dx] = this.nlscheme.eval(A,b,X,dx,mdl.doffree,iter);
     
                         % Check convergence
                         convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter);

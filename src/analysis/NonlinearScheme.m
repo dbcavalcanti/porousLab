@@ -30,7 +30,7 @@ classdef NonlinearScheme < handle
     end
     %% Abstract methods
     methods (Abstract)
-        [X, dx] = eval(J,r,X,freedof);
+        [X, dx] = eval(this,J,r,X,dx,freedof,iter);
         [A,b] = assembleLinearSystem(C, K, fi, fe, dfidx, x, xOld, dt);
         bf = applyBCtoRHS(A, b, x, doffree, doffixed);
         convFlg = convergence(this,X,XOld,dx,b,doffree,iter);
