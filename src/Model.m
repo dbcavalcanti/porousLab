@@ -462,6 +462,61 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        function resequenceNodes(this)
+            % Get auxiliar variables
+            nNode   = size(this.NODE,1);
+            nElem   = size(this.ELEM,1);
+            nNdElem = size(this.ELEM,2);
+            % Size of the connectivity matrix
+            nn = nElem*(nNdElem * nNdElem);
+            % Get connectivity matrix
+            i=zeros(nn,1); j=zeros(nn,1); s=zeros(nn,1); index=0;
+            for el = 1:nElem
+              eNode=this.ELEM(el,:);
+              ElemSet=index+1:index+nNdElem^2;
+              i(ElemSet) = kron(eNode,ones(nNdElem,1))';
+              j(ElemSet) = kron(eNode,ones(1,nNdElem))';
+              s(ElemSet) = 1;
+              index = index + nNdElem^2;
+            end
+            K = sparse(i,j,s,nNode, nNode);
+            % Apply a Symmetric reverse Cuthill-McKee permutation
+            p = symrcm(K);
+            cNode(p(1:nNode))=1:nNode;
+            % Rebuild the nodes and elements matrices
+            this.rebuildConnectivity(cNode);
+        end
+
+        %------------------------------------------------------------------
+        function rebuildConnectivity(this,cNode)
+            % % Initialize new element matrix
+            % newELEM = zeros(size(this.ELEM));
+            % % Get re-order vectors
+            [~,ix,jx] = unique(cNode);
+            % if ~isequal(size(jx),size(cNode)), jx=jx'; end 
+            % if size(this.NODE,1)>length(ix), ix(end)=max(cNode); end
+            % % Rebuild node matrix
+            % newNODE = this.NODE(ix,:); 
+            % for el=1:size(this.ELEM,1)
+            %   newELEM(el,:) = unique(jx(this.ELEM(el,:)));
+            %   % Sort nodes in counter-clockwise order
+            %   vx=newNODE(newELEM(el,:),1);
+            %   vy=newNODE(newELEM(el,:),2);
+            %   nv=length(vx);
+            %   [~,iix] = sort(atan2(vy-sum(vy)/nv,vx-sum(vx)/nv));
+            %   newELEM(el,:) = newELEM(el,iix);
+            % end
+            % this.NODE = newNODE;
+            % this.ELEM = newELEM;
+            this.NODE = this.NODE(ix,:);
+            for el=1:size(this.ELEM,1)
+                for i = 1:size(this.ELEM,2)
+                    this.ELEM(el,i) = jx(this.ELEM(el,i));
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
         function addPreExistingDiscontinuities(this,dSet)
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
