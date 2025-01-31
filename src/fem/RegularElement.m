@@ -1,9 +1,5 @@
 %% RegularElement class
 %
-% This class defines a finite element of a two-phase flow formulation using
-% the liquid pressure (Pl) and the gas pressure (Pg) as primary
-% variables.
-%
 %% Author
 % Danilo Cavalcanti
 %
