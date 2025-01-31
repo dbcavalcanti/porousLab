@@ -61,9 +61,7 @@ porousLab is released under the MIT License. See the **[LICENSE](https://www.bla
 
 ## **Authors and Acknowledgment**
 
-porousLab was created by **[Danilo Cavalcanti](https://github.com/dbcavalcanti)**.
-
-The program was initially developed under the context of the SECCO2 project, under the Grant TED2021-130510A-I00. funded by MCIN/AEI/ 10.13039/501100011033 and by the "European Union NextGenerationEU/PRTR”.
+porousLab was created by **[Danilo Cavalcanti](https://github.com/dbcavalcanti)** in the context of the SECCO2 project under the Grant TED2021-130510A-I00. funded by MCIN/AEI/ 10.13039/501100011033 and by the "European Union NextGenerationEU/PRTR.”
 
 ![SECCO2](figures/SECCO2.png)
 
