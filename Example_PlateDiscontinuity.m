@@ -19,28 +19,34 @@ mdl = Model_M();
 % Mesh properties
 Lx = 2.0;     % Horizontal dimension (m)
 Ly = 2.0;     % Vertical dimension (m)
-Nx = 2;       % Number of elements in the x-direction
-Ny = 2;       % Number of elements in the y-direction
+Nx = 20;       % Number of elements in the x-direction
+Ny = 20;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+
+[mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
+
+mdl.resequenceNodes();
+
+mdl.type = 'ISOQ8';
 
 xd = [0.0, 2.0];
 yd = [0.5, 1.5];
 
 % xd = linspace(0, 2, 100);
 % yd = 1.0 + 0.5 * sin(0.5 * pi * xd);
-
-fracture = Discontinuity([xd', yd'],true);
-
-fracture.setRepelTol(0.1);
-fracture.setSavePerturbNodes(true);
-
-% Perform intersection and repel process
-fracture.intersectMesh(mdl);
-
-% Add the fracture to the model
-mdl.addPreExistingDiscontinuities(fracture);
+% 
+% fracture = Discontinuity([xd', yd'],true);
+% 
+% fracture.setRepelTol(0.1);
+% fracture.setSavePerturbNodes(true);
+% 
+% % Perform intersection and repel process
+% fracture.intersectMesh(mdl);
+% 
+% % Add the fracture to the model
+% mdl.addPreExistingDiscontinuities(fracture);
 
 %% ============================= MATERIAL =================================
 
@@ -88,7 +94,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Solve the problem
-anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,200,15,100,4,1.0e-5);
+anl = Anl_Linear(result);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
@@ -100,8 +106,6 @@ npts = 500;
 mdl.plotDeformedMesh(1.0);
 mdl.plotField('Ux');
 mdl.plotField('Sx');
-mdl.plotField('Sy');
-mdl.plotField('Sxy');
 
 % mdl.plotField('Model'); hold on
 % fracture.plotOriginalGeometry()
