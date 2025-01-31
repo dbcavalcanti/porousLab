@@ -36,11 +36,14 @@ classdef Model < handle
         massLumping         = false;         % Tag for applying a mass lumping process
         lumpStrategy        = 1;             % Id of the mass lumping strategy
         isAxisSymmetric     = false;         % Flag for axissymetric models
+        enriched            = false;         % Flag to use embedded formulation
+        discontinuitySet    = [];            % Array with the discontinuity objects
     end
     
     %% Constructor method
     methods
         function this = Model()
+            disp("*** Initializing model...")
         end
     end
 
@@ -458,7 +461,18 @@ classdef Model < handle
 
         end
 
-      % -----------------------------------------------------------------
+        %------------------------------------------------------------------
+        function addPreExistingDiscontinuities(this,dSet)
+            this.discontinuitySet = dSet;
+            this.useEnrichedFormulation(true);
+        end
+
+        %------------------------------------------------------------------
+        function useEnrichedFormulation(this,flag)
+            this.enriched = flag;
+        end
+
+        % -----------------------------------------------------------------
         % Print the nodal displacements
         function printResults(this)
             fprintf('\n******** NODAL RESULTS ********\n');

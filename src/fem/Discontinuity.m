@@ -79,7 +79,9 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         function plotPerturbNodes(this)
             % Plot the intersected polyline (Xlin)
-            plot(this.PERT(:, 1), this.PERT(:, 2), 'sr');
+            if ~isempty(this.PERT)
+                plot(this.PERT(:, 1), this.PERT(:, 2), 'sr');
+            end
         end
     end
     

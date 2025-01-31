@@ -39,13 +39,16 @@ fracture.setSavePerturbNodes(true);
 % Perform intersection and repel process
 fracture.intersectMesh(mdl);
 
+% Add the fracture to the model
+mdl.addPreExistingDiscontinuities(fracture);
+
 %% ============================= MATERIAL =================================
 
 % Create the porous media
 rock = PorousMedia('rock');
 rock.mechanical = 'elastic';      % Elastoplastic with von Mises criteria 
-rock.Young = 2.0e10;                % Young modulus (Pa)
-rock.nu    = 0.0;                   % Poisson ratio
+rock.Young = 2.0e10;              % Young modulus (Pa)
+rock.nu    = 0.0;                 % Poisson ratio
 
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
@@ -77,7 +80,30 @@ mdl.intOrder = 2;
 % definition, etc.)
 mdl.preComputations();
 
-mdl.plotField('Model'); hold on
-fracture.plotOriginalGeometry()
-fracture.plotIntersectedGeometry()
+% Create the result object for the analysis
+ndPlot  = 3;
+dofPlot = 1; % 1 for X and 2 for Y
+result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
+
+%% ========================== RUN ANALYSIS ================================
+
+% Solve the problem
+anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,200,15,100,4,1.0e-5);
+anl.process(mdl);
+
+%% ========================= CHECK THE RESULTS ============================
+
+% Plot pressure along a segment
+Xi  = [0.0 , 0.0];
+Xf  = [0.0 , Ly];
+npts = 500;
+mdl.plotDeformedMesh(1.0);
+mdl.plotField('Ux');
+mdl.plotField('Sx');
+mdl.plotField('Sy');
+mdl.plotField('Sxy');
+
+% mdl.plotField('Model'); hold on
+% fracture.plotOriginalGeometry()
+% fracture.plotIntersectedGeometry()
 % fracture.plotPerturbNodes()
