@@ -45,6 +45,7 @@ classdef Model_HM < Model
             this = this@Model();
             this.ndof_nd = 3;       % Number of dofs per node
             this.physics = 'HM';    % Tag with the physics name
+            disp("*** Physics: Hydromechanical with single-phase flow");
         end
     end
     

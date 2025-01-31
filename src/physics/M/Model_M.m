@@ -32,6 +32,7 @@ classdef Model_M < Model
             this = this@Model();
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'M';     % Tag with the physics name
+            disp("*** Physics: Mechanical");
         end
     end
     
