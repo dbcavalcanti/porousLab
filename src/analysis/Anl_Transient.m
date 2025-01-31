@@ -1,15 +1,6 @@
-%% Anl_TransientPicard Class
+%% Anl_Transient Class
 %
-% Performs a transient analysis combined with the Picard method to solve
-% the nonlinear system.
-%
-% Reference:
-% Li, W., & Wei, C. (2015). An efficient finite element procedure for
-% analyzing three‐phase porous media based on the relaxed Picard method.
-% International Journal for Numerical Methods in Engineering, 101(11),
-% 825-846.
-%
-classdef Anl_TransientPicard < Anl
+classdef Anl_Transient < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         theta = 1.0;    % Implicit time integration scheme
@@ -21,16 +12,27 @@ classdef Anl_TransientPicard < Anl
         adaptStep = false;
         maxIter = 250;
         maxAttempts = 10;
-        applyRelax = false;
-        relax = 1.0;
-        useRelativeError = false;
+        nlscheme = [];
     end
     
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = Anl_TransientPicard(result)
-            this = this@Anl('TransientPicard',result);
+        function this = Anl_Transient(result,nlscheme)
+            this = this@Anl('Transient',result);
+            if strcmp(nlscheme,'Picard')
+                this.nlscheme = NonlinearScheme_Picard();
+            elseif strcmp(nlscheme,'Newton')
+                this.nlscheme = NonlinearScheme_Newton();
+            else
+                disp("Error creating the Analysis object...");
+                disp("Non available nonlinear solution scheme...");
+                disp("Nonlinear solution schemes availables:");
+                disp("   Picard");
+                disp("   Newton");
+                error("Error: Non available nonlinear solution scheme");
+            end
+            
         end
     end
     
@@ -41,6 +43,8 @@ classdef Anl_TransientPicard < Anl
         % Process model data to compute results.
         function process(this,mdl)
 
+            disp("*** Initialize nonlinear transient analysis...")
+
             % Initialize transient analysis parameters
             t        = this.tinit;
             t0       = this.tinit;
@@ -48,9 +52,8 @@ classdef Anl_TransientPicard < Anl
             step     = 1;
 
             % Initialize solution vector
-            XOld = mdl.U;
-            X0 = mdl.U;
-            X    = XOld;
+            X  = mdl.U;
+            dx = zeros(mdl.ndof);
 
             % Initialize the output vectors
             this.result.time = zeros(maxSteps,1);
@@ -63,56 +66,31 @@ classdef Anl_TransientPicard < Anl
                 fprintf("\t Time: %12.5f s \n",t);
 
                 % Update transient solution
-                X0(mdl.doffree)   = X(mdl.doffree);
-                XOld(mdl.doffree) = X(mdl.doffree);
+                XOld = X;
 
                 % Iterative solution
                 convFlg = false;
                 attemptOld = attempt;
-                attempt    = 1;
+                attempt = 1;
                 
                 while attempt < this.maxAttempts
-                    fprintf("\t Attempt %3d: \n",attempt);
+
                     iter = 1;
                     % Iterative process
                     while true
     
                         % Compute model global matrices
-                        [K, C, ~, Fext] = mdl.globalMatrices(X);
-        
-                        % Set transient system
-                        A =  K + C / this.dt;
-        
-                        % Right-handside vector
-                        b = Fext + C * X0 / this.dt;
+                        [A,b] = mdl.getLinearSystem(X,XOld,this.nlscheme,this.dt);
 
-                        % Apply BC
-                        b(mdl.doffree) = b(mdl.doffree) - A(mdl.doffree,mdl.doffixed)*X(mdl.doffixed);
+                        % Apply Dirichlet boundary conditions
+                        [A,b] = mdl.applyDirichletBC(A, b, X, this.nlscheme);
 
-                        % Solve linear system
-                        X(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b(mdl.doffree);
-                        if (this.applyRelax)
-                            if (iter > 1)
-                                this.computePicardRelaxation(X, XOld, DX);
-                            end
-                            X(mdl.doffree) = (1.0 - this.relax)*XOld(mdl.doffree) + this.relax*X(mdl.doffree);
-                        end
-    
                         % Update variables
-                        DX = X - XOld;
-                        XOld(mdl.doffree) = X(mdl.doffree);
-
-                        % Compute the residual norm
-                        [absError, errorDX] = this.evaluateError(DX,X,mdl);
-
-                        % Print result
-                        fprintf("\t\t iter.: %3d , Dp = %7.3e , Dpg = %7.3e , ||Rdp|| = %7.3e \n",iter,absError(1),absError(2),errorDX);
+                        [X, dx] = this.nlscheme.eval(A,b,X,dx,mdl.doffree,iter);
     
                         % Check convergence
-                        if (errorDX < 1.0e-5) && (iter > 1)
-                            convFlg = true; 
-                            break
-                        end
+                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter);
+                        if convFlg == true, break;  end
     
                         % Check maximum number of iterations
                         iter = iter + 1;
@@ -128,7 +106,7 @@ classdef Anl_TransientPicard < Anl
                     this.dt = max(this.dt / 4.0, this.dtMin);
                     
                     % Clean the previous attempt
-                    XOld  = X0;
+                    X = XOld;
 
                     % Update counter variable
                     attempt = attempt + 1;
@@ -159,9 +137,6 @@ classdef Anl_TransientPicard < Anl
                 
                 % Update time
                 t0 = t;
-                if abs(t - this.tf) < 1.0e-10
-                    break
-                end
                 if (t + this.dt) > this.tf
                     this.dt = this.tf - t;
                 end
@@ -181,22 +156,21 @@ classdef Anl_TransientPicard < Anl
 
             % Remove unused steps in the output vectors
             this.result.p = this.result.p(1:(step-1));
+            % this.result.ST(:) = this.result.ST(:,1:(step-1));
             this.result.time = this.result.time(1:(step-1));
 
-        end
-
-        %------------------------------------------------------------------
-        function [absError, normError] = evaluateError(this,DX,X,mdl)
-
-            absError = abs(DX(mdl.doffree));
-            normError = norm(DX(mdl.doffree));
-            if (this.useRelativeError)
-                normError = normError / norm(X(mdl.doffree));
-            end
+            disp("*** Analysis completed.")
 
         end
 
-        %------------------------------------------------------------------
+        function setPicardRelaxation(this,flag)
+            this.nlscheme.applyRelaxation = flag;
+        end
+
+        function setRelativeConvergenceCriteria(this,flag)
+            this.nlscheme.normalizeError = flag;
+        end
+
         function printStep(~,X,mdl)
 
             for i = 1:mdl.nnodes
@@ -209,7 +183,7 @@ classdef Anl_TransientPicard < Anl
 
         end
 
-        %------------------------------------------------------------------
+
         function [normRp , normRpg] = decomposeResidualVct(~,r, Fext,mdl)
 
             rp = r(mdl.pFreeDof);
@@ -226,7 +200,6 @@ classdef Anl_TransientPicard < Anl
 
         end
 
-        %------------------------------------------------------------------
         function setUpTransientSolver(this,tinit,dt,tf,dtMax,dtMin,adaptStep)
             if nargin == 4
                 dtMax = dt;
@@ -240,27 +213,6 @@ classdef Anl_TransientPicard < Anl
             this.dtMax = dtMax;
             this.dtMin = dtMin;
         end
-
-        %------------------------------------------------------------------
-        function setPicardRelaxation(this)
-            this.applyRelax = true;
-        end
-
-        %------------------------------------------------------------------
-        function computePicardRelaxation(this, Xnew, XOld, DXOld)
-            % Compute the current increment
-            DX = Xnew - XOld;
-            % Compute the generalized angle between successive increments
-            gamma = acos((DX'*DXOld)/(norm(DX)*norm(DXOld)));
-            % Update relaxation parameter
-            if (gamma < pi/4.0)
-                this.relax = min(this.relax * 2.0,1.0);
-            elseif (gamma > pi/2.0)
-                this.relax = this.relax / 2.0;
-            end
-        end
-
-
     end
     
 end

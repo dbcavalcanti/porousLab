@@ -158,7 +158,7 @@ dtmax = 0.001*minute;            % Time step
 dtmin = 0.001*minute;         % Time step
 
 % Solve the problem
-anl = Anl_Transient0(result,"Newton");
+anl = Anl_Transient(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.process(mdl);
 

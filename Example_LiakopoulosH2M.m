@@ -191,7 +191,7 @@ tf    = 60.0;         % Final time
 dtmax = 1.0;          % Time step
 dtmin = 0.0001;          % Time step
 
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);

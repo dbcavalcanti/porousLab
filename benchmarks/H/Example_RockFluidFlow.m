@@ -91,7 +91,7 @@ dtmax = 1.0;
 dtmin = 1.0;
 
 % Solve the problem
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);

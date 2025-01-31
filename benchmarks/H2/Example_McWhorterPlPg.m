@@ -105,7 +105,7 @@ dtmax = 10.0;       % Maximum time step
 dtmin = 0.0000001;  % Minimun time step
 
 % Solve the problem
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.process(mdl);
 

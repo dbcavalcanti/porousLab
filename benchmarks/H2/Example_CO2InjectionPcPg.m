@@ -152,7 +152,7 @@ dtmax = 0.1*day;
 dtmin = 1.0e-3*day;
 
 % Solve the problem
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);

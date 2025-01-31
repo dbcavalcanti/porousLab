@@ -153,7 +153,7 @@ dt    = 1.0;   % Time step
 tf    = 184;    % Final time
 
 % Solve the problem
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);

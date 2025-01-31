@@ -102,7 +102,7 @@ dt    = 0.1;   % Time step
 tf    = 50;  % Final time
 
 % Solve the problem
-anl = Anl_Transient0(result,"Picard");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
 anl.process(mdl);
 

@@ -1,4 +1,4 @@
-%% NonlinearScheme_Newton Class
+%% NonlinearScheme_Picard Class
 %
 % Considers a fully implicit time integration scheme.
 %
@@ -11,7 +11,7 @@
 classdef NonlinearScheme_Picard < NonlinearScheme 
     properties(SetAccess = public,GetAccess = public)
         relax = 1.0;
-        applyRelaxation = false;
+        applyRelaxation = true;
     end
     %% Constructor method
     methods
