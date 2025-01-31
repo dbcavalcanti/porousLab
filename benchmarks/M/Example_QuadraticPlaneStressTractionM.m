@@ -17,32 +17,22 @@ mdl = Model_M();
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 2.0;     % Horizontal dimension (m)
-Ly = 2.0;     % Vertical dimension (m)
-Nx = 20;       % Number of elements in the x-direction
-Ny = 20;       % Number of elements in the y-direction
+Lx = 0.11;     % Horizontal dimension (m)
+Ly = 0.04;     % Vertical dimension (m)
+Nx = 22;       % Number of elements in the x-direction
+Ny = 8;       % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
 
-mdl.type = 'ISOQ4';
+mdl.resequenceNodes();
 
-xd = [0.0, 2.0];
-yd = [0.5, 1.5];
+% Type of elements
+mdl.type = 'ISOQ8';
 
-% xd = linspace(0, 2, 100);
-% yd = 1.0 + 0.5 * sin(0.5 * pi * xd);
-
-fracture = Discontinuity([xd', yd'],true);
-
-fracture.setRepelTol(0.1);
-fracture.setSavePerturbNodes(true);
-
-% Perform intersection and repel process
-fracture.intersectMesh(mdl);
-
-% Add the fracture to the model
-mdl.addPreExistingDiscontinuities(fracture);
+% Thickness (m)
+mdl.t = 1.0;
 
 %% ============================= MATERIAL =================================
 
@@ -95,15 +85,5 @@ anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
 
-% Plot pressure along a segment
-Xi  = [0.0 , 0.0];
-Xf  = [0.0 , Ly];
-npts = 500;
-mdl.plotDeformedMesh(1.0);
 mdl.plotField('Ux');
 mdl.plotField('Sx');
-
-% mdl.plotField('Model'); hold on
-% fracture.plotOriginalGeometry()
-% fracture.plotIntersectedGeometry()
-% fracture.plotPerturbNodes()
