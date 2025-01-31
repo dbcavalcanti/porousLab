@@ -11,7 +11,7 @@
 classdef NonlinearScheme_Picard < NonlinearScheme 
     properties(SetAccess = public,GetAccess = public)
         relax = 1.0;
-        applyRelaxation = true;
+        applyRelaxation = false;
     end
     %% Constructor method
     methods
