@@ -28,7 +28,6 @@ classdef Model < handle
         ndoffixed           = 0;             % Number of fixed degrees of freedom
         Dof                 = [];            % Vector with all regular dofs
         ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs
-        F                   = [];            % Global force vector
         U                   = [];            % Global displacement vector
         element             = [];            % Array with the element's objects
         nDofElemTot         = 0.0;           % Aux value used to sparse matrix assemblage
@@ -143,9 +142,6 @@ classdef Model < handle
 
             % Initialize the displacement vector
             this.initializeDisplacementVct();
-            
-            % Initialize the external force vector
-            this.initializeExtForceVct();
 
         end
 
@@ -240,6 +236,21 @@ classdef Model < handle
                 Lce = Lce * sqrt(2.0);
             end
         end
+        
+        %------------------------------------------------------------------
+        % Compute the mean characteristic length of the elements associated with
+        % each node
+        function Lc = getNodeCharacteristicLength(this)
+            Lce = this.getElementsCharacteristicLength();
+            Lc = zeros(size(this.NODE,1),1);
+            for i = 1:size(this.NODE,1)
+                % Get the elements associated with this node
+                idElem = any(this.ELEM == i, 2);
+                % Compute the mean characteristic lenght of these nodes
+                Lc(i) = mean(Lce(idElem));
+            end
+
+        end
 
         %------------------------------------------------------------------
         function initializeSparseMtrxAssemblageVariables(this)
@@ -249,11 +260,6 @@ classdef Model < handle
                 this.nDofElemTot = this.nDofElemTot + length(this.element(el).type.gle);
                 this.sqrNDofElemTot = this.sqrNDofElemTot + length(this.element(el).type.gle)*length(this.element(el).type.gle);
             end
-        end
-        
-        %------------------------------------------------------------------
-        function initializeExtForceVct(this)
-            this.F = zeros(this.ndof,1);
         end
 
         %------------------------------------------------------------------
