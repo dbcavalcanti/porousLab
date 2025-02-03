@@ -18,6 +18,7 @@
 ---
 
 ## **Features**
+Check out the wiki page
 
 ### **Material Models**
 
