@@ -6,12 +6,6 @@
 
 ### **Navigation**
 - [Features](#features)
-  - [Material Models](#material-models)
-    - [Saturation Law](#saturation-law)
-    - [Liquid Relative Permeability](#liquid-relative-permeability)
-    - [Gas Relative Permeability](#gas-relative-permeability)
-  - [Nonlinear Solvers](#nonlinear-solvers)
-  - [Benchmark Examples](#benchmark-examples)
 - [License](#license)
 - [Authors and Acknowledgment](#authors-and-acknowledgment)
 
@@ -19,39 +13,7 @@
 
 ## **Features**
 
-check out the wiki page
-
-### **Material Models**
-
-#### **Saturation Law**
-- Brooks and Corey
-- User-defined law (UMAT)
-- Liakopoulos
-
-#### **Liquid Relative Permeability**
-- Brooks and Corey
-- User-defined law (UMAT)
-- Liakopoulos
-- Polynomial
-
-#### **Gas Relative Permeability**
-- Brooks and Corey
-- User-defined law (UMAT)
-- Polynomial
-
----
-
-### **Nonlinear Solvers**
-- Newton-Raphson
-- Picard
-
----
-
-### **Benchmark Examples**
-- McWhorter problem
-- Buckley-Leverett problem
-- Liakopoulos problem
-- Kueper and Frind problem
+Check out the wiki page!
 
 ---
 
