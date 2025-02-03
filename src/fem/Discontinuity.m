@@ -99,6 +99,10 @@ classdef Discontinuity < handle
             
             % Extract edges from the mesh
             edges = this.extractEdgesMesh(ELEM);
+
+            % Compute longitudinal parametric coordinate to order the
+            % points
+            s = [];
             
             % Iterate over each segment of the polyline
             for i = 1:size(this.X, 1) - 1
@@ -116,12 +120,15 @@ classdef Discontinuity < handle
                     % If there is an intersection, add the point to the list
                     if intersect
                         intersectionPoints = [intersectionPoints; point];
+                        sp = sqrt((point(1) - this.X(1,1))^2 + (point(2) - this.X(1,2)));
+                        s = [s;sp];
                     end
                 end
             end
-            
+
             % Store the intersection points in Xlin
-            this.Xlin = intersectionPoints;
+            [~,order] = sort(s);
+            this.Xlin = intersectionPoints(order,:);
         end
 
         %------------------------------------------------------------------
