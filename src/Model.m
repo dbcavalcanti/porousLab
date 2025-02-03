@@ -489,25 +489,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function rebuildConnectivity(this,cNode)
-            % % Initialize new element matrix
-            % newELEM = zeros(size(this.ELEM));
-            % % Get re-order vectors
             [~,ix,jx] = unique(cNode);
-            % if ~isequal(size(jx),size(cNode)), jx=jx'; end 
-            % if size(this.NODE,1)>length(ix), ix(end)=max(cNode); end
-            % % Rebuild node matrix
-            % newNODE = this.NODE(ix,:); 
-            % for el=1:size(this.ELEM,1)
-            %   newELEM(el,:) = unique(jx(this.ELEM(el,:)));
-            %   % Sort nodes in counter-clockwise order
-            %   vx=newNODE(newELEM(el,:),1);
-            %   vy=newNODE(newELEM(el,:),2);
-            %   nv=length(vx);
-            %   [~,iix] = sort(atan2(vy-sum(vy)/nv,vx-sum(vx)/nv));
-            %   newELEM(el,:) = newELEM(el,iix);
-            % end
-            % this.NODE = newNODE;
-            % this.ELEM = newELEM;
             this.NODE = this.NODE(ix,:);
             for el=1:size(this.ELEM,1)
                 for i = 1:size(this.ELEM,2)
