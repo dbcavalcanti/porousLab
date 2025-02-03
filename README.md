@@ -46,10 +46,7 @@
 ---
 
 ### **Benchmark Examples**
-- McWhorter problem
-- Buckley-Leverett problem
-- Liakopoulos problem
-- Kueper and Frind problem
+Several benchmark examples can be found in **[this](benchmarks)** folder. They are also explained in this wiki page.
 
 ---
 
