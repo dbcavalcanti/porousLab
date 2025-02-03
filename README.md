@@ -19,6 +19,8 @@
 
 ## **Features**
 
+check out the wiki page
+
 ### **Material Models**
 
 #### **Saturation Law**
