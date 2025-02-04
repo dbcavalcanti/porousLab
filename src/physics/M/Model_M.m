@@ -98,19 +98,7 @@ classdef Model_M < Model
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
-
-            % Assemble the discontinuity segments to the elements
-            if (this.enriched) && ~isempty(this.discontinuitySet)
-                nDiscontinuities = size(this.discontinuitySet,1);
-                for i = 1:nDiscontinuities
-                    % Loop through the segments of this discontinuity
-                    nDiscontinuitySeg = size(this.discontinuitySet(i).elemID,1);
-                    for j = 1:nDiscontinuitySeg
-                        el = this.discontinuitySet.elemID(el);
-                        this.element(el).type.addDiscontinuitySegment();
-                    end
-                end
-            end
+            
         end   
 
         % -----------------------------------------------------------------

@@ -30,26 +30,20 @@ classdef DiscontinuityElement < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = DiscontinuityElement(node, elem, t, ...
-                mat, intOrder, massLumping, lumpStrategy)
+        function this = DiscontinuityElement(node, mat)
             if (nargin > 0)
                 this.shape = Shape_Bar();
-                this.node     = node;
-                this.nnd_el   = size(node,1);
-                this.connect  = elem;
-                this.t        = t;
-                this.mat      = mat;
-                this.intOrder = intOrder;
-                this.massLumping = massLumping;
-                this.lumpStrategy = lumpStrategy;
+                this.node    = node;
+                this.nnd_el  = size(node,1);
+                this.mat     = mat;
             end
         end
     end
 
     %% Abstract methods
-    methods(Abstract)
-        [Ke, Ce, fi, fe, dfidu] = elementData(this);
-    end
+    % methods(Abstract)
+    %     [Ke, Ce, fi, fe, dfidu] = elementData(this);
+    % end
     
     %% Public methods
     methods
