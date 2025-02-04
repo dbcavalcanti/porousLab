@@ -91,27 +91,27 @@ fracture2.plotIntersectedGeometry()
 fracture.plotPerturbNodes()
 
 % Create the result object for the analysis
-% ndPlot  = 3;
-% dofPlot = 1; % 1 for X and 2 for Y
-% result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-% 
-% %% ========================== RUN ANALYSIS ================================
-% 
-% % Solve the problem
-% anl = Anl_Linear(result);
-% anl.process(mdl);
-% 
-% %% ========================= CHECK THE RESULTS ============================
-% 
-% % Plot pressure along a segment
-% Xi  = [0.0 , 0.0];
-% Xf  = [0.0 , Ly];
-% npts = 500;
-% mdl.plotDeformedMesh(1.0);
-% mdl.plotField('Ux');
-% mdl.plotField('Sx');
-% 
-% % mdl.plotField('Model'); hold on
-% % fracture.plotOriginalGeometry()
-% % fracture.plotIntersectedGeometry()
-% % fracture.plotPerturbNodes()
+ndPlot  = 3;
+dofPlot = 1; % 1 for X and 2 for Y
+result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
+
+%% ========================== RUN ANALYSIS ================================
+
+% Solve the problem
+anl = Anl_Linear(result);
+anl.process(mdl);
+
+%% ========================= CHECK THE RESULTS ============================
+
+% Plot pressure along a segment
+Xi  = [0.0 , 0.0];
+Xf  = [0.0 , Ly];
+npts = 500;
+mdl.plotDeformedMesh(1.0);
+mdl.plotField('Ux');
+mdl.plotField('Sx');
+
+% mdl.plotField('Model'); hold on
+% fracture.plotOriginalGeometry()
+% fracture.plotIntersectedGeometry()
+% fracture.plotPerturbNodes()
