@@ -38,7 +38,6 @@ classdef EnrichedElement_M < RegularElement_M
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
-           % [Ke, Ce, fi, fe, dfidu] = this@elementData();
            if isempty(this.discontinuity)
                [Ke, Ce, fi, fe, dfidu] = elementData@RegularElement_M(this);
            else
@@ -50,19 +49,74 @@ classdef EnrichedElement_M < RegularElement_M
         %------------------------------------------------------------------
         function [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this)
 
-            nEnrDofs = this.getNumberEnrichedDofs();
-
-            % Initialize the matrices
-            Ke    = zeros(this.nglu, this.nglu);
+            % Initialize the matrices and vectors that will be returned
             Ce    = zeros(this.nglu, this.nglu);
             dfidu = zeros(this.nglu, this.nglu);
 
-            % Initialize external force vector
-            fe = zeros(this.nglu, 1);
+            % Compute the sub-matrices
+            [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.solveLocalEq();
 
-            % Initialize the internal force vector
-            fi = zeros(this.nglu, 1);
-            
+            % Static condensation of the enrichment dofs
+            Ke = Kuu - Kua * (Kaa\Kau);
+            fi = fiu - Kua * (Kaa\fia);
+
+        end
+
+        %------------------------------------------------------------------
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = solveLocalEq(this)
+
+            % Initialize the enrichment dofs vector
+            nEnrDofs = this.getNumberEnrichedDofs();
+            ae = zeros(nEnrDofs,1);
+
+            % Define Newton-Raphson parameter
+            conv = false;
+            tol = 1.0e-5;
+
+            % Iterative solution of the local equilibrium equation
+            for i = 1:10
+
+                % Compute sub-matrices
+                [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.fillElementSubData(this);
+
+                % Check convergence
+                if (norm(fia) < tol)
+                    conv = true;
+                    break
+                end
+
+                % Solve iterative equation
+                dae = -Kaa\fia;
+
+                % Update enriched dofs
+                ae = ae + dae;
+                    
+            end
+
+            % Stop analysis process if solution did not converge
+            if (conv == false)
+                disp('LOCAL EQUILIBRIUM EQUATION FAIL TO CONVERGE');
+                error('Local equilibrium equation did not converge');
+            end
+
+        end
+
+        %------------------------------------------------------------------
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = fillElementSubData(this,ae)
+            % Get the number of dofs of each type
+            nEnrDofs = this.getNumberEnrichedDofs();
+            nRegDofs = this.nglu;
+
+            % Initialize the sub-matrices
+            Kuu = zeros(nRegDofs,nRegDofs);
+            Kua = zeros(nRegDofs,nEnrDofs);
+            Kau = zeros(nEnrDofs,nRegDofs);
+            Kaa = zeros(nEnrDofs,nEnrDofs);
+
+            % Initialize the sub-vectors
+            fiu = zeros(nRegDofs,1);
+            fia = zeros(nEnrDofs,1);
+
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
 
@@ -75,8 +129,11 @@ classdef EnrichedElement_M < RegularElement_M
                 % Assemble the B-matrix for the mechanical part
                 Bu = this.shape.BMatrix(dNdx);
 
+                % Get kinematic enriched matrix
+                Gr = this.kinematicEnrichment(Bu);
+
                 % Compute the strain vector
-                this.intPoint(i).strain = Bu * u;
+                this.intPoint(i).strain = Bu * u + Gr * ae;
 
                 % Compute the stress vector and the constitutive matrix
                 [stress,Duu] = this.intPoint(i).mechanicalLaw();
@@ -125,6 +182,11 @@ classdef EnrichedElement_M < RegularElement_M
         %------------------------------------------------------------------
         function addDiscontinuitySegment(this,dseg)
             this.discontinuity = [this.discontinuity; dseg];
+        end
+
+        %------------------------------------------------------------------
+        function kinematicEnrichment(this, Bu)
+
         end
 
 
