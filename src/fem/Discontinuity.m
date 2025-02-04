@@ -12,8 +12,10 @@ classdef Discontinuity < handle
         useRepel = false;           % Flag to enable/disable the repel process
         repelTol = 1.0e-2;          % Node repel tolerance
         PERT     = [];              % Nodes from the mesh that were perturbed
-        savePerturbNodes = false;   % Flag to save the perturbed nodes
         elemID   = [];              % Identification of the element where which discontinuity segment is located
+        mat      = [];              % Material object
+        segment  = [];
+        savePerturbNodes = false;   % Flag to save the perturbed nodes
     end
     
     %% Constructor method
@@ -49,19 +51,39 @@ classdef Discontinuity < handle
         function intersectMesh(this, model)
             % Perform intersection and optionally apply the repel process
 
-            % Step 1: Compute Xlin using the current algorithm
+            % Compute Xlin using the current algorithm
             this.computeXlin(model);
 
-            % Step 2: Apply the repel process if useRepel is true
+            % Apply the repel process if useRepel is true
             if this.useRepel
                 this.repelNodes(model);
 
-                % Step 3: Recompute Xlin based on the updated mesh
+                % Recompute Xlin based on the updated mesh
                 this.computeXlin(model);
             end
 
-            % Step 4: Find the element IDs for each segment of Xlin
+            % Find the element IDs for each segment of Xlin
             this.findElementIDsForXlinSegments(model);
+
+            % Create the discontinuity segments
+            this.initializeDiscontinuitySegments();
+
+        end
+
+        %------------------------------------------------------------------
+        function initializeDiscontinuitySegments(this)
+            n = this.getNumberOfDiscontinuitySegments();
+            seg(n,1) = DiscontinuityElement();
+            for i = 1:n
+                nodes  = [this.Xlin(i, :); this.Xlin(i+1, :)];
+                seg(i) = DiscontinuityElement(nodes,this.mat);
+            end
+            this.segment = seg;
+        end
+
+        %------------------------------------------------------------------
+        function n = getNumberOfDiscontinuitySegments(this)
+            n = size(this.elemID,1);
         end
 
         %------------------------------------------------------------------
@@ -127,7 +149,9 @@ classdef Discontinuity < handle
             end
 
             % Store the intersection points in Xlin
-            [~,order] = sort(s);
+            [s,order] = sort(s);
+            intersectionPoints = intersectionPoints(order,:);
+            [~,order]   = uniquetol(s,1e-9);
             this.Xlin = intersectionPoints(order,:);
         end
 
