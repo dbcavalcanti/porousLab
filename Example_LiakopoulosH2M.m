@@ -31,14 +31,20 @@ mdl = Model_H2M();
 % Mesh properties
 Lx = 0.1;     % Horizontal dimension (m)
 Ly = 1.0;     % Vertical dimension (m)
-Nx = 4;       % Number of elements in the x-direction
-Ny = 40;       % Number of elements in the y-direction
+Nx = 1;       % Number of elements in the x-direction
+Ny = 1;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
+
+mdl.resequenceNodes();
 
 % Type of elements
-mdl.type = 'ISOQ4';
+mdl.type = 'ISOQ8';
+
+% Type of elements
+% mdl.type = 'ISOQ4';
 
 % Thickness (m)
 mdl.t = 1.0;
@@ -50,7 +56,7 @@ water = Fluid('water',1000.0, 1.0e-3, 2.0e9);
 gas   = Fluid('gas'  ,1.20  , 1.8e-5, 1.0e5);
 
 % Create the porous media
-rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e12,0.0,0.2,0.0,3.0,'UMAT','BrooksCorey','UMAT');
+rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e12,0.0,0.2,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
 rock.setMechanicalProperties(1.3e6,0.4);
 rock.setDensity(2000.0);
 rock.setMinLiquidRelPermeability(1.0e-4);
@@ -141,12 +147,12 @@ mdl.INITCOND_p = 101025.0*ones(size(mdl.INITCOND_p,1),1);
 % Gas pressure boundary conditions
 CoordSupp  = [1 -1  0;
               1  0 -1;
-              1  0 -1;
+              1  Lx -1;
               1 -1 Ly];                        
 CoordLoad  = [];                     
 CoordPresc = [101325.0 -1  0;
               101325.0  0 -1;
-              101325.0  0 -1;
+              101325.0  Lx -1;
               101325.0 -1 Ly];   
 CoordInit  = []; 
            
@@ -158,7 +164,7 @@ mdl.INITCOND_pg = 101325.0*ones(size(mdl.INITCOND_pg,1),1);
 %% ===================== MODEL CONFIGURATION ==============================
 
 % Using Gauss quadrature
-mdl.intOrder = 2;
+mdl.intOrder = 3;
 
 % Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = false;
