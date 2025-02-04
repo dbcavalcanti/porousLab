@@ -37,6 +37,9 @@ classdef Model_HM < Model
         INITCOND_p          = []; 
         %% Additional data
         isPlaneStress       = false;
+        %% Additional mesh data for different interpolation order
+        NODE_p              = [];
+        ELEM_p              = [];
     end
     
     %% Constructor method
@@ -71,6 +74,32 @@ classdef Model_HM < Model
         %------------------------------------------------------------------
         function PRESCDISPL = prescribedDirichletMatrix(this)
             PRESCDISPL = [this.PRESCDISPL_u ,this.PRESCDISPL_p];  
+        end
+
+        %------------------------------------------------------------------
+        function createNodeDofIdMatrixDifferentInterpOrder(this)
+            % Initialize the ID matrix and the number of fixed dof
+            this.ID = zeros(this.nnodes,this.ndof_nd);
+            this.ndoffixed = 0;
+
+            % Get de Dirichlet conditions matrix
+            % SUPP = this.dirichletConditionMatrix();
+
+            % Assemble the ID matrix
+            for i = 1:this.nnodes
+                for j = 1:size(this.SUPP_u,2)
+                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
+                    if (this.SUPP_u(i,j) == 1)
+                        this.ndoffixed = this.ndoffixed + 1;
+                    end
+                end
+            end
+  
+
+
+
+
+
         end
 
         %------------------------------------------------------------------
