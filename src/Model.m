@@ -139,6 +139,9 @@ classdef Model < handle
 
             % Initialize elements
             this.initializeElements();
+
+            % Assemble discontinuity segments to the elements
+            this.assembleDiscontinuitySegments();
             
             % Compute auxiliar variables for assemblage of sparse matrices
             this.initializeSparseMtrxAssemblageVariables();
@@ -193,6 +196,26 @@ classdef Model < handle
                 this.element(el).type.ue = this.U(this.element(el).type.gle);
             end
 
+        end
+
+        %------------------------------------------------------------------
+        function assembleDiscontinuitySegments(this)
+            if (this.enriched == false)
+                return
+            elseif isempty(this.discontinuitySet)
+                return
+            else
+                nDiscontinuities = size(this.discontinuitySet,1);
+                for i = 1:nDiscontinuities
+                    % Loop through the segments of this discontinuity
+                    nDiscontinuitySeg = size(this.discontinuitySet(i).elemID,1);
+                    for j = 1:nDiscontinuitySeg
+                        el = this.discontinuitySet(i).elemID(j);
+                        dseg = this.discontinuitySet(i).segment(j);
+                        this.element(el).type.addDiscontinuitySegment(dseg);
+                    end
+                end
+            end
         end
 
         %------------------------------------------------------------------
@@ -502,6 +525,23 @@ classdef Model < handle
         function addPreExistingDiscontinuities(this,dSet)
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
+            this.initializeDiscontinuitySegments();
+        end
+
+        %------------------------------------------------------------------
+        function initializeDiscontinuitySegments(this)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
+                for j = 1:nDiscontinuitySeg
+                    this.discontinuitySet(i).segment(j).t = this.t;
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        function n = getNumberOfDiscontinuities(this)
+            n = size(this.discontinuitySet,1);
         end
 
         %------------------------------------------------------------------

@@ -26,15 +26,13 @@ Ny = 2;       % Number of elements in the y-direction
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
 mdl.type = 'ISOQ4';
-
-
-
-% xd = linspace(0, 2, 100);
-% yd = 1.0 + 0.5 * sin(0.5 * pi * xd);
+% 
+% xd = linspace(0.0, 2.0, 100);
+% yd = 0.4 + 0.4 * sin(0.7 * pi * xd);
 xd = [0.0, 2.0];
 yd = [0.5, 1.5];
 fracture = Discontinuity([xd', yd'],true);
-fracture.setRepelTol(0.01);
+fracture.setRepelTol(0.1);
 fracture.setSavePerturbNodes(true);
 fracture.intersectMesh(mdl);
 
@@ -88,9 +86,9 @@ mdl.preComputations();
 
 mdl.plotField('Model'); hold on
 % fracture.plotOriginalGeometry()
-% fracture.plotIntersectedGeometry()
+fracture.plotIntersectedGeometry()
 fracture2.plotIntersectedGeometry()
-% fracture.plotPerturbNodes()
+fracture.plotPerturbNodes()
 
 % Create the result object for the analysis
 % ndPlot  = 3;

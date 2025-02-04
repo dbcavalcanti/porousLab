@@ -123,7 +123,8 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
-        function addDiscontinuitySegment(this)
+        function addDiscontinuitySegment(this,dseg)
+            this.discontinuity = [this.discontinuity; dseg];
         end
 
 
