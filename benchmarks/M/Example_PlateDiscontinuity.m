@@ -25,10 +25,11 @@ Ny = 1;       % Number of elements in the y-direction
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-mdl.type = 'ISOQ4';
-
+% Polyline that defines the fracture 
 xd = [0.0, 2.0];
 yd = [0.25, 1.75];
+
+% Create the discontinuity 
 fracture = Discontinuity([xd', yd'],true);
 
 %% ============================= MATERIAL =================================
@@ -49,8 +50,6 @@ fracture.shearStiffness  = 1.0;
 fracture.normalStiffness = 1.0;
 
 %% ======================= BOUNDARY CONDITIONS ============================
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
 
 % Displacement boundary conditions
 CoordSupp  = [1 1 -1 0.0];
@@ -63,6 +62,7 @@ CoordPresc = [];
 
 %% ===================== MODEL CONFIGURATION ==============================
 
+% Set the problem in a plane stress condition
 mdl.isPlaneStress = true;
 
 % Using Gauss quadrature
@@ -70,6 +70,7 @@ mdl.intOrder = 2;
 
 %% ========================= INITIALIZATION ===============================
 
+% Create the discontinuity elements
 fracture.intersectMesh(mdl);
 
 % Add the fracture to the model
@@ -78,12 +79,8 @@ discontinuityData = struct( ...
     'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture,discontinuityData);
 
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
+% Perform the basic pre-computations associated to the model
 mdl.preComputations();
-
-mdl.plotField('Model'); hold on
-fracture.plotIntersectedGeometry()
 
 % Create the result object for the analysis
 ndPlot  = 3;
@@ -99,14 +96,7 @@ anl.process(mdl);
 %% ========================= CHECK THE RESULTS ============================
 
 % Plot pressure along a segment
-Xi  = [0.0 , 0.0];
-Xf  = [0.0 , Ly];
-npts = 500;
-mdl.plotDeformedMesh(1.0);
-mdl.plotField('Ux');
-mdl.plotField('Sx');
+mdl.printResults();
 
-% mdl.plotField('Model'); hold on
-% fracture.plotOriginalGeometry()
-% fracture.plotIntersectedGeometry()
-% fracture.plotPerturbNodes()
+mdl.plotField('Model'); hold on
+fracture.plotIntersectedGeometry()

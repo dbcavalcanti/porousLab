@@ -25,8 +25,8 @@ function initWorkspace()
     fprintf('                        - CIMNE -                          \n');
     fprintf('  International Centre for Numerical Methods in Enginnering\n');
     fprintf('  Applied Computational Physics Group\n\n');
-    fprintf('  Author: Danilo Cavalcanti\n');
-    fprintf('  Last update: Jan/2025\n');
+    fprintf('  Author: Danilo Cavalcanti (dborges@cimne.upc.edu)\n');
+    fprintf('  Last update: Feb/2025\n');
     fprintf('===========================================================\n\n');
     %Use all folders and subfolders
     addpath(genpath('./'));
