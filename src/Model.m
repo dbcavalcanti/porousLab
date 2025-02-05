@@ -531,6 +531,24 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        function classifyNodes(this)
+            % Determine element type (triangular or quadrilateral)
+            num_nodes_per_element = size(this.ELEM,2);
+            if num_nodes_per_element == 6
+                % Triangular element
+                pNodes = 3;
+            elseif num_nodes_per_element == 8
+                % Quadrilateral element
+                pNodes = 4;
+            else
+                error('Unsuported element type. Quadratic elements should have 3 or 4 columns.');
+            end
+
+            this.ELEM_p = this.ELEM(:,1:pNodes);
+
+        end
+
+        %------------------------------------------------------------------
         function addPreExistingDiscontinuities(this,dSet)
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
