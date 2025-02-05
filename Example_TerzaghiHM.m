@@ -25,10 +25,6 @@ Ny = 1;      % Number of elements in the y-direction
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Store the linear mesh for the pressure DOFs
-mdl.NODE_p = mdl.NODE;
-mdl.ELEM_p = mdl.ELEM;
-
 % Type of elements
 mdl.type = 'ISOQ4';
 
@@ -36,7 +32,9 @@ mdl.type = 'ISOQ4';
 quadratic = 1;
 if quadratic == true
     [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
+    mdl.classifyNodes();
     mdl.resequenceNodes();
+
 
     % Type of elements
     mdl.type = 'ISOQ8';
@@ -88,7 +86,7 @@ CoordPresc = [];
 CoordInit  = [];                      
            
 % Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE_p, ...
+[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
 %% ===================== MODEL CONFIGURATION ==============================
