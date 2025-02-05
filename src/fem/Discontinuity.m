@@ -7,15 +7,25 @@
 classdef Discontinuity < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
+        %% Geometry
         X        = [];              % Nodes defining the polyline
         Xlin     = [];              % Nodes of the "linearized" polyline
+        PERT     = [];              % Nodes from the mesh that were perturbed
+        %% Geometry tools 
         useRepel = false;           % Flag to enable/disable the repel process
         repelTol = 1.0e-2;          % Node repel tolerance
-        PERT     = [];              % Nodes from the mesh that were perturbed
-        elemID   = [];              % Identification of the element where which discontinuity segment is located
-        mat      = [];              % Material object
-        segment  = [];
         savePerturbNodes = false;   % Flag to save the perturbed nodes
+        %% Topology
+        elemID   = [];              % Identification of the element where which discontinuity segment is located
+        segment  = [];              % Vector with the DiscontinuityElement objects
+        %% Properties
+        % The properties must be included in the data structure constructed
+        % in the createMaterialDataStructure method
+        cohesiveLaw         = [];
+        initialAperture     = [];
+        normalStiffness     = [];
+        shearStiffness      = [];
+        contactPenalization = [];
     end
     
     %% Constructor method
@@ -73,13 +83,28 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         function initializeDiscontinuitySegments(this,model)
             n = this.getNumberOfDiscontinuitySegments();
+            % Create material data structure
+            mat = this.createMaterialDataStructure();
             % Initialize discontinuity segments according to the physics
             seg = model.initializeDiscontinuitySegArray(n);
             for i = 1:n
                 nodes  = [this.Xlin(i, :); this.Xlin(i+1, :)];
-                seg(i) = model.initializeDiscontinuitySegment(nodes,this.mat);
+                seg(i) = model.initializeDiscontinuitySegment(nodes,mat);
+            end
+            for i=1:n
+                seg(i).initializeIntPoints();
             end
             this.segment = seg;
+        end
+
+        %------------------------------------------------------------------
+        function mat = createMaterialDataStructure(this)
+            mat = struct( ...
+                'cohesiveLaw',this.cohesiveLaw, ...
+                'initialAperture',this.initialAperture, ...
+                'normalStiffness',this.normalStiffness, ...
+                'shearStiffness',this.shearStiffness,...
+                'contactPenalization',this.contactPenalization);
         end
 
         %------------------------------------------------------------------

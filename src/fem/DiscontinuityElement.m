@@ -9,12 +9,10 @@ classdef DiscontinuityElement < handle
     properties (SetAccess = public, GetAccess = public)
         shape        = [];            % Object of the Shape class
         node         = [];            % Nodes of the fem mesh
-        connect      = [];            % Nodes connectivity
         t            = 1.0;           % Thickness
         mat          = [];            % Material object
         intOrder     = 2;             % Order of the numerical integration
-        nnd_el       = 4;             % Number of nodes per element
-        ndof_nd      = 1;             % Number of dof per node
+        ndof         = 1;             % Number of dofs
         nIntPoints   = 1;             % Number of integration points
         intPoint     = [];            % Vector with integration point objects       
     end
@@ -26,7 +24,6 @@ classdef DiscontinuityElement < handle
             if (nargin > 0)
                 this.shape   = Shape_Bar();
                 this.node    = node;
-                this.nnd_el  = size(node,1);
                 this.mat     = mat;
             end
         end

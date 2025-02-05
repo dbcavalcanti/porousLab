@@ -18,10 +18,13 @@ classdef EnrichedElement_M < RegularElement_M
         %------------------------------------------------------------------
         function this = EnrichedElement_M(type, node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
-                isAxisSymmetric,isPlaneStress)
+                isAxisSymmetric,isPlaneStress, ...
+                addRelRotationMode,addStretchingMode)
             this = this@RegularElement_M(type, node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
+            this.addStretchingMode  = addStretchingMode;
+            this.addRelRotationMode = addRelRotationMode;
         end
     end
     
@@ -240,13 +243,13 @@ classdef EnrichedElement_M < RegularElement_M
                         % Add stretching mode
                         c = 3;
                         if this.addStretchingMode
-                            Gci(:,c) = Gci(:,c) - Buj * (m * m') * (Xj - Xr);
+                            Gci(:,c) = Gci(:,c) - Buj * (m * m') * (Xj' - Xr');
                             c = c + 1;
                         end
                         % Add relative rotation mode
                         if this.addRelRotationMode
                             mn = (n * m') - (m * n');
-                            Gci(:,c) = Gci(:,c) - Buj * mn * (Xj - Xr);
+                            Gci(:,c) = Gci(:,c) - Buj * mn * (Xj' - Xr');
                         end
                     end
                 end

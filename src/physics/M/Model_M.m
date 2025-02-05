@@ -22,8 +22,11 @@ classdef Model_M < Model
         PRESCDISPL_u        = [];
         %% Matrix with the Neumann BCs
         LOAD_u              = [];
-        %% Additional data
+        %% Model data
         isPlaneStress       = false;
+        %% Embedded related data
+        addStretchingMode   = false;
+        addRelRotationMode  = false;
     end
     
     %% Constructor method
@@ -93,7 +96,7 @@ classdef Model_M < Model
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                                 this.t, emat, this.intOrder,this.GLU(el,:), ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                                this.isPlaneStress);
+                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
                 end
                 elements(el).type.initializeIntPoints();
             end
@@ -109,6 +112,25 @@ classdef Model_M < Model
         % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegment(~,nodeD,matD)
             seg = DiscontinuityElement_M(nodeD,matD);
+        end
+
+        % -----------------------------------------------------------------
+        function addDiscontinuityData(this,additionalData)
+            this.addRelRotationMode = additionalData.addRelRotationMode;
+            this.addStretchingMode  = additionalData.addStretchingMode;
+        end
+
+        %------------------------------------------------------------------
+        function initializeDiscontinuitySegments(this)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
+                for j = 1:nDiscontinuitySeg
+                    this.discontinuitySet(i).segment(j).t = this.t;
+                    this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
+                    this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
+                end
+            end
         end
 
         % -----------------------------------------------------------------

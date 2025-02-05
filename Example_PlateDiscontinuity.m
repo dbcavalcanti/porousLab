@@ -30,10 +30,6 @@ mdl.type = 'ISOQ4';
 xd = [0.0, 2.0];
 yd = [0.25, 1.75];
 fracture = Discontinuity([xd', yd'],true);
-fracture.intersectMesh(mdl);
-
-% Add the fracture to the model
-mdl.addPreExistingDiscontinuities(fracture);
 
 %% ============================= MATERIAL =================================
 
@@ -45,6 +41,12 @@ rock.nu    = 0.0;                 % Poisson ratio
 
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
+
+% Set the fracture material properties
+fracture.cohesiveLaw     = 'elastic';
+fracture.initialAperture = 0.0;
+fracture.shearStiffness  = 1.0;
+fracture.normalStiffness = 1.0;
 
 %% ======================= BOUNDARY CONDITIONS ============================
 % In case it is prescribed a pressure value different than zero, don't 
@@ -67,6 +69,14 @@ mdl.isPlaneStress = true;
 mdl.intOrder = 2;
 
 %% ========================= INITIALIZATION ===============================
+
+fracture.intersectMesh(mdl);
+
+% Add the fracture to the model
+discontinuityData = struct( ...
+    'addStretchingMode', false,...
+    'addRelRotationMode', true);
+mdl.addPreExistingDiscontinuities(fracture,discontinuityData);
 
 % Perform the basic pre-computations associated to the model (dof
 % definition, etc.)

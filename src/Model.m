@@ -522,7 +522,10 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
-        function addPreExistingDiscontinuities(this,dSet)
+        function addPreExistingDiscontinuities(this,dSet,additionalData)
+            if nargin > 2
+                this.addDiscontinuityData(additionalData);
+            end
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
             this.initializeDiscontinuitySegments();
