@@ -121,7 +121,7 @@ classdef Model_HM < Model
             this.pDof = unique(this.GLP);
             this.Dof  = [this.uDof(:); this.pDof(:)];
 
-            % Vector will free regular dofs
+            % Vector with free regular dofs
             this.uFreeDof  = intersect(this.uDof,this.doffree);
             this.pFreeDof  = intersect(this.pDof,this.doffree);
 
