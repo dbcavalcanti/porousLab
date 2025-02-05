@@ -22,6 +22,7 @@ classdef Discontinuity < handle
         % The properties must be included in the data structure constructed
         % in the createMaterialDataStructure method
         cohesiveLaw         = [];
+        fluid               = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
@@ -86,7 +87,7 @@ classdef Discontinuity < handle
             % Create material data structure
             mat = this.createMaterialDataStructure();
             % Initialize discontinuity segments according to the physics
-            seg = model.initializeDiscontinuitySegArray(n);
+            % seg = model.initializeDiscontinuitySegArray(n);
             for i = 1:n
                 nodes  = [this.Xlin(i, :); this.Xlin(i+1, :)];
                 seg(i) = model.initializeDiscontinuitySegment(nodes,mat);
@@ -100,6 +101,7 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         function mat = createMaterialDataStructure(this)
             mat = struct( ...
+                'fluid',this.fluid,...
                 'cohesiveLaw',this.cohesiveLaw, ...
                 'initialAperture',this.initialAperture, ...
                 'normalStiffness',this.normalStiffness, ...
@@ -168,7 +170,7 @@ classdef Discontinuity < handle
                     % If there is an intersection, add the point to the list
                     if intersect
                         intersectionPoints = [intersectionPoints; point];
-                        sp = sqrt((point(1) - this.X(1,1))^2 + (point(2) - this.X(1,2)));
+                        sp = sqrt((point(1) - this.X(1,1))^2 + (point(2) - this.X(1,2))^2);
                         s = [s;sp];
                     end
                 end

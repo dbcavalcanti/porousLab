@@ -53,12 +53,7 @@ classdef Shape_Bar < Shape
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = shapeFncDrv(~,~)
-
-            % Derivatives of the shape functions
-            dN1_dr = -0.5;  
-            dN2_dr =  0.5;    
-            dNdxn   = [ dN1_dr  dN2_dr];
-
+            dNdxn   = [ -0.5  0.5];
          end
 
          % -----------------------------------------------------------------
@@ -80,19 +75,19 @@ classdef Shape_Bar < Shape
               
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
-            detJ = det(J);
+            detJ = norm(J);
 
          end
 
          % -----------------------------------------------------------------
-         % Compute the strain-displacement matrix
-         function [B,detJ] = BMatrix(this,X,Xn)
+         % Compute the derivatives of the shape functions matrix
+         function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
 
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
 
             % Determinant of the Jacobian matrix
-            detJ = det(J);
+            detJ = norm(J);
 
             % Compute the derivatives of the shape functions wrt to the
             % natural coordinate system
@@ -102,8 +97,18 @@ classdef Shape_Bar < Shape
             % global cartesian coordinate system
             dNdx = J\dNdxn;
 
-            % B-matrix
-            B = [dNdx(1) 0.0 dNdx(2) 0.0];
+         end
+
+         % -----------------------------------------------------------------
+         % Compute the strain-displacement matrix
+         function [B] = BMatrix(~,dNdx)
+
+            B = zeros(4,4*2);
+            for i = 1:4
+                B(1,2*i-1) = dNdx(1,i); 
+                B(2,2*i)   = dNdx(2,i);
+                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
+            end
 
          end
 
