@@ -38,6 +38,7 @@ classdef Model < handle
         isAxisSymmetric     = false;         % Flag for axissymetric models
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
+        differentInterOrder = false;         % Tag if displacement is quadratic and pressure is linear           
     end
     
     %% Constructor method
@@ -131,8 +132,16 @@ classdef Model < handle
             % Initialize basic variables
             this.initializeBasicVariables();
 
-            % Create nodes DOF ids matrix
-            this.createNodeDofIdMtrx();
+            % Check the interpolation order for displacement and pressure
+            if (this.differentInterOrder == true) && (this.nnd_el == 8)
+                
+                % Create nodes DOF ids matrix
+                this.createNodeDofIdMatrixDifferentInterpOrder();
+            else
+                
+                % Create nodes DOF ids matrix
+                this.createNodeDofIdMtrx();
+            end
 
             % Assemble the regular dofs to each element
             this.assembleElementDofs();
