@@ -99,6 +99,7 @@ classdef EnrichedElement_M < RegularElement_M
 
         %------------------------------------------------------------------
         function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = fillElementSubData(this,ae)
+
             % Get the number of dofs of each type
             nEnrDofs = this.getNumberEnrichedDofs();
             nRegDofs = this.nglu;
@@ -112,6 +113,9 @@ classdef EnrichedElement_M < RegularElement_M
             % Initialize the sub-vectors
             fiu = zeros(nRegDofs,1);
             fia = zeros(nEnrDofs,1);
+
+            % Initialize external force vector
+            fe = zeros(this.nglu, 1);
 
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
