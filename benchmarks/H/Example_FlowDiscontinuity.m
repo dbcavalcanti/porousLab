@@ -19,8 +19,8 @@ mdl = Model_H();
 % Mesh properties
 Lx = 5.0;     % Horizontal dimension (m)
 Ly = 3.0;     % Vertical dimension (m)
-Nx = 25;       % Number of elements in the x-direction
-Ny = 15;       % Number of elements in the y-direction
+Nx = 5;       % Number of elements in the x-direction
+Ny = 3;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -39,7 +39,7 @@ water = Fluid('water',1000.0,1.0e-3,2.0e9);
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.K     = 9.8e-13;        % Intrinsic permeability (m2)
+rock.K     = 9.8e-16;        % Intrinsic permeability (m2)
 rock.phi   = 0.25;          % Porosity
 
 % Material parameters vector
