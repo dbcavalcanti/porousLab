@@ -98,7 +98,6 @@ classdef Model_HM < Model
                 end
             
                 for j=1:ndof_current
-                    % this.ID(i,j) = (i - 1) * this.ndof_nd + j;
                     this.ID(i,j) = dof_counter;
                     dof_counter = dof_counter + 1;
                     if SUPP(i,j) == 1
@@ -128,8 +127,6 @@ classdef Model_HM < Model
             countFixed = 1;
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    SUPP(i,j)
-                    this.ID(i,j)
                     if this.ID(i,j) ~= 0
                         if SUPP(i,j) == 1
                             this.doffixed(countFixed) = this.ID(i,j);
