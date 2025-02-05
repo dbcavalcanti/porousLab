@@ -81,25 +81,66 @@ classdef Model_HM < Model
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
             this.ndoffixed = 0;
+            dof_counter = 1; % Global node counter (to avoid skipping them)
+
+            % Obtain the quadratic nodes (only for displacement)
+            quadElems = setdiff(this.ELEM, this.ELEM_p);
 
             % Get de Dirichlet conditions matrix
-            % SUPP = this.dirichletConditionMatrix();
+            SUPP = this.dirichletConditionMatrix();
 
             % Assemble the ID matrix
             for i = 1:this.nnodes
-                for j = 1:size(this.SUPP_u,2)
-                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
-                    if (this.SUPP_u(i,j) == 1)
+                if ismember(i, quadElems)
+                    ndof_current = 3; % Nodes with 3 DOF (ux, uy, p)
+                else 
+                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
+                end
+            
+                for j=1:ndof_current
+                    % this.ID(i,j) = (i - 1) * this.ndof_nd + j;
+                    this.ID(i,j) = dof_counter;
+                    dof_counter = dof_counter + 1;
+                    if SUPP(i,j) == 1
                         this.ndoffixed = this.ndoffixed + 1;
                     end
                 end
             end
-  
 
+            % NOTE: The values on the third column in ID are the ones
+            % corresponding to nodes which only have displacement DOFs.
 
+            % Update the number of dofs
+            this.ndof = (dof_counter - 1);
+            
+            % Vector with all the dofs
+            this.Dof = 1:this.ndof;
 
+            % Number of free dof
+            this.ndoffree = this.ndof - this.ndoffixed;
 
+            % Initialize the counters
+            this.doffixed = zeros(this.ndoffixed,1);
+            this.doffree  = zeros(this.ndoffree,1);
 
+            % Update the ID matrix with the free dof numbered first
+            countFree = 1;
+            countFixed = 1;
+            for i = 1:this.nnodes
+                for j = 1:this.ndof_nd
+                    SUPP(i,j)
+                    this.ID(i,j)
+                    if this.ID(i,j) ~= 0
+                        if SUPP(i,j) == 1
+                            this.doffixed(countFixed) = this.ID(i,j);
+                            countFixed = countFixed + 1;
+                        else 
+                            this.doffree(countFree) = this.ID(i,j);
+                            countFree = countFree + 1;
+                        end
+                    end
+                end
+            end
         end
 
         %------------------------------------------------------------------
