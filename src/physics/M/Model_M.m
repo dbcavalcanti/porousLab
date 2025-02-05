@@ -102,6 +102,16 @@ classdef Model_M < Model
         end   
 
         % -----------------------------------------------------------------
+        function seg = initializeDiscontinuitySegArray(~,n)
+            seg(n,1) = DiscontinuityElement_M([],[]);
+        end
+
+        % -----------------------------------------------------------------
+        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
+            seg = DiscontinuityElement_M(nodeD,matD);
+        end
+
+        % -----------------------------------------------------------------
         % Plot the mesh with the boundary conditions
         function plotDisplacementAlongSegment(this, dir, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end

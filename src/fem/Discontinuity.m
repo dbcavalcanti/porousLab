@@ -66,17 +66,18 @@ classdef Discontinuity < handle
             this.findElementIDsForXlinSegments(model);
 
             % Create the discontinuity segments
-            this.initializeDiscontinuitySegments();
+            this.initializeDiscontinuitySegments(model);
 
         end
 
         %------------------------------------------------------------------
-        function initializeDiscontinuitySegments(this)
+        function initializeDiscontinuitySegments(this,model)
             n = this.getNumberOfDiscontinuitySegments();
-            seg(n,1) = DiscontinuityElement();
+            % Initialize discontinuity segments according to the physics
+            seg = model.initializeDiscontinuitySegArray(n);
             for i = 1:n
                 nodes  = [this.Xlin(i, :); this.Xlin(i+1, :)];
-                seg(i) = DiscontinuityElement(nodes,this.mat);
+                seg(i) = model.initializeDiscontinuitySegment(nodes,this.mat);
             end
             this.segment = seg;
         end

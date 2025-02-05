@@ -10,7 +10,6 @@ classdef EnrichedElement_M < RegularElement_M
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
-        nDiscontinuities = 0;
         addStretchingMode = false;
         addRelRotationMode = false;
     end
@@ -29,13 +28,6 @@ classdef EnrichedElement_M < RegularElement_M
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % This function assembles the element matrices and vectors 
-        %
-        % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
-        %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
            if isempty(this.discontinuity)
@@ -70,14 +62,15 @@ classdef EnrichedElement_M < RegularElement_M
             ae = zeros(nEnrDofs,1);
 
             % Define Newton-Raphson parameter
-            conv = false;
-            tol = 1.0e-5;
+            conv    = false;
+            tol     = 1.0e-5;
+            maxIter = 10;
 
             % Iterative solution of the local equilibrium equation
-            for i = 1:10
+            for i = 1:maxIter
 
                 % Compute sub-matrices
-                [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.fillElementSubData(this);
+                [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.fillElementSubData(ae);
 
                 % Check convergence
                 if (norm(fia) < tol)
@@ -132,6 +125,9 @@ classdef EnrichedElement_M < RegularElement_M
                 % Get kinematic enriched matrix
                 Gr = this.kinematicEnrichment(Bu);
 
+                % Get the static enriched matrix (TEMP)
+                Gv = this.kinematicEnrichment(Bu);
+
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u + Gr * ae;
 
@@ -145,16 +141,52 @@ classdef EnrichedElement_M < RegularElement_M
                 end
                 
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Bu' * Duu * Bu * c;
+                Kuu = Kuu + Bu' * Duu * Bu * c;
+                Kua = Kua + Bu' * Duu * Gr * c;
+                Kau = Kau + Gv' * Duu * Bu * c;
+                Kaa = Kaa + Gv' * Duu * Gr * c;
 
                 % Internal force vector
-                fi = fi + Bu' * stress * c;
+                fiu = fiu + Bu' * stress * c;
+                fia = fia + Gv' * stress * c;
                 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
                     fe = this.addGravityForces(fe,this.intPoint(i).X,c);
                 end
-            end 
+            end
+
+            % Add the contribution from the discontinuities
+            [Kd,fd] = this.getDiscontinuitiesData(ae);
+            fia = fia + fd;
+            Kaa = Kaa + Kd;
+        end
+
+        %------------------------------------------------------------------
+        function [Kd,fd] = getDiscontinuitiesData(this,ae)
+
+            nEnrDofs          = this.getNumberEnrichedDofs();
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+
+            % Initialize the output data 
+            Kd = zeros(nEnrDofs,nEnrDofs);
+            fd = zeros(nEnrDofs,1);
+
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+
+                % Dofs associated with this discontinuity segment
+                dofs = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+
+                % Get the discontinuity data
+                [Kdi,~,fdi,~,~] = this.discontinuity(i).elementData(ae(dofs));
+
+                % Assemble the contribution of this discontinuity
+                Kd(dofs,dofs) = Kdi;
+                fd(dofs)      = fdi;
+                
+            end
         end
 
         %------------------------------------------------------------------
@@ -185,10 +217,44 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
-        function kinematicEnrichment(this, Bu)
-
+        function Gc = kinematicEnrichment(this, Bu) 
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            Gc = zeros(4,nDofDiscontinuity * nDiscontinuities);
+            for i = 1:nDiscontinuities    
+                Gci = zeros(4,nDofDiscontinuity);
+                % Get the discontinuity orientation vectors
+                m = this.discontinuity(i).tangentialVector();
+                n = this.discontinuity(i).normalVector();
+                % Get the discontinuity reference point
+                Xr = this.discontinuity(i).referencePoint();
+                for j = 1:this.nnd_el
+                    Xj = this.node(j,:);
+                    h = this.discontinuity(i).heaviside(Xj);
+                    if (h > 0.0)
+                        % Columns of the B-matrix associated with this node
+                        Buj = Bu(:, 2*(j-1) + 1 : 2*j);
+                        % Add translation modes
+                        Gci(:,1) = Gci(:,1) - Buj * m;
+                        Gci(:,2) = Gci(:,2) - Buj * n;
+                        % Add stretching mode
+                        c = 3;
+                        if this.addStretchingMode
+                            Gci(:,c) = Gci(:,c) - Buj * (m * m') * (Xj - Xr);
+                            c = c + 1;
+                        end
+                        % Add relative rotation mode
+                        if this.addRelRotationMode
+                            mn = (n * m') - (m * n');
+                            Gci(:,c) = Gci(:,c) - Buj * mn * (Xj - Xr);
+                        end
+                    end
+                end
+                % Assemble the matrix associated with discontinuity i
+                cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+                Gc(:,cols) = Gci;
+            end
         end
-
-
+        %------------------------------------------------------------------
     end
 end
