@@ -19,8 +19,8 @@ mdl = Model_HM();
 % Mesh properties
 Lx = 0.1;     % Horizontal dimension (m)
 Ly = 1.0;     % Vertical dimension (m)
-Nx = 1;       % Number of elements in the x-direction
-Ny = 1;      % Number of elements in the y-direction
+Nx = 2;       % Number of elements in the x-direction
+Ny = 2;      % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -32,8 +32,8 @@ mdl.type = 'ISOQ4';
 quadratic = 1;
 if quadratic == true
     [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-    mdl.classifyNodes();
-    mdl.resequenceNodes();
+    % mdl.classifyNodes();
+    % mdl.resequenceNodes();
 
 
     % Type of elements

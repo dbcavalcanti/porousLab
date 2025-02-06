@@ -166,6 +166,32 @@ classdef Model_HM < Model
         end
 
         %------------------------------------------------------------------
+        function assembleElementDofsDifferentInterpOrder(this)
+
+            this.GLU = zeros(this.nelem, this.nnd_el*2);
+            for el = 1:this.nelem
+                this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
+                    this.nnd_el*2);
+            end
+            this.GLP = zeros(this.nelem, (this.nnd_el/2));
+            for el = 1:this.nelem
+                preGLP = reshape(this.ID(this.ELEM(el,:),3),1,...
+                    this.nnd_el);
+                this.GLP(el,:) = preGLP(preGLP ~= 0);
+            end
+
+            % Vector with all regular dofs
+            this.uDof = unique(this.GLU);
+            this.pDof = unique(this.GLP);
+            this.Dof  = [this.uDof(:); this.pDof(:)];
+
+            % Vector with free regular dofs
+            this.uFreeDof  = intersect(this.uDof,this.doffree);
+            this.pFreeDof  = intersect(this.pDof,this.doffree);
+
+        end
+
+        %------------------------------------------------------------------
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 

@@ -137,14 +137,18 @@ classdef Model < handle
                 
                 % Create nodes DOF ids matrix
                 this.createNodeDofIdMatrixDifferentInterpOrder();
+
+                % Assemble the regular dofs to each element
+                this.assembleElementDofsDifferentInterpOrder();
+
             else
                 
                 % Create nodes DOF ids matrix
                 this.createNodeDofIdMtrx();
-            end
 
-            % Assemble the regular dofs to each element
-            this.assembleElementDofs();
+                % Assemble the regular dofs to each element
+                this.assembleElementDofs();
+            end
 
             % Initialize elements
             this.initializeElements();
