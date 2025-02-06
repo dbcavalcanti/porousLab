@@ -39,7 +39,6 @@ classdef Model_HM < Model
         isPlaneStress       = false;
         %% Additional mesh data for different interpolation order
         NODE_p              = [];
-        ELEM_p              = [];
     end
     
     %% Constructor method
@@ -77,6 +76,24 @@ classdef Model_HM < Model
         end
 
         %------------------------------------------------------------------
+        function ELEM_p = getElementPressureDofs(this)
+            % Determine element type (triangular or quadrilateral)
+            num_nodes_per_element = size(this.ELEM,2);
+            if num_nodes_per_element == 6
+                % Triangular element
+                pNodes = 3;
+            elseif num_nodes_per_element == 8
+                % Quadrilateral element
+                pNodes = 4;
+            else
+                error('Unsuported element type. Quadratic elements should have 3 or 4 columns.');
+            end
+
+            ELEM_p = this.ELEM(:,1:pNodes);
+
+        end
+
+        %------------------------------------------------------------------
         function createNodeDofIdMatrixDifferentInterpOrder(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -84,17 +101,18 @@ classdef Model_HM < Model
             dof_counter = 1; % Global node counter (to avoid skipping them)
 
             % Obtain the quadratic nodes (only for displacement)
-            quadElems = setdiff(this.ELEM, this.ELEM_p);
+            ELEM_p = getElementPressureDofs(this);
+            quadNodes = setdiff(this.ELEM, ELEM_p);
 
             % Get de Dirichlet conditions matrix
             SUPP = this.dirichletConditionMatrix();
 
             % Assemble the ID matrix
             for i = 1:this.nnodes
-                if ismember(i, quadElems)
-                    ndof_current = 3; % Nodes with 3 DOF (ux, uy, p)
+                if ismember(i, quadNodes)
+                    ndof_current = 2; % Nodes with 3 DOF (ux, uy)
                 else 
-                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
+                    ndof_current = 3; % Nodes with 2 DOF (ux, uy, p)
                 end
             
                 for j=1:ndof_current
