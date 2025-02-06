@@ -148,6 +148,7 @@ classdef Model < handle
 
                 % Assemble the regular dofs to each element
                 this.assembleElementDofs();
+
             end
 
             % Initialize elements
@@ -159,9 +160,18 @@ classdef Model < handle
             % Compute auxiliar variables for assemblage of sparse matrices
             this.initializeSparseMtrxAssemblageVariables();
 
-            % Initialize the displacement vector
-            this.initializeDisplacementVct();
+            % Check the interpolation order for displacement and pressure
+            if (this.differentInterOrder == true) && (this.nnd_el == 8)
 
+                % Initialize the displacement vector
+                this.initializeDisplacementVctDifferentInterpOrder();
+
+            else
+
+                % Initialize the displacement vector
+                this.initializeDisplacementVct();
+
+            end
         end
 
         %------------------------------------------------------------------
