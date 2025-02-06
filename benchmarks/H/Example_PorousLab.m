@@ -19,8 +19,8 @@ mdl = Model_H();
 % Mesh properties
 Lx = 10.0;     % Horizontal dimension (m)
 Ly = 3.0;     % Vertical dimension (m)
-Nx = 51;       % Number of elements in the x-direction
-Ny = 31;       % Number of elements in the y-direction
+Nx = 63;       % Number of elements in the x-direction
+Ny = 33;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -33,13 +33,13 @@ letters = {
     'U', [0 1; 0 0; 1 0; 1 1];
     'S', [1 1; 0 1; 0 0.5; 1 0.5; 1 0; 0 0];
     'L', [0 1; 0 0; 1 0];
-    'A', [0 0; 0.5 1; 1 0; 0.25 0.5; 0.75 0.5];
+    'A', [0 0; 0.5 1; 1 0];
     'B', [0 0; 0 1; 0.5 1; 0.75 0.75; 0.5 0.5; 0 0.5; 0.5 0.5; 0.75 0.25; 0.5 0; 0 0]
 };
 
 % Compute total width for normalization
 num_letters = length(letters);
-max_letter_width = 1.2;  % Max relative width per letter (including spacing)
+max_letter_width = 1.5;  % Max relative width per letter (including spacing)
 total_width = num_letters * max_letter_width;
 
 % Compute scaling factors
@@ -50,7 +50,7 @@ scale_y = Ly * 0.9;  % Scale to 90% of Ly to ensure margin
 final_coords = cell(num_letters, 1);
 
 % Transform and store final coordinates
-x_offset = 0.5; % Initial offset to center text
+x_offset = 0.7; % Initial offset to center text
 y_offset = 0.1; % Initial offset to center text
 for i = 1:num_letters
     data = letters{i,2};
@@ -72,17 +72,17 @@ for i = 1:num_letters
         % Create a fracture for this segment
         fractures = [fractures, Discontinuity(segment, true)];
     end
-    fractures = [fractures, Discontinuity([0.0,0.2;Lx,0.5], true)];
+    fractures = [fractures, Discontinuity([0.0,Ly*0.5;Lx,0.5*Ly], true)];
 end
 
 %% ============================= MATERIAL =================================
 
 % Create the fluids
-water = Fluid('water',1000.0,1.0e-3,2.0e9);
+water = Fluid('water',1000.0,1.0e-3,2.2e9);
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.K     = 9.8e-16;        % Intrinsic permeability (m2)
+rock.K     = 1.0e-16;        % Intrinsic permeability (m2)
 rock.phi   = 0.25;          % Porosity
 
 % Material parameters vector
@@ -92,16 +92,17 @@ mdl.mat  = struct( ...
 
 % Set the fracture material properties
 for i = 1:length(fractures)
-    fractures(i).initialAperture = 1.0;
+    fractures(i).initialAperture = 1.0e-1;
     fractures(i).fluid = water;
 end
+fractures(end).initialAperture = 1.0e-1;
 
 %% ======================= BOUNDARY CONDITIONS ============================
 
 % Pore pressure boundary conditions
 CoordSupp  = [1 0.0 -1;1 Lx -1];         
 CoordLoad  = [];            
-CoordPresc = [20.0 0.0 -1;0.0 Lx -1];            
+CoordPresc = [1000000.0 0.0 -1;0.0 Lx -1];            
 CoordInit  = [];                   
            
 % Define supports and loads
@@ -135,22 +136,22 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 %% ========================== RUN ANALYSIS ================================
 
 % Transient analysis parameters
-tinit = 1.0;   % Initial time
-dt    = 1.0;   % Time step
-tf    = 400;  % Final time
+tinit = 0.1;   % Initial time
+dt    = 0.1;   % Time step
+tf    = 5.5;  % Final time
 
 % Solve the problem
-% anl = Anl_Transient(result,"Newton");
-% anl.setUpTransientSolver(tinit,dt,tf,100.0,0.001,true);
-% anl.process(mdl);
-
-anl = Anl_Linear(result);
+anl = Anl_Transient(result,"Newton");
+anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.process(mdl);
+
+% anl = Anl_Linear(result);
+% anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
 
 % Plot pressure along a segment
-mdl.printResults();
+% mdl.printResults();
 
 mdl.plotField('Pressure'); hold on
 for i = 1:length(fractures)
