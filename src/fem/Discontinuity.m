@@ -65,6 +65,9 @@ classdef Discontinuity < handle
             % Compute Xlin using the current algorithm
             this.computeXlin(model);
 
+            % Check if there is at least one segment
+            if (size(this.Xlin,1) == 1), return, end
+
             % Apply the repel process if useRepel is true
             if this.useRepel
                 this.repelNodes(model);
@@ -75,6 +78,11 @@ classdef Discontinuity < handle
 
             % Find the element IDs for each segment of Xlin
             this.findElementIDsForXlinSegments(model);
+
+            % Check if the discontinuity is not fully crossing any element
+            if (isempty(this.elemID)) || (sum(this.elemID>0) == 0)
+                return
+            end
 
             % Create the discontinuity segments
             this.initializeDiscontinuitySegments(model);
@@ -88,9 +96,13 @@ classdef Discontinuity < handle
             mat = this.createMaterialDataStructure();
             % Initialize discontinuity segments according to the physics
             % seg = model.initializeDiscontinuitySegArray(n);
-            for i = 1:n
+            k = 1;
+            for i = 1:size(this.Xlin, 1) - 1
                 nodes  = [this.Xlin(i, :); this.Xlin(i+1, :)];
-                seg(i) = model.initializeDiscontinuitySegment(nodes,mat);
+                if (this.elemID(i) > 0)
+                    seg(k) = model.initializeDiscontinuitySegment(nodes,mat);
+                    k = k + 1;
+                end
             end
             for i=1:n
                 seg(i).initializeIntPoints();
@@ -111,7 +123,7 @@ classdef Discontinuity < handle
 
         %------------------------------------------------------------------
         function n = getNumberOfDiscontinuitySegments(this)
-            n = size(this.elemID,1);
+            n = sum(this.elemID>0);
         end
 
         %------------------------------------------------------------------
@@ -123,7 +135,12 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         function plotIntersectedGeometry(this)
             % Plot the intersected polyline (Xlin)
-            plot(this.Xlin(:, 1), this.Xlin(:, 2), '--ob');
+            for i = 1:size(this.Xlin, 1) - 1
+                if (this.elemID > 0)
+                    seg = [this.Xlin(i, :); this.Xlin(i+1, :)];
+                    plot(seg(:, 1), seg(:, 2), '--ob');
+                end
+            end
         end
 
         %------------------------------------------------------------------
@@ -149,16 +166,17 @@ classdef Discontinuity < handle
             
             % Extract edges from the mesh
             edges = this.extractEdgesMesh(ELEM);
-
-            % Compute longitudinal parametric coordinate to order the
-            % points
-            s = [];
             
             % Iterate over each segment of the polyline
             for i = 1:size(this.X, 1) - 1
                 % Define the current segment of the polyline
                 polylineSegment = [this.X(i, :); this.X(i+1, :)];
-                
+
+                % Initialize the list of intersection points of this
+                % segment
+                intersectionPointsSegment = [];
+                s = [];
+
                 % Iterate over each edge of the mesh
                 for j = 1:size(edges, 1)
                     % Define the current edge of the mesh
@@ -169,18 +187,23 @@ classdef Discontinuity < handle
                     
                     % If there is an intersection, add the point to the list
                     if intersect
-                        intersectionPoints = [intersectionPoints; point];
-                        sp = sqrt((point(1) - this.X(1,1))^2 + (point(2) - this.X(1,2))^2);
+                        intersectionPointsSegment = [intersectionPointsSegment; point];
+                        sp = sqrt((point(1) - this.X(i,1))^2 + (point(2) - this.X(i,2))^2);
                         s = [s;sp];
                     end
                 end
+
+                % Guarantee that the points are ordered
+                [s,order] = sort(s);
+                intersectionPointsSegment = intersectionPointsSegment(order,:);
+                [~,order]   = uniquetol(s,1e-9);
+
+                % Order the intersection points of the segment
+                intersectionPoints = [intersectionPoints; intersectionPointsSegment(order,:)];
             end
 
-            % Store the intersection points in Xlin
-            [s,order] = sort(s);
-            intersectionPoints = intersectionPoints(order,:);
-            [~,order]   = uniquetol(s,1e-9);
-            this.Xlin = intersectionPoints(order,:);
+            % Store the intersection points in Xlin  
+            this.Xlin = uniquetol(intersectionPoints,1.0e-9,'ByRows',true);
         end
 
         %------------------------------------------------------------------
@@ -247,7 +270,7 @@ classdef Discontinuity < handle
             end
         
             % If no element is found, return an error
-            error('No element found containing the segment.');
+            eID = 0;
         end
 
         %------------------------------------------------------------------
@@ -292,9 +315,9 @@ classdef Discontinuity < handle
             %   normal: Normal vector (unit vector)
         
             % Handle cases where X has fewer than 3 points
-            if size(this.X, 1) == 2
+            if size(this.Xlin, 1) == 2
                 % For a straight line, compute the normal directly
-                tangent = this.X(2, :) - this.X(1, :); % Tangent vector
+                tangent = this.Xlin(2, :) - this.Xlin(1, :); % Tangent vector
                 tangent = tangent / norm(tangent); % Normalize
                 normal = [-tangent(2), tangent(1)]; % Rotate by 90 degrees
                 return;
@@ -302,15 +325,15 @@ classdef Discontinuity < handle
         
             % For polylines with 3 or more points, compute the normal based on the segment
             if index == 1
-                segment = this.X(1:2, :); % First segment
+                seg = this.Xlin(1:2, :); % First segment
             elseif index == size(this.Xlin, 1)
-                segment = this.X(end-1:end, :); % Last segment
+                seg = this.Xlin(end-1:end, :); % Last segment
             else
-                segment = this.X(index-1:index+1, :); % Middle segment
+                seg = this.Xlin(index-1:index+1, :); % Middle segment
             end
         
             % Compute the tangent vector of the segment
-            tangent = segment(2, :) - segment(1, :);
+            tangent = seg(2, :) - seg(1, :);
             tangent = tangent / norm(tangent); % Normalize
         
             % Compute the normal vector (rotate tangent by 90 degrees)

@@ -208,11 +208,14 @@ classdef Model < handle
                 nDiscontinuities = size(this.discontinuitySet,1);
                 for i = 1:nDiscontinuities
                     % Loop through the segments of this discontinuity
-                    nDiscontinuitySeg = size(this.discontinuitySet(i).elemID,1);
-                    for j = 1:nDiscontinuitySeg
+                    k = 1;
+                    for j = 1:size(this.discontinuitySet(i).Xlin,1)-1
                         el = this.discontinuitySet(i).elemID(j);
-                        dseg = this.discontinuitySet(i).segment(j);
-                        this.element(el).type.addDiscontinuitySegment(dseg);
+                        if (el > 0)
+                            dseg = this.discontinuitySet(i).segment(k);
+                            this.element(el).type.addDiscontinuitySegment(dseg);
+                            k = k + 1;
+                        end
                     end
                 end
             end
