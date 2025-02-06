@@ -30,7 +30,7 @@ classdef Result < handle
         markerType      = 'None';          % Type of marker 
         markerFaceColor = 'k';          % Color of the face of the marker
         edgesThickness  = 0.7;          % Thickness of the lines
-        % colormapType    = 'jet(11)';        % Type of colormap scheme
+        % colormapType    = 'jet(13)';        % Type of colormap scheme
         colormapType    = 'jet';        % Type of colormap scheme
     end
 

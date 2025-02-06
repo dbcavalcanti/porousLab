@@ -205,7 +205,7 @@ classdef Model < handle
             elseif isempty(this.discontinuitySet)
                 return
             else
-                nDiscontinuities = size(this.discontinuitySet,1);
+                nDiscontinuities = length(this.discontinuitySet);
                 for i = 1:nDiscontinuities
                     % Loop through the segments of this discontinuity
                     k = 1;
@@ -547,7 +547,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function n = getNumberOfDiscontinuities(this)
-            n = size(this.discontinuitySet,1);
+            n = length(this.discontinuitySet);
         end
 
         %------------------------------------------------------------------
