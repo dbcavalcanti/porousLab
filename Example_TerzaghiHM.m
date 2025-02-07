@@ -37,7 +37,8 @@ if quadratic == true
 
 
     % Type of elements
-    mdl.type = 'ISOQ8';
+    mdl.type_p = mdl.type;      % Pressure DOFs
+    mdl.type = 'ISOQ8';         % Displacement DOFs
     mdl.differentInterOrder = true;
 end
 

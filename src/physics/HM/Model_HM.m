@@ -226,7 +226,9 @@ classdef Model_HM < Model
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
                 elements(el).type.initializeIntPoints();
+                % TODO. Check if it is the best way
                 elements(el).type.differentInterOrder = this.differentInterOrder;
+                elements(el).type.type_p = this.type_p;
             end
             this.element = elements;
         end   
