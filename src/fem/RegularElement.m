@@ -75,8 +75,7 @@ classdef RegularElement < handle
 
             if (this.differentInterOrder == true)
                 % TODO. Make the function
-                % [Ke, Ce, fi, fe, dfidu] = this.elementDataDifferentInterpOrder();
-                disp('Diff interpolation order')
+                [Ke, Ce, fi, fe, dfidu] = this.elementDataDifferentInterpOrder();
             else
                 [Ke, Ce, fi, fe, dfidu] = this.elementData();
             end
