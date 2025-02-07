@@ -73,7 +73,13 @@ classdef RegularElement < handle
         % This function assembles the element matrices and vectors 
         function [Ae, be] = elementLinearSystem(this,nlscheme)
 
-            [Ke, Ce, fi, fe, dfidu] = this.elementData();
+            if (this.differentInterOrder == true)
+                % TODO. Make the function
+                % [Ke, Ce, fi, fe, dfidu] = this.elementDataDifferentInterpOrder();
+                disp('Diff interpolation order')
+            else
+                [Ke, Ce, fi, fe, dfidu] = this.elementData();
+            end
 
             [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
         end
