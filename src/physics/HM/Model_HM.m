@@ -228,6 +228,7 @@ classdef Model_HM < Model
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
+            this.element.type.differentInterOrder = this.differentInterOrder; % To consider the different interpolation between variables
         end   
 
         %------------------------------------------------------------------
