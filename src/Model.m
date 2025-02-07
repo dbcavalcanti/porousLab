@@ -461,7 +461,6 @@ classdef Model < handle
             % Assemble the matrices and vector
             A = sparse(iDof,jDof,A_ij);
             b = sparse(eDof,ones(this.nDofElemTot,1),b_i);
-            b = full(b);
 
             % Add contribution of the nodal forces
             Fe = sparse(this.ndof,1);
