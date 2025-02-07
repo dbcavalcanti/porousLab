@@ -226,9 +226,9 @@ classdef Model_HM < Model
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
                 elements(el).type.initializeIntPoints();
+                elements(el).type.differentInterOrder = this.differentInterOrder;
             end
             this.element = elements;
-            this.element.type.differentInterOrder = this.differentInterOrder; % To consider the different interpolation between variables
         end   
 
         %------------------------------------------------------------------
