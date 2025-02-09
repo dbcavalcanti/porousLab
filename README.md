@@ -2,6 +2,13 @@
 
 <p align=center><img height="25.0%" width="25.0%" src="auxiliary/porousLabLogo1.png"></p>
 
+![Release][release-image] 
+![License][license-image]
+
+[release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat 
+
+[license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
+
 **porousLab** is a MATLAB program for solving multiphysics problems, mainly in the context of geomechanics and fractured porous media, based on the Finite Element Method (FEM).
 
 ---
