@@ -237,10 +237,19 @@ classdef RegularElement_HM < RegularElement
             for i = 1:this.nIntPoints
 
                 % Shape function matrix
-                Np_u = this.shape.shapeFncMtrx(this.intPoint(i).X);
+                Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
                
                 % Compute the B matrix at the int. point and the detJ
+                % (quadratic)
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                % (linear)
+                if size(this.node,1) == 6
+                    [BpLin, ~] = this.shape.lineardNdxMatrix(this.node(1:3,:),this.intPoint(i).X);
+                elseif size(this.node,1) == 8
+                    [BpLin, ~] = this.shape.lineardNdxMatrix(this.node(1:4,:),this.intPoint(i).X);
+                end
 
                 % Assemble the B-matrix for the mechanical part
                 Bu = this.shape.BMatrix(Bp);
@@ -279,7 +288,7 @@ classdef RegularElement_HM < RegularElement
                 Q = Q + Np' * biot * m' * Bu * c;
         
                 % Compute permeability sub-matrices
-                H = H + Bp' * kh * Bp * c;
+                H = H + BpLin' * kh * BpLin * c;
 
                 % Compute compressibility matrices
                 if ((this.massLumping) && (this.lumpStrategy == 1))

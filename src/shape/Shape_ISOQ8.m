@@ -56,15 +56,8 @@ classdef Shape_ISOQ8 < Shape
          % Get the linear shape function matrix
          function Nm = linearShapeFncMtrx(~,Xn)
 
-            % Natural coordinates of the given point
-            xi = Xn(1); eta = Xn(2);
-
-            % Shape functions
-            N1 = (1.0 - xi)*(1.0 - eta)/4.0;
-            N2 = (1.0 + xi)*(1.0 - eta)/4.0;
-            N3 = (1.0 + xi)*(1.0 + eta)/4.0;
-            N4 = (1.0 - xi)*(1.0 + eta)/4.0;
-            Nm   = [ N1  N2  N3  N4 ];
+            linShape = Shape_ISOQ4();
+            Nm = linShape.shapeFncMtrx(Xn);
 
          end
 
@@ -186,18 +179,10 @@ classdef Shape_ISOQ8 < Shape
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
-         function [dNdx] = lineardNdxMatrix(this,X,Xn)
+         function [dNdx,detJ] = lineardNdxMatrix(~,X,Xn)
 
-            % Jacobian matrix
-            J = this.linearJacobianMtrx(X,Xn);
-
-            % Compute the derivatives of the shape functions wrt to the
-            % natural coordinate system
-            dNdxn = this.linearShapeFncDrv(Xn);
-
-            % Compute the derivatives of the shape functions wrt to the
-            % global cartesian coordinate system
-            dNdx = J\dNdxn;
+            linDerivatives = Shape_ISOQ4();
+            [dNdx,detJ] = linDerivatives.dNdxMatrix(X,Xn);
 
          end
 
