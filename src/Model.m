@@ -246,10 +246,11 @@ classdef Model < handle
         % Add contribution of nodal loads to reference load vector.
         function Fref = addNodalLoad(this,Fref)
             LOAD = this.neumannConditionMatrix();
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    Fref(this.ID(i,j)) = Fref(this.ID(i,j)) + LOAD(i,j);
-                end
+            [rows, cols] = find(this.ID ~= 0);
+
+            for i=1:size(rows,1)
+                index = this.ID(rows(i),cols(i));
+                Fref(index) = Fref(index) + LOAD(rows(i), cols(i));
             end
         end
 
