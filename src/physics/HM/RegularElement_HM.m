@@ -106,148 +106,37 @@ classdef RegularElement_HM < RegularElement
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
 
-                % Shape function matrix
-                Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
+                % % Shape function matrix
+                % Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
                
-                % Compute the B matrix at the int. point and the detJ
-                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+                % Check different interpolation order
+                if this.differentInterOrder == 1
+                    % Shape function matrix
+                    Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
 
-                % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
+                    % Compute the B matrix at the int. point and the detJ
+                    % (quadratic)
+                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
-                % Pressure values at the integration point
-                pIP = Np * pl;
+                    % Compute the B matrix at the int. point and the detJ
+                    % (linear)
+                    [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
 
-                % Compute the strain vector
-                this.intPoint(i).strain = Bu * u;
+                    % Assemble the B-matrix for the mechanical part
+                    Bu = this.shape.BMatrix(dNdx);
+                else
+                    % Shape function matrix
+                    Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
 
-                % Compute the stress vector and the constitutive matrix
-                [stress,Duu] = this.intPoint(i).mechanicalLaw();
-        
-                % Compute the permeability matrix
-                kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
+                    % Compute the B matrix at the int. point and the detJ
+                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+                    
+                    % Obtain the Bp matrix
+                    Bp = dNdx;
 
-                % Get compressibility coefficient
-                comp = this.intPoint(i).constitutiveMdl.compressibilityCoeff();
-
-                % Get Biot's coefficient
-                biot = this.intPoint(i).constitutiveMdl.biotCoeff();
-        
-                % Numerical integration coefficient
-                c = this.intPoint(i).w * detJ * this.t;
-                if this.isAxisSymmetric
-                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                    % Assemble the B-matrix for the mechanical part
+                    Bu = this.shape.BMatrix(dNdx);
                 end
-                
-                % Compute the stiffness sub-matrix
-                K = K + Bu' * Duu * Bu * c;
-
-                % Internal force vector
-                fiu = fiu + Bu' * (stress - biot * pIP * m) * c;
-
-                % Compute the hydromechanical coupling matrices
-                Q = Q + Np' * biot * m' * Bu * c;
-        
-                % Compute permeability sub-matrices
-                H = H + Bp' * kh * Bp * c;
-
-                % Compute compressibility matrices
-                if ((this.massLumping) && (this.lumpStrategy == 1))
-                    S = S + diag(comp*Np*c);
-                elseif (this.massLumping == false)
-                    S = S + Np' * comp * Np * c;
-                end
-                
-                % Compute the gravity forces
-                if (this.mat.porousMedia.gravityOn)
-                    [feu,fep] = this.addGravityForces(feu,fep,Np,Bp,kh,pIP,c);
-                end
-
-                % Compute the element volume
-                vol = vol + c;
-            end
-
-            % Compute the lumped mass matrix
-            if ((this.massLumping) && (this.lumpStrategy == 2))
-                S = lumpedCompressibilityMatrix(this, vol);
-            end
-
-            % Assemble the element permeability
-            Ke = [ Ouu , Opu';
-                   Opu,  H ];
-
-            dfidu = [ K , -Q';
-                     Opu, Opp ];
-            
-            % Assemble the element compressibility matrix
-            Ce = [ Ouu , Opu';
-                    Q ,   S ];
-
-            % Assemble element internal force vector
-            fi = [fiu; fip];
-
-            % Assemble element external force vector
-            fe = [feu; fep];
-            
-        end
-
-        %------------------------------------------------------------------
-        % This function assembles the element matrices and vectors when
-        % using different interpolation for pressure and displacement
-        % variables
-        %
-        % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
-        %
-        function [Ke, Ce, fi, fe, dfidu] = elementDataDifferentInterpOrder(this)
-
-            % Initialize the sub-matrices
-            K   = zeros(this.nglu, this.nglu);
-            H   = zeros(this.nglp, this.nglp);
-            Q   = zeros(this.nglp, this.nglu);
-            S   = zeros(this.nglp, this.nglp);
-
-            % Auxiliar zero-matrices and vectors
-            Opu = zeros(this.nglp, this.nglu);
-            Ouu = zeros(this.nglu, this.nglu);
-            Opp = zeros(this.nglp, this.nglp);
-
-            % Initialize external force vector
-            feu = zeros(this.nglu, 1);
-            fep = zeros(this.nglp, 1);
-
-            % Initialize the internal force vector
-            fiu = zeros(this.nglu, 1);
-            fip = zeros(this.nglp, 1);
-            
-            % Vector of the nodal dofs
-            u  = this.getNodalDisplacement();
-            pl = this.getNodalPressure();
-
-            % Initialize 2D identity vector
-            m = [1.0 ; 1.0 ; 1.0 ; 0.0];
-
-            % Initialize the volume of the element
-            vol = 0.0;
-
-            % Numerical integration of the sub-matrices
-            for i = 1:this.nIntPoints
-
-                % Shape function matrix
-                Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
-               
-                % Compute the B matrix at the int. point and the detJ
-                % (quadratic)
-                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-
-                % Compute the B matrix at the int. point and the detJ
-                % (linear)
-                [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
-
-                % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
 
                 % Pressure values at the integration point
                 pIP = Np * pl;
@@ -324,7 +213,6 @@ classdef RegularElement_HM < RegularElement
             fe = [feu; fep];
             
         end
-
 
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
