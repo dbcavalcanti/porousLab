@@ -169,18 +169,8 @@ classdef Model < handle
             % Create nodes DOF ids matrix
             this.createNodeDofIdMtrx();
 
-            % Check the interpolation order for displacement and pressure
-            if (this.differentInterOrder == true) && (this.nnd_el == 8)
-                
-                % Assemble the regular dofs to each element
-                this.assembleElementDofsDifferentInterpOrder();
-
-            else
-                
-                % Assemble the regular dofs to each element
-                this.assembleElementDofs();
-
-            end
+            % Assemble the regular dofs to each element
+            this.assembleElementDofs();
 
             % Initialize elements
             this.initializeElements();
