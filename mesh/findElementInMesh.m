@@ -10,7 +10,7 @@ function elemId = findElementInMesh(NODE, ELEM, P)
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
-        elseif size(ELEM,2) == 4
+        elseif size(ELEM,2) == 4 || size(ELEM,2) == 8
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
@@ -23,7 +23,7 @@ function elemId = findElementInMesh(NODE, ELEM, P)
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv1, 0]);
-        elseif size(ELEM,2) == 4
+        elseif size(ELEM,2) == 4 || size(ELEM,2) == 8
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv4, 0]);
@@ -37,7 +37,7 @@ function elemId = findElementInMesh(NODE, ELEM, P)
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);
             Ai = A1 + A2 + A3;
-        elseif size(ELEM,2) == 4
+        elseif size(ELEM,2) == 4 || size(ELEM,2) == 8
             A1 = 0.5 * norm(vA1);
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);
@@ -63,6 +63,12 @@ function area = calculateQuadrilateralArea(vertices)
     % Ensure the vertices are in a counterclockwise order
     if isClockwise(vertices)
         vertices = flipud(vertices);
+    end
+
+    n = size(vertices,1);
+
+    if n == 6 || n == 8
+        vertices = vertices(1:n/2,:);
     end
     
     % Calculate the area using the shoelace formula

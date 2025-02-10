@@ -17,8 +17,8 @@ initWorkspace;
 % The goal is to see how the oscillations are reduced when analysing the
 % case 2.
 
-% quadratic = [0, 1];
-quadratic = 1;
+quadratic = [0, 1];
+% quadratic = 1;
 
 for i=1:size(quadratic,2)
 
@@ -41,7 +41,7 @@ for i=1:size(quadratic,2)
     mdl.type = 'ISOQ4';
 
     % Quadratic elements?
-    if quadratic == true
+    if quadratic(i) == true
         [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
         % mdl.classifyNodes();
         % mdl.resequenceNodes();
@@ -138,8 +138,8 @@ for i=1:size(quadratic,2)
     Xi  = [0.0 , 0.0];
     Xf  = [0.0 , Ly];
     npts = 500;
-    % mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
-    % mdl.plotField('Pressure');
+    mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
+    mdl.plotField('Pressure');
 
 end
 

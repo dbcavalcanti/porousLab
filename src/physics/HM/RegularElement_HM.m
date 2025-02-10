@@ -396,7 +396,7 @@ classdef RegularElement_HM < RegularElement
             Xn = this.shape.coordCartesianToNatural(this.node,X);
             
             % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
+            Nm = this.shape.linearShapeFncMtrx(Xn);
 
             % Get nodal pressures
             pl = this.getNodalPressure();
