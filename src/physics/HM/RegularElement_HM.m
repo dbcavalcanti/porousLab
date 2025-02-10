@@ -105,13 +105,14 @@ classdef RegularElement_HM < RegularElement
 
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
-
-                % % Shape function matrix
-                % Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
                
                 % Check different interpolation order
                 if this.differentInterOrder == 1
-                    % Shape function matrix
+                    
+                    % Shape function matrix (for displacement)
+                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                    % Shape function matrix (for pressure)
                     Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
 
                     % Compute the B matrix at the int. point and the detJ
@@ -124,9 +125,14 @@ classdef RegularElement_HM < RegularElement
 
                     % Assemble the B-matrix for the mechanical part
                     Bu = this.shape.BMatrix(dNdx);
+                
                 else
-                    % Shape function matrix
-                    Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
+                    
+                    % Shape function matrix (for displacement)
+                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                    % Shape function matrix (for pressure)
+                    Np = Nu;
 
                     % Compute the B matrix at the int. point and the detJ
                     [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
@@ -136,6 +142,7 @@ classdef RegularElement_HM < RegularElement
 
                     % Assemble the B-matrix for the mechanical part
                     Bu = this.shape.BMatrix(dNdx);
+                
                 end
 
                 % Pressure values at the integration point
@@ -183,7 +190,7 @@ classdef RegularElement_HM < RegularElement
                 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
-                    [feu,fep] = this.addGravityForces(feu,fep,Np,dNdx,kh,pIP,c);
+                    [feu,fep] = this.addGravityForces(feu,fep,Nu,Bp,kh,pIP,c);
                 end
 
                 % Compute the element volume

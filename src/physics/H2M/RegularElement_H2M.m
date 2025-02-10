@@ -193,7 +193,7 @@ classdef RegularElement_H2M < RegularElement
                 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
-                    [feu,fel,feg] = this.addGravityForces(feu,fel,feg,Np,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
+                    [feu,fel,feg] = this.addGravityForces(feu,fel,feg,Nu,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
                 end
 
                 % Compute the element volume
