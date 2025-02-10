@@ -19,8 +19,8 @@ mdl = Model_HM();
 % Mesh properties
 Lx = 0.1;     % Horizontal dimension (m)
 Ly = 1.0;     % Vertical dimension (m)
-Nx = 4;       % Number of elements in the x-direction
-Ny = 40;      % Number of elements in the y-direction
+Nx = 1;       % Number of elements in the x-direction
+Ny = 1;      % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
@@ -29,13 +29,13 @@ Ny = 40;      % Number of elements in the y-direction
 mdl.type = 'ISOQ4';
 
 % Quadratic elements?
-quadratic = 1;
+quadratic = 0;
 if quadratic == true
     [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
 
     % Type of elements
     mdl.type = 'ISOQ8';         % Displacement DOFs
-    mdl.differentInterOrder = false;
+    mdl.differentInterOrder = true;
 end
 
 % Thickness (m)
@@ -115,6 +115,7 @@ dtmin = 0.001;        % Minimum time step
 anl = Anl_Transient(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.process(mdl);
+
 
 %% ========================= CHECK THE RESULTS ============================
 

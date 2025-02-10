@@ -80,23 +80,61 @@ classdef Model < handle
     methods
 
         %------------------------------------------------------------------
+        function quadNodes = getQuadraticDisplacementDofs(this)
+            % Determine element type (triangular or quadrilateral)
+            num_nodes_per_element = size(this.ELEM,2);
+            if (num_nodes_per_element == 3) || (num_nodes_per_element == 4)
+                % Triangular or quadrilateral linear element
+                quadNodes = [];
+            elseif num_nodes_per_element == 6
+                % Triangular quadratic element
+                ELEM_p = this.ELEM(:,1:3);
+                quadNodes = setdiff(this.ELEM, ELEM_p);
+            elseif num_nodes_per_element == 8
+                % Quadrilateral quadratic element
+                ELEM_p = this.ELEM(:,1:4);
+                quadNodes = setdiff(this.ELEM, ELEM_p);
+            else
+                error('Unsuported element type. Quadratic elements should have 6 or 8 nodes.');
+            end
+        end
+
+        %------------------------------------------------------------------
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
             this.ndoffixed = 0;
+            dof_counter = 1; % Global node counter (to avoid skipping any of them)
+
+            % Obtain the quadratic nodes (only for displacement)
+            quadNodes = getQuadraticDisplacementDofs(this);
 
             % Get the Dirichlet conditions matrix
             SUPP = this.dirichletConditionMatrix();
-            
+
             % Assemble the ID matrix
             for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    this.ID(i,j) = (i - 1) * this.ndof_nd + j;
-                    if (SUPP(i,j) == 1)
+                if ismember(i, quadNodes)
+                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
+                elseif this.ndof_nd == 3
+                    ndof_current = 3; % Nodes with 3 DOF (ux, uy, p)
+                elseif this.ndof_nd == 4
+                    ndof_current = 4; % Nodes with 4 DOF (ux, uy, pl, pg)
+                else
+                    error('Unsupported number of DOFs')
+                end
+
+                for j = 1:ndof_current
+                    this.ID(i, j) = dof_counter;
+                    dof_counter = dof_counter + 1;
+                    if SUPP(i, j) == 1
                         this.ndoffixed = this.ndoffixed + 1;
                     end
                 end
             end
+            
+            % Update the number of dofs
+            this.ndof = (dof_counter - 1);
 
             % Vector with all the dofs
             this.Dof = 1:this.ndof;
@@ -111,15 +149,16 @@ classdef Model < handle
             % Update the ID matrix with the free dof numbered first
             countFree = 1;
             countFixed = 1;
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    if SUPP(i,j) == 1
-                        this.doffixed(countFixed) = this.ID(i,j);
-                        countFixed = countFixed + 1;
-                    else 
-                        this.doffree(countFree) = this.ID(i,j);
-                        countFree = countFree + 1;
-                    end
+
+            [rows, cols] = find(this.ID ~= 0);
+
+            for i=1:size(rows,1)
+                if SUPP(rows(i), cols(i)) == 1
+                    this.doffixed(countFixed) = this.ID(rows(i), cols(i));
+                    countFixed = countFixed + 1;
+                else
+                    this.doffree(countFree) = this.ID(rows(i), cols(i));
+                    countFree = countFree + 1;
                 end
             end
         end
@@ -132,20 +171,17 @@ classdef Model < handle
             % Initialize basic variables
             this.initializeBasicVariables();
 
+            % Create nodes DOF ids matrix
+            this.createNodeDofIdMtrx();
+
             % Check the interpolation order for displacement and pressure
             if (this.differentInterOrder == true) && (this.nnd_el == 8)
                 
-                % Create nodes DOF ids matrix
-                this.createNodeDofIdMatrixDifferentInterpOrder();
-
                 % Assemble the regular dofs to each element
                 this.assembleElementDofsDifferentInterpOrder();
 
             else
                 
-                % Create nodes DOF ids matrix
-                this.createNodeDofIdMtrx();
-
                 % Assemble the regular dofs to each element
                 this.assembleElementDofs();
 

@@ -18,7 +18,7 @@ initWorkspace;
 % case 2.
 
 quadratic = [0, 1];
-% quadratic = 1;
+% quadratic = 0;
 
 for i=1:size(quadratic,2)
 
