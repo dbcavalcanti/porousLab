@@ -114,14 +114,9 @@ classdef Model < handle
 
             % Assemble the ID matrix
             for i = 1:this.nnodes
+                ndof_current = this.ndof_nd;
                 if ismember(i, quadNodes)
-                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
-                elseif this.ndof_nd == 3
-                    ndof_current = 3; % Nodes with 3 DOF (ux, uy, p)
-                elseif this.ndof_nd == 4
-                    ndof_current = 4; % Nodes with 4 DOF (ux, uy, pl, pg)
-                else
-                    error('Unsupported number of DOFs')
+                    ndof_current = 2; % Quadratic nodes with 2 DOF (ux, uy)
                 end
 
                 for j = 1:ndof_current
