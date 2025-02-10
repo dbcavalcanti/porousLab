@@ -31,12 +31,11 @@ mdl = Model_H2M();
 % Mesh properties
 Lx = 0.1;     % Horizontal dimension (m)
 Ly = 1.0;     % Vertical dimension (m)
-Nx = 4;       % Number of elements in the x-direction
-Ny = 40;       % Number of elements in the y-direction
+Nx = 1;       % Number of elements in the x-direction
+Ny = 1;       % Number of elements in the y-direction
 
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-% [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
 
 % Type of elements
 mdl.type = 'ISOQ4';
@@ -45,12 +44,8 @@ mdl.type = 'ISOQ4';
 quadratic = 1;
 if quadratic == true
     [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-    % mdl.classifyNodes();
-    % mdl.resequenceNodes();
-
 
     % Type of elements
-    % mdl.type_p = mdl.type;      % Pressure DOFs
     mdl.type = 'ISOQ8';         % Displacement DOFs
     mdl.differentInterOrder = true;
 end

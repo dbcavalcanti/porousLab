@@ -43,9 +43,6 @@ for i=1:size(quadratic,2)
     % Quadratic elements?
     if quadratic(i) == true
         [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-        % mdl.classifyNodes();
-        % mdl.resequenceNodes();
-
 
         % Type of elements
         mdl.type = 'ISOQ8';
@@ -139,7 +136,7 @@ for i=1:size(quadratic,2)
     Xf  = [0.0 , Ly];
     npts = 500;
     mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
-    mdl.plotField('Pressure');
+    % mdl.plotField('Pressure');
 
 end
 

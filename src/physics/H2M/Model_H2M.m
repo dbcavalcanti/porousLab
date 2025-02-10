@@ -77,6 +77,21 @@ classdef Model_H2M < Model
         end
 
         %------------------------------------------------------------------
+        function createNodeDofIdMatrixDifferentInterpOrder(this)
+            % Initialize the ID matrix and the number of fixed dof
+            this.ID = zeros(this.nnodes,this.ndof_nd);
+            this.ndoffixed = 0;
+            dof_counter = 1; % Global node counter (to avoid skipping them)
+
+            % Obtain the quadratic nodes (only for displacement)
+            ELEM_p = getElementPressureDofs(this);
+            quadNodes = setdiff(this.ELEM, ELEM_p);
+
+            % TODO: Implement getElementPressureDofs in Model_H2M
+
+        end
+
+        %------------------------------------------------------------------
         function assembleElementDofs(this)
 
             this.GLU = zeros(this.nelem, this.nnd_el*2);
