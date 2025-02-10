@@ -39,7 +39,6 @@ classdef Model < handle
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
         differentInterOrder = false;         % Tag if displacement is quadratic and pressure is linear
-        type_p              = 'ISOQ4'        % Tag for pressure DOFs if different interpolation order
     end
     
     %% Constructor method

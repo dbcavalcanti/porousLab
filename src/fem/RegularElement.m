@@ -74,7 +74,6 @@ classdef RegularElement < handle
         function [Ae, be] = elementLinearSystem(this,nlscheme)
 
             if (this.differentInterOrder == true)
-                % TODO. Make the function
                 [Ke, Ce, fi, fe, dfidu] = this.elementDataDifferentInterpOrder();
             else
                 [Ke, Ce, fi, fe, dfidu] = this.elementData();

@@ -15,7 +15,6 @@ classdef RegularElement_HM < RegularElement
         nglp                = 0;             % Number of regular p-dof
         anm                 = 'PlaneStrain'; % Analysis model
         differentInterOrder = false;         % Tag if displacement is quadratic and pressure is linear  
-        type_p              = 'ISOQ4'        % Type of element used for the pressure DOFs
     end
     %% Constructor method
     methods

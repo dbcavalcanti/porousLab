@@ -18,7 +18,7 @@ initWorkspace;
 % case 2.
 
 % quadratic = [0, 1];
-quadratic = 0;
+quadratic = 1;
 
 for i=1:size(quadratic,2)
 
@@ -138,8 +138,8 @@ for i=1:size(quadratic,2)
     Xi  = [0.0 , 0.0];
     Xf  = [0.0 , Ly];
     npts = 500;
-    mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
-    mdl.plotField('Pressure');
+    % mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
+    % mdl.plotField('Pressure');
 
 end
 

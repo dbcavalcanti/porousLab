@@ -37,8 +37,6 @@ classdef Model_HM < Model
         INITCOND_p          = []; 
         %% Additional data
         isPlaneStress       = false;
-        %% Additional mesh data for different interpolation order
-        NODE_p              = [];
     end
     
     %% Constructor method
