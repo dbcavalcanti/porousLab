@@ -121,14 +121,44 @@ classdef RegularElement_H2M < RegularElement
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
 
-                % Shape function matrix
-                Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
-               
-                % Compute the B matrix at the int. point and the detJ
-                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+                % Check different interpolation order
+                if this.differentInterOrder == 1
 
-                % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
+                    % Shape function matrix (for displacement)
+                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                    % Shape function matrix (for pressure)
+                    Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
+               
+                    % Compute the B matrix at the int. point and the detJ
+                    % (quadratic)
+                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                    % Compute the B matrix at the int. point and the detJ
+                    % (linear)
+                    [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
+
+                    % Assemble the B-matrix for the mechanical part
+                    Bu = this.shape.BMatrix(dNdx);
+
+                else
+
+                    % Shape function matrix (for displacement)
+                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                    % Shape function matrix (for pressure)
+                    Np = Nu;
+
+                    % Compute the B matrix and int. point and the detJ
+                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                    % Obtain the Bp matrix
+                    Bp = dNdx;
+
+                    % Assemble the B-matrix for the mechanical part
+                    Bu = this.shape.BMatrix(dNdx);
+
+                end
 
                 % Pressure values at the integration point
                 pcIP = Np * pc;
