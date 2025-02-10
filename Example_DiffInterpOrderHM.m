@@ -40,13 +40,9 @@ for i=1:size(quadratic,2)
     % Type of elements
     mdl.type = 'ISOQ4';
 
-    % Quadratic elements?
+    % Different interpolation order?
     if quadratic(i) == true
-        [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-
-        % Type of elements
-        mdl.type = 'ISOQ8';
-        mdl.differentInterOrder = true;
+        differentInterpConversion(mdl);
     end
 
     % Thickness (m)

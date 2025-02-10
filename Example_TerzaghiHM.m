@@ -28,14 +28,10 @@ Ny = 1;      % Number of elements in the y-direction
 % Type of elements
 mdl.type = 'ISOQ4';
 
-% Quadratic elements?
+% Different interpolation order?
 quadratic = 1;
 if quadratic == true
-    [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-
-    % Type of elements
-    mdl.type = 'ISOQ8';         % Displacement DOFs
-    mdl.differentInterOrder = true;
+    differentInterpConversion(mdl);
 end
 
 % Thickness (m)

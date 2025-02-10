@@ -20,6 +20,7 @@ classdef Model < handle
         nnodes              = 1;             % Number of nodes
         nelem               = 1;             % Number of elements
         nnd_el              = 4;             % Number of nodes per element
+        nnd_el_p            = 4;             % Number of pressure nodes per element
         doffree             = [];            % Vector with the free dofs
         doffixed            = [];            % Vector with the fixed dofs
         ndof_nd             = 2;             % Number of dof per node
@@ -78,6 +79,27 @@ classdef Model < handle
     
     %% Public methods
     methods
+
+        %------------------------------------------------------------------
+        % This function is made to convert the mesh from linear to
+        % quadratic but considering that there are different interpolation
+        % degrees between displacement (quadratic) and pressure (linear)
+        function differentInterpConversion(this)
+            
+            % Convert the linear matrix
+            [this.NODE, this.ELEM] = convertToQuadraticMesh(this.NODE, this.ELEM);
+            
+            % Change the type of element
+            this.type = 'ISOQ8';
+
+            % Change the different interpolation order flag (necessary in
+            % some methods)
+            this.differentInterOrder = true;
+
+            % Store the linear DOFs of pressure
+            this.nnd_el_p = this.nnd_el_p;
+        end
+
 
         %------------------------------------------------------------------
         function quadNodes = getQuadraticDisplacementDofs(this)
