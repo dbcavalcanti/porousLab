@@ -141,17 +141,16 @@ classdef Model_HM < Model
             % Update the ID matrix with the free dof numbered first
             countFree = 1;
             countFixed = 1;
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    if this.ID(i,j) ~= 0
-                        if SUPP(i,j) == 1
-                            this.doffixed(countFixed) = this.ID(i,j);
-                            countFixed = countFixed + 1;
-                        else 
-                            this.doffree(countFree) = this.ID(i,j);
-                            countFree = countFree + 1;
-                        end
-                    end
+
+            [rows, cols] = find(this.ID ~= 0);
+
+            for i=1:size(rows,1)
+                if SUPP(rows(i), cols(i)) == 1
+                    this.doffixed(countFixed) = this.ID(rows(i), cols(i));
+                    countFixed = countFixed + 1;
+                else
+                    this.doffree(countFree) = this.ID(rows(i), cols(i));
+                    countFree = countFree + 1;
                 end
             end
         end
