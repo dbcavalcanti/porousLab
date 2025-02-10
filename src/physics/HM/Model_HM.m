@@ -126,69 +126,7 @@ classdef Model_HM < Model
                 elements(el).type.differentInterOrder = this.differentInterOrder;
             end
             this.element = elements;
-        end   
-
-        %------------------------------------------------------------------
-        function initializeDisplacementVctDifferentInterpOrder(this)
-
-            % Initialize the displacement vector 
-            this.U = zeros(this.ndof,1);
-
-            % Get initial conditions matrix
-            INITCOND = this.initialConditionMatrix();
-
-            % % Set the initial values for the displacement
-            % for i = 1:this.nnodes
-            %     for j = 1:this.ndof_nd
-            %         if this.ID(i,j) ~= 0
-            %             this.U(this.ID(i,j)) = INITCOND(i,j);
-            %         end
-            %     end
-            % end
-
-% TODO: Comment with Danilo which is the best option
-
-            % Obtain the nonzero values of ID
-            [rows, cols] = find(this.ID ~= 0);
-
-            % Set the initial values
-            for i = 1:size(rows,1)
-                index = this.ID(rows(i), cols(i));
-                this.U(index) = INITCOND(rows(i), cols(i));
-            end
-
-            % Get the Dirichlet conditions matrix
-            SUPP = this.dirichletConditionMatrix();
-            PRESCDISPL = this.prescribedDirichletMatrix();
-
-            % % Set the prescribed values
-            % for i = 1:this.nnodes
-            %     for j = 1:this.ndof_nd
-            %         if (this.ID(i,j)) ~= 0 && (SUPP(i,j) == 1.0)
-            %             this.U(this.ID(i,j)) = PRESCDISPL(i,j);
-            %         end
-            %     end
-            % end
-
-            % Set the prescribed values
-            times = 1;
-            fixed = 1;
-            for i = 1:size(rows,1)
-                index = this.ID(rows(i), cols(i));
-                if (SUPP(rows(i), cols(i)) == 1.0)
-                    fixed = fixed + 1;
-                    this.U(index) = PRESCDISPL(rows(i), cols(i));
-                end
-                times = times + 1;
-            end
-
-
-            % Save initial dofs to the elements
-            for el = 1 : this.nelem
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
-            end
-
-        end       
+        end    
 
         % -----------------------------------------------------------------
         % Plot the mesh with the boundary conditions

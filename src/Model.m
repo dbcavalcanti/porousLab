@@ -181,18 +181,8 @@ classdef Model < handle
             % Compute auxiliar variables for assemblage of sparse matrices
             this.initializeSparseMtrxAssemblageVariables();
 
-            % Check the interpolation order for displacement and pressure
-            if (this.differentInterOrder == true) && (this.nnd_el == 8)
-
-                % Initialize the displacement vector
-                this.initializeDisplacementVctDifferentInterpOrder();
-
-            else
-
-                % Initialize the displacement vector
-                this.initializeDisplacementVct();
-
-            end
+            % Initialize the displacement vector
+            this.initializeDisplacementVct();
         end
 
         %------------------------------------------------------------------
@@ -215,11 +205,13 @@ classdef Model < handle
             % Get initial conditions matrix
             INITCOND = this.initialConditionMatrix();
 
+            % Obtain the nonzero values of ID
+            [rows, cols] = find(this.ID ~= 0);
+
             % Set the initial values
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    this.U(this.ID(i,j)) = INITCOND(i,j);
-                end
+            for i = 1:size(rows,1)
+                index = this.ID(rows(i), cols(i));
+                this.U(index) = INITCOND(rows(i), cols(i));
             end
 
             % Get the Dirichlet conditions matrix
@@ -227,12 +219,15 @@ classdef Model < handle
             PRESCDISPL = this.prescribedDirichletMatrix();
 
             % Set the prescribed values
-            for i = 1:this.nnodes
-                for j = 1:this.ndof_nd
-                    if (SUPP(i,j) == 1.0)
-                        this.U(this.ID(i,j)) = PRESCDISPL(i,j);
-                    end
+            times = 1;
+            fixed = 1;
+            for i = 1:size(rows,1)
+                index = this.ID(rows(i), cols(i));
+                if (SUPP(rows(i), cols(i)) == 1.0)
+                    fixed = fixed + 1;
+                    this.U(index) = PRESCDISPL(rows(i), cols(i));
                 end
+                times = times + 1;
             end
 
             % Save initial dofs to the elements
