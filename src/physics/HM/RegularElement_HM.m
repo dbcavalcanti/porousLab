@@ -240,18 +240,14 @@ classdef RegularElement_HM < RegularElement
                
                 % Compute the B matrix at the int. point and the detJ
                 % (quadratic)
-                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Compute the B matrix at the int. point and the detJ
                 % (linear)
-                if size(this.node,1) == 6
-                    [BpLin, ~] = this.shape.lineardNdxMatrix(this.node(1:3,:),this.intPoint(i).X);
-                elseif size(this.node,1) == 8
-                    [BpLin, ~] = this.shape.lineardNdxMatrix(this.node(1:4,:),this.intPoint(i).X);
-                end
+                [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
+                Bu = this.shape.BMatrix(dNdx);
 
                 % Pressure values at the integration point
                 pIP = Np * pl;
@@ -287,7 +283,7 @@ classdef RegularElement_HM < RegularElement
                 Q = Q + Np' * biot * m' * Bu * c;
         
                 % Compute permeability sub-matrices
-                H = H + BpLin' * kh * BpLin * c;
+                H = H + Bp' * kh * Bp * c;
 
                 % Compute compressibility matrices
                 if ((this.massLumping) && (this.lumpStrategy == 1))
@@ -298,7 +294,7 @@ classdef RegularElement_HM < RegularElement
                 
                 % Compute the gravity forces
                 if (this.mat.porousMedia.gravityOn)
-                    [feu,fep] = this.addGravityForces(feu,fep,Np,Bp,kh,pIP,c);
+                    [feu,fep] = this.addGravityForces(feu,fep,Np,dNdx,kh,pIP,c);
                 end
 
                 % Compute the element volume

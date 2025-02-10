@@ -131,6 +131,15 @@ classdef Shape_LST < Shape
          end
 
          % -----------------------------------------------------------------
+         % Compute the derivatives of the shape functions matrix
+         function [dNdx,detJ] = lineardNdxMatrix(~,X,Xn)
+
+            linDerivatives = Shape_CST();
+            [dNdx,detJ] = linDerivatives.dNdxMatrix(X(1:3,:),Xn);
+
+         end
+
+         % -----------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
 

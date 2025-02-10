@@ -182,7 +182,7 @@ classdef Shape_ISOQ8 < Shape
          function [dNdx,detJ] = lineardNdxMatrix(~,X,Xn)
 
             linDerivatives = Shape_ISOQ4();
-            [dNdx,detJ] = linDerivatives.dNdxMatrix(X,Xn);
+            [dNdx,detJ] = linDerivatives.dNdxMatrix(X(1:4,:),Xn);
 
          end
 
