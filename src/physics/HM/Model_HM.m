@@ -228,9 +228,6 @@ classdef Model_HM < Model
                 elements(el).type.initializeIntPoints();
                 % TODO. Check if it is the best way
                 elements(el).type.differentInterOrder = this.differentInterOrder;
-                elements(el).type.type_p = this.type_p;
-                % TODO. Consider the shape of p DOFs
-
             end
             this.element = elements;
         end   
