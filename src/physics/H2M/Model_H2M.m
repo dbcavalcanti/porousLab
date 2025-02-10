@@ -77,6 +77,24 @@ classdef Model_H2M < Model
         end
 
         %------------------------------------------------------------------
+        function ELEM_p = getElementPressureDofs(this)
+            % Determine element type (triangular or quadrilateral)
+            num_nodes_per_element = size(this.ELEM,2);
+            if num_nodes_per_element == 6
+                % Triangular element
+                pNodes = 3;
+            elseif num_nodes_per_element == 8
+                % Quadrilateral element
+                pNodes = 4;
+            else
+                error('Unsuported element type. Quadratic elements should have 3 or 4 columns.');
+            end
+
+            ELEM_p = this.ELEM(:,1:pNodes);
+
+        end
+
+        %------------------------------------------------------------------
         function createNodeDofIdMatrixDifferentInterpOrder(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -87,8 +105,57 @@ classdef Model_H2M < Model
             ELEM_p = getElementPressureDofs(this);
             quadNodes = setdiff(this.ELEM, ELEM_p);
 
-            % TODO: Implement getElementPressureDofs in Model_H2M
+            % Get de Dirichlet conditions matrix
+            SUPP = this.dirichletConditionMatrix();
 
+            % Assemble the ID matrix
+            for i = 1:this.nnodes
+                if ismember(i, quadNodes)
+                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
+                else 
+                    ndof_current = 4; % Nodes with 4 DOF (ux, uy, pl, pg)
+                end
+            
+                for j=1:ndof_current
+                    this.ID(i,j) = dof_counter;
+                    dof_counter = dof_counter + 1;
+                    if SUPP(i,j) == 1
+                        this.ndoffixed = this.ndoffixed + 1;
+                    end
+                end
+            end
+
+            % NOTE: The values on the third and fourth column in ID are 
+            % the ones that have all the DOFs (ux, uy, pl, pg).
+
+            % Update the number of dofs
+            this.ndof = (dof_counter - 1);
+            
+            % Vector with all the dofs
+            this.Dof = 1:this.ndof;
+
+            % Number of free dof
+            this.ndoffree = this.ndof - this.ndoffixed;
+
+            % Initialize the counters
+            this.doffixed = zeros(this.ndoffixed,1);
+            this.doffree  = zeros(this.ndoffree,1);
+
+            % Update the ID matrix with the free dof numbered first
+            countFree = 1;
+            countFixed = 1;
+
+            [rows, cols] = find(this.ID ~= 0);
+
+            for i=1:size(rows,1)
+                if SUPP(rows(i), cols(i)) == 1
+                    this.doffixed(countFixed) = this.ID(rows(i), cols(i));
+                    countFixed = countFixed + 1;
+                else
+                    this.doffree(countFree) = this.ID(rows(i), cols(i));
+                    countFree = countFree + 1;
+                end
+            end
         end
 
         %------------------------------------------------------------------

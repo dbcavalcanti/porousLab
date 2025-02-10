@@ -108,9 +108,9 @@ classdef Model_HM < Model
             % Assemble the ID matrix
             for i = 1:this.nnodes
                 if ismember(i, quadNodes)
-                    ndof_current = 2; % Nodes with 3 DOF (ux, uy)
+                    ndof_current = 2; % Nodes with 2 DOF (ux, uy)
                 else 
-                    ndof_current = 3; % Nodes with 2 DOF (ux, uy, p)
+                    ndof_current = 3; % Nodes with 3 DOF (ux, uy, p)
                 end
             
                 for j=1:ndof_current
@@ -122,8 +122,8 @@ classdef Model_HM < Model
                 end
             end
 
-            % NOTE: The values on the third column in ID are the ones
-            % corresponding to nodes which only have displacement DOFs.
+            % NOTE: The values on the third in ID are the ones that have 
+            % all the DOFs (ux, uy, pl).
 
             % Update the number of dofs
             this.ndof = (dof_counter - 1);
