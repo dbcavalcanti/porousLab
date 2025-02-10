@@ -98,6 +98,7 @@ classdef Model < handle
 
             % Store the linear DOFs of pressure
             this.nnd_el_p = this.nnd_el_p;
+            
         end
 
 

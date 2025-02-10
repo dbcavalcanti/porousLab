@@ -41,7 +41,7 @@ Ny = 1;       % Number of elements in the y-direction
 mdl.type = 'ISOQ4';
 
 % Quadratic elements?
-quadratic = 1;
+quadratic = 0;
 if quadratic == true
     [mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
 

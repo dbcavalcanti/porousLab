@@ -7,45 +7,30 @@
 %
 %
 %% Class definition
-classdef Model_H2M < Model    
+classdef Model_H2M < Model_HM   
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         %% Degrees of freedom vectors
-        % Vector with all the dofs of each type
-        uDof                = [];
-        pDof                = [];
+        % Vector with gas pressure dofs
         pgDof               = [];
-        % Vector with all the FREE dofs of each type
-        uFreeDof            = [];
-        pFreeDof            = [];
+        % Vector with with the FREE gas pressure dofs
         pgFreeDof           = [];
-        % Matrix with the dofs of each type of each element
-        GLU                 = [];
-        GLP                 = [];
+        % Matrix with the gas pressure dofs of each element
         GLPg                = [];
         %% Matrix indicating the Dirichlet BCs 
-        SUPP_u              = [];
-        SUPP_p              = [];
         SUPP_pg             = [];
         %% Matrix with the prescribed BC values 
-        PRESCDISPL_u        = [];
-        PRESCDISPL_p        = [];
         PRESCDISPL_pg       = [];
         %% Matrix with the Neumann BCs
-        LOAD_u              = [];
-        LOAD_p              = [];
         LOAD_pg             = [];
         %% Matrix with the initial conditions
-        INITCOND_p          = []; 
         INITCOND_pg         = [];
-        %% Additional data
-        isPlaneStress       = false;
     end
     
     %% Constructor method
     methods
         function this = Model_H2M()
-            this = this@Model();
+            this = this@Model_HM();
             this.ndof_nd = 4;        % Number of dofs per node
             this.physics = 'H2M';    % Tag with the physics name
             disp("*** Physics: Hydromechanical with two-phase flow");
