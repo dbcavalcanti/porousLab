@@ -98,7 +98,7 @@ classdef Model < handle
 
             % Store the linear DOFs of pressure
             this.nnd_el_p = this.nnd_el_p;
-            
+
         end
 
 
@@ -203,7 +203,7 @@ classdef Model < handle
             
             % Compute auxiliar variables for assemblage of sparse matrices
             this.initializeSparseMtrxAssemblageVariables();
-
+ 
             % Initialize the displacement vector
             this.initializeDisplacementVct();
         end

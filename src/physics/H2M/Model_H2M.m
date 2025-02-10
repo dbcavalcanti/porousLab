@@ -151,15 +151,17 @@ classdef Model_H2M < Model_HM
                 this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
                     this.nnd_el*2);
             end
-            this.GLP = zeros(this.nelem, this.nnd_el);
+            this.GLP = zeros(this.nelem, this.nnd_el_p);
             for el = 1:this.nelem
-                this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),3)',1,...
+                preGLP = reshape(this.ID(this.ELEM(el,:),3),1,...
                     this.nnd_el);
+                this.GLP(el,:) = preGLP(preGLP ~= 0);
             end
-            this.GLPg = zeros(this.nelem, this.nnd_el);
+            this.GLPg = zeros(this.nelem, this.nnd_el_p);
             for el = 1:this.nelem
-                this.GLPg(el,:) = reshape(this.ID(this.ELEM(el,:),4)',1,...
+                preGLPg = reshape(this.ID(this.ELEM(el,:),4),1,...
                     this.nnd_el);
+                this.GLPg(el,:) = preGLPg(preGLPg ~= 0);
             end
 
             % Vector with all regular dofs
@@ -193,6 +195,8 @@ classdef Model_H2M < Model_HM
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
                 elements(el).type.initializeIntPoints();
+                % TODO. Check if it is the best way
+                elements(el).type.differentInterOrder = this.differentInterOrder;
             end
             this.element = elements;
         end   

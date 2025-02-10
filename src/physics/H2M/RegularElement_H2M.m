@@ -11,12 +11,13 @@
 classdef RegularElement_H2M < RegularElement    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glu        = [];            % Displacement dofs
-        glp        = [];            % Liquid phase pressure dofs
-        glpg       = [];            % Gas phase pressure dofs
-        nglu       = 0;             % Number of regular u-dof
-        nglp       = 0;             % Number of regular p-dof
-        anm        = 'PlaneStrain'; % Analysis model
+        glu        = [];                    % Displacement dofs
+        glp        = [];                    % Liquid phase pressure dofs
+        glpg       = [];                    % Gas phase pressure dofs
+        nglu       = 0;                     % Number of regular u-dof
+        nglp       = 0;                     % Number of regular p-dof
+        anm        = 'PlaneStrain';         % Analysis model
+        differentInterOrder = false;        % Tag if displacement is quadratic and pressure is linear  
     end
     %% Constructor method
     methods
