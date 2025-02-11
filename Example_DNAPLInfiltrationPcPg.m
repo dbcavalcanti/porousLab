@@ -38,9 +38,6 @@ Ny = 40;        % Number of elements in the y-direction
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Type of elements
-mdl.type = 'ISOQ4';
-
 % Compute the centroids of the elements
 nelem = Nx*Ny;
 Xc = zeros(nelem,2);

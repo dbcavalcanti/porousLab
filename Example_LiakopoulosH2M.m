@@ -24,7 +24,7 @@ initWorkspace;
 %
 
 % qudratic = [0, 1];
-quadratic = 1;
+quadratic = 0;
 
 for i=1:size(quadratic, 2)
 
@@ -42,9 +42,6 @@ for i=1:size(quadratic, 2)
 
     % Generate the mesh
     [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-    % Type of elements
-    mdl.type = 'ISOQ4';
 
     % Different interpolation order?
     if quadratic(i) == true

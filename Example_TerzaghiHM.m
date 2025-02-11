@@ -25,11 +25,8 @@ Ny = 1;      % Number of elements in the y-direction
 % Generate the mesh
 [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Type of elements
-mdl.type = 'ISOQ4';
-
 % Different interpolation order?
-quadratic = 1;
+quadratic = 0;
 if quadratic == true
     differentInterpConversion(mdl);
 end

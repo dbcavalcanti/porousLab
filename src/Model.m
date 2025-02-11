@@ -90,7 +90,7 @@ classdef Model < handle
             [this.NODE, this.ELEM] = convertToQuadraticMesh(this.NODE, this.ELEM);
             
             % Change the type of element
-            this.type = 'ISOQ8';
+            % this.type = 'ISOQ8';
 
             % Change the different interpolation order flag (necessary in
             % some methods)
@@ -217,6 +217,18 @@ classdef Model < handle
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
             end
+
+            % Fill the model type
+            if this.nnd_el == 3
+                this.type = 'CST';
+            elseif this.nnd_el == 4
+                this.type = 'ISOQ4';
+            elseif this.nnd_el == 6
+                this.type = 'LST';
+            elseif this.nnd_el == 8
+                this.type = 'ISOQ8';
+            end
+
         end
 
         %------------------------------------------------------------------
