@@ -37,8 +37,8 @@ for i=1:size(quadratic, 2)
     % Mesh properties
     Lx = 0.1;     % Horizontal dimension (m)
     Ly = 1.0;     % Vertical dimension (m)
-    Nx = 4;       % Number of elements in the x-direction
-    Ny = 40;       % Number of elements in the y-direction
+    Nx = 1;       % Number of elements in the x-direction
+    Ny = 1;       % Number of elements in the y-direction
 
     % Generate the mesh
     [mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);

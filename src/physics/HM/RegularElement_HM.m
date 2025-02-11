@@ -106,44 +106,8 @@ classdef RegularElement_HM < RegularElement
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
                
-                % Check different interpolation order
-                if this.differentInterOrder == 1
-                    
-                    % Shape function matrix (for displacement)
-                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
-
-                    % Shape function matrix (for pressure)
-                    Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
-
-                    % Compute the B matrix at the int. point and the detJ
-                    % (quadratic)
-                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-
-                    % Compute the B matrix at the int. point and the detJ
-                    % (linear)
-                    [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
-
-                    % Assemble the B-matrix for the mechanical part
-                    Bu = this.shape.BMatrix(dNdx);
-                
-                else
-                    
-                    % Shape function matrix (for displacement)
-                    Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
-
-                    % Shape function matrix (for pressure)
-                    Np = Nu;
-
-                    % Compute the B matrix at the int. point and the detJ
-                    [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
-                    
-                    % Obtain the Bp matrix
-                    Bp = dNdx;
-
-                    % Assemble the B-matrix for the mechanical part
-                    Bu = this.shape.BMatrix(dNdx);
-                
-                end
+                % Get the shape function matrices
+                [Nu, Np, detJ, Bp, Bu] = getShapeFunctions(this,i);
 
                 % Pressure values at the integration point
                 pIP = Np * pl;
@@ -222,8 +186,53 @@ classdef RegularElement_HM < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Obtain the shape functions
+        function [Nu, Np, detJ, Bp, Bu] = getShapeFunctions(this,i)
+
+            % Check different interpolation order
+            if this.differentInterOrder == 1
+
+                % Shape function matrix (for displacement)
+                Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Shape function matrix (for pressure)
+                Np = this.shape.linearShapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                % (quadratic)
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                % (linear)
+                [Bp, ~] = this.shape.lineardNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.shape.BMatrix(dNdx);
+
+            else
+
+                % Shape function matrix (for displacement)
+                Nu = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Shape function matrix (for pressure)
+                Np = Nu;
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Obtain the Bp matrix
+                Bp = dNdx;
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.shape.BMatrix(dNdx);
+
+            end
+
+        end
+
+        %------------------------------------------------------------------
         % Compute the lumped mass matrices
-        function S= lumpedCompressibilityMatrix(this, vol)
+        function S = lumpedCompressibilityMatrix(this, vol)
 
             % Get compressibility coefficients
             comp = this.intPoint(1).constitutiveMdl.compressibilityCoeff();
