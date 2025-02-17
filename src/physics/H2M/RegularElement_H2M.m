@@ -286,7 +286,11 @@ classdef RegularElement_H2M < RegularElement
         function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol)
 
             % Shape function matrix
-            Np = this.shape.shapeFncMtrx([0.0,0.0]);
+            if this.differentInterOrder == true
+                Np = this.shape.linearShapeFncMtrx([0.0,0.0]);
+            else
+                Np = this.shape.shapeFncMtrx([0.0,0.0]);
+            end
 
             % Pressure values at the integration point
             pcIP = Np * pc;
@@ -377,7 +381,7 @@ classdef RegularElement_H2M < RegularElement
             Xn = this.shape.coordCartesianToNatural(this.node,X);
             
             % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
+            Nm = this.shape.linearShapeFncMtrx(Xn);
 
             % Get nodal pressures
             pl = this.getNodalLiquidPressure();
@@ -402,7 +406,7 @@ classdef RegularElement_H2M < RegularElement
             Xn = this.shape.coordCartesianToNatural(this.node,X);
             
             % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
+            Nm = this.shape.linearShapeFncMtrx(Xn);
 
             % Get nodal pressures
             pg = this.getNodalGasPressure();
@@ -427,7 +431,7 @@ classdef RegularElement_H2M < RegularElement
             Xn = this.shape.coordCartesianToNatural(this.node,X);
             
             % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
+            Nm = this.shape.linearShapeFncMtrx(Xn);
 
             % Get nodal pressures
             pc = this.getNodalCapillaryPressure();
