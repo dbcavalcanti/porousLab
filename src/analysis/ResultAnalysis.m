@@ -12,6 +12,8 @@ classdef ResultAnalysis < handle
         coordP  = [];  % Coordinate of the point to plot the time evolution
         coordPf  = []; % Coordinate of the point to plot the time evolution
         coordST = [];  % Coordinate of the point to plot the time evolution
+        coordUx = [];  % Coordinate of the point to plot the time evolution
+        coordUy = [];  % Coordinate of the point to plot the time evolution
         
         % Result storage
         steps = 0;     % number of performed steps
@@ -22,6 +24,8 @@ classdef ResultAnalysis < handle
         time  = [];    % Vector with the time 
         p     = [];    % Vector with the pressure
         pf    = [];
+        ux    = [],    % Vector with the horizontal displacement
+        uy    = [],    % Vector with the vertical displacement
         ST    = [];    % Vector with the slip tendency
         tn    = [];    % Vector with the shear cohesive stress
         ts    = [];    % Vector with the normal cohesive stress
@@ -30,11 +34,13 @@ classdef ResultAnalysis < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function res = ResultAnalysis(dof,coordP, coordPf, coordST)
+        function res = ResultAnalysis(dof,coordP, coordPf, coordST, coordUx, coordUy)
             res.dof = dof;
             res.coordP  = [];
             res.coordPf = [];
             res.coordST = [];
+            res.coordUx = [];
+            res.coordUy = [];
             if isempty(coordP) == false
                 res.coordP = coordP;
             end
@@ -43,6 +49,12 @@ classdef ResultAnalysis < handle
             end
             if isempty(coordST) == false
                 res.coordST = coordST;
+            end
+            if isempty(coordUx) == false
+                res.coordUx = coordUx;
+            end
+            if isempty(coordUy) == false
+                res.coordUy = coordUy;
             end
         end
     end

@@ -125,7 +125,8 @@ classdef Anl_Transient < Anl
                     this.dt = min(this.dt * 2,this.dtMax);
                 end
 
-                % Save results
+                % TODO. Generalise and put it inside result class
+                % Save capillary pressure results
                 this.result.time(step) = t;
                 if isempty(this.result.coordP) == false
                     elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordP);
@@ -133,8 +134,51 @@ classdef Anl_Transient < Anl
                     this.result.p(step) = mdl.element(elemPlot).type.pressureField(this.result.coordP,X(gle));
                 else
                     this.result.p(step) = 0.0;
-                end  
-                
+                end
+
+
+                % TODO. Generalise and put it inside result class
+                % Save gas pressure results
+                this.result.time(step) = t;
+                if isempty(this.result.coordPf) == false
+                    elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordPf);
+                    gle = mdl.element(elemPlot).type.gle;
+                    this.result.pf(step) = mdl.element(elemPlot).type.gasPressureField(this.result.coordPf,X(gle));
+                else
+                    this.result.pf(step) = 0.0;
+                end 
+
+                % TODO. Generalise and put it inside result class
+                % Save gas pressure results
+                this.result.time(step) = t;
+                if isempty(this.result.coordPf) == false
+                    elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordPf);
+                    gle = mdl.element(elemPlot).type.gle;
+                    this.result.pf(step) = mdl.element(elemPlot).type.gasPressureField(this.result.coordPf,X(gle));
+                else
+                    this.result.pf(step) = 0.0;
+                end 
+
+                % TODO. Generalise and put it inside result class
+                % Save horizontal displacement results
+                this.result.time(step) = t;
+                if isempty(this.result.coordUx) == false
+                    elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordUx);
+                    this.result.ux(step,:) = mdl.element(elemPlot).type.displacementField(this.result.coordUx);
+                else
+                    this.result.ux(step,:) = 0.0;
+                end
+
+                % TODO. Generalise and put it inside result class
+                % Save vertical displacement results
+                this.result.time(step) = t;
+                if isempty(this.result.coordUy) == false
+                    elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordUy);
+                    this.result.uy(step,:) = mdl.element(elemPlot).type.displacementField(this.result.coordUy);
+                else
+                    this.result.uy(step,:) = 0.0;
+                end
+
                 % Update time
                 t0 = t;
                 if (t + this.dt) > this.tf

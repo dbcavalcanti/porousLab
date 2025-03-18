@@ -159,8 +159,8 @@ for i=1:size(quadratic, 2)
     % Create the result object for the analysis
     ndPlot  = 3;
     dofPlot = 1; % 1 for X and 2 for Y
-    % result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[0.05, 0.5],[0.05, 0.5],[],[0.05, 0.5],[0.05, 0.5]);
-    result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
+    result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[0.05, 0.5],[0.05, 0.5],[],[0.05, 0.5],[0.05, 0.5]);
+    % result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
     %% ========================== RUN ANALYSIS ================================
 
@@ -191,3 +191,19 @@ for i=1:size(quadratic, 2)
     mdl.plotField('GasPressure');
 
 end
+
+figure(6)
+plot(result.time,result.p);
+title('Capillary pressure')
+
+figure(7)
+plot(result.time,result.pf);
+title('Gas pressure')
+
+figure(8)
+plot(result.time,result.ux(:,1))
+title('Horizontal displacement')
+
+figure(9)
+plot(result.time,result.uy(:,2))
+title('Vertical displacement')
