@@ -167,7 +167,7 @@ for i=1:size(quadratic, 2)
     % Transient analysis parameters
     tinit = 0.0;          % Initial time
     dt    = 1.0;          % Time step
-    tf    = 10;          % Final time
+    tf    = 1;          % Final time
     dtmax = 1.0;          % Time step
     dtmin = 0.0001;       % Time step
 
@@ -191,3 +191,19 @@ for i=1:size(quadratic, 2)
     mdl.plotField('GasPressure');
 
 end
+
+figure(6)
+plot(result.time,result.p);
+title('Capillary pressure')
+
+figure(7)
+plot(result.time,result.pf);
+title('Gas pressure')
+
+figure(8)
+plot(result.time,result.ux(:,1))
+title('Horizontal displacement')
+
+figure(9)
+plot(result.time,result.uy(:,2))
+title('Vertical displacement')

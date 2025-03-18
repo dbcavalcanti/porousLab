@@ -112,12 +112,6 @@ classdef RegularElement_H2M < RegularElement
             pg = this.getNodalGasPressure();
             pl = this.getNodalLiquidPressure();
 
-            % Vector of the nodal dofs
-            % u  = this.getNodalDisplacement() + pert_u;
-            % pc = this.getNodalCapillaryPressure() + pert_pc;
-            % pg = this.getNodalGasPressure() + pert_pg;
-            % pl = this.getNodalLiquidPressure() + pert_pl;
-
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];
 
