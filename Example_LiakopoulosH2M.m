@@ -59,7 +59,7 @@ for i=1:size(quadratic, 2)
     gas   = IdealGas('gas', 1.8e-5, 2.0e9);
 
     % Create the porous media
-    rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e12,0.0,0.2,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
+    rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e12,0.2,0.0,0.0,3.0,'Liakopoulos','BrooksCorey','Liakopoulos');
     rock.setMechanicalProperties(1.3e6,0.4);
     rock.setDensity(2000.0);
     rock.setMinLiquidRelPermeability(1.0e-4);
@@ -89,16 +89,22 @@ for i=1:size(quadratic, 2)
     [mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, ...
         CoordSupp, CoordLoad, CoordPresc, Lx, Ly, Nx, Ny);
 
+    % mdl.SUPP_u = 1*ones(size(mdl.SUPP_u,1),2);
+    % mdl.PRESCDISPL_u = 0*ones(size(mdl.PRESCDISPL_u,1),2);
+
     % Liquid pressure boundary conditions
     CoordSupp  = [1 -1 0];
     CoordLoad  = [];
-    CoordPresc = [101025.0 -1 0];
+    CoordPresc = [101225.0 -1 0];
     CoordInit  = [];
 
     % Define supports and loads
     [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
         CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-    mdl.INITCOND_p = 101025.0*ones(size(mdl.INITCOND_p,1),1);
+    mdl.INITCOND_p = 101225.0*ones(size(mdl.INITCOND_p,1),1);
+
+    % mdl.SUPP_p = 1*ones(size(mdl.SUPP_p,1),1);
+    % mdl.PRESCDISPL_p = 0*ones(size(mdl.PRESCDISPL_p,1),1);
 
     % Gas pressure boundary conditions
     CoordSupp  = [1 -1  0;
@@ -112,15 +118,25 @@ for i=1:size(quadratic, 2)
         101325.0 -1 Ly];
     CoordInit  = [];
 
+    % Schrefler conditions
+    % CoordPresc = [101325.0 -1  0;
+    %     0.0  0 -1;
+    %     0.0  Lx -1;
+    %     101325.0 -1 Ly];
+    % CoordInit  = [];
+
     % Define supports and loads
     [mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
         CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
     mdl.INITCOND_pg = 101325.0*ones(size(mdl.INITCOND_pg,1),1);
 
+    % mdl.SUPP_pg = 1*ones(size(mdl.SUPP_pg,1),1);
+    % mdl.PRESCDISPL_pg = 0*ones(size(mdl.PRESCDISPL_pg,1),1);
+
     %% ===================== MODEL CONFIGURATION ==============================
 
     % Using Gauss quadrature
-    mdl.intOrder = 3;
+    mdl.intOrder = 2;
 
     % Diagonalize compressibility matrix (mass lumping)
     mdl.massLumping = false;
@@ -135,27 +151,30 @@ for i=1:size(quadratic, 2)
     % Initialize the stress tensor
     for el = 1:mdl.nelem
         for i = 1:mdl.element(el).type.nIntPoints
-            mdl.element(el).type.intPoint(i).stressOld = [101325.0;101325.0;101325.0;0.0];
+            % mdl.element(el).type.intPoint(i).stressOld = [101325.0;101325.0;101325.0;0.0];
+            mdl.element(el).type.intPoint(i).stressOld = [101325.0;101325.0;0.0;0.0];           % As in OGS6
         end
     end
 
     % Create the result object for the analysis
     ndPlot  = 3;
     dofPlot = 1; % 1 for X and 2 for Y
+    % result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[0.05, 0.5],[0.05, 0.5],[],[0.05, 0.5],[0.05, 0.5]);
     result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
     %% ========================== RUN ANALYSIS ================================
 
     % Transient analysis parameters
-    tinit = 0.1;          % Initial time
-    dt    = 0.1;          % Time step
-    tf    = 120;          % Final time
+    tinit = 0.0;          % Initial time
+    dt    = 1.0;          % Time step
+    tf    = 10;          % Final time
     dtmax = 1.0;          % Time step
     dtmin = 0.0001;       % Time step
 
-    anl = Anl_Transient(result,"Picard");
+    anl = Anl_Transient(result,"Newton");
     anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
     anl.setRelativeConvergenceCriteria(true);
+    anl.nlscheme.setConvergenceTolerance(1e-3);
     anl.process(mdl);
 
     %% ========================= CHECK THE RESULTS ============================
@@ -164,6 +183,7 @@ for i=1:size(quadratic, 2)
     Xi  = [0.0 , 0.0];
     Xf  = [0.0 , Ly];
     npts = 500;
+    mdl.plotDisplacementAlongSegment(2, Xi, Xf, npts,'y')
     mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
     mdl.plotGasPressureAlongSegment(Xi, Xf, npts,'y')
     mdl.plotCapillaryPressureAlongSegment(Xi, Xf, npts,'y')
