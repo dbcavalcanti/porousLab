@@ -321,6 +321,31 @@ classdef RegularElement_H2M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to compute the displacement field in the element.
+        function u = displacementField(this,X)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   u   : displacement vector evaluated in "X"
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+            Nu = this.shape.NuMtrx(Nm);
+
+            % Displacement dof vector
+            uv  = this.getNodalDisplacement();
+            
+            % Regular displacement field
+            u = Nu*uv;
+        
+        end
+
+        %------------------------------------------------------------------
         % Function to compute the pressure field inside a given element
         function p = pressureField(this,X,ue)
         %
