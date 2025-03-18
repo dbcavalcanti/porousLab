@@ -76,6 +76,7 @@ classdef RegularElement_H2M < RegularElement
         %   fe : element "internal force" vector
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
+        % function [Ke, Ce, fi, fe, dfidu] = elementData(this, pert_u, pert_pc, pert_pg, pert_pl)
 
             % Initialize the sub-matrices
             Kuu = zeros(this.nglu, this.nglu);
@@ -105,11 +106,17 @@ classdef RegularElement_H2M < RegularElement
             fil = zeros(this.nglp, 1);
             fig = zeros(this.nglp, 1);
             
-            % Vector of the nodal dofs
+            % % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
             pc = this.getNodalCapillaryPressure();
             pg = this.getNodalGasPressure();
             pl = this.getNodalLiquidPressure();
+
+            % Vector of the nodal dofs
+            % u  = this.getNodalDisplacement() + pert_u;
+            % pc = this.getNodalCapillaryPressure() + pert_pc;
+            % pg = this.getNodalGasPressure() + pert_pg;
+            % pl = this.getNodalLiquidPressure() + pert_pl;
 
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];

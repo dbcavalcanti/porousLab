@@ -63,7 +63,8 @@ classdef RegularElement < handle
 
     %% Abstract methods
     methods(Abstract)
-        [Ke, Ce, fi, fe, dfidu] = elementData(this);
+        % [Ke, Ce, fi, fe, dfidu] = elementData(this);
+        [Ke, Ce, fi, fe, dfidu] = elementData(this, pert_u, pert_pc, pert_pg, pert_pl);
     end
     
     %% Public methods
@@ -76,6 +77,36 @@ classdef RegularElement < handle
             [Ke, Ce, fi, fe, dfidu] = this.elementData();
 
             [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+
+            % % TODO: If the OGS Jacobian is implemented, do a loop here to
+            % % compute the perturbed values            
+            % 
+            % pert_u = [-1e-8, 0 , 1e-8];
+            % pert_pc = [-1e-3, 0 , 1e-3];
+            % pert_pg = pert_pc;
+            % pert_pl = pert_pc;
+            % 
+            % Ke = [];
+            % Ce = [];
+            % fi = [];
+            % fe = [];
+            % dfidu = [];
+            % 
+            % 
+            % for i = 1:size(pert_u,2)
+            % 
+            %     [Ke_part, Ce_part, fi_part, fe_part, dfidu_part] = this.elementData(pert_u(i), pert_pc(i), pert_pg(i), pert_pl(i));
+            % 
+            %     Ke = [Ke, Ke_part];
+            %     Ce = [Ce, Ce_part];
+            %     fi = [fi, fi_part];
+            %     fe = [fe, fe_part];
+            %     dfidu = [dfidu, dfidu_part];
+            % 
+            % end
+            % 
+            % [Ae,be] = nlscheme.assemblePerturbedLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime, this.ngle);
+        
         end
 
         % -----------------------------------------------------------------
