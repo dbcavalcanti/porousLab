@@ -1,6 +1,6 @@
 # porousLab
 
-<p align=center><img height="30.0%" width="30.0%" src="auxiliary/porousLabLogo2.png"></p>
+<p align=center><img height="30.0%" width="30.0%" src="docs/logo_porouslab.png"></p>
 
 ![Release][release-image] 
 ![License][license-image]
