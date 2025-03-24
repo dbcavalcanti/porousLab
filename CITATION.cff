@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "PorousLab"
+type: software
+authors:
+  - family-names: Cavalcanti
+    given-names: Danilo
+version: 1.0.0
+date-released: "2025-03-31"
+license: MIT
+repository-code: "https://github.com/dbcavalcanti/porousLab"
