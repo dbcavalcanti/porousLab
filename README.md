@@ -30,17 +30,18 @@ If you use this software in your work, please cite it using the metadata indicat
 
 ## Authorship
 
-- **Danilo Cavalcanti** (<dborges@cimne.upc.edu>)
+**Danilo Cavalcanti** (<dborges@cimne.upc.edu>)
 
-International Center for Numerical Methods in Engineering ([CIMNE][cimne_website]) 
-and
-Polytechnic University of Catalonia ([Barcelona Tech - UPC][upc_website])
+- International Center for Numerical Methods in Engineering ([CIMNE][cimne_website])<br> 
+- Polytechnic University of Catalonia ([Barcelona Tech - UPC][upc_website])<br>
+- Pontifical Catholic University of Rio de Janeiro ([PUC-Rio][puc_website])
 
 <p float="left">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="docs/figures/logos/logo_cimne.png" width="350"/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="docs/figures/logos/logo_upc.png" width="350"/> 
+<img src="docs/figures/logos/logo_cimne.png" width="330"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="docs/figures/logos/logo_upc.png" width="330"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="docs/figures/logos/logo_puc.png" width="90"/>
 </p>
 
 ## Acknowledgement
@@ -66,4 +67,5 @@ No liability and warranty are provided.
 [citation_link]: CITATION.cff
 [cimne_website]: https://www.cimne.com/
 [upc_website]: https://camins.upc.edu/
+[puc_website]: https://www.puc-rio.br/english/
 [mit_license_link]: https://choosealicense.com/licenses/mit/
