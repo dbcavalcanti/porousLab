@@ -17,6 +17,9 @@ classdef PorousMedia < handle
         nu                   = [];              % Poisson ratio
         sy0                  = [];              % Initial yield stress (Pa)
         Kp                   = [];              % Plastic modulus (Pa)
+        cohesion             = [];              % Cohesion (Pa)
+        frictionAngle        = [];              % Friction angle (rad)
+        dilationAngle        = [];              % Dilation angle (rad)
         kappa                = [];              % Ratio between the uniaxial compressive strength and the uniaxial tensile strength
         DamageThreshold      = [];              % Damage threshold
         FractureEnergyMode1  = [];              % Fracture energy associated with mode 1 (N/m)
@@ -36,10 +39,10 @@ classdef PorousMedia < handle
         gravityOn            = false;           % Flag to consider gravity forces
         g                    = 9.806;           % Gravity accelaration (m/s2)
         b                    = [0.0;-1.0];      % Gravity force direction vector       
-        SlPc_umat           = [];
-        klr_umat            = [];
-        kgr_umat            = [];
-        m                   = 1;                % Expoent for the polynomial relationships
+        SlPc_umat            = [];              % User material curve saturation law
+        klr_umat             = [];              % User material curve liquid relative permeability
+        kgr_umat             = [];              % User material curve gas relative permeability
+        m                    = 1;               % Expoent for the polynomial relationships
     end
     properties (SetAccess = protected, GetAccess = public)
         klrmin               = 1.0e-9;          % Minimum liquid relative permeability
