@@ -13,15 +13,17 @@ classdef Fluid < handle
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         id   = '';
-        rho  = 0.0;   % Density (kg/m3)
-        mu   = 0.0;   % Viscosity (Pa*s)
-        K    = 0.0;   % Compressibility/Bulk modulus (1/Pa)
+        rho  = 1000.0;      % Density (kg/m3)
+        mu   = 1.0e-3;      % Viscosity (Pa*s)
+        K    = 1.0e25;      % Compressibility/Bulk modulus (1/Pa)
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = Fluid(id, density, viscosity, compressibility)
-            if nargin > 0
+            if nargin == 1
+                this.id = id; 
+            elseif nargin > 1
                 this.id   = id;
                 this.rho  = density;
                 this.mu   = viscosity;

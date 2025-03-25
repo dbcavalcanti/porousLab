@@ -1,46 +1,36 @@
-%% ========================================================================
+%% DESCRIPTION
 %
-% Block crossed by a strong discontinuity
+% Block crossed by a strong discontinuity.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Single-phase hydraulic (H)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H();
 
-% --- Mesh of continuum elements ------------------------------------------
+%% MESH GENERATION
 
-% Mesh properties
-Lx = 200.0;     % Horizontal dimension (m)
-Ly = 200.0;     % Vertical dimension (m)
-Nx = 53;       % Number of elements in the x-direction
-Ny = 53;       % Number of elements in the y-direction
+% Mesh generation
+Lx = 200.0;  % Horizontal dimension (m)
+Ly = 200.0;  % Vertical dimension (m)
+Nx = 53;     % Number of elements in the x-direction
+Ny = 53;     % Number of elements in the y-direction
 
-% Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Create the discontinuity 
+% Discontinuity generation
 fractures = [];
-nFrac = 10; rng(123);
-count = 0;
-% while count < nFrac
-%     x1 = rand() * Lx;
-%     y1 = rand() * Ly;
-%     x2 = rand() * Lx;
-%     y2 = rand() * Ly;
-%     l = sqrt((x2-x1)^2+(y1-y2)^2);
-%     if l > Lx/3.0
-%         fractures = [fractures, Discontinuity([x1,y1;x2,y2], true)];
-%         count = count + 1;
-%     end
-% end
-
 fractures = [fractures, Discontinuity([93.0402, 150.0; 59.6560, 99.6233], true)];
 fractures = [fractures, Discontinuity([92.6980, 190.4503; 67.1685, 92.4745], true)];
 fractures = [fractures, Discontinuity([22.4000, 128.8991; 0.0000, 87.0630], true)];
@@ -65,10 +55,9 @@ fractures = [fractures, Discontinuity([85.2698, 200.0000; 23.1479, 129.8266], tr
 fractures = [fractures, Discontinuity([25.9630, 115.9241; 0.0000, 81.7746], true)];
 fractures = [fractures, Discontinuity([84.3391, 197.1414; 144.4823, 133.8286], true)];
 
+%% MATERIAL CREATION
 
-%% ============================= MATERIAL =================================
-
-% Create the fluids
+% Create fluids
 water = Fluid('water',1000.0,1.0e-3,2.2e9);
 
 % Create the porous media

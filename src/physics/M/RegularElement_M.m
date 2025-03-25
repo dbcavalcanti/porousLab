@@ -177,18 +177,8 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Evaluate the stress tensor in a given point by extrapolating the
-        % results from the integration points
-        function stress = stressField(this,X,ue)
-        %
-        % Input:
-        %   X   : position vector in the global cartesian coordinate system
-            if nargin > 2, this.ue = ue; end
-        
-            % Natural coordinate system
-            Xn = this.shape.coordCartesianToNatural(this.node,X);
-
-            %Extrapolation matrix
+        % Compute the integration points interpolation matrix
+        function S = integrationPointInterpolation(this)
             Q = ones(3,this.nIntPoints);
             for i = 1:this.nIntPoints
                 Q(2,i) = this.intPoint(i).X(1);
@@ -207,6 +197,22 @@ classdef RegularElement_M < RegularElement
                 P(3,3) = P(3,3) + this.intPoint(i).X(2) * this.intPoint(i).X(2);
             end
             S = P\Q;
+        end
+
+        %------------------------------------------------------------------
+        % Evaluate the stress tensor in a given point by extrapolating the
+        % results from the integration points
+        function stress = stressField(this,X,ue)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+
+            % Get extrapolation matrix
+            S = this.integrationPointInterpolation();
 
             % Matrix with the stress at the integration points
             % Each column corresponds to a stress component:
@@ -224,6 +230,76 @@ classdef RegularElement_M < RegularElement
 
             % Interpolated stress field at the given node
             stress = c' * [1.0 ; Xn(1); Xn(2)];
+
+        end
+
+        %------------------------------------------------------------------
+        % Evaluate the strain tensor in a given point by extrapolating the
+        % results from the integration points
+        function strain = strainField(this,X,ue)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+
+            % Get extrapolation matrix
+            S = this.integrationPointInterpolation();
+
+            % Matrix with the stress at the integration points
+            % Each column corresponds to a stress component:
+            % sxx, syy, szz and tauxy
+            strainIP = zeros(this.nIntPoints,4);
+            for i = 1:this.nIntPoints
+                strainIP(i,1) = this.intPoint(i).strain(1);
+                strainIP(i,2) = this.intPoint(i).strain(2);
+                strainIP(i,3) = this.intPoint(i).strain(3);
+                strainIP(i,4) = this.intPoint(i).strain(4);
+            end
+
+            % Coefficients for the polynomial approximation 
+            c = S * strainIP;
+
+            % Interpolated stress field at the given node
+            strain = c' * [1.0 ; Xn(1); Xn(2)];
+
+        end
+
+        %------------------------------------------------------------------
+        % Evaluate the stress tensor in a given point by extrapolating the
+        % results from the integration points
+        function pe = plasticstrainMagnitude(this,X,ue)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+            if nargin > 2, this.ue = ue; end
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+
+            % Get extrapolation matrix
+            S = this.integrationPointInterpolation();
+
+            % Matrix with the stress at the integration points
+            % Each column corresponds to a stress component:
+            % sxx, syy, szz and tauxy
+            pstrainIP = zeros(this.nIntPoints,4);
+            for i = 1:this.nIntPoints
+                pstrainIP(i,1) = this.intPoint(i).plasticstrain(1);
+                pstrainIP(i,2) = this.intPoint(i).plasticstrain(2);
+                pstrainIP(i,3) = this.intPoint(i).plasticstrain(3);
+                pstrainIP(i,4) = this.intPoint(i).plasticstrain(4);
+            end
+
+            % Coefficients for the polynomial approximation 
+            c = S * pstrainIP;
+
+            % Interpolated stress field at the given node
+            pstrain = c' * [1.0 ; Xn(1); Xn(2)];
+
+            pe = norm(pstrain);
 
         end
 
@@ -264,6 +340,27 @@ classdef RegularElement_M < RegularElement
             % Principal stresses
             s1 = c + r;
             s2 = c - r;
+
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the principal stresses
+        function [e1,e2] = principalStrain(~,strain)
+
+            % Get the stress tensor components
+            exx = strain(1);
+            eyy = strain(2);
+            exy = strain(4) / 2.0;
+
+            % Mohr's circle center
+            c = (exx + eyy) / 2.0;
+
+            % Mohr's circle radius
+            r = sqrt(((exx - eyy)/2.0)^2 + exy^2);
+
+            % Principal stresses
+            e1 = c + r;
+            e2 = c - r;
 
         end
     end

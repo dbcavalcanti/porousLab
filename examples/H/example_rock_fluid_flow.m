@@ -1,39 +1,44 @@
-%% ================ Two-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% ...
 %
-%% ========================================================================
+% Physics:
+% * Single-phase hydraulic (H)
 %
-% Initialize workspace
-clear
-initWorkspace; 
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H();
 
-% --- Mesh of continuum elements ------------------------------------------
+%% MESH GENERATION
 
-% Mesh properties
-Lx = 24.0;      % Horizontal dimension (m)
-Ly = 6.0;       % Vertical dimension (m)
-Nx = 96;        % Number of elements in the x-direction
-Ny = 24;        % Number of elements in the y-direction
+% Mesh generation
+Lx = 2.0;  % Horizontal dimension (m)
+Ly = 1.0;  % Vertical dimension (m)
+Nx = 2;    % Number of elements in the x-direction
+Ny = 1;    % Number of elements in the y-direction
 
-% Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Type of elements
+% Element type
 mdl.type = 'ISOQ4';
 
-% Thickness (m)
+% Element thickness (m)
 mdl.t = 1.0;
 
-% --- Material properties of the domain -----------------------------------
+%% MATERIAL CREATION
 
-% Create the fluids
+% Create fluids
 water = Fluid('water',1000.0,1.0e-3,2.0e9);
-
 
 rock = PorousMedia('rock');
 rock.K     = 1.0194e-14;    % Intrinsic permeability (m2)
@@ -52,27 +57,14 @@ mdl.mat  = struct( ...
 % forget also that you need to constraint these degrees of freedom.
 
 % pore pressure boundary conditions
-CoordSupp  = [];         
+CoordSupp  = [1 0.0 -1;1 Lx -1];         
 CoordLoad  = [];            
-CoordPresc = [];            
+CoordPresc = [0.0 0.0 -1;10.0 Lx -1];            
 CoordInit  = [];                   
            
 % Define supports and loads
 [mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
     CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-
-% Apply hydraulic pressure head at the left
-for i = 1:size(mdl.NODE,1)
-    if ((mdl.NODE(i,1)<8.0) && (abs(mdl.NODE(i,2)-Ly) < 1.0e-9))
-        mdl.PRESCDISPL_p(i) = 120.0;
-        mdl.SUPP_p(i) = 1;
-    end
-
-    if ((mdl.NODE(i,1)>12.0) && (abs(mdl.NODE(i,2)-Ly) < 1.0e-9))
-        mdl.PRESCDISPL_p(i) = 60.0;
-        mdl.SUPP_p(i) = 1;
-    end
-end
 
 % --- Order of the integration rule for the domain ------------------------
 
@@ -100,10 +92,13 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
 tf    = 500;  % Final time
+dtmax = 1.0;
+dtmin = 1.0;
 
 % Solve the problem
-anl = Anl_Transient(result,"Newton");
+anl = Anl_Transient(result,"Picard");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
+anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
