@@ -27,13 +27,7 @@ Ly = 1.0;  % Vertical dimension (m)
 Nx = 2;    % Number of elements in the x-direction
 Ny = 1;    % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-% Element type
-mdl.type = 'ISOQ4';
-
-% Element thickness (m)
-mdl.t = 1.0;
+[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
 
 %% MATERIAL CREATION
 
@@ -54,32 +48,20 @@ rock.biot = 0.6;         % Biot coefficient
 mdl.mat = struct('porousMedia',rock,'fluid',water);
 
 %% BOUNDARY CONDITIONS
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
 
-% pore pressure boundary conditions
-CoordSupp  = [1 0.0 -1;1 Lx -1];         
-CoordLoad  = [];            
-CoordPresc = [0.0 0.0 -1;10.0 Lx -1];            
-CoordInit  = [];                   
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+% Pore pressure
+CoordSupp  = [1 0.0 -1; 1 Lx -1];
+CoordLoad  = [];
+CoordPresc = [0.0 0.0 -1; 10.0 Lx -1];
+CoordInit  = [];
 
-% --- Order of the integration rule for the domain ------------------------
+% Supports and loads
+[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = ...
+boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
+%% PRE-PROCESS
 
-% Diagonalize compressibility matrix
-mdl.massLumping = false;
-mdl.lumpStrategy = 2;
-
-%% ========================= INITIALIZATION ===============================
-
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
+% Perform the basic pre-computations associated to the model (dof definition, etc.)
 mdl.preComputations();
 
 % Create the result object for the analysis
@@ -87,12 +69,12 @@ ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
 result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
-tf    = 500;  % Final time
+tf    = 500;   % Final time
 dtmax = 1.0;
 dtmin = 1.0;
 
@@ -102,7 +84,7 @@ anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESS
 
 % Print the results in the command window
 mdl.printResults();
@@ -113,4 +95,3 @@ Xf  = [Lx , Ly/2.0];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
 mdl.plotField('Pressure')
-

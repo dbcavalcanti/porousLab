@@ -27,7 +27,7 @@ Ly = 200.0;  % Vertical dimension (m)
 Nx = 53;     % Number of elements in the x-direction
 Ny = 53;     % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Discontinuity generation
 fractures = [];
@@ -80,21 +80,16 @@ end
 %% BOUNDARY CONDITIONS
 
 % Pore pressure boundary conditions
-CoordSupp  = [1 -1 0.0;1 -1 Ly];         
+CoordSupp  = [1 -1 0.0; 1 -1 Ly];         
 CoordLoad  = [];            
-CoordPresc = [0.0 -1 0.0;1000000.0 -1 Ly];            
+CoordPresc = [0.0 -1 0.0; 1000000.0 -1 Ly];            
 CoordInit  = [];                   
            
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+% Supports and loads
+[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] =...
+boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
-%% ===================== MODEL CONFIGURATION ==============================
-
-% Using Gauss quadrature
-mdl.intOrder = 2;
-
-%% ========================= INITIALIZATION ===============================
+%% PRE-PROCESS
 
 % Create the discontinuity elements
 % Intersect all fractures with the mesh
@@ -113,7 +108,7 @@ ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
 result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
@@ -125,7 +120,7 @@ anl = Anl_Transient(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,500.0,0.001,true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESS
 
 % Plot pressure along a segment
 mdl.printResults();
