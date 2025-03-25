@@ -58,12 +58,12 @@ No liability and warranty are provided.
 [release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat
 [release-link]: https://github.com/bcavalcanti/porousLab/releases
 [license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
-[license-link]: https://github.com/bcavalcanti/porousLab/blob/main/LICENSE
+[license-link]: LICENSE
 [contributing-image]: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
-[contributing-link]: https://github.com/bcavalcanti/porousLab/blob/main/CONTRIBUTING.md
+[contributing-link]: CONTRIBUTING.md
 [wiki_link]: https://github.com/dbcavalcanti/porousLab/wiki
-[contribute_link]: https://github.com/dbcavalcanti/porousLab/blob/main/CONTRIBUTING.md
-[citation_link]: https://github.com/dbcavalcanti/porousLab/blob/main/CITATION.cff
+[contribute_link]: CONTRIBUTING.md
+[citation_link]: CITATION.cff
 [cimne_website]: https://www.cimne.com/
 [upc_website]: https://camins.upc.edu/
 [mit_license_link]: https://choosealicense.com/licenses/mit/
