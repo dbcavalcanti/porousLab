@@ -21,8 +21,9 @@ classdef Fluid < handle
     methods
         %------------------------------------------------------------------
         function this = Fluid(id, density, viscosity, compressibility)
-            if nargin == 1, this.id = id; end
-            if nargin > 0
+            if nargin == 1
+                this.id = id; 
+            elseif nargin > 1
                 this.id   = id;
                 this.rho  = density;
                 this.mu   = viscosity;
