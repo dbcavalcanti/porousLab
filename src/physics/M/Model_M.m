@@ -201,6 +201,13 @@ classdef Model_M < Model
                     elseif strcmp(type,'Uy')
                         u = this.element(el).type.displacementField(X);
                         vertexData(i) = u(2);
+                    elseif strcmp(type,'E1')
+                        s = this.element(el).type.strainField(X);
+                        sp = this.element(el).type.principalStrain(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'PEMAG')
+                        pe = this.element(el).type.plasticstrainMagnitude(X);
+                        vertexData(i) = pe;
                     elseif strcmp(type,'Sx')
                         s = this.element(el).type.stressField(X);
                         vertexData(i) = s(1);
