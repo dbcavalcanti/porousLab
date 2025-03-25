@@ -24,6 +24,65 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
     methods
 
         %------------------------------------------------------------------
+        % Compute the stress vector and the constitutive matrix
+        function [stress,Dt] = eval(this,material,ip)
+
+            % Constitutive matrix
+            De = this.elasticConstitutiveMatrix(material,ip);
+            Ce = this.elasticFlexibilityMatrix(material,ip);
+            Dt = De;
+
+            % Trial stress vector
+            stress = De * (ip.strain - ip.plasticstrain);
+
+            % Evaluate the yield condition
+            f = this.yieldCondition(material,ip,stress);
+
+            % Elastic step
+            if f < 0.0, return, end
+
+            % Material parameters
+            tanPhi = tan(material.frictionAngle);
+            tanPsi = tan(material.dilationAngle);
+            coh    = material.cohesion;
+            Id     = this.gradientI1(stress);
+
+            % Elastic properties
+            K = this.bulkModulus(material);
+            G = this.shearModulus(material);
+
+            % Stress invariants
+            p = this.hydrostaticStress(stress);
+            q = this.vonMisesStress(stress);
+
+            % Deviatoric stresses
+            s = this.deviatoricStress(stress);
+
+            % Plastic multiplier
+            lambda = (q + p * tanPhi - coh) / (3.0 * G + K * tanPhi * tanPsi);
+
+            % Stress update
+            factor = 1.0 - 3.0 * G * lambda / q;
+            if factor >= 0.0
+                s = factor * s;
+                p = p - lambda * K * tanPsi;
+                stress = s + p * Id;
+                df = this.yieldStressGradient(material,ip,stress);
+                n  = this.flowVector(material,ip,stress);
+                dn = this.flowVectorGradient(material,ip,stress);
+                Psi = inv(Ce + lambda * dn);
+                Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
+            else 
+                % Return to the apex of the surface
+                stress = (coh / tanPhi) * Id;
+                Dt = 1.0e-8*eye(4,4);
+            end
+
+            % Update the plastic strain
+            ip.plasticstrain = ip.strain - Ce * stress;
+        end
+
+        %------------------------------------------------------------------
         % Yield function definition
         function f = yieldCondition(this,material,~,stress)
             % Material parameters
@@ -77,11 +136,11 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Flow vector gradient
-        function dn = flowVectorGradient(this,~,~,stress)
+        function dn = flowVectorGradient(this,~,ip,stress)
             % Deviatoric stress invariant 
             J2   = max(this.stressInvariantJ2(stress),1.0e-8);
             dJ2  = this.gradientJ2(stress);
-            d2J2 = this.hessianJ2(stress);
+            d2J2 = this.hessianJ2();
             % Derivatives of the yield surface wrt to the invariants
             dfdJ2 = 0.5 * sqrt(3.0 / J2);
             d2fdJ2 = -0.25 * sqrt(3.0 / J2 / J2 / J2);
@@ -97,13 +156,13 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         %------------------------------------------------------------------
         % Hardening law
         function h = hardening(~,~,~,~)
-            h = [];
+            h = 0.0;
         end
 
         %------------------------------------------------------------------
         % Gradient of the hardening law wrt to the stress vector
         function dh = hardeningStressGradient(~,~,~,~)
-            dh = [];
+            dh = 0.0;
         end
 
     end
