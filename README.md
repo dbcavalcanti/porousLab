@@ -1,40 +1,69 @@
-# porousLab
+# PorousLab
 
-<p align=center><img height="30.0%" width="30.0%" src="auxiliary/porousLabLogo2.png"></p>
+<p align=center><img height="100.0%" width="100.0%" src="docs/figures/logos/logo_porouslab.png"></p>
 
-![Release][release-image] 
-![License][license-image]
+[![Release][release-image]][release-link]
+[![License][license-image]][license-link]
+[![Contributing][contributing-image]][contributing-link]
 
-[release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat 
+**PorousLab** is a MATLAB framework for solving multiphysics problems, mainly in the context of geomechanics and fractured porous media, based on the Finite Element Method (FEM).
 
-[license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
-
-**porousLab** is a MATLAB program for solving multiphysics problems, mainly in the context of geomechanics and fractured porous media, based on the Finite Element Method (FEM).
-
----
-
-### **Navigation**
-- [Features](#features)
+## Table of Contents
+- [Main Features](#main-features)
+- [How to Contribute](#how-to-contribute)
+- [How to Cite](#how-to-cite)
+- [Authorship](#authorship)
+- [Acknowledgement](#acknowledgement)
 - [License](#license)
-- [Authors and Acknowledgment](#authors-and-acknowledgment)
 
----
+## Main Features
 
-## **Features**
+Check out the [wiki][wiki_link] page.
 
-Check out the [wiki](https://github.com/dbcavalcanti/porousLab/wiki) page!
+## How to Contribute
 
----
+Please check the [contribution guidelines][contribute_link].
 
-## **License**
+## How to Cite
 
-porousLab is released under the MIT License. See the **[LICENSE](https://www.blackbox.ai/share/LICENSE)** file for details.
+If you use this software in your work, please cite it using the metadata indicated in this [file][citation_link].
 
----
+## Authorship
 
-## **Authors and Acknowledgment**
+- **Danilo Cavalcanti** (<dborges@cimne.upc.edu>)
 
-porousLab was created by **[Danilo Cavalcanti](https://github.com/dbcavalcanti)** in the context of the SECCO2 project under the Grant TED2021-130510A-I00 funded by MCIN/AEI/10.13039/501100011033 and by the "European Union NextGenerationEU/PRTR.”
+International Center for Numerical Methods in Engineering ([CIMNE][cimne_website]) 
+and
+Polytechnic University of Catalonia ([Barcelona Tech - UPC][upc_website])
 
-![SECCO2](figures/SECCO2.png)
+<p float="left">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="docs/figures/logos/logo_cimne.png" width="350"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="docs/figures/logos/logo_upc.png" width="350"/> 
+</p>
 
+## Acknowledgement
+
+PorousLab was developed in the context of SECCO2 project under the Grant TED2021-130510A-I00 funded by MCIN/AEI/10.13039/501100011033 and by the "European Union NextGenerationEU/PRTR”.
+
+<p align=center><img height="100.0%" width="100.0%" src="docs/figures/logos/logo_secco2.png"></p>
+
+## License
+
+PorousLab is released under the [MIT license][mit_license_link].
+It allows the program to be freely used by anyone for modification, private use, commercial use, and distribution, only requiring preservation of copyright and license notices.
+No liability and warranty are provided.
+
+[release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat
+[release-link]: https://github.com/bcavalcanti/porousLab/releases
+[license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
+[license-link]: LICENSE
+[contributing-image]: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+[contributing-link]: CONTRIBUTING.md
+[wiki_link]: https://github.com/dbcavalcanti/porousLab/wiki
+[contribute_link]: CONTRIBUTING.md
+[citation_link]: CITATION.cff
+[cimne_website]: https://www.cimne.com/
+[upc_website]: https://camins.upc.edu/
+[mit_license_link]: https://choosealicense.com/licenses/mit/
