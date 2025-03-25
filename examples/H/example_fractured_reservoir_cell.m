@@ -27,7 +27,7 @@ Ly = 200.0;  % Vertical dimension (m)
 Nx = 53;     % Number of elements in the x-direction
 Ny = 53;     % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Discontinuity generation
 fractures = [];
@@ -58,43 +58,38 @@ fractures = [fractures, Discontinuity([84.3391, 197.1414; 144.4823, 133.8286], t
 %% MATERIAL CREATION
 
 % Create fluids
-water = Fluid('water',1000.0,1.0e-3,2.2e9);
+water = Fluid('water');
+water.rho = 1000.0;  % Density (kg/m3)
+water.mu  = 1.0e-3;  % Viscosity (Pa*s)
+water.K   = 2.2e9;   % Compressibility/Bulk modulus (1/Pa)
 
-% Create the porous media
+% Create porous media
 rock = PorousMedia('rock');
-rock.K     = 1.0e-14;        % Intrinsic permeability (m2)
-rock.phi   = 0.25;          % Porosity
+rock.K   = 1.0e-14;  % Intrinsic permeability (m2)
+rock.phi = 0.25;     % Porosity
 
 % Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'fluid',water);
+mdl.mat = struct('porousMedia',rock,'fluid',water);
 
-% Set the fracture material properties
-% Set the fracture material properties
+% Set fracture material properties
 for i = 1:length(fractures)
     fractures(i).initialAperture = 1.0e-3;
     fractures(i).fluid = water;
 end
 
-%% ======================= BOUNDARY CONDITIONS ============================
+%% BOUNDARY CONDITIONS
 
 % Pore pressure boundary conditions
-CoordSupp  = [1 -1 0.0;1 -1 Ly];         
+CoordSupp  = [1 -1 0.0; 1 -1 Ly];         
 CoordLoad  = [];            
-CoordPresc = [0.0 -1 0.0;1000000.0 -1 Ly];            
+CoordPresc = [0.0 -1 0.0; 1000000.0 -1 Ly];            
 CoordInit  = [];                   
            
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+% Supports and loads
+[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] =...
+boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
 
-%% ===================== MODEL CONFIGURATION ==============================
-
-% Using Gauss quadrature
-mdl.intOrder = 2;
-
-%% ========================= INITIALIZATION ===============================
+%% PRE-PROCESS
 
 % Create the discontinuity elements
 % Intersect all fractures with the mesh
@@ -113,7 +108,7 @@ ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
 result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
@@ -125,7 +120,7 @@ anl = Anl_Transient(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,500.0,0.001,true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESS
 
 % Plot pressure along a segment
 mdl.printResults();
