@@ -83,6 +83,11 @@ classdef MechanicalLinearElastic < handle
             J2  = max(J2,0.0);
         end
 
+        % Gradient of the I1 stress invariant
+        function dI1 = gradientI1(~,~)
+            dI1 = [1.0;1.0;1.0;0.0];
+        end
+
         % Gradient of the J2 stress invariant
         function dJ2 = gradientJ2(~,stress)
             sxx = stress(1);
