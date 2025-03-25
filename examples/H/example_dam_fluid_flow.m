@@ -1,16 +1,25 @@
-%% ================ Two-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% ...
 %
-%% ========================================================================
+% Physics:
+% * Single-phase hydraulic (H)
 %
-% Initialize workspace
-clear
-initWorkspace; 
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H();
+
+%% Model Creation
 
 % --- Mesh of continuum elements ------------------------------------------
 

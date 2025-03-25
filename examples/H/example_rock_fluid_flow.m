@@ -1,39 +1,44 @@
-%% ================= Single-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% ...
 %
-%% ========================================================================
+% Physics:
+% * Single-phase hydraulic (H)
 %
-% Initialize workspace
-clear
-initWorkspace; 
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H();
 
-% --- Mesh of continuum elements ------------------------------------------
+%% MESH GENERATION
 
-% Mesh properties
-Lx = 2.0;      % Horizontal dimension (m)
-Ly = 1.0;       % Vertical dimension (m)
-Nx = 2;        % Number of elements in the x-direction
-Ny = 1;        % Number of elements in the y-direction
+% Mesh generation
+Lx = 2.0;  % Horizontal dimension (m)
+Ly = 1.0;  % Vertical dimension (m)
+Nx = 2;    % Number of elements in the x-direction
+Ny = 1;    % Number of elements in the y-direction
 
-% Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Type of elements
+% Element type
 mdl.type = 'ISOQ4';
 
-% Thickness (m)
+% Element thickness (m)
 mdl.t = 1.0;
 
-% --- Material properties of the domain -----------------------------------
+%% MATERIAL CREATION
 
-% Create the fluids
+% Create fluids
 water = Fluid('water',1000.0,1.0e-3,2.0e9);
-
 
 rock = PorousMedia('rock');
 rock.K     = 1.0194e-14;    % Intrinsic permeability (m2)

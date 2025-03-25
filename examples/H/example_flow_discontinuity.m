@@ -1,40 +1,43 @@
-%% ========================================================================
+%% DESCRIPTION
 %
-% Block crossed by a strong discontinuity
+% Block crossed by a strong discontinuity.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Single-phase hydraulic (H)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H();
 
-% --- Mesh of continuum elements ------------------------------------------
+%% MESH GENERATION
 
-% Mesh properties
-Lx = 5.0;     % Horizontal dimension (m)
-Ly = 3.0;     % Vertical dimension (m)
-Nx = 5;       % Number of elements in the x-direction
-Ny = 3;       % Number of elements in the y-direction
+% Mesh geometry
+Lx = 5.0;  % Horizontal dimension (m)
+Ly = 3.0;  % Vertical dimension (m)
+Nx = 5;    % Number of elements in the x-direction
+Ny = 3;    % Number of elements in the y-direction
 
-% Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
+[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
 
-% Polyline that defines the fracture 
-xd = [1.0, 4.0];
-yd = [1.1, 1.9];
+% Discontinuity generation
+Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture
+Dy = [1.1; 1.9];  % Y-coordinates of polyline defining the fracture
 
-% Create the discontinuity 
-fracture = Discontinuity([xd', yd'],true);
+fracture = Discontinuity([Dx, Dy], true);
 
-%% ============================= MATERIAL =================================
+%% MATERIAL CREATION
 
-% Create the fluids
+% Create fluids
 water = Fluid('water',1000.0,1.0e-3,2.0e9);
 
 % Create the porous media
@@ -51,7 +54,7 @@ mdl.mat  = struct( ...
 fracture.initialAperture = 1.0e-3;
 fracture.fluid = water;
 
-%% ======================= BOUNDARY CONDITIONS ============================
+%% BOUNDARY CONDITIONS
 
 % Pore pressure boundary conditions
 CoordSupp  = [1 0.0 -1;1 Lx -1];         
