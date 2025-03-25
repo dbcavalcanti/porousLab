@@ -38,21 +38,22 @@ mdl.t = 1.0;
 %% MATERIAL CREATION
 
 % Create fluids
-water = Fluid('water',1000.0,1.0e-3,2.0e9);
+water = Fluid('water');
+water.rho = 1000.0;  % Density (kg/m3)
+water.mu  = 1.0e-3;  % Viscosity (Pa*s)
+water.K   = 2.0e9;   % Compressibility/Bulk modulus (1/Pa)
 
+% Create porous media
 rock = PorousMedia('rock');
-rock.K     = 1.0194e-14;    % Intrinsic permeability (m2)
-rock.phi   = 0.3;           % Porosity
-rock.Ks    = 1.0e12;        % Rock bulk modulus (Pa)
-rock.biot  = 0.6;           % Biot coefficient
+rock.K    = 1.0194e-14;  % Intrinsic permeability (m2)
+rock.phi  = 0.3;         % Porosity
+rock.Ks   = 1.0e12;      % Rock bulk modulus (Pa)
+rock.biot = 0.6;         % Biot coefficient
 
 % Material parameters vector
-% Same material for all elements
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'fluid',water);
+mdl.mat = struct('porousMedia',rock,'fluid',water);
 
-% --- Boundary conditions -------------------------------------------------
+%% BOUNDARY CONDITIONS
 % In case it is prescribed a pressure value different than zero, don't 
 % forget also that you need to constraint these degrees of freedom.
 

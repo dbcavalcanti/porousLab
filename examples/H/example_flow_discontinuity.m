@@ -38,19 +38,20 @@ fracture = Discontinuity([Dx, Dy], true);
 %% MATERIAL CREATION
 
 % Create fluids
-water = Fluid('water',1000.0,1.0e-3,2.0e9);
+water = Fluid('water');
+water.rho = 1000.0;  % Density (kg/m3)
+water.mu  = 1.0e-3;  % Viscosity (Pa*s)
+water.K   = 2.0e9;   % Compressibility/Bulk modulus (1/Pa)
 
-% Create the porous media
+% Create porous media
 rock = PorousMedia('rock');
-rock.K     = 9.8e-16;        % Intrinsic permeability (m2)
-rock.phi   = 0.25;          % Porosity
+rock.K   = 9.8e-16;  % Intrinsic permeability (m2)
+rock.phi = 0.25;     % Porosity
 
 % Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'fluid',water);
+mdl.mat = struct('porousMedia',rock,'fluid',water);
 
-% Set the fracture material properties
+% Set fracture material properties
 fracture.initialAperture = 1.0e-3;
 fracture.fluid = water;
 
