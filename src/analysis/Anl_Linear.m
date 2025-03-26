@@ -20,6 +20,9 @@ classdef Anl_Linear < Anl
         % Process model data to compute results.
         function process(~,mdl)
 
+            % Initialize the model object
+            mdl.preComputations();
+
             % Compute the global stiffness matrix
             [K, ~, ~, Fext] = mdl.globalMatrices(mdl.U);
 

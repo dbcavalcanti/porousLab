@@ -51,6 +51,9 @@ classdef Anl_Transient < Anl
             maxSteps = length(this.tinit:this.dt:this.tf);
             step     = 1;
 
+            % Initialize the model object
+            mdl.preComputations();
+
             % Initialize solution vector
             X  = mdl.U;
             dx = zeros(mdl.ndof);
