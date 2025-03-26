@@ -11,38 +11,11 @@
 %
 %
 %% Class definition
-classdef Model_HM < Model    
-    %% Public attributes
-    properties (SetAccess = public, GetAccess = public)
-        %% Degrees of freedom vectors
-        % Vector with all the dofs of each type
-        uDof                = [];
-        pDof                = [];
-        % Vector with all the FREE dofs of each type
-        uFreeDof            = [];
-        pFreeDof            = [];
-        % Matrix with the dofs of each type of each element
-        GLU                 = [];
-        GLP                 = [];
-        %% Matrix indicating the Dirichlet BCs 
-        SUPP_u              = [];
-        SUPP_p              = [];
-        %% Matrix with the prescribed BC values 
-        PRESCDISPL_u        = [];
-        PRESCDISPL_p        = [];
-        %% Matrix with the Neumann BCs
-        LOAD_u              = [];
-        LOAD_p              = [];
-        %% Matrix with the initial conditions
-        INITCOND_p          = []; 
-        %% Additional data
-        isPlaneStress       = false;
-    end
-    
+classdef Model_HM < Model_M     
     %% Constructor method
     methods
         function this = Model_HM()
-            this = this@Model();
+            this = this@Model_M();
             this.ndof_nd = 3;       % Number of dofs per node
             this.physics = 'HM';    % Tag with the physics name
             disp("*** Physics: Hydromechanical with single-phase flow");
@@ -51,52 +24,6 @@ classdef Model_HM < Model
     
     %% Public methods
     methods
-
-        %------------------------------------------------------------------
-        function SUPP = dirichletConditionMatrix(this)
-            SUPP = [this.SUPP_u ,this.SUPP_p];  
-        end
-
-        %------------------------------------------------------------------
-        function LOAD = neumannConditionMatrix(this)
-            LOAD = [this.LOAD_u ,this.LOAD_p];  
-        end
-
-        %------------------------------------------------------------------
-        function INITCOND = initialConditionMatrix(this)
-            INITCOND_u = zeros(this.nnodes,2);
-            INITCOND = [INITCOND_u ,this.INITCOND_p];  
-        end
-
-        %------------------------------------------------------------------
-        function PRESCDISPL = prescribedDirichletMatrix(this)
-            PRESCDISPL = [this.PRESCDISPL_u ,this.PRESCDISPL_p];  
-        end
-
-        %------------------------------------------------------------------
-        function assembleElementDofs(this)
-
-            this.GLU = zeros(this.nelem, this.nnd_el*2);
-            for el = 1:this.nelem
-                this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
-                    this.nnd_el*2);
-            end
-            this.GLP = zeros(this.nelem, this.nnd_el);
-            for el = 1:this.nelem
-                this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),3)',1,...
-                    this.nnd_el);
-            end
-
-            % Vector with all regular dofs
-            this.uDof = unique(this.GLU);
-            this.pDof = unique(this.GLP);
-            this.Dof  = [this.uDof(:); this.pDof(:)];
-
-            % Vector will free regular dofs
-            this.uFreeDof  = intersect(this.uDof,this.doffree);
-            this.pFreeDof  = intersect(this.pDof,this.doffree);
-
-        end
 
         %------------------------------------------------------------------
         function initializeElements(this)
@@ -109,22 +36,31 @@ classdef Model_HM < Model
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'fluid',this.mat.fluid);
+                udofs = this.getElementDofs(el,[1,2]);
+                pdofs = this.getElementDofs(el,3);
                 elements(el) = RegularElement_HM(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, emat, this.intOrder,this.GLU(el,:),this.GLP(el,:), ...
+                            this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
-        end   
+        end
+        
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, 3, value);
+        end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
-        function plotDisplacementAlongSegment(this, dir, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotDisplacementAlongSegment(dir, Xi, Xf, npts,axisPlot);
+        function setPressureDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, 3, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, 3, value);
         end
 
         % -----------------------------------------------------------------
@@ -133,16 +69,6 @@ classdef Model_HM < Model
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        % -----------------------------------------------------------------
-        % Plot the deformed mesh
-        function plotDeformedMesh(this,amplFactor)
-
-            this.updateResultVertices('Deformed',amplFactor);
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
-
         end
 
         %------------------------------------------------------------------
@@ -198,12 +124,34 @@ classdef Model_HM < Model
                     elseif strcmp(type,'Uy')
                         u = this.element(el).type.displacementField(X);
                         vertexData(i) = u(2);
+                    elseif strcmp(type,'E1')
+                        s = this.element(el).type.strainField(X);
+                        sp = this.element(el).type.principalStrain(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'PEMAG')
+                        pe = this.element(el).type.plasticstrainMagnitude(X);
+                        vertexData(i) = pe;
                     elseif strcmp(type,'Sx')
                         s = this.element(el).type.stressField(X);
                         vertexData(i) = s(1);
                     elseif strcmp(type,'Sy')
                         s = this.element(el).type.stressField(X);
                         vertexData(i) = s(2);
+                    elseif strcmp(type,'Sxy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(3);
+                    elseif strcmp(type,'S1')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'S2')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(2);
+                    elseif strcmp(type,'Sr')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.stressCylindrical(s,X);
+                        vertexData(i) = sp(1);
                     end
                 end
                 this.element(el).type.result.setVertexData(vertexData);
