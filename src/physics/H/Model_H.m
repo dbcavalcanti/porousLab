@@ -22,9 +22,20 @@ classdef Model_H < Model
     
     %% Public methods
     methods
+
         % -----------------------------------------------------------------
         function setPressureDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, 1, value);
         end
 
         %------------------------------------------------------------------

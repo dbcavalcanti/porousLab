@@ -50,17 +50,8 @@ mdl.mat = struct('porousMedia',rock,'fluid',water);
 
 %% BOUNDARY CONDITIONS
 
-mdl.setPressureDirichletBCAtNode(1,0.0);
-mdl.setPressureDirichletBCAtNode(2,0.0);
-mdl.setPressureDirichletBCAtNode(5,10.0);
-mdl.setPressureDirichletBCAtNode(6,10.0);
-
-%% PRE-PROCESS
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
+mdl.setPressureDirichletBCAtBorder('left',0.0);
+mdl.setPressureDirichletBCAtBorder('right',10.0);
 
 %% PROCESS
 
@@ -72,7 +63,7 @@ dtmax = 1.0;
 dtmin = 1.0;
 
 % Solve the problem
-anl = Anl_Transient(result,"Picard");
+anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
