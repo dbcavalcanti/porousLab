@@ -1,7 +1,4 @@
-%% Anl_Nonlinear Class
-%
-% This is a sub-class in the NUMA-TF program that implements abstract 
-% methods declared in super-class Anl to deal with linear-elastic analysis.
+%% Anl_Linear Class
 %
 classdef Anl_Linear < Anl
     %% Public properties

@@ -10,20 +10,6 @@
 %
 %% Class definition
 classdef Model_H < Model    
-    %% Public attributes
-    properties (SetAccess = public, GetAccess = public)
-        %% Degrees of freedom vectors
-        % Matrix with the dofs of each type of each element
-        GLP                 = [];
-        %% Matrix indicating the Dirichlet BCs 
-        SUPP_p              = [];
-        %% Matrix with the prescribed BC values 
-        PRESCDISPL_p        = [];
-        %% Matrix with the Neumann BCs
-        LOAD_p              = [];
-        %% Matrix with the initial conditions
-        INITCOND_p          = []; 
-    end
     %% Constructor method
     methods
         function this = Model_H()
@@ -36,35 +22,9 @@ classdef Model_H < Model
     
     %% Public methods
     methods
-
-        %------------------------------------------------------------------
-        function SUPP = dirichletConditionMatrix(this)
-            SUPP = this.SUPP_p;  
-        end
-
-        %------------------------------------------------------------------
-        function LOAD = neumannConditionMatrix(this)
-            LOAD = this.LOAD_p;  
-        end
-
-        %------------------------------------------------------------------
-        function INITCOND = initialConditionMatrix(this)
-            INITCOND = this.INITCOND_p;  
-        end
-
-        %------------------------------------------------------------------
-        function PRESCDISPL = prescribedDirichletMatrix(this)
-            PRESCDISPL = this.PRESCDISPL_p;  
-        end
-        %------------------------------------------------------------------
-        function assembleElementDofs(this)
-
-            this.GLP = zeros(this.nelem, this.nnd_el);
-            for el = 1:this.nelem
-                this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),1)',1,...
-                    this.nnd_el);
-            end
-            
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, 1, value);
         end
 
         %------------------------------------------------------------------
@@ -78,22 +38,22 @@ classdef Model_H < Model
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'fluid',this.mat.fluid);
+                dof_e = this.getElementDofs(el,1);
                 if (this.enriched == false)
                     elements(el) = RegularElement_H(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLP(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 else
                     elements(el) = EnrichedElement_H(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLP(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
         end
-
 
         % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegArray(~,n)

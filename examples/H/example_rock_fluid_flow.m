@@ -27,7 +27,8 @@ Ly = 1.0;  % Vertical dimension (m)
 Nx = 2;    % Number of elements in the x-direction
 Ny = 1;    % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 %% MATERIAL CREATION
 
@@ -49,15 +50,10 @@ mdl.mat = struct('porousMedia',rock,'fluid',water);
 
 %% BOUNDARY CONDITIONS
 
-% Pore pressure
-CoordSupp  = [1 0.0 -1; 1 Lx -1];
-CoordLoad  = [];
-CoordPresc = [0.0 0.0 -1; 10.0 Lx -1];
-CoordInit  = [];
-
-% Supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = ...
-boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+mdl.setPressureDirichletBCAtNode(1,0.0);
+mdl.setPressureDirichletBCAtNode(2,0.0);
+mdl.setPressureDirichletBCAtNode(5,10.0);
+mdl.setPressureDirichletBCAtNode(6,10.0);
 
 %% PRE-PROCESS
 
