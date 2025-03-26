@@ -26,7 +26,7 @@ print_header;
 % Create model
 mdl = Model_H();
 
-%% Model Creation
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -69,18 +69,14 @@ for i = 1:size(mdl.NODE,1)
     end
 end
 
-%% ========================= INITIALIZATION ===============================
-
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
+%% MODEL CREATION
 
 % Create the result object for the analysis
 ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
 result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 
-%% ========================== RUN ANALYSIS ================================
+%% RUN ANALYSIS
 
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
@@ -92,7 +88,7 @@ anl = Anl_Transient(result,"Newton");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESSING
 
 % Print the results in the command window
 mdl.printResults();

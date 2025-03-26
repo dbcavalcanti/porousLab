@@ -57,9 +57,6 @@ mdl.setPressureDirichletBCAtNode(6,10.0);
 
 %% PRE-PROCESS
 
-% Perform the basic pre-computations associated to the model (dof definition, etc.)
-mdl.preComputations();
-
 % Create the result object for the analysis
 ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y

@@ -133,10 +133,6 @@ mdl.lumpStrategy = 2;
 
 %% ========================= INITIALIZATION ===============================
 
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
 % Plot the mesh
 mdl.plotField("Model");
 

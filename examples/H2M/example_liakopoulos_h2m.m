@@ -166,10 +166,6 @@ mdl.lumpStrategy = 2;
 
 %% ========================= INITIALIZATION ===============================
 
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
 % Initialize the stress tensor
 for el = 1:mdl.nelem
     for i = 1:mdl.element(el).type.nIntPoints

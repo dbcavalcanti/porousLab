@@ -75,9 +75,6 @@ fracture.intersectMesh(mdl);
 % Add the fracture to the model
 mdl.addPreExistingDiscontinuities(fracture);
 
-% Perform the basic pre-computations associated to the model
-mdl.preComputations();
-
 % Create the result object for the analysis
 ndPlot  = 3;
 dofPlot = 1; % 1 for X and 2 for Y
