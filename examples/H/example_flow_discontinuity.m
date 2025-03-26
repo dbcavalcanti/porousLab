@@ -27,7 +27,9 @@ Ly = 3.0;  % Vertical dimension (m)
 Nx = 5;    % Number of elements in the x-direction
 Ny = 3;    % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
+% Generate the mesh
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 % Discontinuity generation
 Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture
@@ -57,15 +59,8 @@ fracture.fluid = water;
 
 %% BOUNDARY CONDITIONS
 
-% Pore pressure
-CoordSupp  = [1 0.0 -1; 1 Lx -1];         
-CoordLoad  = [];            
-CoordPresc = [0.0 0.0 -1; 10.0 Lx -1];            
-CoordInit  = [];                   
-           
-% Supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] =...
-boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+mdl.setPressureDirichletBCAtBorder('left',0.0);
+mdl.setPressureDirichletBCAtBorder('right',10.0);
 
 %% PRE-PROCESS
 
@@ -75,15 +70,10 @@ fracture.intersectMesh(mdl);
 % Add the fracture to the model
 mdl.addPreExistingDiscontinuities(fracture);
 
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
 %% PROCESS
 
 % Solve the problem
-anl = Anl_Linear(result);
+anl = Anl_Linear();
 anl.process(mdl);
 
 %% POST-PROCESS

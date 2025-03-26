@@ -27,7 +27,8 @@ Ly = 200.0;  % Vertical dimension (m)
 Nx = 53;     % Number of elements in the x-direction
 Ny = 53;     % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 % Discontinuity generation
 fractures = [];
@@ -79,15 +80,8 @@ end
 
 %% BOUNDARY CONDITIONS
 
-% Pore pressure boundary conditions
-CoordSupp  = [1 -1 0.0; 1 -1 Ly];         
-CoordLoad  = [];            
-CoordPresc = [0.0 -1 0.0; 1000000.0 -1 Ly];            
-CoordInit  = [];                   
-           
-% Supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] =...
-boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+mdl.setPressureDirichletBCAtBorder('bottom',0.0);
+mdl.setPressureDirichletBCAtBorder('top',1000000.0);
 
 %% PRE-PROCESS
 
@@ -100,11 +94,6 @@ end
 % Add the fracture to the model
 mdl.addPreExistingDiscontinuities(fractures);
 
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
 %% PROCESS
 
 % Transient analysis parameters
@@ -113,7 +102,7 @@ dt    = 1.0;   % Time step
 tf    = 127.0;  % Final time
 
 % Solve the problem
-anl = Anl_Transient(result,"Newton");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(tinit,dt,tf,500.0,0.001,true);
 anl.process(mdl);
 
