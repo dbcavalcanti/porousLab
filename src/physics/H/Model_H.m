@@ -1,4 +1,4 @@
-%% Model_H2 class
+%% Model_H class
 %
 % Single-phase fluid flow finite element model.
 %

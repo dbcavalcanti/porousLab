@@ -13,15 +13,6 @@
 classdef Model_M < Model   
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        %% Degrees of freedom vectors
-        % Matrix with the dofs of each type of each element
-        GLU                 = [];
-        %% Matrix indicating the Dirichlet BCs 
-        SUPP_u              = [];
-        %% Matrix with the prescribed BC values 
-        PRESCDISPL_u        = [];
-        %% Matrix with the Neumann BCs
-        LOAD_u              = [];
         %% Model data
         isPlaneStress       = false;
         %% Embedded related data
@@ -43,38 +34,6 @@ classdef Model_M < Model
     methods
 
         %------------------------------------------------------------------
-        function SUPP = dirichletConditionMatrix(this)
-            SUPP = this.SUPP_u;  
-        end
-
-        %------------------------------------------------------------------
-        function LOAD = neumannConditionMatrix(this)
-            LOAD = this.LOAD_u;  
-        end
-
-        %------------------------------------------------------------------
-        function INITCOND = initialConditionMatrix(this)
-            INITCOND_u = zeros(this.nnodes,2);
-            INITCOND = INITCOND_u;  
-        end
-
-        %------------------------------------------------------------------
-        function PRESCDISPL = prescribedDirichletMatrix(this)
-            PRESCDISPL = this.PRESCDISPL_u;  
-        end
-
-        %------------------------------------------------------------------
-        function assembleElementDofs(this)
-
-            this.GLU = zeros(this.nelem, this.nnd_el*2);
-            for el = 1:this.nelem
-                this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
-                    this.nnd_el*2);
-            end
-
-        end
-
-        %------------------------------------------------------------------
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -85,16 +44,17 @@ classdef Model_M < Model
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'lc',this.getElementCharacteristicLength(el));
+                dof_e = this.getElementDofs(el,[1,2]);
                 if (this.enriched == false)
                     elements(el) = RegularElement_M(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLU(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress);
                 else
                     elements(el) = EnrichedElement_M(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLU(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
                 end
@@ -102,7 +62,96 @@ classdef Model_M < Model
             end
             this.element = elements;
             
-        end   
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function addLoadAtBorder(this, border, dir, p)
+            % Get reference point at the border
+            % Get the nodes at the given border
+            if strcmp(border,'left')
+                ref = min(this.NODE(:,1));
+            elseif strcmp(border,'right')
+                ref = max(this.NODE(:,1));
+            elseif strcmp(border,'top')
+                ref = max(this.NODE(:,2));
+            elseif strcmp(border,'bottom')
+                ref = min(this.NODE(:,2));
+            else
+                disp('Warning: non-supported border.');
+                disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+            end
+            % Get number of linear interpolation points
+            nLinNodes = this.nnd_el;
+            quadMesh  = false;
+            if strcmp(this.type,'LST') || strcmp(this.type,'ISOQ8')
+                nLinNodes = nLinNodes / 2;
+                quadMesh  = true;
+            end
+            for el = 1:this.nelem 
+                % Get the number of edges of the element
+                nEdges = nLinNodes;
+            
+                % Get the coordinates of the element
+                cX = [this.NODE(this.ELEM(el,1:nLinNodes),1); this.NODE(this.ELEM(el,1),1)];
+                cY = [this.NODE(this.ELEM(el,1:nLinNodes),2); this.NODE(this.ELEM(el,1),2)];
+            
+                % Get the nodes of the borders
+                NdBorders = [this.ELEM(el,1:nLinNodes), this.ELEM(el,1)];
+            
+                % Loop through the edges of the element
+                for j = 1:nEdges
+            
+                    % coordinates of the edge
+                    edgeX = [cX(j) , cX(j+1)];
+                    edgeY = [cY(j) , cY(j+1)];
+            
+                    % select the edge
+                    if dir == 1
+                        edge = edgeX;
+                    elseif dir == 2
+                        edge = edgeY;
+                    end
+            
+                    % check if the edge belong to the boundary
+                    if norm(edge-ref) < 1.0e-12
+                        
+                        % Compute the length of the edge
+                        dx = edgeX(2) - edgeX(1);
+                        dy = edgeY(2) - edgeY(1);
+                        l = sqrt(dx*dx + dy*dy);
+            
+                        % id of the nodes of the edge
+                        idNds = [NdBorders(j); NdBorders(j+1)];
+            
+                        % Equivalent nodal load
+                        if quadMesh == false
+                            feq = [0.5*p*l;0.5*p*l];
+                        else
+                            feq = [p*l;p*l;4.0*p*l]/6.0;
+                            idNds = [idNds; this.ELEM(el,j+nLinNodes)];
+                        end
+            
+                        % Add contribution to the LOAD matrix
+                        this.LOAD(idNds,dir) = this.LOAD(idNds,dir) + feq;
+                    end
+                end
+            end
+        end
 
         % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegArray(~,n)

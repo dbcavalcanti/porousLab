@@ -20,6 +20,8 @@ classdef Anl_Linear < Anl
         % Process model data to compute results.
         function process(~,mdl)
 
+            disp("*** Initializing linear analysis...")
+
             % Initialize the model object
             mdl.preComputations();
 
@@ -42,6 +44,8 @@ classdef Anl_Linear < Anl
             % Call it again to update the state variables
             mdl.globalMatrices(mdl.U);
             mdl.updateStateVar();
+
+            disp("*** Analysis completed!")
         end
 
     end

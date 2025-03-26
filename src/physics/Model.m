@@ -150,15 +150,15 @@ classdef Model < handle
         
         %------------------------------------------------------------------
         function setDirichletBCAtNode(this, nodeId, dofId, value)
-            this.DIRICHLET_TAG(nodeId,dofId) = 1;
-            this.DIRICHLET_VAL(nodeId,dofId) = value;
+            this.DIRICHLET_TAG(nodeId,dofId) = repmat( ~isnan(value), sum(nodeId), 1);
+            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
         end
 
         %------------------------------------------------------------------
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
-            this.DIRICHLET_TAG(nodeId,dofId) = 1;
-            this.DIRICHLET_VAL(nodeId,dofId) = value;
+            this.DIRICHLET_TAG(nodeId,dofId) = repmat( ~isnan(value), sum(nodeId), 1);
+            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
         end
 
         %------------------------------------------------------------------
@@ -176,8 +176,8 @@ classdef Model < handle
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
             end
-            this.DIRICHLET_TAG(nodeId,dofId) = 1;
-            this.DIRICHLET_VAL(nodeId,dofId) = value;
+            this.DIRICHLET_TAG(nodeId,dofId) = repmat(~isnan(value), sum(nodeId), 1);
+            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
         end
         
         %------------------------------------------------------------------
@@ -215,7 +215,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function dof = getElementDofs(this,el,dofId)
-            dof = (this.ID(this.ELEM(el,:),dofId))';
+            dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
@@ -565,7 +565,7 @@ classdef Model < handle
             for i = 1:this.nnodes
                 fprintf("  %4d: \t",i);
                 for j = 1:this.ndof_nd
-                    fprintf("  %8.4f ",this.U(this.ID(i,j)))
+                    fprintf("  %8.4e ",this.U(this.ID(i,j)))
                 end
                 fprintf("\n");
             end

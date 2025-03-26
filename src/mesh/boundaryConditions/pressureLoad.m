@@ -25,9 +25,7 @@ if (nLinNodes == 6) || (nLinNodes == 8)
     quadMesh = true;
 end
 
-
 for el = 1:nElem 
-
     % Get the number of edges of the element
     nEdges = nLinNodes;
 
@@ -38,7 +36,7 @@ for el = 1:nElem
     % Get the nodes of the borders
     NdBorders = [ELEM(el,1:nLinNodes), ELEM(el,1)];
 
-    % Loop through the edges of the element ---------------------------
+    % Loop through the edges of the element
     for j = 1:nEdges
 
         % coordinates of the edge
@@ -70,7 +68,6 @@ for el = 1:nElem
                 feq = [p*l;p*l;4.0*p*l]/6.0;
                 idNds = [idNds; ELEM(el,j+nLinNodes)];
             end
-
 
             % Add contribution to the LOAD matrix
             LOAD(idNds,dir) = LOAD(idNds,dir) + feq;
