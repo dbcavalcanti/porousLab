@@ -197,7 +197,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function dof = getElementDofs(this,el,dofId)
-            dof = this.ID(this.ELEM(el,:),dofId);
+            dof = (this.ID(this.ELEM(el,:),dofId))';
         end
 
         %------------------------------------------------------------------
