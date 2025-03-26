@@ -69,13 +69,6 @@ for i = 1:size(mdl.NODE,1)
     end
 end
 
-%% MODEL CREATION
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
 %% RUN ANALYSIS
 
 % Transient analysis parameters
@@ -84,7 +77,7 @@ dt    = 1.0;   % Time step
 tf    = 500;  % Final time
 
 % Solve the problem
-anl = Anl_Transient(result,"Newton");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.process(mdl);
 

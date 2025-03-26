@@ -8,8 +8,8 @@ classdef Anl_Linear < Anl
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = Anl_Linear(result)
-            this = this@Anl('Linear',result);
+        function this = Anl_Linear()
+            this = this@Anl('Linear');
         end
     end
     
