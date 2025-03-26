@@ -81,7 +81,6 @@ classdef Model_M < Model
 
         % -----------------------------------------------------------------
         function addLoadAtBorder(this, border, dir, p)
-            % Get reference point at the border
             % Get the nodes at the given border
             if strcmp(border,'left')
                 ref = min(this.NODE(:,1));

@@ -53,7 +53,7 @@ mdl.addLoadAtBorder('right', 1, 2.0e6);
 anl = Anl_Linear();
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POS-PROCESSING
 
 mdl.printResults();
 mdl.plotField('Ux');

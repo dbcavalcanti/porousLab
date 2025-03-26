@@ -8,7 +8,6 @@
 %
 % Initialize workspace
 clear
-initWorkspace; 
 
 %% ============================= MATERIAL =================================
 
@@ -56,18 +55,18 @@ for i = 1:ninc
     pstrainplot(i+1) = ip.plasticstrain(idplot);
 end
 
-%  --- Tensão vs. deformação total ----------------------------------------
+%  --- Stress vs. total strain --------------------------------------------
 figure
 grid on, box on, hold on
 tauy = rock.sy0 / sqrt(3.0);
 plot(strainplot,stressplot/tauy,'b-','LineWidth',1.5);
-xlabel('$\gamma_{xy}$'); ylabel('$\tau_{xy}$/$\tau_Y$');
+xlabel('\gamma_{xy}'); ylabel('\tau_{xy}/\tau_Y');
 set(gca,'fontsize',18,'TickLabelInterpreter','latex');
 
-% --- Tensão vs. deformação plástica --------------------------------------
+%  --- Stress vs. plastic strain ------------------------------------------
 figure
 grid on, box on, hold on
 plot(pstrainplot,stressplot/tauy,'r-','LineWidth',1.5);
-xlabel('$\gamma_{xy}^p$'); ylabel('$\tau_{xy}$/$\tau_Y$'); 
+xlabel('\gamma_{xy}^p'); ylabel('\tau_{xy}/\tau_Y'); 
 set(gca,'fontsize',18,'TickLabelInterpreter','latex');
 

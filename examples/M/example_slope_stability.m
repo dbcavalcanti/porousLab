@@ -1,31 +1,24 @@
 %% ====================== Slope stability problem =========================
 %
-% Elastoplastic pressurized cylinder example.
-%
 % Author: Danilo Cavalcanti
 %
 %% ========================================================================
-%
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+close all; clear; clc;
+
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+%% MODEL CREATION
 
 mdl = Model_M();
 
 % --- Mesh of continuum elements ------------------------------------------
 load('NODE'); load('ELEM');
-mdl.NODE = NODE;
-mdl.ELEM = ELEM;
+mdl.setMesh(NODE,ELEM);
 
-% Type of elements
-mdl.type = 'ISOQ4';
-
-% Thickness (m)
-mdl.t = 1.0;
-
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the porous media
 rock = PorousMedia('rock');
@@ -41,50 +34,19 @@ rock.gravityOn = true;
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
 
-%% ======================= BOUNDARY CONDITIONS ============================
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary conditions -------------------------------------------------
 
-% Displacement boundary conditions
-CoordSupp  = [1 0 0 -1;
-              1 0 75.0 -1;
-              1 1 -1 0];
-CoordLoad  = [];
-CoordPresc = [];                                   
-           
-% Define supports and loads
-[mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, 1.0, 1.0, 100, 100);
+mdl.setDisplacementDirichletBCAtBorder('left',  [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('right', [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
 
-%% ===================== MODEL CONFIGURATION ==============================
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
+%% RUN ANALYSIS
 
-%% ========================= INITIALIZATION ===============================
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
-
-% Solve the problem
-anl = Anl_Linear(result);
-% anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,2.0,100,100,4,1.0e-5);
+anl = Anl_Linear();
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POS-PROCESSING
 
-% Plot pressure along a segment
-Xi  = [0.0 , min(mdl.NODE(:,2))];
-Xf  = [0.0 , max(mdl.NODE(:,2))];
-npts = 500;
-% mdl.plotDeformedMesh(1.0);
-% mdl.plotField('S1');
-% mdl.plotField('Ux');
-% mdl.plotField('Sx');
-% mdl.plotField('Sy');
 mdl.plotField('Sxy');
 

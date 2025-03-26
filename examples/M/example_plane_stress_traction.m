@@ -51,8 +51,15 @@ mdl.addLoadAtBorder('right', 1, 2.0e6);
 
 %% RUN ANALYSIS
 
-% Solve the problem
+% Set the analysis
 anl = Anl_Nonlinear('ArcLengthCylControl',true,0.01,200,15,100,4,1.0e-5);
+
+% Define the node and dof that will be used to plot the load factor vs.
+% displacement curve
+ndId = mdl.closestNodeToPoint([Lx,0.0]);
+anl.setPlotDof(ndId,1)
+
+% Run the analysis
 anl.process(mdl);
 
 %% POS-PROCESSING

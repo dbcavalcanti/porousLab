@@ -28,6 +28,8 @@ classdef Anl_Nonlinear < Anl
         ctrlNode   = 0;   % control node (for displacement control method)
         ctrlDof    = 0;   % control dof (for displacement control method)
         incrSign   = 0;   % sign of the increment of displacement
+        plotNd     = 1;   % node that will be plotted the dof
+        plotDof    = 1;   % dof (ux,uy) that will plotted
         Uplot      = [];  % matrix of nodal displacement vectors of all steps/modes
         lbdplot    = [];  % vector of load ratios of all steps
     end
@@ -37,10 +39,7 @@ classdef Anl_Nonlinear < Anl
         %------------------------------------------------------------------
         function anl = Anl_Nonlinear(method,adjustStep,increment,...
                 max_lratio,max_step,max_iter,trg_iter,tol)
-            
-            if nargin < 1, result = 0; end
             anl = anl@Anl('Nonlinear');
-
             % Default analysis configuration
             if nargin == 1
                 anl.method     = 'LoadControl';
@@ -51,7 +50,6 @@ classdef Anl_Nonlinear < Anl
                 anl.max_iter   = 10;
                 anl.trg_iter   = 3;
                 anl.tol        = 0.00001;
-            
             else
             % User given analysis set up
                 anl.method     = method;
@@ -63,9 +61,6 @@ classdef Anl_Nonlinear < Anl
                 anl.trg_iter   = trg_iter;
                 anl.tol        = tol;
             end
-
-            % For the displacement control method
-            anl.ctrlDof = result.dof;
         end
     end
     
@@ -223,7 +218,7 @@ classdef Anl_Nonlinear < Anl
                 
                 % Store step results
                 anl.lbdplot(step+1) = lbd;
-                anl.Uplot(step+1) = U(res.dof);
+                anl.Uplot(step+1) = U(mdl.ID(anl.plotNd,anl.plotDof));
                 
                 % Store predicted tangent increment of displacements for next step
                 if (step ~= 1)
@@ -247,6 +242,12 @@ classdef Anl_Nonlinear < Anl
 
             mdl.U = U;
 
+        end
+
+        %------------------------------------------------------------------
+        function setPlotDof(this,nd,dof)
+            this.plotNd  = nd;
+            this.plotDof = dof;
         end
 
         %------------------------------------------------------------------

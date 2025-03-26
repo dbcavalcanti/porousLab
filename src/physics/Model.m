@@ -165,13 +165,13 @@ classdef Model < handle
         function setDirichletBCAtBorder(this, border, dofId, value)
             % Get the nodes at the given border
             if strcmp(border,'left')
-                nodeId = this.NODE(:,1) == min(this.NODE(:,1));
+                nodeId = abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12;
             elseif strcmp(border,'right')
-                nodeId = this.NODE(:,1) == max(this.NODE(:,1));
+                nodeId = abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12;
             elseif strcmp(border,'top')
-                nodeId = this.NODE(:,2) == max(this.NODE(:,2));
+                nodeId = abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12;
             elseif strcmp(border,'bottom')
-                nodeId = this.NODE(:,2) == min(this.NODE(:,2));
+                nodeId = abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12;
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
