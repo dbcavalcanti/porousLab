@@ -1,16 +1,29 @@
-%% ================ Two-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% McWhorter and Sunada problem using the Pc-Pg two-phase flow formulation
 %
-%% ========================================================================
+% Reference:
+% D.B. McWhorter and D.K. Sunada. Exact integral solutions for
+% two-phase flow. Water Resources Research, 26(3):399–413, 1990.
 %
-% Initialize workspace
-clear
-initWorkspace; 
+% Physics:
+% * Two-phase hydraulic (H2)
 %
-%% ========================== MODEL CREATION ==============================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+%
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H2_PcPg();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -21,23 +34,26 @@ Nx = 260;      % Number of elements in the x-direction
 Ny = 1;        % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-% Type of elements
-mdl.type = 'ISOQ4';
-
-% Thickness (m)
-mdl.t = 1.0;
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 % --- Material properties of the domain -----------------------------------
 
 % Create the fluids
-water = Fluid('water',1000.0,1.0e-3,1.0e25);
-gas   = Fluid('gas'  ,1000.0,1.0e-3,1.0e25);
+water = Fluid('water');
+gas   = Fluid('gas');
 
-rock = PorousMedia('rock',1.0e-10,0.3,1.0,1.0e25,0.0,0.0,5.0e3,2.0,'BrooksCorey','BrooksCorey','BrooksCorey');
-rock.setMinLiquidRelPermeability(1.0e-9);
-rock.setMinGasRelPermeability(1.0e-9);
+% Create the porous media
+rock = PorousMedia('rock');
+rock.K      = 1.0e-10;                       % Intrinsic permeability (m2)
+rock.phi    = 0.3;                           % Porosity
+rock.Slr    = 0.0;                           % Residual liquid saturation
+rocK.Sgr    = 0.0;                           % Residual gas saturation
+rock.Pb     = 5.0e3;                         % Gas-entry pressure
+rock.lambda = 2.0;                           % Curve-fitting parameter
+rock.liqRelPermeability = 'BrooksCorey';
+rock.gasRelPermeability = 'BrooksCorey';
+rock.capillaryPressure  = 'BrooksCorey';
 
 % Material parameters vector
 % Same material for all elements
@@ -46,66 +62,38 @@ mdl.mat  = struct( ...
     'liquidFluid',water,...
     'gasFluid',gas);
 
-% --- Boundary conditions -------------------------------------------------
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary and initial conditions -------------------------------------
 
-% Capillary pressure boundary conditions
-CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
-CoordLoad  = [];                      % [q cx cy] If cx,cy<0, line [m3/s]
-CoordPresc = [5.0e3 0 -1];            % [p cx cy] If cx,cy<0, line [kPa]
-CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 50.0e3*ones(size(mdl.INITCOND_p,1),1);
+% Dirichlet boundary conditions
+mdl.setCapillaryPressureDirichletBCAtBorder('left',5.0e3);
+mdl.setGasPressureDirichletBCAtBorder('left',200.0e3);
 
-% Gas pressure boundary conditions
-CoordSupp  = [1 0 -1];                % [r cx cy] If cx,cy<0, line              
-CoordLoad  = [];                      % [q cx cy] If cx,cy<0, line [m3/s]
-CoordPresc = [200.0e3 0 -1];          % [p cx cy] If cx,cy<0, line [kPa]
-CoordInit  = [];                      % [p cx cy] If cx,cy<0, line [kPa]
-           
-% Define supports and loads
-[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+% Initial conditions
+mdl.setInitialCapillaryPressureAtDomain(50.0e3);
 
-% --- Order of the integration rule for the domain ------------------------
+% --- Numerical model configuration ---------------------------------------
 
-% Using Gauss quadrature
 mdl.intOrder = 3;
 
-% Diagonalize compressibility matrix
+% Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
 mdl.lumpStrategy = 2;
 
-%% ========================= INITIALIZATION ===============================
-
-% Plot the mesh with the supports
-% mdl.plotMeshWithBC();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
-tinit = 0.1;   % Initial time
-dt    = 0.1;   % Time step
-tf    = 50;  % Final time
+tinit = 0.1;          % Initial time
+dt    = 0.1;          % Time step
+tf    = 50;           % Final time
+dtmax = 0.1;          % Maximum time step
+dtmin = 0.0000001;    % Minimum time step
 
 % Solve the problem
-anl = Anl_Transient(result,"Picard");
-anl.setUpTransientSolver(tinit,dt,tf,0.1,0.0000001,true);
+anl = Anl_Transient("Picard");
+anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
-
-% Print the results in the command window
-mdl.printResults();
+%% POST-PROCESS
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
