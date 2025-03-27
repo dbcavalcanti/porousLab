@@ -11,11 +11,14 @@
 classdef Model_H < Model    
     %% Constructor method
     methods
-        function this = Model_H()
+        function this = Model_H(printFlag)
+            if nargin == 0, printFlag = true; end
             this = this@Model();
             this.ndof_nd = 1;       % Number of dofs per node
             this.physics = 'H';     % Tag with the physics name
-            disp("*** Physics: Single-phase fluid flow");
+            if (printFlag)
+                disp("*** Physics: Single-phase fluid flow");
+            end
         end
     end
     

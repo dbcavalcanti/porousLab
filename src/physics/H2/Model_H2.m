@@ -13,7 +13,7 @@ classdef Model_H2 < Model_H
     %% Constructor method
     methods
         function this = Model_H2()
-            this = this@Model_H();
+            this = this@Model_H(false);
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'H2';    % Tag with the physics name
             disp("*** Physics: Two-phase fluid flow");
