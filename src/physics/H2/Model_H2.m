@@ -62,6 +62,11 @@ classdef Model_H2 < Model_H
         end
 
         % -----------------------------------------------------------------
+        function setInitialGasPressureAtDomain(this, value)
+            this.setInitialDofAtDomain(2, value);
+        end
+
+        % -----------------------------------------------------------------
         function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);

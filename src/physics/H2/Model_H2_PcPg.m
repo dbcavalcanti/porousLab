@@ -32,13 +32,35 @@ classdef Model_H2_PcPg < Model_H2
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'liquidFluid',this.mat.liquidFluid,...
                         'gasFluid',this.mat.gasFluid);
+                pc_dofs = this.getElementDofs(el,1);
+                pg_dofs = this.getElementDofs(el,2);
                 elements(el) = RegularElement_H2_PcPg(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, emat, this.intOrder,this.GLP(el,:),this.GLPg(el,:), ...
+                            this.t, emat, this.intOrder,pc_dofs,pg_dofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
+        end
+
+        % -----------------------------------------------------------------
+        function setCapillaryPressureDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setCapillaryPressureDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setCapillaryPressureDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialCapillaryPressureAtDomain(this, value)
+            this.setInitialDofAtDomain(1, value);
         end
 
     end
