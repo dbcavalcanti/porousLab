@@ -115,7 +115,7 @@ mdl.setInitialGasPressureAtDomain(369.73);
 
 % --- Order of the integration rule for the domain ------------------------
 
-mdl.intOrder = 3;
+mdl.intOrder = 2;
 
 % Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
@@ -124,7 +124,7 @@ mdl.lumpStrategy = 2;
 %% PROCESS
 
 % Transient analysis parameters
-tinit = 0.01;   % Initial time
+tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
 tf    = 100;    % Final time
 
