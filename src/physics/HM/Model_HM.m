@@ -63,6 +63,11 @@ classdef Model_HM < Model_M
         end
 
         % -----------------------------------------------------------------
+        function setInitialPressureAtDomain(this, value)
+            this.setInitialDofAtDomain(3, value);
+        end
+
+        % -----------------------------------------------------------------
         % Plot the mesh with the boundary conditions
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end

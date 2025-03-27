@@ -66,6 +66,11 @@ classdef Model_H < Model
         end
 
         % -----------------------------------------------------------------
+        function setInitialPressureAtDomain(this, value)
+            this.setInitialDofAtDomain(1, value);
+        end
+
+        % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegArray(~,n)
             seg(n,1) = DiscontinuityElement_H([],[]);
         end
