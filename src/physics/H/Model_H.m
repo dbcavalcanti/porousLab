@@ -5,8 +5,7 @@
 % Each node has one degree of freedom (dof) which is the pore-pressure (p)
 %
 %% Author
-% Danilo Cavalcanti
-%
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class definition
 classdef Model_H < Model    
@@ -88,27 +87,6 @@ classdef Model_H < Model
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        %------------------------------------------------------------------
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
         end
 
     end

@@ -6,8 +6,7 @@
 % - 2 displacement components (ux,uy)
 %
 %% Author
-% Danilo Cavalcanti
-%
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class definition
 classdef Model_M < Model   
@@ -235,70 +234,13 @@ classdef Model_M < Model
                     end
                 end
                 this.element(el).type.result.setVertices(vertices);
-
-            end
-            
-        end
-
-        %------------------------------------------------------------------
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
             end
         end
-
     end
-        %% Static methods
+    %% Static methods
     methods (Static)
 
         % -----------------------------------------------------------------
-        % Print header of the results
         function printResultsHeader()
             fprintf('\n  Node           ux        uy\n');
         end

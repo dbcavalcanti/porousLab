@@ -7,8 +7,7 @@
 % - 1 pore pressure (p)
 %
 %% Author
-% Danilo Cavalcanti
-%
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class definition
 classdef Model_HM < Model_M     
@@ -68,94 +67,7 @@ classdef Model_HM < Model_M
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        %------------------------------------------------------------------
-        % Update the result nodes coordinates of each element
-        function updateResultVertices(this,configuration,factor)
-            
-            for el = 1:this.nelem
-                
-                % Initialize the vertices array
-                vertices = this.element(el).type.result.vertices0;
-
-                % Get the updated vertices:
-                if strcmp(configuration,'Deformed')
-
-                    % Update the nodal displacement vector associated to the
-                    % element. This displacement can contain the enhancement
-                    % degrees of freedom.
-                    this.element(el).type.ue = this.U(this.element(el).type.gle); 
-
-                    % Update the vertices based on the displacement vector
-                    % associated to the element
-                    for i = 1:length(this.element(el).type.result.faces)
-                        X = vertices(i,:);
-                        u = this.element(el).type.displacementField(X);
-                        vertices(i,:) = X + factor*u';
-                    end
-                end
-                this.element(el).type.result.setVertices(vertices);
-
-            end
-            
-        end
-
-        %------------------------------------------------------------------
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
+            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts, axisPlot);
         end
 
     end

@@ -5,7 +5,6 @@
 %% Author
 % Danilo Cavalcanti
 %
-%
 %% Class definition
 classdef Model < handle    
     %% Public attributes
@@ -56,9 +55,6 @@ classdef Model < handle
 
         % Initialize the elements objects
         initializeElements(this);
-
-        % Set the fields available for visualization
-        updateResultVertexData(this,type);
 
         % Configure the header to printed when printing results
         printResultsHeader();
@@ -307,6 +303,77 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Update the result nodes data of each element
+        function updateResultVertexData(this,type)
+            for el = 1:this.nelem
+                % Update the nodal displacement vector associated to the
+                % element. This displacement can contain the enhancement
+                % degrees of freedom.
+                this.element(el).type.ue = this.U(this.element(el).type.gle); 
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                for i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    if strcmp(type,'Model')
+                        vertexData(i) = this.matID(el);
+                    elseif strcmp(type,'Pressure')
+                        p = this.element(el).type.pressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'Ux')
+                        u = this.element(el).type.displacementField(X);
+                        vertexData(i) = u(1);
+                    elseif strcmp(type,'Uy')
+                        u = this.element(el).type.displacementField(X);
+                        vertexData(i) = u(2);
+                    elseif strcmp(type,'E1')
+                        s = this.element(el).type.strainField(X);
+                        sp = this.element(el).type.principalStrain(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'PEMAG')
+                        pe = this.element(el).type.plasticstrainMagnitude(X);
+                        vertexData(i) = pe;
+                    elseif strcmp(type,'Sx')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(1);
+                    elseif strcmp(type,'Sy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(2);
+                    elseif strcmp(type,'Sxy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(3);
+                    elseif strcmp(type,'S1')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'S2')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(2);
+                    elseif strcmp(type,'Sr')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.stressCylindrical(s,X);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'LiquidPressure')
+                        p = this.element(el).type.pressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'CapillaryPressure')
+                        p = this.element(el).type.capillaryPressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'GasPressure')
+                        p = this.element(el).type.gasPressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'LiquidSaturation')
+                        Sl = this.element(el).type.liquidSaturationField(X);
+                        vertexData(i) = Sl;
+                    elseif strcmp(type,'GasSaturation')
+                        Sg = this.element(el).type.gasSaturationField(X);
+                        vertexData(i) = Sg;
+                    end
+                end
+                this.element(el).type.result.setVertexData(vertexData);
+            end
+        end
+
+        %------------------------------------------------------------------
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
@@ -453,15 +520,12 @@ classdef Model < handle
             counterK = 0;
             counterF = 0;
 
-            % Update the element displacement vector of each element
+            % Compute and assemble element data
             for el = 1:this.nelem
+                % Update the element displacement vector of each element
                 this.element(el).type.DTime = dt;
                 this.element(el).type.ue    = U(this.element(el).type.gle);
                 this.element(el).type.ueOld = UOld(this.element(el).type.gle);
-            end
-            
-            % Compute and assemble element data
-            for el = 1:this.nelem
 
                 % Get the vector of the element dof  
                 gle_i  = this.element(el).type.gle;
