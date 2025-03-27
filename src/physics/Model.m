@@ -150,34 +150,49 @@ classdef Model < handle
         
         %------------------------------------------------------------------
         function setDirichletBCAtNode(this, nodeId, dofId, value)
-            this.DIRICHLET_TAG(nodeId,dofId) = ~isnan(value);
-            this.DIRICHLET_VAL(nodeId,dofId) = value;
+            if (length(dofId) ~= length(value))
+                disp('Error prescribing Dirichlet BC at a node');
+                disp('length(dofId) ~= length(value)');
+                error('Error in setDirichletBCAtNode');
+            end
+            for i = 1:length(dofId)
+                if ( this.DIRICHLET_TAG(nodeId,dofId(i)) == 0)
+                    this.DIRICHLET_TAG(nodeId,dofId(i)) = ~isnan(value(i));
+                    this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                else
+                    if ((this.DIRICHLET_VAL(nodeId,dofId(i)) ~= value(i)) && ~isnan(value(i)))
+                        disp([' ** Warning: this node had a different prescribed value:',num2str(nodeId)])
+                        this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                    end
+                end
+            end
         end
 
         %------------------------------------------------------------------
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
-            this.DIRICHLET_TAG(nodeId,dofId) = ~isnan(value);
-            this.DIRICHLET_VAL(nodeId,dofId) = value;
+            this.setDirichletBCAtNode(nodeId,dofId,value);
         end
 
         %------------------------------------------------------------------
         function setDirichletBCAtBorder(this, border, dofId, value)
             % Get the nodes at the given border
             if strcmp(border,'left')
-                nodeId = abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12;
+                nodeId = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
             elseif strcmp(border,'right')
-                nodeId = abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12;
+                nodeId = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
             elseif strcmp(border,'top')
-                nodeId = abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12;
+                nodeId = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
             elseif strcmp(border,'bottom')
-                nodeId = abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12;
+                nodeId = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+                return;
             end
-            this.DIRICHLET_TAG(nodeId,dofId) = repmat(~isnan(value), sum(nodeId), 1);
-            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
+            for i = 1:length(nodeId)
+                this.setDirichletBCAtNode(nodeId(i),dofId,value);
+            end
         end
 
         %------------------------------------------------------------------

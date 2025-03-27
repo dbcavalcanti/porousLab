@@ -45,9 +45,9 @@ mdl.mat  = struct( ...
 % --- Boundary conditions -------------------------------------------------
 
 % Displacement boundary conditions
+mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
 mdl.setDisplacementDirichletBCAtBorder('left',  [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right', [0.0, NaN]);
-mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
 
 % Apply pressure at the top (Pa)
 mdl.addLoadAtBorder('top', 2, -1.0e4);
