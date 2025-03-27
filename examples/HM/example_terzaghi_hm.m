@@ -40,8 +40,8 @@ mdl.mat  = struct( ...
 % --- Boundary conditions -------------------------------------------------
 
 % Displacement boundary conditions
-mdl.setDisplacementDirichletBCAtBorder('left',  [NaN, 0.0]);
-mdl.setDisplacementDirichletBCAtBorder('right', [NaN, 0.0]);
+mdl.setDisplacementDirichletBCAtBorder('left',  [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('right', [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
 
 % Apply pressure at the top (Pa)
@@ -66,7 +66,7 @@ anl.process(mdl);
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
-Xf  = [0.0 , Ly];
+Xf  = [0.0 , 1.0];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
 mdl.plotField('Pressure');
