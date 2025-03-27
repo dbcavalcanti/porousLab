@@ -1,17 +1,20 @@
-%% ========================================================================
+%% DESCRIPTION
 %
 % Script to test and validate mechanical constitutive models
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
+%% INITIALIZATION
 
-%% ============================= MATERIAL =================================
+close all; clear; clc;
 
-% Create the porous media
+%% MODEL CREATION
+
+% --- Material properties of the domain -----------------------------------
 rock = PorousMedia('rock');
 rock.mechanical = 'vonMises'; % Elastoplastic with von Mises criteria 
 rock.Young = 2.0e8;           % Young modulus (Pa)
@@ -22,12 +25,12 @@ rock.Kp    = 0.0;             % Plastic modulus (Pa)
 % Material parameters vector
 mat  = struct('porousMedia',rock);
 
-%% ============== INITIALIZE THE INTEGRATION POINT ========================
+% --- Integration point initialization ------------------------------------
 
 ip = IntPoint([0.0,0.0],1.0,  Material_M(mat));
 ip.initializeMechanicalAnalysisModel('PlaneStrain');
 
-%% ========================= STRAIN INCREMENT =============================
+%% RUN ANALYSIS
 
 % Direction of the strain increment
 dstrain0 = [0.0;  % exx
@@ -55,6 +58,8 @@ for i = 1:ninc
     pstrainplot(i+1) = ip.plasticstrain(idplot);
 end
 
+%% POS-PROCESSING
+
 %  --- Stress vs. total strain --------------------------------------------
 figure
 grid on, box on, hold on
@@ -69,4 +74,3 @@ grid on, box on, hold on
 plot(pstrainplot,stressplot/tauy,'r-','LineWidth',1.5);
 xlabel('\gamma_{xy}^p'); ylabel('\tau_{xy}/\tau_Y'); 
 set(gca,'fontsize',18,'TickLabelInterpreter','latex');
-

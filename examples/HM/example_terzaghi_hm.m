@@ -1,10 +1,14 @@
-%% ================ Terzaghi consolidation problem ========================
+%% DESCRIPTION
 %
-% Hydromechanical with single-phase flow validation problem
+% Terzaghi consolidation problem.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Hydromechanical with single-phase flow (HM)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+%
+%% INITIALIZATION
 close all; clear; clc;
 
 % Path to source directory
@@ -12,15 +16,16 @@ src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
 addpath(genpath(src_dir));
 print_header;
 
-%% ============================== MESH  ===================================
-
 mdl = Model_HM();
 
-% Generate the mesh
+%% MODEL CREATION
+
+% --- Mesh of continuum elements ------------------------------------------
+
 [node,elem] = regularMesh(0.1, 1.0, 5, 50);
 mdl.setMesh(node,elem);
 
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the fluids
 water = Fluid('water');
@@ -50,7 +55,7 @@ mdl.addLoadAtBorder('top', 2, -1.0e4);
 % Liquid pressure boundary conditions
 mdl.setPressureDirichletBCAtBorder('top',0.0);
 
-%% ========================== RUN ANALYSIS ================================
+%% RUN ANALYSIS
 
 % Transient analysis parameters
 tinit = 1.0;          % Initial time
@@ -62,7 +67,7 @@ anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(tinit,dt,tf);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESSING
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];

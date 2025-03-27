@@ -1,10 +1,14 @@
-%% ================= Pressurized cylinder problem =========================
+%% DESCRIPTION
 %
 % Elastoplastic pressurized cylinder example.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+%
+%% INITIALIZATION
 close all; clear; clc;
 
 % Path to source directory
@@ -12,8 +16,9 @@ src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
 addpath(genpath(src_dir));
 print_header;
 
-%% MODEL CREATION
 mdl = Model_M();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 

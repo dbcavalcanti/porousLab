@@ -80,6 +80,16 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
+        function addLoadAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function addLoadAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
         function addLoadAtBorder(this, border, dir, p)
             % Get the nodes at the given border
             if strcmp(border,'left')

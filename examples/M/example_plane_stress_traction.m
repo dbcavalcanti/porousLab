@@ -1,10 +1,14 @@
-%% ===================== Elastic plate problem ============================
+%% DESCRIPTION
 %
-% Elastic traction of a elastic plate validation problem
+% Uniform traction on a plate with an isotropic damage model
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+%
+%% INITIALIZATION
 close all; clear; clc;
 
 % Path to source directory
@@ -12,9 +16,9 @@ src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
 addpath(genpath(src_dir));
 print_header;
 
-%% MODEL CREATION
-
 mdl = Model_M();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -22,7 +26,7 @@ mdl = Model_M();
 Lx = 0.11;     % Horizontal dimension (m)
 Ly = 0.04;     % Vertical dimension (m)
 Nx = 22;       % Number of elements in the x-direction
-Ny = 8;       % Number of elements in the y-direction
+Ny = 8;        % Number of elements in the y-direction
 
 % Generate the mesh
 [node,elem] = regularMesh(Lx, Ly, Nx, Ny);
@@ -63,7 +67,6 @@ anl.setPlotDof(ndId,1)
 anl.process(mdl);
 
 %% POS-PROCESSING
-% mdl.printResults();
 mdl.plotField('Ux');
 mdl.plotField('Sx');
 mdl.plotField('Sy');

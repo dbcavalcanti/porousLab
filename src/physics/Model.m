@@ -150,15 +150,15 @@ classdef Model < handle
         
         %------------------------------------------------------------------
         function setDirichletBCAtNode(this, nodeId, dofId, value)
-            this.DIRICHLET_TAG(nodeId,dofId) = repmat( ~isnan(value), sum(nodeId), 1);
-            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
+            this.DIRICHLET_TAG(nodeId,dofId) = ~isnan(value);
+            this.DIRICHLET_VAL(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
-            this.DIRICHLET_TAG(nodeId,dofId) = repmat( ~isnan(value), sum(nodeId), 1);
-            this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
+            this.DIRICHLET_TAG(nodeId,dofId) = ~isnan(value);
+            this.DIRICHLET_VAL(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
@@ -178,6 +178,17 @@ classdef Model < handle
             end
             this.DIRICHLET_TAG(nodeId,dofId) = repmat(~isnan(value), sum(nodeId), 1);
             this.DIRICHLET_VAL(nodeId,dofId) = repmat(value, sum(nodeId), 1);
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtNode(this, nodeId, dofId, value)
+            this.LOAD(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtPoint(this, X, dofId, value)
+            nodeId = this.closestNodeToPoint(X);
+            this.LOAD(nodeId,dofId) = value;
         end
         
         %------------------------------------------------------------------

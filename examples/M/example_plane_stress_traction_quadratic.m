@@ -1,8 +1,13 @@
-%% ===================== Elastic plate problem ============================
+%% DESCRIPTION
 %
-% Elastic traction of a elastic plate validation problem
+% Uniform traction on a plate with an linear elastic model and quadratic
+% finite element mesh
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
+%
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% INITIALIZATION
 close all; clear; clc;

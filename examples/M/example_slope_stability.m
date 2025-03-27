@@ -1,8 +1,14 @@
-%% ====================== Slope stability problem =========================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% Slope stability problem
 %
-%% ========================================================================
+% Physics:
+% * Mechanical (M)
+%
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+%
+%% INITIALIZATION
 close all; clear; clc;
 
 % Path to source directory
@@ -22,13 +28,9 @@ mdl.setMesh(NODE,ELEM);
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.mechanical = 'elastic'; % Elastoplastic with von Mises criteria 
-rock.Young = 2.0e7;           % Young modulus (Pa)
-rock.nu    = 0.49;             % Poisson ratio
-rock.sy0   = 2.40e8;          % Initial yield stress (Pa)
-rock.Kp    = 0.0;             % Plastic modulus (Pa)
+rock.Young = 2.0e7;          % Young modulus (Pa)
+rock.nu    = 0.49;           % Poisson ratio
 rock.rho   = 2039.567612;
-
 rock.gravityOn = true;
 
 % Material parameters vector
@@ -39,7 +41,6 @@ mdl.mat  = struct('porousMedia',rock);
 mdl.setDisplacementDirichletBCAtBorder('left',  [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right', [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
-
 
 %% RUN ANALYSIS
 
