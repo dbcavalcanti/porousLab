@@ -69,8 +69,8 @@ rock = PorousMedia('rock');
 rock.K   = 1.0e-14;  % Intrinsic permeability (m2)
 rock.phi = 0.25;     % Porosity
 
-% Material parameters vector
-mdl.mat = struct('porousMedia',rock,'fluid',water);
+% Set the material to the model
+mdl.setMaterial(rock, water);
 
 % Set fracture material properties
 for i = 1:length(fractures)

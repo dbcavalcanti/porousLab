@@ -33,8 +33,8 @@ mdl = Model_H();
 % Mesh properties
 Lx = 24.0;      % Horizontal dimension (m)
 Ly = 6.0;       % Vertical dimension (m)
-Nx = 96;        % Number of elements in the x-direction
-Ny = 24;        % Number of elements in the y-direction
+Nx = 96/2;        % Number of elements in the x-direction
+Ny = 24/2;        % Number of elements in the y-direction
 
 % Generate the mesh
 [node,elem] = regularMesh(Lx, Ly, Nx, Ny);
@@ -52,11 +52,8 @@ rock.phi   = 0.3;           % Porosity
 rock.Ks    = 1.0e12;        % Rock bulk modulus (Pa)
 rock.biot  = 0.6;           % Biot coefficient
 
-% Material parameters vector
-% Same material for all elements
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'fluid',water);
+% Set the material to the model
+mdl.setMaterial(rock, water);
 
 % --- Boundary conditions -------------------------------------------------
 
