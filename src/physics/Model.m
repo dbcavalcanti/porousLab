@@ -172,22 +172,9 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function setDirichletBCAtBorder(this, border, dofId, value)
-            % Get the nodes at the given border
-            if strcmp(border,'left')
-                nodeId = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
-            elseif strcmp(border,'right')
-                nodeId = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
-            elseif strcmp(border,'top')
-                nodeId = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
-            elseif strcmp(border,'bottom')
-                nodeId = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
-            else
-                disp('Warning: non-supported border.');
-                disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
-                return;
-            end
-            for i = 1:length(nodeId)
-                this.setDirichletBCAtNode(nodeId(i),dofId,value);
+            nodeIds = this.getNodesAtBorder(border);
+            for i = 1:length(nodeIds)
+                this.setDirichletBCAtNode(nodeIds(i),dofId,value);
             end
         end
 
@@ -200,6 +187,14 @@ classdef Model < handle
         function setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtBorder(this, border, dofId, value)
+            nodeIds = this.getNodesAtBorder(border);
+            for i = 1:length(nodeIds)
+                this.setNeumannBCAtNode(nodeIds(i),dofId,value);
+            end
         end
 
         %------------------------------------------------------------------
@@ -220,6 +215,24 @@ classdef Model < handle
                 error('Error in setInitialDofAtNode');
             end
             this.INIT(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function nodeIds = getNodesAtBorder(this,border)
+            % Get the nodes at the given border
+            if strcmp(border,'left')
+                nodeIds = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
+            elseif strcmp(border,'right')
+                nodeIds = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
+            elseif strcmp(border,'top')
+                nodeIds = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
+            elseif strcmp(border,'bottom')
+                nodeIds = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
+            else
+                disp('Warning: non-supported border.');
+                disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+                nodeIds = [];
+            end
         end
         
         %------------------------------------------------------------------

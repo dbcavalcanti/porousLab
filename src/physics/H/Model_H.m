@@ -79,6 +79,11 @@ classdef Model_H < Model
         end
 
         % -----------------------------------------------------------------
+        function setPressureNeumannBCAtBorder(this, border, value)
+            this.setNeumannBCAtBorder(border, 1, value);
+        end
+
+        % -----------------------------------------------------------------
         function setInitialPressureAtDomain(this, value)
             this.setInitialDofAtDomain(1, value);
         end

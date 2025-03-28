@@ -72,6 +72,11 @@ classdef Model_H2 < Model_H
         end
 
         % -----------------------------------------------------------------
+        function setGasPressureNeumannBCAtBorder(this, border, value)
+            this.setNeumannBCAtBorder(border, 2, value);
+        end
+
+        % -----------------------------------------------------------------
         function setInitialGasPressureAtDomain(this, value)
             this.setInitialDofAtDomain(2, value);
         end
