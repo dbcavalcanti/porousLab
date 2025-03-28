@@ -45,7 +45,7 @@ mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
 %% RUN ANALYSIS
 
 anl = Anl_Linear();
-anl.process(mdl);
+anl.run(mdl);
 
 %% POS-PROCESSING
 

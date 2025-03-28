@@ -74,7 +74,7 @@ result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
 % Solve the problem
 %anl = Anl_Linear(result);
 anl = Anl_Nonlinear(result,'LoadControl',true,0.1,4.0,11,100,4,1.0e-5);
-anl.process(mdl);
+anl.run(mdl);
 
 %% ========================= CHECK THE RESULTS ============================
 

@@ -104,7 +104,7 @@ tf    = 127.0;  % Final time
 % Solve the problem
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(tinit,dt,tf,500.0,0.001,true);
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 

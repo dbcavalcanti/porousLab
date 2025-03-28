@@ -118,7 +118,7 @@ dtmin = 1.0e-3*day; % Minimum time step
 anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 

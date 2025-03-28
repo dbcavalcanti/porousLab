@@ -85,7 +85,7 @@ mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) 
 anl = Anl_Nonlinear('ArcLengthCylControl',true,0.01,2.0,100,100,4,1.0e-5);
 ndId = mdl.closestNodeToPoint([ri,0.0]);
 anl.setPlotDof(ndId,1)
-anl.process(mdl);
+anl.run(mdl);
 
 %% POS-PROCESSING
 

@@ -18,7 +18,7 @@ classdef Anl_Linear < Anl
     methods
         %------------------------------------------------------------------
         % Process model data to compute results.
-        function process(~,mdl)
+        function run(~,mdl)
 
             disp("*** Initializing linear analysis...")
 

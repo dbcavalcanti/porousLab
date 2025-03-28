@@ -73,7 +73,7 @@ mdl.addPreExistingDiscontinuities(fracture,discontinuityData);
 %% RUN ANALYSIS
 
 anl = Anl_Linear();
-anl.process(mdl);
+anl.run(mdl);
 
 %% POS-PROCESSING
 

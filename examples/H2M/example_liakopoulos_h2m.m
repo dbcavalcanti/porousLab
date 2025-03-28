@@ -44,7 +44,7 @@ Ny = 40;      % Number of elements in the y-direction
 [node,elem] = regularMesh(Lx, Ly, Nx, Ny);
 mdl.setMesh(node,elem);
 
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the fluids
 water   = Fluid('water');
@@ -127,9 +127,9 @@ anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
 anl.maxIter = 15;
-anl.process(mdl);
+anl.run(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESS
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];

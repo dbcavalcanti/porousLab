@@ -133,7 +133,7 @@ dtmin = 0.01;
 anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 
