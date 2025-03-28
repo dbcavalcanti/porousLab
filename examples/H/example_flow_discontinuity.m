@@ -74,7 +74,7 @@ mdl.addPreExistingDiscontinuities(fracture);
 
 % Solve the problem
 anl = Anl_Linear();
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 

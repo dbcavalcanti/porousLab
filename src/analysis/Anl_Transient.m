@@ -41,7 +41,7 @@ classdef Anl_Transient < Anl
     methods
         %------------------------------------------------------------------
         % Process model data to compute results.
-        function process(this,mdl)
+        function run(this,mdl)
 
             disp("*** Initialize nonlinear transient analysis...")
 

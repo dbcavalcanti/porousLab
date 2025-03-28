@@ -132,7 +132,7 @@ tf    = 100;    % Final time
 anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 

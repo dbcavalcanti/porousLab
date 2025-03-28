@@ -64,7 +64,7 @@ ndId = mdl.closestNodeToPoint([Lx,0.0]);
 anl.setPlotDof(ndId,1)
 
 % Run the analysis
-anl.process(mdl);
+anl.run(mdl);
 
 %% POS-PROCESSING
 mdl.plotField('Ux');

@@ -69,7 +69,7 @@ classdef Anl_Nonlinear < Anl
     methods
         %------------------------------------------------------------------
         % Process model data to compute results.
-        function status = process(anl,mdl)
+        function status = run(anl,mdl)
 
             % Initialize the model object
             mdl.preComputations();

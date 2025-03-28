@@ -92,7 +92,7 @@ dtmin = 0.0000001;  % Minimun time step
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.maxIter = 10;
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 
