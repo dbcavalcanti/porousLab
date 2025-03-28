@@ -69,8 +69,23 @@ classdef Model_H < Model
         end
 
         % -----------------------------------------------------------------
+        function setPressureNeumannBCAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, 1, value);
+        end
+
+        % -----------------------------------------------------------------
         function setInitialPressureAtDomain(this, value)
             this.setInitialDofAtDomain(1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialPressureAtNode(this, nodeId, value)
+            this.setInitialDofAtNode(nodeId, 1, value);
         end
 
         % -----------------------------------------------------------------

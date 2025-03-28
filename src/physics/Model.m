@@ -211,6 +211,16 @@ classdef Model < handle
             end
             this.INIT(:,dofId) = value;
         end
+
+        %------------------------------------------------------------------
+        function setInitialDofAtNode(this, nodeId, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error setting initial dof value at the domain');
+                disp('length(dofId) ~= length(value)');
+                error('Error in setInitialDofAtNode');
+            end
+            this.INIT(nodeId,dofId) = value;
+        end
         
         %------------------------------------------------------------------
         function nd = closestNodeToPoint(this,X)

@@ -62,8 +62,23 @@ classdef Model_H2 < Model_H
         end
 
         % -----------------------------------------------------------------
+        function setGasPressureNeumannBCAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, 2, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setGasPressureNeumannBCAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, 2, value);
+        end
+
+        % -----------------------------------------------------------------
         function setInitialGasPressureAtDomain(this, value)
             this.setInitialDofAtDomain(2, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialGasPressureAtNode(this, nodeId, value)
+            this.setInitialDofAtNode(nodeId, 2, value);
         end
 
         % -----------------------------------------------------------------
