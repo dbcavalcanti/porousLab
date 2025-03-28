@@ -81,11 +81,8 @@ mat2 = PorousMedia('rock',6.64e-13,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey
 mat1.gravityOn = true;
 mat2.gravityOn = true;
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',[mat1 , mat2], ...
-    'liquidFluid',water,...
-    'gasFluid',dnapl);
+% Set the material to the model
+mdl.setMaterial([mat1 , mat2], water, dnapl);
 
 % --- Boundary and initial conditions -------------------------------------
 

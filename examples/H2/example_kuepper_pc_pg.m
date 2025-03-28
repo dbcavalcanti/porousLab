@@ -85,14 +85,8 @@ sand2.gravityOn = true;
 sand3.gravityOn = true;
 sand4.gravityOn = true;
 
-rock = [sand1, sand2, sand3, sand4];
-
-% Material parameters vector
-% Same material for all elements
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Set the material to the model
+mdl.setMaterial([sand1, sand2, sand3, sand4], water, gas);
 
 % --- Boundary and initial conditions -------------------------------------
 
