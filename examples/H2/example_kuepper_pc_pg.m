@@ -1,16 +1,25 @@
-%% ================ Two-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-% Author: Danilo Cavalcanti
+% Kueper and Frind problem using the Pc-Pg two-phase flow formulation
 %
-%% ========================================================================
+% Physics:
+% * Two-phase hydraulic (H2)
 %
-% Initialize workspace
-clear
-initWorkspace; 
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H2_PcPg();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -21,13 +30,8 @@ Nx = 56;        % Number of elements in the x-direction
 Ny = 40;        % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-% Type of elements
-mdl.type = 'ISOQ4';
-
-% Thickness (m)
-mdl.t = 1.0;
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 % Compute the centroids of the elements
 nelem = Nx*Ny;
@@ -63,8 +67,10 @@ reg = isInsideRectangle(Xc,[0.35,0.25],[0.60,0.30]); mdl.matID(reg==1) = 4;
 % --- Material properties of the domain -----------------------------------
 
 % Fluid properties
-water = Fluid('water',1000.0,1.0e-3,1.0e25);
-gas   = Fluid('gas'  ,1630.0,0.9e-3,1.0e25);
+water = Fluid('water');
+gas   = Fluid('gas');
+gas.rho = 1630.0;
+gas.mu  = 0.9e-3;
 
 % Porous media properties
 % -----------------------  |   K(m2) | phi | biot |  Ks   | Slr | Sgr |   Pb  | lambda | LiqRelPerm |  GasRelPerm  |  capPressure
@@ -88,76 +94,46 @@ mdl.mat  = struct( ...
     'liquidFluid',water,...
     'gasFluid',gas);
 
-% --- Boundary conditions -------------------------------------------------
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary and initial conditions -------------------------------------
 
-% Capillary pressure boundary conditions
-CoordSupp  = [1 0 Ly;1 Lx Ly];                
-CoordLoad  = [];                     
-CoordPresc = [369.73 0 Ly;
-              369.73 Lx Ly];
-CoordInit  = [];                      
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 369.73*ones(size(mdl.INITCOND_p,1),1);
-
-% Gas pressure boundary conditions
-CoordSupp  = [1 0 Ly;1 Lx Ly];                
-CoordLoad  = [];                     
-CoordPresc = [369.73 0 Ly;
-              369.73 Lx Ly];
-CoordInit  = [];    
-           
-% Define supports and loads
-[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_pg = 369.73*ones(size(mdl.INITCOND_p,1),1);
+% Prescribed pressures at the top corners
+mdl.setCapillaryPressureDirichletBCAtPoint([0.0, Ly],369.73);
+mdl.setCapillaryPressureDirichletBCAtPoint([Lx , Ly],369.73);
+mdl.setGasPressureDirichletBCAtPoint([0.0, Ly],369.73);
+mdl.setGasPressureDirichletBCAtPoint([Lx , Ly],369.73);
 
 % Add prescribed gas pressure at the infiltration zone
 tol = 1.0e-4;
-reg = isInsideRectangle(mdl.NODE,[0.3-tol,0.5-tol],[0.4+tol,0.5+tol]);
-mdl.SUPP_pg(reg == 1) = 1;
-mdl.PRESCDISPL_pg(reg == 1) = 639.35;
+reg = find(isInsideRectangle(mdl.NODE,[0.3-tol,0.5-tol],[0.4+tol,0.5+tol]));
+for i = 1:length(reg)
+    mdl.setGasPressureDirichletBCAtNode(reg(i), 639.35);
+end
+
+% Initial conditions
+mdl.setInitialCapillaryPressureAtDomain(369.73);
+mdl.setInitialGasPressureAtDomain(369.73);
 
 % --- Order of the integration rule for the domain ------------------------
 
-% Using Gauss quadrature
 mdl.intOrder = 2;
 
 % Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
 mdl.lumpStrategy = 2;
 
-%% ========================= INITIALIZATION ===============================
-
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
-% Plot the mesh
-mdl.plotField("Model");
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 1.0;   % Initial time
 dt    = 1.0;   % Time step
-tf    = 184;    % Final time
+tf    = 100;    % Final time
 
 % Solve the problem
-anl = Anl_Transient(result,"Picard");
+anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,1.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESS
 
 mdl.plotField('GasSaturation',[0.0, 1.0]);

@@ -5,7 +5,6 @@
 %% Author
 % Danilo Cavalcanti
 %
-%
 %% Class definition
 classdef Model < handle    
     %% Public attributes
@@ -13,6 +12,10 @@ classdef Model < handle
         physics             = [];            % Physics of the problem
         NODE                = [];            % Nodes of the fem mesh
         ELEM                = [];            % Nodes connectivity
+        DIRICHLET_TAG       = [];            % Matrix with tags indicating the Dirichlet BC
+        DIRICHLET_VAL       = [];            % Matrix with values of the Dirichlet BC
+        LOAD                = [];            % Matrix with the nodal Neumann BC
+        INIT                = [];            % Matrix with the initial values of each dof
         t                   = 1.0;           % Thickness
         mat                 = [];            % Struct with material properties
         type                = 'ISOQ4';       % Type of element used
@@ -30,14 +33,15 @@ classdef Model < handle
         ID                  = [];            % Each line of the ID matrix contains the global numbers for the node DOFs
         U                   = [];            % Global displacement vector
         element             = [];            % Array with the element's objects
-        nDofElemTot         = 0.0;           % Aux value used to sparse matrix assemblage
-        sqrNDofElemTot      = 0.0;           % Aux value used to sparse matrix assemblage
+        nDofElemTot         = 0;             % Aux value used to sparse matrix assemblage
+        sqrNDofElemTot      = 0;             % Aux value used to sparse matrix assemblage
         matID               = [];            % Vector with the material id of each element
         massLumping         = false;         % Tag for applying a mass lumping process
         lumpStrategy        = 1;             % Id of the mass lumping strategy
         isAxisSymmetric     = false;         % Flag for axissymetric models
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
+        initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
     %% Constructor method
@@ -49,27 +53,9 @@ classdef Model < handle
 
     %% Abstract methods
     methods(Abstract)
-       
-        % Assemble the nodes' Dirichlet conditions matrix
-        SUPP = dirichletConditionMatrix(this);
-
-        % Assemble the nodes' Neumann conditions matrix
-        LOAD = neumannConditionMatrix(this);
-
-        % Assemble the nodes' initial condition matrix
-        INITCOND = initialConditionMatrix(this)
-
-        % Assemble the nodes' prescribed Dirichlet condition values matrix
-        PRESCDISPL = prescribedDirichletMatrix(this);
-
-        % Assemble the degrees of freedom to the elements
-        assembleElementDofs(this);
 
         % Initialize the elements objects
         initializeElements(this);
-
-        % Set the fields available for visualization
-        updateResultVertexData(this,type);
 
         % Configure the header to printed when printing results
         printResultsHeader();
@@ -79,19 +65,55 @@ classdef Model < handle
     methods
 
         %------------------------------------------------------------------
+        function setMesh(this,node,elem)
+            % Set the mesh nodes coordinates and connectivity
+            this.NODE = node;
+            this.ELEM = elem;
+
+            % Initialize basic variables
+            this.initializeBasicVariables();
+
+        end
+
+        %------------------------------------------------------------------
+        function initializeBasicVariables(this)
+            this.nnodes        = size(this.NODE,1);
+            this.nelem         = size(this.ELEM,1);     
+            this.nnd_el        = size(this.ELEM,2);            
+            this.ndof          = this.ndof_nd * this.nnodes; 
+            this.DIRICHLET_TAG = zeros(this.nnodes,this.ndof_nd);
+            this.DIRICHLET_VAL = zeros(this.nnodes,this.ndof_nd);
+            this.LOAD          = zeros(this.nnodes,this.ndof_nd);
+            this.INIT          = zeros(this.nnodes,this.ndof_nd);
+            if (this.nnd_el == 3)
+                this.type = 'CST';
+            elseif (this.nnd_el == 4)
+                this.type = 'ISOQ4';
+            elseif (this.nnd_el == 6)
+                this.type = 'LST';
+            elseif (this.nnd_el == 8)
+                this.type = 'ISOQ8';
+            end
+        end
+
+        %------------------------------------------------------------------
+        function checkMaterialId(this)
+            if isempty(this.matID)
+                this.matID  = ones(this.nelem,1);
+            end
+        end
+
+        %------------------------------------------------------------------
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
             this.ndoffixed = 0;
-
-            % Get the Dirichlet conditions matrix
-            SUPP = this.dirichletConditionMatrix();
             
             % Assemble the ID matrix
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
                     this.ID(i,j) = (i - 1) * this.ndof_nd + j;
-                    if (SUPP(i,j) == 1)
+                    if (this.DIRICHLET_TAG(i,j) == 1)
                         this.ndoffixed = this.ndoffixed + 1;
                     end
                 end
@@ -112,7 +134,7 @@ classdef Model < handle
             countFixed = 1;
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    if SUPP(i,j) == 1
+                    if this.DIRICHLET_TAG(i,j) == 1
                         this.doffixed(countFixed) = this.ID(i,j);
                         countFixed = countFixed + 1;
                     else 
@@ -122,44 +144,141 @@ classdef Model < handle
                 end
             end
         end
+        
+        %------------------------------------------------------------------
+        function setDirichletBCAtNode(this, nodeId, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error prescribing Dirichlet BC at a node');
+                disp('length(dofId) ~= length(value)');
+                error('Error in setDirichletBCAtNode');
+            end
+            for i = 1:length(dofId)
+                if ( this.DIRICHLET_TAG(nodeId,dofId(i)) == 0)
+                    this.DIRICHLET_TAG(nodeId,dofId(i)) = ~isnan(value(i));
+                    this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                else
+                    if ((this.DIRICHLET_VAL(nodeId,dofId(i)) ~= value(i)) && ~isnan(value(i)))
+                        disp([' ** Warning: this node had a different prescribed value:',num2str(nodeId)])
+                        this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                    end
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        function setDirichletBCAtPoint(this, X, dofId, value)
+            nodeId = this.closestNodeToPoint(X);
+            this.setDirichletBCAtNode(nodeId,dofId,value);
+        end
+
+        %------------------------------------------------------------------
+        function setDirichletBCAtBorder(this, border, dofId, value)
+            nodeIds = this.getNodesAtBorder(border);
+            for i = 1:length(nodeIds)
+                this.setDirichletBCAtNode(nodeIds(i),dofId,value);
+            end
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtNode(this, nodeId, dofId, value)
+            this.LOAD(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtPoint(this, X, dofId, value)
+            nodeId = this.closestNodeToPoint(X);
+            this.LOAD(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function setNeumannBCAtBorder(this, border, dofId, value)
+            nodeIds = this.getNodesAtBorder(border);
+            for i = 1:length(nodeIds)
+                this.setNeumannBCAtNode(nodeIds(i),dofId,value);
+            end
+        end
+
+        %------------------------------------------------------------------
+        function setInitialDofAtDomain(this, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error setting initial dof value at the domain');
+                disp('length(dofId) ~= length(value)');
+                error('Error in setInitialDofAtDomain');
+            end
+            this.INIT(:,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function setInitialDofAtNode(this, nodeId, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error setting initial dof value at the domain');
+                disp('length(dofId) ~= length(value)');
+                error('Error in setInitialDofAtNode');
+            end
+            this.INIT(nodeId,dofId) = value;
+        end
+
+        %------------------------------------------------------------------
+        function nodeIds = getNodesAtBorder(this,border)
+            % Get the nodes at the given border
+            if strcmp(border,'left')
+                nodeIds = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
+            elseif strcmp(border,'right')
+                nodeIds = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
+            elseif strcmp(border,'top')
+                nodeIds = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
+            elseif strcmp(border,'bottom')
+                nodeIds = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
+            else
+                disp('Warning: non-supported border.');
+                disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+                nodeIds = [];
+            end
+        end
+        
+        %------------------------------------------------------------------
+        function nd = closestNodeToPoint(this,X)
+            if size(X,1) == 2, X = X'; end
+            d = vecnorm((this.NODE - X)');
+            [~,id] = sort(d);
+            nd = id(1);
+        end
 
         %------------------------------------------------------------------
         function preComputations(this)
 
-            disp("*** Pre-processing...");
-            
-            % Initialize basic variables
-            this.initializeBasicVariables();
+            if(this.initializeMdl == false)
 
-            % Create nodes DOF ids matrix
-            this.createNodeDofIdMtrx();
-
-            % Assemble the regular dofs to each element
-            this.assembleElementDofs();
-
-            % Initialize elements
-            this.initializeElements();
-
-            % Assemble discontinuity segments to the elements
-            this.assembleDiscontinuitySegments();
-            
-            % Compute auxiliar variables for assemblage of sparse matrices
-            this.initializeSparseMtrxAssemblageVariables();
-
-            % Initialize the displacement vector
-            this.initializeDisplacementVct();
+                disp("*** Pre-processing...");
+                
+                % Check and initialize the material ID vector
+                this.checkMaterialId();
+    
+                % Create nodes DOF ids matrix
+                this.createNodeDofIdMtrx();
+    
+                % Initialize elements
+                this.initializeElements();
+    
+                % Assemble discontinuity segments to the elements
+                this.assembleDiscontinuitySegments();
+                
+                % Compute auxiliar variables for assemblage of sparse matrices
+                this.initializeSparseMtrxAssemblageVariables();
+    
+                % Initialize the displacement vector
+                this.initializeDisplacementVct();
+    
+                % Update flag to indicate that the model has already been
+                % initialized
+                this.initializeMdl = true;
+            end
 
         end
 
         %------------------------------------------------------------------
-        function initializeBasicVariables(this)
-            this.nnodes   = size(this.NODE,1);
-            this.nelem    = size(this.ELEM,1);     
-            this.nnd_el   = size(this.ELEM,2);            
-            this.ndof     = this.ndof_nd * this.nnodes; 
-            if isempty(this.matID)
-                this.matID  = ones(this.nelem,1);
-            end
+        function dof = getElementDofs(this,el,dofId)
+            dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
@@ -168,25 +287,18 @@ classdef Model < handle
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
 
-            % Get initial conditions matrix
-            INITCOND = this.initialConditionMatrix();
-
             % Set the initial values
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    this.U(this.ID(i,j)) = INITCOND(i,j);
+                    this.U(this.ID(i,j)) = this.INIT(i,j);
                 end
             end
-
-            % Get the Dirichlet conditions matrix
-            SUPP = this.dirichletConditionMatrix();
-            PRESCDISPL = this.prescribedDirichletMatrix();
 
             % Set the prescribed values
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    if (SUPP(i,j) == 1.0)
-                        this.U(this.ID(i,j)) = PRESCDISPL(i,j);
+                    if (this.DIRICHLET_TAG(i,j) == 1.0)
+                        this.U(this.ID(i,j)) = this.DIRICHLET_VAL(i,j);
                     end
                 end
             end
@@ -224,18 +336,88 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Add contribution of nodal loads to reference load vector.
         function Fref = addNodalLoad(this,Fref)
-            LOAD = this.neumannConditionMatrix();
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    Fref(this.ID(i,j)) = Fref(this.ID(i,j)) + LOAD(i,j);
+                    Fref(this.ID(i,j)) = Fref(this.ID(i,j)) + this.LOAD(i,j);
                 end
             end
         end
 
         %------------------------------------------------------------------
+        % Update the result nodes data of each element
+        function updateResultVertexData(this,type)
+            for el = 1:this.nelem
+                % Update the nodal displacement vector associated to the
+                % element. This displacement can contain the enhancement
+                % degrees of freedom.
+                this.element(el).type.ue = this.U(this.element(el).type.gle); 
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                for i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    if strcmp(type,'Model')
+                        vertexData(i) = this.matID(el);
+                    elseif strcmp(type,'Pressure')
+                        p = this.element(el).type.pressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'Ux')
+                        u = this.element(el).type.displacementField(X);
+                        vertexData(i) = u(1);
+                    elseif strcmp(type,'Uy')
+                        u = this.element(el).type.displacementField(X);
+                        vertexData(i) = u(2);
+                    elseif strcmp(type,'E1')
+                        s = this.element(el).type.strainField(X);
+                        sp = this.element(el).type.principalStrain(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'PEMAG')
+                        pe = this.element(el).type.plasticstrainMagnitude(X);
+                        vertexData(i) = pe;
+                    elseif strcmp(type,'Sx')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(1);
+                    elseif strcmp(type,'Sy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(2);
+                    elseif strcmp(type,'Sxy')
+                        s = this.element(el).type.stressField(X);
+                        vertexData(i) = s(3);
+                    elseif strcmp(type,'S1')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'S2')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.principalStress(s);
+                        vertexData(i) = sp(2);
+                    elseif strcmp(type,'Sr')
+                        s = this.element(el).type.stressField(X);
+                        sp = this.element(el).type.stressCylindrical(s,X);
+                        vertexData(i) = sp(1);
+                    elseif strcmp(type,'LiquidPressure')
+                        p = this.element(el).type.pressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'CapillaryPressure')
+                        p = this.element(el).type.capillaryPressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'GasPressure')
+                        p = this.element(el).type.gasPressureField(X);
+                        vertexData(i) = p;
+                    elseif strcmp(type,'LiquidSaturation')
+                        Sl = this.element(el).type.liquidSaturationField(X);
+                        vertexData(i) = Sl;
+                    elseif strcmp(type,'GasSaturation')
+                        Sg = this.element(el).type.gasSaturationField(X);
+                        vertexData(i) = Sg;
+                    end
+                end
+                this.element(el).type.result.setVertexData(vertexData);
+            end
+        end
+
+        %------------------------------------------------------------------
         function Lce = getElementsCharacteristicLength(this)
-            Lce=zeros(size(this.ELEM,1),1);
-            for el = 1:size(this.ELEM,1)
+            Lce=zeros(this.nelem,1);
+            for el = 1:this.nelem
                 % Characteristic lenght (quadrilateral elements)
                 Lce(el) = this.getElementCharacteristicLength(el);
             end
@@ -267,12 +449,12 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
-        % Compute the mean characteristic length of the elements associated with
-        % each node
+        % Compute the mean characteristic length of the elements associated 
+        % with each node
         function Lc = getNodeCharacteristicLength(this)
             Lce = this.getElementsCharacteristicLength();
-            Lc = zeros(size(this.NODE,1),1);
-            for i = 1:size(this.NODE,1)
+            Lc = zeros(this.nnodes,1);
+            for i = 1:this.nnodes
                 % Get the elements associated with this node
                 idElem = any(this.ELEM == i, 2);
                 % Compute the mean characteristic lenght of these nodes
@@ -289,48 +471,6 @@ classdef Model < handle
                 this.nDofElemTot = this.nDofElemTot + length(this.element(el).type.gle);
                 this.sqrNDofElemTot = this.sqrNDofElemTot + length(this.element(el).type.gle)*length(this.element(el).type.gle);
             end
-        end
-
-        %------------------------------------------------------------------
-        % Compute the jacobian matrix and the residual vector associated
-        % with the coupled system discretized using an implicit
-        % time-integration scheme.
-        function [J, r] = setTransientSystem(this, dt, X, DX, Fext)   
-
-            % Compute model global matrices
-            [K, C, Fint] = this.globalMatrices(DX);
-
-            % Get components associated with the free dofs
-            freedof = 1:this.ndoffree;
-            pfreedof = this.pFreeDof;
-
-            % Compute the Jacobian matrix
-            J =  K(freedof,freedof) + C(freedof,freedof) / dt;
-
-            % Compute the residual vector: 
-            % r = Fint + Q * P - Fext + C * DX / dt
-            r = Fint(freedof) + K(freedof,pfreedof)*X(pfreedof) - Fext(freedof) + C(freedof,freedof) * DX(freedof) / dt;
-
-        end
-
-        %------------------------------------------------------------------
-        % Compute the matrix and vector of the problem applying and
-        % implicit time discretization
-        function [A,b] = setLinearSystem(this, X, Fext)   
-
-            % Compute model global matrices
-            K = this.globalMatrices(X);
-
-            % Get components associated with the free dofs
-            freedof  = 1:this.ndoffree;
-            fixeddof = [1:this.ndof, freedof];
-
-            % Compute the right-handside matrix
-            A =  K(freedof,freedof);
-
-            % Compute the left-handside vector
-            b =  Fext(freedof) - K(freedof,fixeddof)*X(fixeddof);
-
         end
 
         %------------------------------------------------------------------
@@ -421,15 +561,12 @@ classdef Model < handle
             counterK = 0;
             counterF = 0;
 
-            % Update the element displacement vector of each element
+            % Compute and assemble element data
             for el = 1:this.nelem
+                % Update the element displacement vector of each element
                 this.element(el).type.DTime = dt;
                 this.element(el).type.ue    = U(this.element(el).type.gle);
                 this.element(el).type.ueOld = UOld(this.element(el).type.gle);
-            end
-            
-            % Compute and assemble element data
-            for el = 1:this.nelem
 
                 % Get the vector of the element dof  
                 gle_i  = this.element(el).type.gle;
@@ -478,12 +615,9 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Update the state variables from all integration points
         function updateStateVar(this)
-            
             for el = 1:this.nelem
-                % Update the element state variables
                 this.element(el).type.updateStateVar();
             end
-
         end
 
         %------------------------------------------------------------------
@@ -562,7 +696,7 @@ classdef Model < handle
             for i = 1:this.nnodes
                 fprintf("  %4d: \t",i);
                 for j = 1:this.ndof_nd
-                    fprintf("  %8.4f ",this.U(this.ID(i,j)))
+                    fprintf("  %8.4e ",this.U(this.ID(i,j)))
                 end
                 fprintf("\n");
             end

@@ -1,10 +1,6 @@
 %% DESCRIPTION
 %
-% McWhorter and Sunada problem using the Pc-Pg two-phase flow formulation
-%
-% Reference:
-% D.B. McWhorter and D.K. Sunada. Exact integral solutions for
-% two-phase flow. Water Resources Research, 26(3):399–413, 1990.
+% Buckley-Leverett problem using the Pl-Pg two-phase flow formulation
 %
 % Physics:
 % * Two-phase hydraulic (H2)
@@ -21,16 +17,16 @@ addpath(genpath(src_dir));
 print_header;
 
 % Create model
-mdl = Model_H2_PcPg();
+mdl = Model_H2();
 
 %% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 2.6;      % Horizontal dimension (m)
-Ly = 0.5;      % Vertical dimension (m)
-Nx = 260;      % Number of elements in the x-direction
+Lx = 301.95;   % Horizontal dimension (m)
+Ly = 100.0;    % Vertical dimension (m)
+Nx = 99;       % Number of elements in the x-direction
 Ny = 1;        % Number of elements in the y-direction
 
 % Generate the mesh
@@ -45,18 +41,23 @@ gas   = Fluid('gas');
 
 % Create the porous media
 rock = PorousMedia('rock');
-rock.K      = 1.0e-10;                       % Intrinsic permeability (m2)
-rock.phi    = 0.3;                           % Porosity
-rock.Slr    = 0.0;                           % Residual liquid saturation
-rocK.Sgr    = 0.0;                           % Residual gas saturation
-rock.Pb     = 5.0e3;                         % Gas-entry pressure
+rock.K      = 1.0e-7;                        % Intrinsic permeability (m2)
+rock.phi    = 0.2;                           % Porosity
+rock.Slr    = 0.2;                           % Residual liquid saturation
+rocK.Sgr    = 0.2;                           % Residual gas saturation
+rock.Pb     = 0.0;                           % Gas-entry pressure
 rock.lambda = 2.0;                           % Curve-fitting parameter
 rock.liqRelPermeability = 'BrooksCorey';
 rock.gasRelPermeability = 'BrooksCorey';
-rock.capillaryPressure  = 'BrooksCorey';
+rock.capillaryPressure  = 'UMAT';
+
+% Set the user material capillary pressure vs. saturation law
+% --------- Pc  |  Sl
+SlPcUMAT = [3.0 , 0.2;
+            0.0 , 0.8];
+rock.setUMATCapillaryPressureCurve(SlPcUMAT);
 
 % Material parameters vector
-% Same material for all elements
 mdl.mat  = struct( ...
     'porousMedia',rock, ...
     'liquidFluid',water,...
@@ -65,15 +66,14 @@ mdl.mat  = struct( ...
 % --- Boundary and initial conditions -------------------------------------
 
 % Dirichlet boundary conditions
-mdl.setCapillaryPressureDirichletBCAtBorder('left',5.0e3);
-mdl.setGasPressureDirichletBCAtBorder('left',200.0e3);
+mdl.setPressureDirichletBCAtBorder('left',200000.0);
+mdl.setGasPressureDirichletBCAtBorder('left',200000.230769231);
 
 % Initial conditions
-mdl.setInitialCapillaryPressureAtDomain(50.0e3);
+mdl.setInitialPressureAtDomain(200000.0);
+mdl.setInitialGasPressureAtDomain(200003.0);
 
 % --- Numerical model configuration ---------------------------------------
-
-mdl.intOrder = 3;
 
 % Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
@@ -81,12 +81,15 @@ mdl.lumpStrategy = 2;
 
 %% PROCESS
 
+% Conversion from days to seconds
+day = 60*60*24;
+
 % Transient analysis parameters
-tinit = 0.1;          % Initial time
-dt    = 0.1;          % Time step
-tf    = 50;           % Final time
-dtmax = 0.1;          % Maximum time step
-dtmin = 0.0000001;    % Minimum time step
+tinit = 0.1*day;          % Initial time
+dt    = 0.1*day;          % Time step
+tf    = 50*day;           % Final time
+dtmax = 0.1*day;          % Maximum time step
+dtmin = 0.1*day;          % Minimum time step
 
 % Solve the problem
 anl = Anl_Transient("Picard");
@@ -100,4 +103,7 @@ Xi  = [0.0 , 0.0];
 Xf  = [Lx , 0.0];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
-
+mdl.plotGasPressureAlongSegment(Xi, Xf, npts,'x')
+mdl.plotCapillaryPressureAlongSegment(Xi, Xf, npts,'x')
+mdl.plotField('CapillaryPressure');
+mdl.plotField('GasPressure');

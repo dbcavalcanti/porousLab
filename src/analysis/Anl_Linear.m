@@ -1,7 +1,4 @@
-%% Anl_Nonlinear Class
-%
-% This is a sub-class in the NUMA-TF program that implements abstract 
-% methods declared in super-class Anl to deal with linear-elastic analysis.
+%% Anl_Linear Class
 %
 classdef Anl_Linear < Anl
     %% Public properties
@@ -11,8 +8,8 @@ classdef Anl_Linear < Anl
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = Anl_Linear(result)
-            this = this@Anl('Linear',result);
+        function this = Anl_Linear()
+            this = this@Anl('Linear');
         end
     end
     
@@ -21,7 +18,12 @@ classdef Anl_Linear < Anl
     methods
         %------------------------------------------------------------------
         % Process model data to compute results.
-        function process(~,mdl)
+        function run(~,mdl)
+
+            disp("*** Initializing linear analysis...")
+
+            % Initialize the model object
+            mdl.preComputations();
 
             % Compute the global stiffness matrix
             [K, ~, ~, Fext] = mdl.globalMatrices(mdl.U);
@@ -42,6 +44,8 @@ classdef Anl_Linear < Anl
             % Call it again to update the state variables
             mdl.globalMatrices(mdl.U);
             mdl.updateStateVar();
+
+            disp("*** Analysis completed!")
         end
 
     end

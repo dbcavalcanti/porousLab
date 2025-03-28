@@ -1,18 +1,24 @@
-%% ================= Pressurized cylinder problem =========================
+%% DESCRIPTION
 %
 % Elastoplastic pressurized cylinder example.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+%% INITIALIZATION
+close all; clear; clc;
+
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
 
 mdl = Model_M();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -23,22 +29,17 @@ Nx = 10;       % Number of elements in the x-direction
 Ny = 10;       % Number of elements in the y-direction
 
 % Generate the mesh
-[NODE,mdl.ELEM] = regularMeshY(1.0, 1.0, Nx, Ny);
+[node,elem] = regularMesh(1.0, 1.0, Nx, Ny);
 
 % Transform to cylindrical coordinates
-r = ri + NODE(:, 1) * (re - ri);
-theta = NODE(:, 2) * (pi / 2);
+r = ri + node(:, 1) * (re - ri);
+theta = node(:, 2) * (pi / 2);
 
 % Set the nodes with the transformed coordinates
-mdl.NODE = [r .* cos(theta), r .* sin(theta)];
+node = [r .* cos(theta), r .* sin(theta)];
+mdl.setMesh(node,elem);
 
-% Type of elements
-mdl.type = 'ISOQ4';
-
-% Thickness (m)
-mdl.t = 1.0;
-
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the porous media
 rock = PorousMedia('rock');
@@ -51,23 +52,13 @@ rock.Kp    = 0.0;             % Plastic modulus (Pa)
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
 
-%% ======================= BOUNDARY CONDITIONS ============================
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary conditions -------------------------------------------------
 
-% Displacement boundary conditions
-CoordSupp  = [1 0 0 -1;
-              0 1 -1 0];
-CoordLoad  = [];
-CoordPresc = [];                                   
-           
-% Define supports and loads
-[mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, 1.0, 1.0, Nx, Ny);
+mdl.setDisplacementDirichletBCAtBorder('left',[0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('bottom',[NaN, 0.0]);
 
 % Internal pressure (Pa)
 pint = 192.0905814164710e06;
-% pint = 500;
 
 % Compute the radius of each node wrt to the center at (0,0)
 r  = sqrt((mdl.NODE(:,1)).^2 + (mdl.NODE(:,2)).^2);
@@ -87,42 +78,17 @@ F0 = (pint*mdl.t*ri*pi/2.0)/(nInternalNodes-1)/2.0;
 nodeCount = histcounts(mdl.ELEM(:), 1:(size(mdl.NODE,1)+1))';
 
 % Apply the internal pressure to the nodes located at the internal face
-mdl.LOAD_u(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) , sn(internalNodes)];
+mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) , sn(internalNodes)];
 
-%% ===================== MODEL CONFIGURATION ==============================
+%% RUN ANALYSIS
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
+anl = Anl_Nonlinear('ArcLengthCylControl',true,0.01,2.0,100,100,4,1.0e-5);
+ndId = mdl.closestNodeToPoint([ri,0.0]);
+anl.setPlotDof(ndId,1)
+anl.run(mdl);
 
-%% ========================= INITIALIZATION ===============================
+%% POS-PROCESSING
 
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
-
-% Solve the problem
-% anl = Anl_Linear(result);
-anl = Anl_Nonlinear(result,'ArcLengthCylControl',true,0.01,2.0,100,100,4,1.0e-5);
-anl.process(mdl);
-
-%% ========================= CHECK THE RESULTS ============================
-
-% Plot pressure along a segment
-Xi  = [0.0 , min(mdl.NODE(:,2))];
-Xf  = [0.0 , max(mdl.NODE(:,2))];
-npts = 500;
-% mdl.plotDeformedMesh(1.0);
 mdl.plotField('S1');
 mdl.plotField('Sr');
-% mdl.plotField('Ux');
 mdl.plotField('Sx');
-% mdl.plotField('Sy');
-% mdl.plotField('Sxy');
-

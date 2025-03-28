@@ -1,40 +1,34 @@
-%% ================ Terzaghi consolidation problem ========================
+%% DESCRIPTION
 %
-% Hydromechanical with single-phase flow validation problem
+% Terzaghi consolidation problem.
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Hydromechanical with single-phase flow (HM)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+%% INITIALIZATION
+close all; clear; clc;
+
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
 
 mdl = Model_HM();
 
+%% MODEL CREATION
+
 % --- Mesh of continuum elements ------------------------------------------
 
-% Mesh properties
-Lx = 0.1;     % Horizontal dimension (m)
-Ly = 1.0;     % Vertical dimension (m)
-Nx = 5;       % Number of elements in the x-direction
-Ny = 50;      % Number of elements in the y-direction
+[node,elem] = regularMesh(0.1, 1.0, 5, 50);
+mdl.setMesh(node,elem);
 
-% Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-% Type of elements
-mdl.type = 'ISOQ4';
-
-% Thickness (m)
-mdl.t = 1.0;
-
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the fluids
-water = Fluid('water',1000.0,1.0e-3,1.0e25);
+water = Fluid('water');
 
 % Create the porous media
 rock = PorousMedia('rock');
@@ -48,70 +42,36 @@ mdl.mat  = struct( ...
     'porousMedia',rock, ...
     'fluid',water);
 
-%% ======================= BOUNDARY CONDITIONS ============================
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary conditions -------------------------------------------------
 
 % Displacement boundary conditions
-CoordSupp  = [1 0 0 -1;
-              1 0 Lx -1
-              1 1 -1 0.0;];
-CoordLoad  = [];
-CoordPresc = [];                                   
-           
-% Define supports and loads
-[mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, Lx, Ly, Nx, Ny);
+mdl.setDisplacementDirichletBCAtBorder('bottom',[0.0, 0.0]);
+mdl.setDisplacementDirichletBCAtBorder('left',  [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('right', [0.0, NaN]);
 
 % Apply pressure at the top (Pa)
-[mdl.LOAD_u] = pressureLoad(-1.0e4,[Lx, Ly],2,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
+mdl.addLoadAtBorder('top', 2, -1.0e4);
 
 % Liquid pressure boundary conditions
-CoordSupp  = [1 -1 Ly];                              
-CoordLoad  = [];                      
-CoordPresc = [];                    
-CoordInit  = [];                      
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+mdl.setPressureDirichletBCAtBorder('top',0.0);
 
-%% ===================== MODEL CONFIGURATION ==============================
-
-% Using Gauss quadrature
-mdl.intOrder = 2;
-
-%% ========================= INITIALIZATION ===============================
-
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
+%% RUN ANALYSIS
 
 % Transient analysis parameters
 tinit = 1.0;          % Initial time
 dt    = 1.0;          % Time step
 tf    = 100;          % Final time
-dtmax = 1.0;          % Maximum time step
-dtmin = 0.001;        % Minimum time step
 
 % Solve the problem
-anl = Anl_Transient(result,"Newton");
-anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.process(mdl);
+anl = Anl_Transient("Newton");
+anl.setUpTransientSolver(tinit,dt,tf);
+anl.run(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
+%% POST-PROCESSING
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
-Xf  = [0.0 , Ly];
+Xf  = [0.0 , 1.0];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'y')
 mdl.plotField('Pressure');
-

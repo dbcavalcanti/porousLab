@@ -1,16 +1,23 @@
-%% ===================== Elastic plate problem ============================
+%% DESCRIPTION
 %
-% Elastic traction of a elastic plate validation problem
+% Uniform traction on a plate with an linear elastic model and quadratic
+% finite element mesh
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Mechanical (M)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ============================== MESH  ===================================
+%% INITIALIZATION
+close all; clear; clc;
+
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+%% MODEL CREATION
 
 mdl = Model_M();
 
@@ -20,21 +27,15 @@ mdl = Model_M();
 Lx = 0.11;     % Horizontal dimension (m)
 Ly = 0.04;     % Vertical dimension (m)
 Nx = 22;       % Number of elements in the x-direction
-Ny = 8;       % Number of elements in the y-direction
+Ny = 8;        % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE, mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-[mdl.NODE, mdl.ELEM] = convertToQuadraticMesh(mdl.NODE, mdl.ELEM);
-
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+[node,elem] = convertToQuadraticMesh(node,elem);
+mdl.setMesh(node,elem);
 mdl.resequenceNodes();
 
-% Type of elements
-mdl.type = 'ISOQ8';
-
-% Thickness (m)
-mdl.t = 1.0;
-
-%% ============================= MATERIAL =================================
+% --- Material properties of the domain -----------------------------------
 
 % Create the porous media
 rock = PorousMedia('rock');
@@ -45,45 +46,20 @@ rock.nu    = 0.0;                 % Poisson ratio
 % Material parameters vector
 mdl.mat  = struct('porousMedia',rock);
 
-%% ======================= BOUNDARY CONDITIONS ============================
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary conditions -------------------------------------------------
 
-% Displacement boundary conditions
-CoordSupp  = [1 1 0 -1];
-CoordLoad  = [];
-CoordPresc = [];                                   
-           
-% Define supports and loads
-[mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, Lx, Ly, Nx, Ny);
+mdl.setDisplacementDirichletBCAtBorder('left',[0.0, 0.0]);
 
 % Apply pressure at the top (Pa)
-[mdl.LOAD_u] = pressureLoad(2.0e6,[Lx, Ly],1,mdl.NODE,mdl.ELEM,mdl.LOAD_u);
+mdl.addLoadAtBorder('right', 1, 2.0e6);
 
-%% ===================== MODEL CONFIGURATION ==============================
+%% RUN ANALYSIS
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
+anl = Anl_Linear();
+anl.run(mdl);
 
-%% ========================= INITIALIZATION ===============================
+%% POS-PROCESSING
 
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
-
-% Solve the problem
-anl = Anl_Linear(result);
-anl.process(mdl);
-
-%% ========================= CHECK THE RESULTS ============================
-
+mdl.printResults();
 mdl.plotField('Ux');
 mdl.plotField('Sx');

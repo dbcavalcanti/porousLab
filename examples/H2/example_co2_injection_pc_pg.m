@@ -1,72 +1,66 @@
-%% ================ Two-Phase flow in porous media ====================
+%% DESCRIPTION
 %
-%% Reference:
+% Dense non-liquid phase infiltration problem using the Pc-Pg two-phase 
+% flow formulation
+%
+% References:
 %
 % Benisch, K., Graupner, B., & Bauer, S. (2013). 
 % The coupled OpenGeoSys-eclipse simulator for simulation of CO2
 % storage–code comparison for fluid flow and geomechanical processes.
 % Energy Procedia, 37, 3663-3671.
 %
-%% References to similar problems
-%
 % Graupner, B. J., Li, D., & Bauer, S. (2011). The coupled simulator 
 % ECLIPSE–OpenGeoSys for the simulation of CO2 storage in saline 
 % formations. Energy Procedia, 4, 3794-3800.
 %
-% Class, H., Ebigbo, A., Helmig, R. et al.
-% A benchmark study on problems related to CO2 storage in geologic
-% formations. Comput Geosci 13, 409–434 (2009).
-% https://doi.org/10.1007/s10596-009-9146-x
+% Physics:
+% * Two-phase hydraulic (H2)
 %
-% Vilarrasa, Víctor. "Thermo-hydro-mechanical impacts of carbon dioxide 
-% (CO2) injection in deep saline aquifers." (2012).
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Zhou, Q., J. T. Birkholzer, C.-F. Tsang, and J. Rutqvist (2008), 
-% A method for quick assessment of CO 2 storage capacity in closed
-% and semi-closed saline formations. Int. J. Greenh. Gas Control, 2(4),
-% 626–639, doi:10.1016/j.ijggc.2008.02.004
-% 
-% Author: Danilo Cavalcanti
-%
-%% ========================================================================
-%
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H2_PcPg();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
 % Mesh properties
-Lx = 200.0;      % Horizontal dimension (m)
+Lx = 200.0;     % Horizontal dimension (m)
 Ly = 6.0;       % Vertical dimension (m)
-Nx = 30;         % Number of elements in the x-direction
-Ny = 60;          % Number of elements in the y-direction
+Nx = 30;        % Number of elements in the x-direction
+Ny = 60;        % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny,[],[],'ISOQ4',true,false);
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny,[],[],'ISOQ4',true,false);
+mdl.setMesh(node,elem);
 
-% Type of elements
-mdl.type = 'ISOQ4';
 mdl.isAxisSymmetric = true;
-
-% Thickness (m)
-mdl.t = 1.0;
 
 % --- Material properties of the domain -----------------------------------
 
 % Create the fluids
-brine = Fluid('brine',1173.0,1.252e-3,1.0e25);
-co2   = Fluid('co2'  ,848.0,8.1e-5,1.0e25);
+brine     = Fluid('brine');
+brine.rho = 1173.0;
+brine.mu  = 1.252e-3;
+co2       = Fluid('co2');
+co2.rho   = 848.0;
+co2.mu    = 8.1e-5;
+
 
 % Porous media properties
 % --------------------------   |   K(m2) | phi | biot |  Ks   | Slr | Sgr |   Pb  | lambda | LiqRelPerm |  GasRelPerm  |  capPressure
 aquifer = PorousMedia('aquifer', 3.0e-12 , 0.26 , 1.0 , 1.0e25 , 0.35 , 0.0 , 1.0e4 , 2.0 , 'BrooksCorey', 'BrooksCorey','BrooksCorey');
-aquifer.setMinLiquidRelPermeability(1.0e-9);
-aquifer.setMinGasRelPermeability(1.0e-9);
 
 % Activate gravity
 aquifer.gravityOn = true;
@@ -78,89 +72,55 @@ mdl.mat  = struct( ...
     'liquidFluid',brine,...
     'gasFluid',co2);
 
-% --- Boundary conditions -------------------------------------------------
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary and initial conditions -------------------------------------
 
-% Capillary pressure boundary conditions
-CoordSupp  = [1 Lx -1];    % Fix the pressure at the right border         
-CoordLoad  = []; 
-CoordPresc = [1.0e4 Lx -1];
-CoordInit  = [];
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
+% Capillary pressure conditions
+mdl.setCapillaryPressureDirichletBCAtBorder('right', 1.0e4);
+mdl.setInitialCapillaryPressureAtDomain(1.0e4);
 
-% The aquifer is initially saturated with brine. Then, the capillary
-% pressure is set to be equal to the gas entry pressure
-mdl.INITCOND_p = 1.0e4*ones(size(mdl.INITCOND_p,1),1);
-
-% Gas pressure boundary conditions
-day = 60 * 60 * 24;
-qinj = (1.0 / day) * Ly / (Ny + 1);
-CoordSupp  = [1 Lx -1];      % Fix the pressure at the right border        
-CoordLoad  = [qinj 0 -1];                     
-CoordPresc = [];         
-CoordInit  = [];
-           
-% Define supports and loads
-[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-
-% Set hydrostatic pressure 
+% Gas pressure conditions
+% Hydrostatic profile
 depth = 1500.0;          % Depth of the aquifer (top border)
 depth0 = depth + Ly;     % Depth of the aquifer (bottom border)
-grav   = 9.81;           % Gravity acceleration (m/s2)
-for i = 1:size(mdl.NODE,1)
+grav   = 9.806;          % Gravity acceleration (m/s2)
+for i = 1:mdl.nnodes
     h = depth0 - mdl.NODE(i,2);
     pl = grav * brine.rho * h;
     pc = 1.0e4;
-    mdl.INITCOND_pg(i) = pc + pl;
-    if (mdl.SUPP_pg(i) == 1)
-        mdl.PRESCDISPL_pg(i) = pc + pl;
+    mdl.setInitialGasPressureAtNode(i,pc+pl);
+    % Fix the gas pressure at the right borders
+    if ((abs(mdl.NODE(i,1) - Lx))<1.0e-12)
+        mdl.setGasPressureDirichletBCAtNode(i, pc+pl);
     end
 end
 
-% --- Order of the integration rule for the domain ------------------------
+% Add prescribed gas pressure at the infiltration zone
+day = 60 * 60 * 24;
+qinj = (1.0 / day) * Ly / (Ny + 1);
+mdl.setGasPressureNeumannBCAtBorder('left',qinj);
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
+% --- Numerical model configuration ---------------------------------------
 
-% Diagonalize compressibility matrix
+% Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
 mdl.lumpStrategy = 2;
 
-%% ========================= INITIALIZATION ===============================
-
-% Perform the basic pre-computations associated to the model (dof
-% definition, etc.)
-mdl.preComputations();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 0.05*day;   % Initial time
 dt    = 0.05*day;   % Time step
-tf    = 41*day;  % Final time
-dtmax = 0.1*day;
-dtmin = 1.0e-3*day;
+tf    = 1*day;      % Final time
+dtmax = 0.1*day;    % Maximum time step
+dtmin = 1.0e-3*day; % Minimum time step
 
 % Solve the problem
-anl = Anl_Transient(result,"Picard");
+anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
-
-% Print the results in the command window
-mdl.printResults();
+%% POST-PROCESS
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];

@@ -27,7 +27,8 @@ Ly = 1.0;  % Vertical dimension (m)
 Nx = 2;    % Number of elements in the x-direction
 Ny = 1;    % Number of elements in the y-direction
 
-[mdl.NODE, mdl.ELEM] = regularMesh(Lx, Ly, Nx, Ny);
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 %% MATERIAL CREATION
 
@@ -49,25 +50,8 @@ mdl.mat = struct('porousMedia',rock,'fluid',water);
 
 %% BOUNDARY CONDITIONS
 
-% Pore pressure
-CoordSupp  = [1 0.0 -1; 1 Lx -1];
-CoordLoad  = [];
-CoordPresc = [0.0 0.0 -1; 10.0 Lx -1];
-CoordInit  = [];
-
-% Supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = ...
-boundaryConditionsPressure(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-
-%% PRE-PROCESS
-
-% Perform the basic pre-computations associated to the model (dof definition, etc.)
-mdl.preComputations();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
+mdl.setPressureDirichletBCAtBorder('left',0.0);
+mdl.setPressureDirichletBCAtBorder('right',10.0);
 
 %% PROCESS
 
@@ -79,10 +63,10 @@ dtmax = 1.0;
 dtmin = 1.0;
 
 % Solve the problem
-anl = Anl_Transient(result,"Picard");
+anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
 anl.setRelativeConvergenceCriteria(true);
-anl.process(mdl);
+anl.run(mdl);
 
 %% POST-PROCESS
 

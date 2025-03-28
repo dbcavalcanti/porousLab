@@ -18,8 +18,8 @@ classdef Anl_Transient < Anl
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = Anl_Transient(result,nlscheme)
-            this = this@Anl('Transient',result);
+        function this = Anl_Transient(nlscheme)
+            this = this@Anl('Transient');
             if strcmp(nlscheme,'Picard')
                 this.nlscheme = NonlinearScheme_Picard();
             elseif strcmp(nlscheme,'Newton')
@@ -41,27 +41,25 @@ classdef Anl_Transient < Anl
     methods
         %------------------------------------------------------------------
         % Process model data to compute results.
-        function process(this,mdl)
+        function run(this,mdl)
 
             disp("*** Initialize nonlinear transient analysis...")
 
             % Initialize transient analysis parameters
             t        = this.tinit;
             t0       = this.tinit;
-            maxSteps = length(this.tinit:this.dt:this.tf);
             step     = 1;
+
+            % Initialize the model object
+            mdl.preComputations();
 
             % Initialize solution vector
             X  = mdl.U;
             dx = zeros(mdl.ndof);
 
-            % Initialize the output vectors
-            this.result.time = zeros(maxSteps,1);
-            this.result.p    = zeros(maxSteps,1);
+            % Transient analysis
             attempt = 1;
             brokenStep = false;
-
-            % Transient analysis
             while (t0 < this.tf)
                 fprintf("\t Time: %12.5f s \n",t);
 
@@ -125,15 +123,7 @@ classdef Anl_Transient < Anl
                     this.dt = min(this.dt * 2,this.dtMax);
                 end
 
-                % Save results
-                this.result.time(step) = t;
-                if isempty(this.result.coordP) == false
-                    elemPlot = findElementInMesh(mdl.NODE, mdl.ELEM,this.result.coordP);
-                    gle = mdl.element(elemPlot).type.gle;
-                    this.result.p(step) = mdl.element(elemPlot).type.pressureField(this.result.coordP,X(gle));
-                else
-                    this.result.p(step) = 0.0;
-                end  
+                % Save results 
                 
                 % Update time
                 t0 = t;
@@ -153,11 +143,6 @@ classdef Anl_Transient < Anl
                 gle = mdl.element(el).type.gle;
                 mdl.element(el).type.ue = mdl.U(gle);
             end
-
-            % Remove unused steps in the output vectors
-            this.result.p = this.result.p(1:(step-1));
-            % this.result.ST(:) = this.result.ST(:,1:(step-1));
-            this.result.time = this.result.time(1:(step-1));
 
             disp("*** Analysis completed.")
 

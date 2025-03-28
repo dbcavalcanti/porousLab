@@ -16,17 +16,13 @@ classdef Anl < handle
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         type     = [];      
-        result   = [];
     end
 
     %% Constructor method
     methods
-        function this = Anl(type,result)
+        function this = Anl(type)
             if nargin > 0
                 this.type   = type;
-                if nargin > 1
-                    this.result = result;
-                end
             end
         end
     end
