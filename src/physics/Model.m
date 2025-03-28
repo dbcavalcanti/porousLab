@@ -54,6 +54,9 @@ classdef Model < handle
     %% Abstract methods
     methods(Abstract)
 
+        % Set the material object
+        setMaterial(this, varargin)
+
         % Initialize the elements objects
         initializeElements(this);
 

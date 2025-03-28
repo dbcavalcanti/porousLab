@@ -24,6 +24,31 @@ classdef Model_H2 < Model_H
     methods
 
         %------------------------------------------------------------------
+        function setMaterial(this,porousMedia,liquidFluid,gasFluid)
+            if nargin < 4
+                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('The HM physics requires two attributes: porousMedia, liquidFluid, gasFluid.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(porousMedia,'PorousMedia')
+                disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(liquidFluid,'Fluid')
+                disp('Error in setMaterial: fluid is not a Fluid object.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(gasFluid,'Fluid')
+                disp('Error in setMaterial: fluid is not a Fluid object.');
+                error('Error in setMaterial.');
+            end
+            this.mat  = struct( ...
+            'porousMedia',porousMedia, ...
+            'liquidFluid',liquidFluid,...
+            'gasFluid',gasFluid);
+        end
+
+        %------------------------------------------------------------------
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
