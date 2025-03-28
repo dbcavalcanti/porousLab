@@ -111,7 +111,7 @@ classdef RegularElement_M < RegularElement
                 fi = fi + Bu' * stress * c;
                 
                 % Compute the gravity forces
-                if (this.mat.porousMedia.gravityOn)
+                if (this.gravityOn)
                     fe = this.addGravityForces(fe,this.intPoint(i).X,c);
                 end
             end
@@ -123,7 +123,7 @@ classdef RegularElement_M < RegularElement
         function fe = addGravityForces(this, fe, Xn, c)
 
             % Get gravity vector
-            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+            grav = this.g * this.mat.porousMedia.b;
 
             % Shape function matrix
             N  = this.shape.shapeFncMtrx(Xn);

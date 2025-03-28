@@ -32,7 +32,8 @@ rock.cohesion = 50.0e3;
 rock.frictionAngle = 20.0 * pi / 180.0;
 rock.dilationAngle = 20.0 * pi / 180.0;
 
-rock.gravityOn = true;
+% Activate the gravity
+mdl.gravityOn = true;
 
 % Set the material to the model
 mdl.setMaterial(rock);

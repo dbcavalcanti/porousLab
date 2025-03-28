@@ -62,6 +62,9 @@ classdef Model_HM < Model_M
                             this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
+                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;

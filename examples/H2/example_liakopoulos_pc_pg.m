@@ -44,11 +44,11 @@ rock = PorousMedia('rock',4.5e-13,0.2975,1.0,1.0e25,0.0,0.2,0.0,3.0,'Liakopoulos
 rock.setMinLiquidRelPermeability(0.0001);
 rock.setMinGasRelPermeability(0.0001);
 
-% Activate gravity
-rock.gravityOn = true;
-
 % Set the material to the model
 mdl.setMaterial(rock, water, gas);
+
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary and initial conditions -------------------------------------
 

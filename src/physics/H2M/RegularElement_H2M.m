@@ -191,7 +191,7 @@ classdef RegularElement_H2M < RegularElement
                 end
                 
                 % Compute the gravity forces
-                if (this.mat.porousMedia.gravityOn)
+                if (this.gravityOn)
                     [feu,fel,feg] = this.addGravityForces(feu,fel,feg,Np,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
                 end
 
@@ -271,7 +271,7 @@ classdef RegularElement_H2M < RegularElement
         function [feu,fel,feg] = addGravityForces(this,feu,fel,feg,Np,Bp,kl,kg,pl,pg,c)
 
             % Get gravity vector
-            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+            grav = this.g * this.mat.porousMedia.b;
 
             % Shape function matrix
             Nu = this.shape.NuMtrx(Np);

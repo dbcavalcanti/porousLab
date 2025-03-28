@@ -36,6 +36,7 @@ classdef Model < handle
         nDofElemTot         = 0;             % Aux value used to sparse matrix assemblage
         sqrNDofElemTot      = 0;             % Aux value used to sparse matrix assemblage
         matID               = [];            % Vector with the material id of each element
+        gravityOn           = false;         % Flag to consider the gravity forces
         massLumping         = false;         % Tag for applying a mass lumping process
         lumpStrategy        = 1;             % Id of the mass lumping strategy
         isAxisSymmetric     = false;         % Flag for axissymetric models

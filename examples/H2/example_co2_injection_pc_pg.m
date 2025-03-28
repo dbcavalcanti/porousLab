@@ -61,11 +61,11 @@ co2.mu    = 8.1e-5;
 % --------------------------   |   K(m2) | phi | biot |  Ks   | Slr | Sgr |   Pb  | lambda | LiqRelPerm |  GasRelPerm  |  capPressure
 aquifer = PorousMedia('aquifer', 3.0e-12 , 0.26 , 1.0 , 1.0e25 , 0.35 , 0.0 , 1.0e4 , 2.0 , 'BrooksCorey', 'BrooksCorey','BrooksCorey');
 
-% Activate gravity
-aquifer.gravityOn = true;
-
 % Set the material to the model
 mdl.setMaterial(aquifer, brine, co2);
+
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary and initial conditions -------------------------------------
 

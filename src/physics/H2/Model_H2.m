@@ -66,6 +66,9 @@ classdef Model_H2 < Model_H
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
                             this.t, emat, this.intOrder, pl_dofs, pg_dofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
+                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;

@@ -108,7 +108,7 @@ classdef RegularElement_H < RegularElement
                 end
                 
                 % Compute the gravity forces
-                if (this.mat.porousMedia.gravityOn)
+                if (this.gravityOn)
                     fe = this.addGravityForces(fe,Bp,kh,pIP,c);
                 end
 
@@ -143,7 +143,7 @@ classdef RegularElement_H < RegularElement
         function fe = addGravityForces(this,fe,Bp,kh,pl,c)
 
             % Get gravity vector
-            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+            grav = this.g* this.mat.porousMedia.b;
 
             % Get fluid densities
             rhol = this.mat.liquidFluid.getDensity(pl);

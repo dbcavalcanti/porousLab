@@ -75,6 +75,9 @@ classdef Model_M < Model
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
                 end
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
+                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;

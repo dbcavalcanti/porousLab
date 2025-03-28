@@ -70,6 +70,9 @@ classdef Model_H2M < Model_M
                             this.t, emat, this.intOrder,udofs,pl_dofs,pg_dofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
+                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;

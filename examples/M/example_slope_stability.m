@@ -31,10 +31,12 @@ rock = PorousMedia('rock');
 rock.Young = 2.0e7;          % Young modulus (Pa)
 rock.nu    = 0.49;           % Poisson ratio
 rock.rho   = 2039.567612;
-rock.gravityOn = true;
 
 % Set the material to the model
 mdl.setMaterial(rock);
+
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary conditions -------------------------------------------------
 
@@ -50,4 +52,3 @@ anl.run(mdl);
 %% POS-PROCESSING
 
 mdl.plotField('Sxy');
-
