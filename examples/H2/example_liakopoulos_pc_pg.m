@@ -70,7 +70,7 @@ mdl.setInitialGasPressureAtDomain(101325.0);
 mdl.massLumping = true;
 mdl.lumpStrategy = 2;
 
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Conversion from days to seconds
 minute = 60;
