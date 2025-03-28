@@ -24,6 +24,8 @@ classdef RegularElement < handle
         nIntPoints   = 1;             % Number of integration points
         intPoint     = [];            % Vector with integration point objects
         result       = [];            % Result object to plot the results
+        gravityOn    = false;         % Flag to check if the gravity is considered
+        g            = 9.806;         % Gravity accelaration (m/s2)
         isEnriched   = false;         % Flag to check if the element is enriched
         massLumping  = false;         % Flag to apply a diagonalization of the compressibility matrix
         lumpStrategy = 1;             % Id of the diagonalization strategy

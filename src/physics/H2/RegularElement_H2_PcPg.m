@@ -41,7 +41,7 @@ classdef RegularElement_H2_PcPg < RegularElement_H2
         function [fec,feg] = addGravityForces(this,fec,feg,Bp,kl,kg,pl,pg,c)
 
             % Get gravity vector
-            grav = this.mat.porousMedia.g * this.mat.porousMedia.b;
+            grav = this.g * this.mat.porousMedia.b;
 
             % Get fluid densities
             rhol = this.mat.liquidFluid.getDensity(pl);

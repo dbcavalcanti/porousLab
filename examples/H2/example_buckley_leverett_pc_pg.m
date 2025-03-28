@@ -57,11 +57,8 @@ SlPcUMAT = [3.0 , 0.2;
             0.0 , 0.8];
 rock.setUMATCapillaryPressureCurve(SlPcUMAT);
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Set the material to the model
+mdl.setMaterial(rock, water, gas);
 
 % --- Boundary and initial conditions -------------------------------------
 

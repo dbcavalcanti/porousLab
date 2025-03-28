@@ -55,12 +55,8 @@ rock.liqRelPermeability = 'BrooksCorey';
 rock.gasRelPermeability = 'BrooksCorey';
 rock.capillaryPressure  = 'BrooksCorey';
 
-% Material parameters vector
-% Same material for all elements
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Set the material to the model
+mdl.setMaterial(rock, water, gas);
 
 % --- Boundary and initial conditions -------------------------------------
 

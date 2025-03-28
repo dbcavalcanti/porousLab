@@ -49,8 +49,8 @@ rock.nu    = 0.3;             % Poisson ratio
 rock.sy0   = 2.40e8;          % Initial yield stress (Pa)
 rock.Kp    = 0.0;             % Plastic modulus (Pa)
 
-% Material parameters vector
-mdl.mat  = struct('porousMedia',rock);
+% Set the material to the model
+mdl.setMaterial(rock);
 
 % --- Boundary conditions -------------------------------------------------
 

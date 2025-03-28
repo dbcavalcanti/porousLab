@@ -79,20 +79,11 @@ sand2 = PorousMedia('sand2', 2.05e-10, 0.39, 1.0,  1.0e25, 0.069, 0.0, 434.45,  
 sand3 = PorousMedia('sand3', 5.26e-11, 0.39, 1.0,  1.0e25, 0.098, 0.0, 1323.95, 2.49,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
 sand4 = PorousMedia('sand4', 8.19e-12, 0.41, 1.0,  1.0e25, 0.189, 0.0, 3246.15, 3.30,  'BrooksCorey', 'BrooksCorey','BrooksCorey');
 
-% Activate gravity
-sand1.gravityOn = true;
-sand2.gravityOn = true;
-sand3.gravityOn = true;
-sand4.gravityOn = true;
+% Set the material to the model
+mdl.setMaterial([sand1, sand2, sand3, sand4], water, gas);
 
-rock = [sand1, sand2, sand3, sand4];
-
-% Material parameters vector
-% Same material for all elements
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary and initial conditions -------------------------------------
 

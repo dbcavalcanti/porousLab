@@ -77,15 +77,11 @@ dnapl.mu  = 0.9e-3;
 mat1 = PorousMedia('rock',6.64e-11,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey','BrooksCorey','BrooksCorey');
 mat2 = PorousMedia('rock',6.64e-13,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey','BrooksCorey','BrooksCorey');
 
-% Activate gravity
-mat1.gravityOn = true;
-mat2.gravityOn = true;
+% Set the material to the model
+mdl.setMaterial([mat1 , mat2], water, dnapl);
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',[mat1 , mat2], ...
-    'liquidFluid',water,...
-    'gasFluid',dnapl);
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary and initial conditions -------------------------------------
 

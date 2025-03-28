@@ -70,14 +70,11 @@ rock.capillaryPressure  = 'Liakopoulos';
 rock.setMinLiquidRelPermeability(1.0e-4);
 rock.setMinGasRelPermeability(1.0e-4);
 
-% Activate gravity
-rock.gravityOn = true;
+% Set the material to the model
+mdl.setMaterial(rock, water, gas);
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Activate the gravity
+mdl.gravityOn = true;
 
 % --- Boundary and initial conditions -------------------------------------
 

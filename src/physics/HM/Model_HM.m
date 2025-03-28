@@ -25,6 +25,26 @@ classdef Model_HM < Model_M
     methods
 
         %------------------------------------------------------------------
+        function setMaterial(this,porousMedia,fluid)
+            if nargin < 3
+                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('The HM physics requires two attributes: porousMedia, fluid.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(porousMedia,'PorousMedia')
+                disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(fluid,'Fluid')
+                disp('Error in setMaterial: fluid is not a Fluid object.');
+                error('Error in setMaterial.');
+            end
+            this.mat  = struct( ...
+            'porousMedia',porousMedia, ...
+            'fluid',fluid);
+        end
+
+        %------------------------------------------------------------------
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -42,6 +62,9 @@ classdef Model_HM < Model_M
                             this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
+                end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;

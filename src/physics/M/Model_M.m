@@ -36,6 +36,21 @@ classdef Model_M < Model
     methods
 
         %------------------------------------------------------------------
+        function setMaterial(this,porousMedia)
+            if nargin < 2
+                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('The HM physics requires two attributes: porousMedia.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(porousMedia,'PorousMedia')
+                disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
+                error('Error in setMaterial.');
+            end
+            this.mat  = struct( ...
+            'porousMedia',porousMedia);
+        end
+
+        %------------------------------------------------------------------
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -59,6 +74,9 @@ classdef Model_M < Model
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                end
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
                 end
                 elements(el).type.initializeIntPoints();
             end

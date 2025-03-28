@@ -45,8 +45,8 @@ rock.phi  = 0.3;         % Porosity
 rock.Ks   = 1.0e12;      % Rock bulk modulus (Pa)
 rock.biot = 0.6;         % Biot coefficient
 
-% Material parameters vector
-mdl.mat = struct('porousMedia',rock,'fluid',water);
+% Set the material to the model
+mdl.setMaterial(rock, water);
 
 %% BOUNDARY CONDITIONS
 
