@@ -14,7 +14,7 @@ classdef Model_HM < Model_M
     %% Constructor method
     methods
         function this = Model_HM()
-            this = this@Model_M();
+            this = this@Model_M(false);
             this.ndof_nd = 3;       % Number of dofs per node
             this.physics = 'HM';    % Tag with the physics name
             disp("*** Physics: Hydromechanical with single-phase flow");
@@ -49,12 +49,12 @@ classdef Model_HM < Model_M
         
         % -----------------------------------------------------------------
         function setPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 3, value);
+            this.setDirichletBCAtNode(nodeId, 1, value);
         end
 
         % -----------------------------------------------------------------
         function setPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 3, value);
+            this.setDirichletBCAtPoint(X, 1, value);
         end
 
         % -----------------------------------------------------------------
@@ -63,8 +63,38 @@ classdef Model_HM < Model_M
         end
 
         % -----------------------------------------------------------------
+        function setPressureNeumannBCAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, 3, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, 3, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtBorder(this, border, value)
+            this.setNeumannBCAtBorder(border, 3, value);
+        end
+
+        % -----------------------------------------------------------------
         function setInitialPressureAtDomain(this, value)
             this.setInitialDofAtDomain(3, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialPressureAtNode(this, nodeId, value)
+            this.setInitialDofAtNode(nodeId, 3, value);
+        end
+
+        % -----------------------------------------------------------------
+        function seg = initializeDiscontinuitySegArray(~,n)
+            seg(n,1) = DiscontinuityElement_H([],[]);
+        end
+
+        % -----------------------------------------------------------------
+        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
+            seg = DiscontinuityElement_H(nodeD,matD);
         end
 
         % -----------------------------------------------------------------

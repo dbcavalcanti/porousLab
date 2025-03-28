@@ -21,11 +21,14 @@ classdef Model_M < Model
     
     %% Constructor method
     methods
-        function this = Model_M()
+        function this = Model_M(printFlag)
+            if nargin == 0, printFlag = true; end
             this = this@Model();
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'M';     % Tag with the physics name
-            disp("*** Physics: Mechanical");
+            if (printFlag)
+                disp("*** Physics: Mechanical");
+            end 
         end
     end
     
