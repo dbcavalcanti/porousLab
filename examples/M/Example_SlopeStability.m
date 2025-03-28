@@ -34,8 +34,8 @@ rock.dilationAngle = 20.0 * pi / 180.0;
 
 rock.gravityOn = true;
 
-% Material parameters vector
-mdl.mat  = struct('porousMedia',rock);
+% Set the material to the model
+mdl.setMaterial(rock);
 
 %% ======================= BOUNDARY CONDITIONS ============================
 % In case it is prescribed a pressure value different than zero, don't 

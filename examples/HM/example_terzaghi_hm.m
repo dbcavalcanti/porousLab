@@ -37,10 +37,8 @@ rock.phi   = 0.3;           % Porosity
 rock.Young = 1.0e6;         % Young modulus (Pa)
 rock.nu    = 0.3;           % Poisson ratio
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'fluid',water);
+% Set the material to the model
+mdl.setMaterial(rock, water);
 
 % --- Boundary conditions -------------------------------------------------
 

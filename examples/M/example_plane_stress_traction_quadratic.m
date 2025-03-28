@@ -43,8 +43,8 @@ rock.mechanical = 'elastic';      % Elastoplastic with von Mises criteria
 rock.Young = 2.0e10;              % Young modulus (Pa)
 rock.nu    = 0.0;                 % Poisson ratio
 
-% Material parameters vector
-mdl.mat  = struct('porousMedia',rock);
+% Set the material to the model
+mdl.setMaterial(rock);
 
 % --- Boundary conditions -------------------------------------------------
 

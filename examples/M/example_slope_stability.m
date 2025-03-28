@@ -33,8 +33,8 @@ rock.nu    = 0.49;           % Poisson ratio
 rock.rho   = 2039.567612;
 rock.gravityOn = true;
 
-% Material parameters vector
-mdl.mat  = struct('porousMedia',rock);
+% Set the material to the model
+mdl.setMaterial(rock);
 
 % --- Boundary conditions -------------------------------------------------
 

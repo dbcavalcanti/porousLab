@@ -43,8 +43,8 @@ rock.kappa = 10.0;                  % Ratio of tensile and compressive strength
 rock.DamageThreshold = 1.0e-4;
 rock.FractureEnergyMode1 = 50.0;
 
-% Material parameters vector
-mdl.mat  = struct('porousMedia',rock);
+% Set the material to the model
+mdl.setMaterial(rock);
 
 % --- Boundary conditions -------------------------------------------------
 
