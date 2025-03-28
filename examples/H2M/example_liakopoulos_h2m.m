@@ -73,11 +73,8 @@ rock.setMinGasRelPermeability(1.0e-4);
 % Activate gravity
 rock.gravityOn = true;
 
-% Material parameters vector
-mdl.mat  = struct( ...
-    'porousMedia',rock, ...
-    'liquidFluid',water,...
-    'gasFluid',gas);
+% Set the material to the model
+mdl.setMaterial(rock, water, gas);
 
 % --- Boundary and initial conditions -------------------------------------
 
