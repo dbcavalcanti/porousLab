@@ -21,9 +21,9 @@ if nargin < 9, quadDistrX = false; quadDistrY = false; end
 
 % Get the x and y coordinates of the nodes
 if quadDistrX == false
-    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
+    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.0002*Lx/Nx);
 else
-    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.2*Lx/Nx);
+    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.0002*Lx/Nx);
     xcoord = xcoord.^2;
     xcoord = xcoord * Lx;
 end
