@@ -1,4 +1,7 @@
-%% ================ Two-Phase flow in porous media ========================
+%% DESCRIPTION
+%
+% Dense non-liquid phase infiltration problem using the Pc-Pg two-phase 
+% flow formulation
 %
 % References:
 %
@@ -15,17 +18,24 @@
 % Diffusion and Transport. Springer, Berlin, Heidelberg.
 % https://doi.org/10.1007/978-3-540-28396-6_22
 %
-% Author: Danilo Cavalcanti
+% Physics:
+% * Two-phase hydraulic (H2)
 %
-%% ========================================================================
+% Authors:
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-% Initialize workspace
-clear
-initWorkspace; 
-%
-%% ========================== MODEL CREATION ==============================
+%% INITIALIZATION
+close all; clear; clc;
 
+% Path to source directory
+src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
+addpath(genpath(src_dir));
+print_header;
+
+% Create model
 mdl = Model_H2_PcPg();
+
+%% MODEL CREATION
 
 % --- Mesh of continuum elements ------------------------------------------
 
@@ -36,10 +46,8 @@ Nx = 60;        % Number of elements in the x-direction
 Ny = 40;        % Number of elements in the y-direction
 
 % Generate the mesh
-[mdl.NODE,mdl.ELEM] = regularMeshY(Lx, Ly, Nx, Ny);
-
-% Type of elements
-mdl.type = 'ISOQ4';
+[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
+mdl.setMesh(node,elem);
 
 % Compute the centroids of the elements
 nelem = Nx*Ny;
@@ -54,16 +62,18 @@ end
 
 % Setting material ids to each element
 mdl.matID = ones(nelem,1);
-
-% Sand 2 
-reg = isInsideRectangle(Xc,[0.3,0.325],[0.45,0.4875]); mdl.matID(reg==1) = 2;
+reg = isInsideRectangle(Xc,[0.3,0.325],[0.45,0.4875]);
+mdl.matID(reg==1) = 2;
 
 % --- Material properties of the domain -----------------------------------
 
 % Create the fluids
-water = Fluid('water',1000.0,1.0e-3,1.0e25);
-dnapl = Fluid('dnapl',1460.0,0.9e-3,1.0e25);
+water     = Fluid('water');
+dnapl     = Fluid('dnapl');
+dnapl.rho = 1460.0;
+dnapl.mu  = 0.9e-3;
 
+% Create the porous media
 mat1 = PorousMedia('rock',6.64e-11,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey','BrooksCorey','BrooksCorey');
 mat2 = PorousMedia('rock',6.64e-13,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey','BrooksCorey','BrooksCorey');
 
@@ -71,80 +81,46 @@ mat2 = PorousMedia('rock',6.64e-13,0.4,1.0,1.0e25,0.1,0.0,755.0,2.7,'BrooksCorey
 mat1.gravityOn = true;
 mat2.gravityOn = true;
 
-rock = [mat1 , mat2];
-
 % Material parameters vector
-% Same material for all elements
 mdl.mat  = struct( ...
-    'porousMedia',rock, ...
+    'porousMedia',[mat1 , mat2], ...
     'liquidFluid',water,...
     'gasFluid',dnapl);
 
-% --- Boundary conditions -------------------------------------------------
-% In case it is prescribed a pressure value different than zero, don't 
-% forget also that you need to constraint these degrees of freedom.
+% --- Boundary and initial conditions -------------------------------------
 
-% Capillary pressure boundary conditions
-CoordSupp  = [1 0 -1;       % Left border
-              1 Lx -1;      % Right border
-              1 -1 0.0];    % Bottom border                        
-CoordLoad  = [];                      
-CoordPresc = [755.0 0 -1;
-              755.0 Lx -1;
-              755.0 -1 0.0];            
-CoordInit  = [];                      
-           
-% Define supports and loads
-[mdl.SUPP_p, mdl.LOAD_p, mdl.PRESCDISPL_p, mdl.INITCOND_p] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-mdl.INITCOND_p = 755.0*ones(size(mdl.INITCOND_p,1),1);
+% Capillary pressure conditions
+mdl.setCapillaryPressureDirichletBCAtBorder('left'  ,755.0);
+mdl.setCapillaryPressureDirichletBCAtBorder('right' ,755.0);
+mdl.setCapillaryPressureDirichletBCAtBorder('bottom',755.0);
+mdl.setInitialCapillaryPressureAtDomain(755.0);
 
-% Gas pressure boundary conditions
-CoordSupp  = [1 0 -1;       % Left border
-              1 Lx -1];     % Right border                          
-CoordLoad  = [];                      
-CoordPresc = [];             
-CoordInit  = [];                      
-           
-% Define supports and loads
-[mdl.SUPP_pg, mdl.LOAD_pg, mdl.PRESCDISPL_pg, mdl.INITCOND_pg] = boundaryConditionsPressure(mdl.NODE, ...
-    CoordSupp, CoordLoad, CoordPresc, CoordInit, Lx, Ly, Nx, Ny);
-
-% Set hydrostatic pressure 
-for i = 1:size(mdl.NODE,1)
+% Gas pressure conditions
+% It follows an hydrostatic profile
+for i = 1:mdl.nnodes
     pg = 7886.5 - 9810.0*mdl.NODE(i,2);
-    mdl.INITCOND_pg(i) = pg;
-    if (mdl.SUPP_pg(i,1) == 1)
-        mdl.PRESCDISPL_pg(i) = pg;
+    mdl.setInitialGasPressureAtNode(i,pg);
+    % Fix the gas pressure at the lateral borders
+    if ((abs(mdl.NODE(i,1))<1.0e-12) || ((abs(mdl.NODE(i,1) - Lx))<1.0e-12))
+        mdl.setGasPressureDirichletBCAtNode(i, pg);
     end
 end
 
 % Add prescribed gas pressure at the infiltration zone
 qginj = 0.3 * 0.075 / dnapl.rho;
 tol = 1.0e-4;
-reg = isInsideRectangle(mdl.NODE,[0.3-tol,Ly-tol],[0.6+tol,Ly+tol]);
-mdl.LOAD_pg(reg == 1) = qginj/sum(reg);
+reg = find(isInsideRectangle(mdl.NODE,[0.3-tol,Ly-tol],[0.6+tol,Ly+tol]));
+for i = 1:length(reg)
+    mdl.setGasPressureNeumannBCAtNode(reg(i), qginj/length(reg));
+end
 
-% --- Order of the integration rule for the domain ------------------------
+% --- Numerical model configuration ---------------------------------------
 
-% Using Gauss quadrature
-mdl.intOrder = 2;
-
-% Diagonalize compressibility matrix
+% Diagonalize compressibility matrix (mass lumping)
 mdl.massLumping = true;
 mdl.lumpStrategy = 2;
 
-%% ========================= INITIALIZATION ===============================
-
-% Plot the mesh with the supports
-mdl.plotMeshWithMatId();
-
-% Create the result object for the analysis
-ndPlot  = 3;
-dofPlot = 1; % 1 for X and 2 for Y
-result  = ResultAnalysis(mdl.ID(ndPlot,dofPlot),[],[],[]);
-
-%% ========================== RUN ANALYSIS ================================
+%% PROCESS
 
 % Transient analysis parameters
 tinit = 1.0;       % Initial time
@@ -154,23 +130,17 @@ dtmax = 20.0;
 dtmin = 0.01;
 
 % Solve the problem
-anl = Anl_TransientPicard(result);
+anl = Anl_Transient("Picard");
 anl.setUpTransientSolver(tinit,dt,tf,dtmax,dtmin,true);
-anl.setPicardRelaxation();
-anl.useRelativeError = true;
+anl.setRelativeConvergenceCriteria(true);
 anl.process(mdl);
 
-%% ========================= CHECK THE RESULTS ============================
-
-% Print the results in the command window
-mdl.printResults();
+%% POST-PROCESS
 
 % Plot pressure along a segment
 Xi  = [0.0 , 0.0];
 Xf  = [Lx , Ly];
 npts = 500;
 mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
-% mdl.plotField('CapillaryPressure');
-% mdl.plotField('GasPressure');
 mdl.plotField('LiquidSaturation');
 mdl.plotField('GasSaturation');
