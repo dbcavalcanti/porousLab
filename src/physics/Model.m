@@ -41,6 +41,7 @@ classdef Model < handle
         isAxisSymmetric     = false;         % Flag for axissymetric models
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
+        initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
     %% Constructor method
@@ -246,25 +247,32 @@ classdef Model < handle
         %------------------------------------------------------------------
         function preComputations(this)
 
-            disp("*** Pre-processing...");
-            
-            % Check and initialize the material ID vector
-            this.checkMaterialId();
+            if(this.initializeMdl == false)
 
-            % Create nodes DOF ids matrix
-            this.createNodeDofIdMtrx();
-
-            % Initialize elements
-            this.initializeElements();
-
-            % Assemble discontinuity segments to the elements
-            this.assembleDiscontinuitySegments();
-            
-            % Compute auxiliar variables for assemblage of sparse matrices
-            this.initializeSparseMtrxAssemblageVariables();
-
-            % Initialize the displacement vector
-            this.initializeDisplacementVct();
+                disp("*** Pre-processing...");
+                
+                % Check and initialize the material ID vector
+                this.checkMaterialId();
+    
+                % Create nodes DOF ids matrix
+                this.createNodeDofIdMtrx();
+    
+                % Initialize elements
+                this.initializeElements();
+    
+                % Assemble discontinuity segments to the elements
+                this.assembleDiscontinuitySegments();
+                
+                % Compute auxiliar variables for assemblage of sparse matrices
+                this.initializeSparseMtrxAssemblageVariables();
+    
+                % Initialize the displacement vector
+                this.initializeDisplacementVct();
+    
+                % Update flag to indicate that the model has already been
+                % initialized
+                this.initializeMdl = true;
+            end
 
         end
 
