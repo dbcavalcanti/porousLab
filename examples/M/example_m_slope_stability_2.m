@@ -62,10 +62,6 @@ CoordPresc = [];
 % Define supports and loads
 [mdl.SUPP_u, mdl.LOAD_u, mdl.PRESCDISPL_u] = boundaryConditionsDisplacement(mdl.NODE, CoordSupp, CoordLoad, CoordPresc, 1.0, 1.0, 100, 100);
 
-%% PRE-PROCESS
-
-mdl.preComputations();
-
 %% PROCESS
 
 % Analysis parameters
