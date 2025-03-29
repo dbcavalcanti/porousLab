@@ -144,7 +144,7 @@ classdef Anl_Transient < Anl
                 mdl.element(el).type.ue = mdl.U(gle);
             end
 
-            disp("*** Analysis completed.")
+            disp("*** Analysis completed!")
 
         end
 
