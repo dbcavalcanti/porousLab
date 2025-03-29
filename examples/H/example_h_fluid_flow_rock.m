@@ -1,7 +1,5 @@
 %% DESCRIPTION
 %
-% ...
-%
 % Physics:
 % * Single-phase hydraulic (H)
 %
@@ -14,68 +12,74 @@ close all; clear; clc;
 % Path to source directory
 src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
 addpath(genpath(src_dir));
+
 print_header;
+
+%% MODEL
 
 % Create model
 mdl = Model_H();
 
-%% MESH GENERATION
+%% MESH
 
-% Mesh generation
+% Create mesh
 Lx = 2.0;  % Horizontal dimension (m)
 Ly = 1.0;  % Vertical dimension (m)
 Nx = 2;    % Number of elements in the x-direction
 Ny = 1;    % Number of elements in the y-direction
+[node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
-[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
-mdl.setMesh(node,elem);
+% Set mesh to model
+mdl.setMesh(node, elem);
 
-%% MATERIAL CREATION
+%% MATERIALS
 
 % Create fluids
 water = Fluid('water');
-water.rho = 1000.0;  % Density (kg/m3)
+water.rho = 1.0e+3;  % Density (kg/m3)
 water.mu  = 1.0e-3;  % Viscosity (Pa*s)
-water.K   = 2.0e9;   % Compressibility/Bulk modulus (1/Pa)
+water.K   = 2.0e+9;  % Compressibility/Bulk modulus (1/Pa)
 
 % Create porous media
 rock = PorousMedia('rock');
 rock.K    = 1.0194e-14;  % Intrinsic permeability (m2)
 rock.phi  = 0.3;         % Porosity
-rock.Ks   = 1.0e12;      % Rock bulk modulus (Pa)
+rock.Ks   = 1.0e+12;     % Rock bulk modulus (Pa)
 rock.biot = 0.6;         % Biot coefficient
 
-% Set the material to the model
+% Set materials to model
 mdl.setMaterial(rock, water);
 
 %% BOUNDARY CONDITIONS
 
-mdl.setPressureDirichletBCAtBorder('left',0.0);
-mdl.setPressureDirichletBCAtBorder('right',10.0);
+% Set Dirichlet boundary conditions
+mdl.setPressureDirichletBCAtBorder('left', 0.0);
+mdl.setPressureDirichletBCAtBorder('right', 10.0);
 
 %% PROCESS
 
-% Transient analysis parameters
-tinit = 1.0;   % Initial time
-dt    = 1.0;   % Time step
-tf    = 500;   % Final time
-dtmax = 1.0;
-dtmin = 1.0;
+% Analysis parameters
+ti        = 1.0;    % Initial time
+dt        = 1.0;    % Time step
+tf        = 500.0;  % Final time
+dtmax     = 50.0;   % Maximum time step
+dtmin     = 0.001;  % Minimum time step
+adaptStep = true;   % Adaptive step size
 
-% Solve the problem
+% Run analysis
 anl = Anl_Transient("Picard");
-anl.setUpTransientSolver(tinit,dt,tf,50.0,0.001,true);
+anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.setRelativeConvergenceCriteria(true);
 anl.run(mdl);
 
 %% POST-PROCESS
 
-% Print the results in the command window
+% Print results to command window
 mdl.printResults();
 
-% Plot pressure along a segment
-Xi  = [0.0 , Ly/2.0];
-Xf  = [Lx , Ly/2.0];
-npts = 500;
-mdl.plotPressureAlongSegment(Xi, Xf, npts,'x')
-mdl.plotField('Pressure')
+% Plot contours
+mdl.plotField('Pressure');
+
+% Plot graphs
+Xi = [0.0, Ly/2.0]; Xf = [Lx, Ly/2.0];
+mdl.plotPressureAlongSegment(Xi, Xf, 500, 'x');

@@ -1,6 +1,6 @@
 %% DESCRIPTION
 %
-% Block crossed by a strong discontinuity.
+% Block crossed by strong discontinuity.
 %
 % Physics:
 % * Single-phase hydraulic (H)
@@ -14,72 +14,77 @@ close all; clear; clc;
 % Path to source directory
 src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
 addpath(genpath(src_dir));
+
 print_header;
+
+%% MODEL
 
 % Create model
 mdl = Model_H();
 
-%% MESH GENERATION
+%% MESH
 
-% Mesh geometry
+% Create mesh
 Lx = 5.0;  % Horizontal dimension (m)
 Ly = 3.0;  % Vertical dimension (m)
 Nx = 5;    % Number of elements in the x-direction
 Ny = 3;    % Number of elements in the y-direction
+[node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
-% Generate the mesh
-[node,elem] = regularMesh(Lx, Ly, Nx, Ny);
-mdl.setMesh(node,elem);
+% Set mesh to model
+mdl.setMesh(node, elem);
 
-% Discontinuity generation
+% Create discontinuities
 Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture
 Dy = [1.1; 1.9];  % Y-coordinates of polyline defining the fracture
-
 fracture = Discontinuity([Dx, Dy], true);
 
-%% MATERIAL CREATION
+%% MATERIALS
 
 % Create fluids
 water = Fluid('water');
-water.rho = 1000.0;  % Density (kg/m3)
+water.rho = 1.0e+3;  % Density (kg/m3)
 water.mu  = 1.0e-3;  % Viscosity (Pa*s)
-water.K   = 2.0e9;   % Compressibility/Bulk modulus (1/Pa)
+water.K   = 2.0e+9;  % Compressibility/Bulk modulus (1/Pa)
 
 % Create porous media
 rock = PorousMedia('rock');
 rock.K   = 9.8e-16;  % Intrinsic permeability (m2)
 rock.phi = 0.25;     % Porosity
 
-% Set the material to the model
+% Set materials to model
 mdl.setMaterial(rock, water);
 
 % Set fracture material properties
-fracture.initialAperture = 1.0e-3;
 fracture.fluid = water;
+fracture.initialAperture = 1.0e-3;
 
 %% BOUNDARY CONDITIONS
 
-mdl.setPressureDirichletBCAtBorder('left',0.0);
-mdl.setPressureDirichletBCAtBorder('right',10.0);
+% Set Dirichlet boundary conditions
+mdl.setPressureDirichletBCAtBorder('left', 0.0);
+mdl.setPressureDirichletBCAtBorder('right', 10.0);
 
 %% PRE-PROCESS
 
-% Create the discontinuity elements
+% Create discontinuity elements
 fracture.intersectMesh(mdl);
 
-% Add the fracture to the model
+% Add fractures to model
 mdl.addPreExistingDiscontinuities(fracture);
 
 %% PROCESS
 
-% Solve the problem
+% Run analysis
 anl = Anl_Linear();
 anl.run(mdl);
 
 %% POST-PROCESS
 
-% Plot pressure along a segment
+% Print results to command window
 mdl.printResults();
 
-mdl.plotField('Pressure'); hold on
-fracture.plotIntersectedGeometry()
+% Plot contours
+mdl.plotField('Pressure');
+hold on;
+fracture.plotIntersectedGeometry();
