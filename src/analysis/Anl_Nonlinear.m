@@ -13,10 +13,6 @@
 % after the convergence of the iterative process. It was also added the
 % displacement control method.
 %
-% Authors:
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
-% * Rafael Rangel (rrangel@cimne.upc.edu)
-%
 classdef Anl_Nonlinear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)

@@ -2,9 +2,6 @@
 %
 % This class implements the solution of a static linear analysis. 
 %
-% Authors:
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
-%
 classdef Anl_Linear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)

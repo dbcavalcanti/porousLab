@@ -2,9 +2,6 @@
 %
 % This in an abstract class that defines an analysis object.
 %
-% Authors:
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
-%
 classdef Anl < handle
     %% Public properties
     properties (SetAccess = public, GetAccess = public)

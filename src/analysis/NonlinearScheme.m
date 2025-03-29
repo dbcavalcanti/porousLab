@@ -2,9 +2,6 @@
 %
 % This in an abstract class that defines a NonlinearScheme object.
 %
-% Authors:
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
-%
 classdef NonlinearScheme < handle
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
