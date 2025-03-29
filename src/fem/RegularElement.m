@@ -70,26 +70,21 @@ classdef RegularElement < handle
     
     %% Public methods
     methods
-
         %------------------------------------------------------------------
         % This function assembles the element matrices and vectors 
         function [Ae, be] = elementLinearSystem(this,nlscheme)
-
             [Ke, Ce, fi, fe, dfidu] = this.elementData();
-
-            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu,this.ue, this.ueOld, this.DTime);
+            [Ae,be] = nlscheme.assembleLinearSystem(Ce, Ke, fi, fe, dfidu, this.ue, this.ueOld, this.DTime);
         end
 
         % -----------------------------------------------------------------
         % Function to update the state variables
         function updateStateVar(this)
-
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
                 this.intPoint(i).updateStrainVct();
             end
-
         end
 
         %------------------------------------------------------------------
@@ -122,13 +117,10 @@ classdef RegularElement < handle
             A    = 0.5*sum(temp);
             
         end
-        
-
     end
 
     %% Public methods associated with the pos-processing
     methods
-
         %------------------------------------------------------------------
         % Update the result's object vertices property
         % If the 'Undeformed' configuration is selected, nothing needs to
@@ -166,15 +158,13 @@ classdef RegularElement < handle
             end
             this.result.setVertexData(ndResults);
         end
-
     end
-    methods(Static)
 
+    methods(Static)
         %------------------------------------------------------------------
         % This function sorts counterclockwise a set of nodes.
         % It uses as a reference point the centroid defined by the nodes.
         function order = sortCounterClockWise(NODE)
-            
             % Centroid coordinate
             cx = mean(NODE(:,1));
             cy = mean(NODE(:,2));
@@ -185,8 +175,6 @@ classdef RegularElement < handle
             
             % Sort the angles
             [~, order] = sort(a);
-            
         end
-
     end
 end

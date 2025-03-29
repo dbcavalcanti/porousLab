@@ -2,7 +2,7 @@
 %
 % Considers a fully implicit time integration scheme.
 %
-classdef NonlinearScheme_Newton < NonlinearScheme 
+classdef NonlinearScheme_Newton < NonlinearScheme
     %% Constructor method
     methods
         %------------------------------------------------------------------
@@ -10,40 +10,37 @@ classdef NonlinearScheme_Newton < NonlinearScheme
             this = this@NonlinearScheme();
         end
     end
-    %% Public methods
-    % Implementation of the abstract methods declared in super-class
-    methods (Static)
 
+    %% Public methods
+    methods
         %------------------------------------------------------------------
-        function [J, r] = assembleLinearSystem(C, K, fi, fe, dfidx, x, xOld, dt)
+        function [J,r] = assembleLinearSystem(~,C,K,fi,fe,dfidx,x,xOld,dt)
             % Compute residual vector
             r = fi + K * x + C * (x - xOld) / dt - fe;
+
             % Jacobian matrix
             J = K + dfidx + C / dt;
         end
 
         %------------------------------------------------------------------
-        function bf = applyBCtoRHS(~, b, ~, doffree, ~)
+        function bf = applyBCtoRHS(~,~,b,~,doffree,~)
             bf = b(doffree);
         end
 
         %------------------------------------------------------------------
-        function b = addNodalForces(b,fe)
+        function b = addNodalForces(~,b,fe)
             b = b - fe;
         end
 
-    end
-
-    methods
-
         %------------------------------------------------------------------
-        function [X, dx] = eval(~,J,r,X,~,freedof,~)
-            % Compute the increment of the variables
+        function [X,dx] = eval(~,J,r,X,~,freedof,~)
+            % Compute increment of variables
             dx = -J\r;
-            % Update the variables
+
+            % Update variables
             X(freedof) = X(freedof) + dx;
         end
-
+        
         %------------------------------------------------------------------
         function convFlg = convergence(this,~,~,~,r,~,iter)
             fprintf("\t\t iter.: %3d , ||R|| = %7.3e \n",iter,norm(r));
@@ -53,7 +50,5 @@ classdef NonlinearScheme_Newton < NonlinearScheme
                 convFlg = false;
             end
         end
-
     end
-    
 end

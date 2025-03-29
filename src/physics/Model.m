@@ -250,9 +250,7 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function preComputations(this)
-
             if(this.initializeMdl == false)
-
                 disp("*** Pre-processing...");
                 
                 % Check and initialize the material ID vector
@@ -273,11 +271,9 @@ classdef Model < handle
                 % Initialize the displacement vector
                 this.initializeDisplacementVct();
     
-                % Update flag to indicate that the model has already been
-                % initialized
+                % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
             end
-
         end
 
         %------------------------------------------------------------------
@@ -287,7 +283,6 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function initializeDisplacementVct(this)
-
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
 
@@ -311,7 +306,6 @@ classdef Model < handle
             for el = 1 : this.nelem
                 this.element(el).type.ue = this.U(this.element(el).type.gle);
             end
-
         end
 
         %------------------------------------------------------------------
@@ -429,7 +423,6 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         function Lce = getElementCharacteristicLength(this,el)
-
             % Vertices of the element el coordinates
             vx = this.NODE(this.ELEM(el,:),1); 
             vy = this.NODE(this.ELEM(el,:),2);
@@ -480,7 +473,6 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Global system matrices
         function [K, C, Fi, Fe, dfidx] = globalMatrices(this,U)   
-
             % Indices for the assembling the matrices and vector
             iDof = zeros(this.sqrNDofElemTot,1);
             jDof = zeros(this.sqrNDofElemTot,1);

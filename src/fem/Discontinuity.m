@@ -58,6 +58,7 @@ classdef Discontinuity < handle
         function setSavePerturbNodes(this,flag)
             this.savePerturbNodes = flag;
         end
+
         %------------------------------------------------------------------
         function intersectMesh(this, model)
             % Perform intersection and optionally apply the repel process
@@ -86,7 +87,6 @@ classdef Discontinuity < handle
 
             % Create the discontinuity segments
             this.initializeDiscontinuitySegments(model);
-
         end
 
         %------------------------------------------------------------------

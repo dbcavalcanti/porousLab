@@ -44,7 +44,6 @@ classdef IntPoint < handle
     
     %% Public methods
     methods
-
         %------------------------------------------------------------------
         %  Initialize analysis model (mechanical part)
         function initializeMechanicalAnalysisModel(this,anm)

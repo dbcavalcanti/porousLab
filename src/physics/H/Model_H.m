@@ -17,7 +17,7 @@ classdef Model_H < Model
             this.ndof_nd = 1;       % Number of dofs per node
             this.physics = 'H';     % Tag with the physics name
             if (printFlag)
-                disp("*** Physics: Single-phase fluid flow");
+                disp("*** Physics: Single-phase hydraulic (H)");
             end
         end
     end

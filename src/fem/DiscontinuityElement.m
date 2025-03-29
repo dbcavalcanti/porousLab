@@ -28,10 +28,12 @@ classdef DiscontinuityElement < handle
             end
         end
     end
+
     %% Abstract methods
     methods(Abstract)
         [Ke, Ce, fi, fe, dfidu] = elementData(this, ae);
     end
+
     %% Public methods
     methods
         % -----------------------------------------------------------------
@@ -75,13 +77,11 @@ classdef DiscontinuityElement < handle
         % -----------------------------------------------------------------
         % Function to update the state variables
         function updateStateVar(this)
-
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
                 this.intPoint(i).updateStrainVct();
             end
-
         end
     end
 end
