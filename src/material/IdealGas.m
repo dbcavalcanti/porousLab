@@ -21,7 +21,12 @@ classdef IdealGas < Fluid
     methods
         %------------------------------------------------------------------
         function this = IdealGas(id, viscosity, compressibility)
-            this = this@Fluid(id, 0.0, viscosity, compressibility)
+            this = this@Fluid(id);
+            this.rho = 0.0;
+            if nargin > 1
+                this.mu = viscosity;
+                this.K  = compressibility;
+            end
         end
     end
     %%
