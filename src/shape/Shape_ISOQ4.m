@@ -21,7 +21,6 @@ classdef Shape_ISOQ4 < Shape
 
     %% Public methods: methods defined in the abstract superclass
     methods
-
         % -----------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % quadrilateral isoparametric element.
@@ -36,42 +35,34 @@ classdef Shape_ISOQ4 < Shape
             N3 = (1.0 + xi)*(1.0 + eta)/4.0;
             N4 = (1.0 - xi)*(1.0 + eta)/4.0;
             N   = [ N1  N2  N3  N4 ];
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nm = shapeFncMtrx(this,Xn)
-
              % Vector with the shape functions
              Nm = this.shapeFnc(Xn);
-
          end
 
          % -----------------------------------------------------------------
          % Get the linear shape function matrix
          function Nm = linearShapeFncMtrx(~,Xn)
-
             % Vector with the shape functions
             Nm = this.shapeFnc(Xn);
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,Nm)
-
              % Vector with the shape functions
              Nu = [Nm(1) 0.0 Nm(2) 0.0 Nm(3) 0.0 Nm(4) 0.0;
                    0.0  Nm(1) 0.0 Nm(2) 0.0 Nm(3) 0.0 Nm(4)];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = shapeFncDrv(~,Xn)
-
             % Natural coordinates of the given point
             xi = Xn(1); eta = Xn(2);
 
@@ -82,36 +73,30 @@ classdef Shape_ISOQ4 < Shape
             dN4_dxi = -(1+eta)/4;    dN4_deta =  (1-xi)/4;
             dNdxn   = [ dN1_dxi   dN2_dxi   dN3_dxi   dN4_dxi ;
                         dN1_deta  dN2_deta  dN3_deta  dN4_deta ];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
-
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
               
             % Jacobian matrix
             J = dNdxn * X;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
-              
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
             detJ = det(J);
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
 
@@ -125,20 +110,17 @@ classdef Shape_ISOQ4 < Shape
             % Compute the derivatives of the shape functions wrt to the
             % global cartesian coordinate system
             dNdx = J\dNdxn;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
-
             B = zeros(4,4*2);
             for i = 1:4
                 B(1,2*i-1) = dNdx(1,i); 
                 B(2,2*i)   = dNdx(2,i);
                 B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
             end
-
          end
 
          % -----------------------------------------------------------------
@@ -154,7 +136,6 @@ classdef Shape_ISOQ4 < Shape
          %   X : vector with the x and y coordinates of a point in the 
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
-
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
@@ -168,7 +149,6 @@ classdef Shape_ISOQ4 < Shape
             % Interpolation the position
             X(1) = Nv(1)*x(1) +  Nv(2)*x(2) +  Nv(3)*x(3) +  Nv(4)*x(4);
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2) +  Nv(3)*y(3) +  Nv(4)*y(4);
-
          end
 
          % -----------------------------------------------------------------
@@ -188,8 +168,6 @@ classdef Shape_ISOQ4 < Shape
          %   Felippa, C. A. Introduction to the Finite Element Methods. 
          %   2004.(Chapter 23, item 6)
          function Xn = coordCartesianToNatural(~,NODE,X)
-            
-            
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
@@ -217,7 +195,6 @@ classdef Shape_ISOQ4 < Shape
             xi  = 2.0*cxi / (-sqrt(bxi^2 - 2*J1*cxi) - bxi);
             eta = 2.0*cet / (sqrt(bet^2 + 2*J2*cet) - bet);
             Xn = [xi, eta];
-            
          end
 
         %------------------------------------------------------------------
@@ -255,9 +232,8 @@ classdef Shape_ISOQ4 < Shape
 
                 % Number of integration points
                 n = size(X,2);
-
+				
             else
-
                 elemNodes = [elem.node]; FractSeg = [];
                 nnodes = size(elem.node,1);
                 k = 1;
@@ -314,7 +290,6 @@ classdef Shape_ISOQ4 < Shape
                     end
                 end 
             end
-
         end
 
         % -----------------------------------------------------------------
@@ -333,7 +308,6 @@ classdef Shape_ISOQ4 < Shape
         % quadrilateral isoparametric element, the stress field will be
         % assumed to have a linear behavior.
         function dH = integrandGramMtrx(this, node, Xn)
-            
             % Compute the relative coordinate wrt to the centroid of the
             % element
             Xrel    = this.coordNaturalToCartesian(node,Xn);
@@ -342,7 +316,6 @@ classdef Shape_ISOQ4 < Shape
             dH = [  1.0          Xrel(1)           Xrel(2);
                    Xrel(1)    Xrel(1)*Xrel(1)   Xrel(2)*Xrel(1);
                    Xrel(2)    Xrel(1)*Xrel(2)   Xrel(2)*Xrel(2)];
-                
         end
 
         % -----------------------------------------------------------------
@@ -360,7 +333,6 @@ classdef Shape_ISOQ4 < Shape
         % -----------------------------------------------------------------
         % Integrand to compute the stress interpolation vector
         function dS = integrandStressIntVct(~,s,Xrel,jumpOrder)
-
             if jumpOrder == 0
                 dS = [  1.0;
                       Xrel(1);
@@ -371,7 +343,6 @@ classdef Shape_ISOQ4 < Shape
                       Xrel(2)  s*Xrel(2)];
             end
         end
-
     end
 
     methods (Static)
@@ -403,14 +374,12 @@ classdef Shape_ISOQ4 < Shape
             gp(abs(gp)<10*eps) = 0; 
             gp(ceil(end/2)+1:end) = -flipud(gp(1:floor(end/2)));
             w(ceil(end/2)+1:end) = flipud(w(1:floor(end/2)));
-
         end  
 
         %------------------------------------------------------------------
         % This function sorts counterclockwise a set of nodes.
         % It uses as a reference point the centroid defined by the nodes.
         function order = sortCounterClockWise(NODE)
-            
             % Centroid coordinate
             cx = mean(NODE(:,1));
             cy = mean(NODE(:,2));
@@ -421,7 +390,6 @@ classdef Shape_ISOQ4 < Shape
             
             % Sort the angles
             [~, order] = sort(a);
-            
         end
     end
 end
