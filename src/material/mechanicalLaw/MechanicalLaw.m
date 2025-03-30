@@ -146,9 +146,34 @@ classdef MechanicalLaw < handle
             end
         end
 
+        % Strain tensor norm
+        function normE = normTensor(~,strain)
+            exx = strain(1);
+            eyy = strain(2);
+            ezz = strain(3);
+            exy = strain(4) / 2.0;
+            normE = exx * exx + eyy * eyy + ezz * ezz + 2.0 * exy * exy;
+            normE = sqrt(normE);
+        end
+
         % I1 strain invariant
         function I1 = strainInvariantI1(~,strain)
             I1 = strain(1) + strain(2) + strain(3);
+        end
+
+        % Volumetric strain
+        function ev = volumetricStrain(this,strain)
+            ev = this.strainInvariantI1(strain);
+        end
+
+        % Deviatoric strain
+        function ed = deviatoricStrain(this,strain)
+            ed = zeros(4,1);
+            ev = this.volumetricStrain(strain);
+            ed(1) = strain(1) - ev / 3.0;
+            ed(2) = strain(2) - ev / 3.0;
+            ed(3) = strain(3) - ev / 3.0;
+            ed(4) = strain(4) / 2.0;
         end
 
         % I2 strain invariant
