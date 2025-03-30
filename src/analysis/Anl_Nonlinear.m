@@ -1,45 +1,44 @@
-%% Anl_Nonlinear Class
+%% Anl_Nonlinear class
 %
-% This class implements the solution of a nonlinear incremental-iterative 
-% structural analysis.
+% This class implements the solution of a nonlinear incremental-iterative analysis.
 %
 % The code was adapted from the Anl_Nonlinear class from NUMA-TF 
 % (https://gitlab.com/rafaelrangel/numa-tf, Accessed on February 1st, 2023)
-% In the reference code to compute the stiffness matrix and the internal
-% force vector are computed through different methods. Now both are
-% computed using the same function. Another change that was done was
-% related to the input variable to those methods, now the increment of the
-% displacement vector associated to the iteration is used as an input.
-% To consider the possibility of material nonlinearity, it was added a
-% method to update the state variables after the convergence of the
-% iterative process. It was also added the displacement control method.
+% In the reference code, the stiffness matrix and the internal force vector
+% are computed through different methods. Here both are computed using the
+% % same function. Another change that was done was related to the input
+% variable to those methods, now the increment of the displacement vector
+% associated to the iteration is used as an input. To consider the possibility
+% of material nonlinearity, it was added a method to update the state variables
+% after the convergence of the iterative process. It was also added the
+% displacement control method.
 %
 classdef Anl_Nonlinear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        method     = 0;   % flag for solution method
-        adjustStep = 0;   % flag for type of increment size adjustment
-        increment  = 0;   % initial increment of load ratio
-        max_lratio = 0;   % limit value of load ratio
-        max_step   = 0;   % maximum number of steps
-        max_iter   = 0;   % maximum number of iterations in each step
-        trg_iter   = 0;   % desired number of iterations in each step
-        tol        = 0;   % numerical tolerance for convergence
-        ctrlNode   = 0;   % control node (for displacement control method)
-        ctrlDof    = 0;   % control dof (for displacement control method)
-        incrSign   = 0;   % sign of the increment of displacement
-        plotNd     = 1;   % node that will be plotted the dof
-        plotDof    = 1;   % dof (ux,uy) that will plotted
-        Uplot      = [];  % matrix of nodal displacement vectors of all steps/modes
-        lbdplot    = [];  % vector of load ratios of all steps
+        method     = 0;   % Flag for solution method
+        adjustStep = 0;   % Flag for type of increment size adjustment
+        increment  = 0;   % Initial increment of load ratio
+        max_lratio = 0;   % Limit value of load ratio
+        max_step   = 0;   % Maximum number of steps
+        max_iter   = 0;   % Maximum number of iterations in each step
+        trg_iter   = 0;   % Desired number of iterations in each step
+        tol        = 0;   % Numerical tolerance for convergence
+        ctrlNode   = 0;   % Control node (for displacement control method)
+        ctrlDof    = 0;   % Control dof (for displacement control method)
+        incrSign   = 0;   % Sign of the increment of displacement
+        plotNd     = 1;   % Node that will be plotted the dof
+        plotDof    = 1;   % DOF (ux,uy) that will plotted
+        Uplot      = [];  % Matrix of nodal displacement vectors of all steps/modes
+        lbdplot    = [];  % Vector of load ratios of all steps
     end
-    
+
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function anl = Anl_Nonlinear(method,adjustStep,increment,...
-                max_lratio,max_step,max_iter,trg_iter,tol)
+        function anl = Anl_Nonlinear(method,adjustStep,increment,max_lratio,max_step,max_iter,trg_iter,tol)
             anl = anl@Anl('Nonlinear');
+
             % Default analysis configuration
             if nargin == 1
                 anl.method     = 'LoadControl';
@@ -50,8 +49,9 @@ classdef Anl_Nonlinear < Anl
                 anl.max_iter   = 10;
                 anl.trg_iter   = 3;
                 anl.tol        = 0.00001;
+            
+            % Given analysis configuration
             else
-            % User given analysis set up
                 anl.method     = method;
                 anl.adjustStep = adjustStep;
                 anl.increment  = increment;
@@ -65,259 +65,252 @@ classdef Anl_Nonlinear < Anl
     end
     
     %% Public methods
-    % Implementation of the abstract methods declared in super-class Anl
     methods
         %------------------------------------------------------------------
-        % Process model data to compute results.
-        function status = run(anl,mdl)
-
-            % Initialize the model object
+        function run(this,mdl)
+            % Initialize model object
             mdl.preComputations();
+            
+            disp("*** Performing nonlinear analysis...")
 
             % Initialize results
-            anl.lbdplot = zeros(anl.max_step+1,1);
-            anl.Uplot   = zeros(anl.max_step+1,1);
-            
+            this.lbdplot = zeros(this.max_step+1,1);
+            this.Uplot   = zeros(this.max_step+1,1);
+
             % Initialize data for first step
-            step  = 0;  % step number
-            lbd   = 0;  % total load ratio (lambda)
-            sign  = 1;  % sign of predicted increment of load ratio
-            
+            step = 0;  % step number
+            lbd  = 0;  % total load ratio (lambda)
+            sign = 1;  % sign of predicted increment of load ratio
+
             % Initialize vector of total nodal displacements
-            U    = mdl.U;
+            U = mdl.U;
 
             % Initialize vector of total increment displacement
             D_U = zeros(mdl.ndof,1);
-            
-            %==========================================================================
+
             % Start incremental process
-            while (step < anl.max_step)
+            while (step < this.max_step)
                 step = step + 1;
-                
+
                 % Tangent stiffness matrix
-                [K, ~, ~, Fref] = mdl.globalMatrices(U);
+                [K,~,~,Fref] = mdl.globalMatrices(U);
 
                 % Tangent increment of displacements for predicted solution
-                d_Up0 = anl.solveSystem(mdl,K,Fref,U);
-                
+                d_Up0 = this.solveSystem(mdl,K,Fref,U);
+
                 if (step == 1)
                     % Initial increment of load ratio for predicted solution
-                    if strcmp(anl.method,'DisplacementControl')
-                        d_lbd0 = anl.predictedIncrement(anl,mdl,sign,1,1,0.0,0.0,D_U,d_Up0,Fref);
+                    if strcmp(this.method,'DisplacementControl')
+                        d_lbd0 = this.predictedIncrement(mdl,sign,1,1,0.0,0.0,D_U,d_Up0,Fref);
                     else
-                        d_lbd0 = anl.increment;
+                        d_lbd0 = this.increment;
                     end
-                    
+
                     % Set previous tangent increment of displacements as current increment
                     d_Up0_old = d_Up0;
-                    
+
                     % Store squared value of the norm of tangent increment of displacements
-                    n2 = d_Up0(mdl.doffree)'*d_Up0(mdl.doffree);
+                    n2 = d_Up0(mdl.doffree)' * d_Up0(mdl.doffree);
                 else
                     % Generalized Stiffness Parameter
-                    GSP = n2/(d_Up0(mdl.doffree)'*d_Up0_old(mdl.doffree));
-                    
+                    GSP = n2 / (d_Up0(mdl.doffree)' * d_Up0_old(mdl.doffree));
+
                     % Adjust increment sign
                     if (GSP < 0)
                         sign = -sign;
                     end
-                    
+
                     % Adjustment factor of increment size
-                    if (anl.adjustStep == false)
+                    if (this.adjustStep == true)
+                        J = sqrt(this.trg_iter/iter);
+                    else
                         J = 1;
-                    elseif (anl.adjustStep == true)
-                        J = sqrt(anl.trg_iter/iter);
                     end
-                    
+
                     % Predicted increment of load ratio
-                    d_lbd0 = anl.predictedIncrement(anl,mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Fref);
+                    d_lbd0 = this.predictedIncrement(mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Fref);
                 end
-                
+
                 % Limit increment of load ratio to make total load ratio smaller than maximum value
-                if ((anl.max_lratio > 0.0 && lbd + d_lbd0 > anl.max_lratio) ||...
-                    (anl.max_lratio < 0.0 && lbd + d_lbd0 < anl.max_lratio))
-                    d_lbd0 = anl.max_lratio - lbd;
+                if ((this.max_lratio > 0.0 && lbd + d_lbd0 > this.max_lratio) ||...
+                    (this.max_lratio < 0.0 && lbd + d_lbd0 < this.max_lratio))
+                    d_lbd0 = this.max_lratio - lbd;
                 end
-                
+
                 % Increments of load ratio and displacements for predicted solution
                 d_lbd = d_lbd0;
                 d_U0  = d_lbd0 * d_Up0;
                 d_U   = d_U0;
-                
+
                 % Initialize incremental values of load ratio and displacements for current step
                 D_lbd = d_lbd;
                 D_U   = d_U;
-                
+
                 % Update total values of load ratio and displacements
                 lbd = lbd + d_lbd;
                 U   = U   + d_U;
-                
-                %----------------------------------------------------------------------
+
                 % Start iterative process
                 iter = 1;
                 conv = 0;
-                while (conv == 0 && iter <= anl.max_iter)
-                    
+                
+                while (conv == 0 && iter <= this.max_iter)
                     % Vector of external and internal forces
                     Fext = lbd * Fref;
-                    [K, ~, Fint] = mdl.globalMatrices(U);
-                    
+                    [K,~,Fint] = mdl.globalMatrices(U);
+
                     % Vector of unbalanced forces
                     R = Fext - Fint;
-                    
+
                     % Check convergence
                     unbNorm = norm(R(mdl.doffree));
                     forNorm = norm(Fref(mdl.doffree));
-                    conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < anl.tol);
+                    conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < this.tol);
                     if conv == 1
                         break;
                     end
-                    
+
                     % Start/keep corrector phase
                     iter = iter + 1;
-                       
+
                     % Tangent and residual increments of displacements
-                    d_Up = anl.solveSystem(mdl,K,Fref);
-                    d_Ur = anl.solveSystem(mdl,K,R);
-                    
+                    d_Up = this.solveSystem(mdl,K,Fref);
+                    d_Ur = this.solveSystem(mdl,K,R);
+
                     % Corrected increment of load ratio
-                    d_lbd = anl.correctedIncrement(anl,mdl,d_lbd0,D_lbd,d_Up0_old,d_U0,d_Up,d_Ur,D_U,Fref,R);
+                    d_lbd = this.correctedIncrement(mdl,d_lbd0,D_lbd,d_Up0_old,d_U0,d_Up,d_Ur,D_U,Fref,R);
                     if (~isreal(d_lbd))
                         conv = -1;
                         break;
                     end
-                    
+
                     % Corrected increment of displacements
                     d_U = d_lbd * d_Up + d_Ur;
-                    
+
                     % Increments of load ratio and displacements for current step
                     D_lbd = D_lbd + d_lbd;
                     D_U   = D_U   + d_U;
-                    
+
                     % Total values of load ratio and displacements
                     lbd = lbd + d_lbd;
                     U   = U   + d_U;
                 end
-                %----------------------------------------------------------------------
+
                 % Check for convergence fail or complex value of increment
                 if (conv == 0)
-                    status = (step > 1);
-                    fprintf('Status: Convergence not achieved!\n');
-                    anl.plotCurves();
+                    disp('Convergence not achieved!');
+                    this.plotCurves();
                     return;
                 elseif (conv == -1)
-                    status = (step > 1);
-                    fprintf('Status: Unable to compute load increment!\n');
+                    disp('Unable to compute load increment!');
                     return;
                 end
+                fprintf('Step: %d | Iter: %d | ratio: %.2f\n',step,iter,lbd);
 
-                fprintf('Step:%d | Iter:%d | ratio:%.2f\n',step,iter,lbd);
-
-                % Update the state variables
+                % Update state variables
                 mdl.updateStateVar();
-                
+
                 % Store step results
-                anl.lbdplot(step+1) = lbd;
-                anl.Uplot(step+1) = U(mdl.ID(anl.plotNd,anl.plotDof));
-                
+                this.lbdplot(step+1) = lbd;
+                this.Uplot(step+1) = U(mdl.ID(this.plotNd,this.plotDof));
+
                 % Store predicted tangent increment of displacements for next step
                 if (step ~= 1)
                     d_Up0_old = d_Up0;
                 end
-                
+
                 % Check if maximum load ratio was reached
-                if ((anl.max_lratio >= 0 && lbd >= 0.999*anl.max_lratio) ||...
-                    (anl.max_lratio <= 0 && lbd <= 0.999*anl.max_lratio))
+                if ((this.max_lratio >= 0 && lbd >= 0.999*this.max_lratio) ||...
+                    (this.max_lratio <= 0 && lbd <= 0.999*this.max_lratio))
                     break;
                 end
             end
-            %==========================================================================
-            
-            % Clean unused steps
-            if (step < anl.max_step)
-                anl.lbdplot = anl.lbdplot(1:step+1);
-                anl.Uplot = anl.Uplot(1:step+1);
-            end
-            anl.plotCurves();
 
+            % Clean unused steps
+            if (step < this.max_step)
+                this.lbdplot = this.lbdplot(1:step+1);
+                this.Uplot = this.Uplot(1:step+1);
+            end
+
+            this.plotCurves();
             mdl.U = U;
 
+            disp("*** Analysis completed!");
         end
 
         %------------------------------------------------------------------
-        function setPlotDof(this,nd,dof)
-            this.plotNd  = nd;
-            this.plotDof = dof;
+        % Partition and solve a linear system of equations.
+        %  f --> free d.o.f. (natural B.C. - unknown) 
+        %  c --> constrained d.o.f. (essential B.C. - known) 
+        %
+        % [ Kff Kfs ] * [ Uf ] = [ Fext ]
+        % [ Ksf Kss ]   [ Us ] = [   R  ]
+        %
+        function [U,Fext] = solveSystem(~,mdl,K,Fext,U)
+            if nargin < 5
+                U = zeros(mdl.ndof,1);
+            end
+
+            % Partition system of equations
+            Kff = K(mdl.doffree,mdl.doffree);
+            Ff  = Fext(mdl.doffree);
+
+            % Solve system of equilibrium equations
+            Uf = Kff \ Ff;
+
+            % Displacement vector
+            U(mdl.doffree) = Uf;
         end
 
-        %------------------------------------------------------------------
-        function plotCurves(this)
-            figure
-            hold on
-            box on, grid on, axis on
-            plot(this.Uplot, this.lbdplot, 'o-k');
-            xlabel('Displacement (mm)','Interpreter','latex')
-            ylabel('Load factor','Interpreter','latex')
-            xaxisproperties= get(gca, 'XAxis');
-            xaxisproperties.TickLabelInterpreter = 'latex'; 
-            yaxisproperties= get(gca, 'YAxis');
-            yaxisproperties.TickLabelInterpreter = 'latex';   
-            set(gca,'FontSize',14);
-        end
-    end
-    
-    %% Static methods
-    methods (Static)
         %------------------------------------------------------------------
         % Compute inrement of load ratio for the predicted solution
         % (first iteration)
-        function d_lbd0 = predictedIncrement(anl,mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Pref)
+        function d_lbd0 = predictedIncrement(this,mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Pref)
             % Extract free d.o.f. components
             Pref  = Pref(mdl.doffree);
             D_U   = D_U(mdl.doffree);
             d_Up0 = d_Up0(mdl.doffree);
-            
                 
             % LCM: Load Increment
-            if strcmp(anl.method,'LoadControl')
+            if strcmp(this.method,'LoadControl')
                 d_lbd0 = J * abs(d_lbd0);
 
             % DCM: Displacement Increment
-            elseif strcmp(anl.method,'DisplacementControl')
-                d_lbd0 = J * sign * anl.increment / d_Up0(anl.ctrlDof);
-                return  % The change of the sign must not be applied
+            elseif strcmp(this.method,'DisplacementControl')
+                d_lbd0 = J * sign * this.increment / d_Up0(this.ctrlDof);
+                return  % Sign change must not be applied
                 
             % WCM: Work Increment
-            elseif strcmp(anl.method,'WorkControl')
+            elseif strcmp(this.method,'WorkControl')
                 d_lbd0 = J * sqrt(abs((D_lbd*Pref'*D_U)/(Pref'*d_Up0)));
                 
             % ALCM_FNP: Cylindrical Arc-Length Increment
-            elseif strcmp(anl.method,'ArcLengthFNPControl')
+            elseif strcmp(this.method,'ArcLengthFNPControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
                 
             % ALCM_UNP: Cylindrical Arc-Length Increment
-            elseif strcmp(anl.method,'ArcLengthUNPControl')
+            elseif strcmp(this.method,'ArcLengthUNPControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
                 
             % ALCM_CYL: Cylindrical Arc-Length Increment
-            elseif strcmp(anl.method,'ArcLengthCylControl')
+            elseif strcmp(this.method,'ArcLengthCylControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
                 
             % ALCM_SPH: Spherical Arc-Length Increment
-            elseif strcmp(anl.method,'ArcLengthSPHControl')
+            elseif strcmp(this.method,'ArcLengthSPHControl')
                 d_lbd0 = J * sqrt((D_U'*D_U + D_lbd^2*(Pref'*Pref)) / (d_Up0'*d_Up0 + Pref'*Pref));
                 
             % MNCM: Cylindrical Arc-Length Increment
-            elseif strcmp(anl.method,'MinimumNorm')
+            elseif strcmp(this.method,'MinimumNorm')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
                 
             % ORCM: Cylindrical Arc-Length Increment
-            elseif strcmp(anl.method,'OrthogonalResidual')
+            elseif strcmp(this.method,'OrthogonalResidual')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
                 
             % GDCM: GSP criteria
-            elseif strcmp(anl.method,'GeneralizedDisplacement')
-                d_lbd0 = J * sqrt(abs(GSP)) * anl.increment;
+            elseif strcmp(this.method,'GeneralizedDisplacement')
+                d_lbd0 = J * sqrt(abs(GSP)) * this.increment;
             end
             
             % Apply increment sign
@@ -327,7 +320,7 @@ classdef Anl_Nonlinear < Anl
         %--------------------------------------------------------------------------
         % Compute inrement of load ratio for the corrected solutions
         % (iterations to correct predicted solution).
-        function d_lbd = correctedIncrement(anl,mdl,d_lbd0,D_lbd,d_Up0,d_U0,d_Up,d_Ur,D_U,Pref,R)
+        function d_lbd = correctedIncrement(this,mdl,d_lbd0,D_lbd,d_Up0,d_U0,d_Up,d_Ur,D_U,Pref,R)
             % Extract free d.o.f. components
             d_Up0 = d_Up0(mdl.doffree);
             d_U0  = d_U0(mdl.doffree);
@@ -338,56 +331,73 @@ classdef Anl_Nonlinear < Anl
             R     = R(mdl.doffree);
             
             % LCM
-            if strcmp(anl.method,'LoadControl')
+            if strcmp(this.method,'LoadControl')
                 d_lbd = 0;
             
             % DCM
-            elseif strcmp(anl.method,'DisplacementControl')
-                d_lbd = -d_Ur(anl.ctrlDof)/d_Up(anl.ctrlDof);
+            elseif strcmp(this.method,'DisplacementControl')
+                d_lbd = -d_Ur(this.ctrlDof)/d_Up(this.ctrlDof);
                 
             % WCM
-            elseif strcmp(anl.method,'WorkControl')
+            elseif strcmp(this.method,'WorkControl')
                 d_lbd = -(Pref'*d_Ur)/(Pref'*d_Up);
                 
             % ALCM_FNP
-            elseif strcmp(anl.method,'ArcLengthFNPControl')
+            elseif strcmp(this.method,'ArcLengthFNPControl')
                 d_lbd = -(d_Ur'*d_U0)/(d_Up'*d_U0 + d_lbd0*(Pref'*Pref));
                 
             % ALCM_UNP
-            elseif strcmp(anl.method,'ArcLengthUNPControl')
+            elseif strcmp(this.method,'ArcLengthUNPControl')
                 d_lbd = -(d_Ur'*D_U)/(d_Up'*D_U + D_lbd*(Pref'*Pref));
                 
             % ALCM_CYL
-            elseif strcmp(anl.method,'ArcLengthCylControl')
+            elseif strcmp(this.method,'ArcLengthCylControl')
                 a = d_Up'*d_Up;
                 b = d_Up'*(d_Ur + D_U);
                 c = d_Ur'*(d_Ur + 2*D_U);
                 s = sign(D_U'*d_Up);
-                
                 d_lbd = -b/a + s*sqrt((b/a)^2 - c/a);
                 
             % ALCM_SPH
-            elseif strcmp(anl.method,'ArcLengthSPHControl')
+            elseif strcmp(this.method,'ArcLengthSPHControl')
                 a = d_Up'*d_Up + Pref'*Pref;
                 b = d_Up'*(d_Ur + D_U) + D_lbd*(Pref'*Pref);
                 c = d_Ur'*(d_Ur + 2*D_U);
                 s = sign(D_U'*d_Up);
-                
                 d_lbd = -b/a + s*sqrt((b/a)^2 - c/a);
                 
             % MNCM
-            elseif strcmp(anl.method,'MinimumNorm')
+            elseif strcmp(this.method,'MinimumNorm')
                 d_lbd = -(d_Up'*d_Ur)/(d_Up'*d_Up);
                 
             % ORCM
-            elseif strcmp(anl.method,'OrthogonalResidual')
+            elseif strcmp(this.method,'OrthogonalResidual')
                 d_lbd = -(R'*D_U)/(Pref'*D_U);
                 
             % GDCM
-            elseif strcmp(anl.method,'GeneralizedDisplacement')
+            elseif strcmp(this.method,'GeneralizedDisplacement')
                 d_lbd = -(d_Up0'*d_Ur)/(d_Up0'*d_Up);
             end
         end
-        
+
+        %------------------------------------------------------------------
+        function setPlotDof(this,nd,dof)
+            this.plotNd  = nd;
+            this.plotDof = dof;
+        end
+
+        %------------------------------------------------------------------
+        function plotCurves(this)
+            figure;
+            hold on, box on, grid on, axis on;
+            plot(this.Uplot, this.lbdplot, 'o-k');
+            xlabel('Displacement (mm)', 'Interpreter', 'latex');
+            ylabel('Load factor', 'Interpreter', 'latex');
+            xaxisproperties= get(gca, 'XAxis');
+            xaxisproperties.TickLabelInterpreter = 'latex'; 
+            yaxisproperties= get(gca, 'YAxis');
+            yaxisproperties.TickLabelInterpreter = 'latex';   
+            set(gca,'FontSize', 14);
+        end
     end
 end

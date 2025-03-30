@@ -18,7 +18,7 @@ classdef Model_H2M < Model_M
             this = this@Model_M(false);
             this.ndof_nd = 4;        % Number of dofs per node
             this.physics = 'H2M';    % Tag with the physics name
-            disp("*** Physics: Hydromechanical with two-phase flow");
+            disp("*** Physics: Two-phase flow hydro-mechanical (H2M)");
         end
     end
     
@@ -29,7 +29,7 @@ classdef Model_H2M < Model_M
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
                 disp('Error in setMaterial: insuficient number of inputs.');
-                disp('The HM physics requires two attributes: porousMedia, liquidFluid, gasFluid.');
+                disp('Physics H2M requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
                 error('Error in setMaterial.');
             end
             if ~isa(porousMedia,'PorousMedia')
@@ -37,17 +37,14 @@ classdef Model_H2M < Model_M
                 error('Error in setMaterial.');
             end
             if ~isa(liquidFluid,'Fluid')
-                disp('Error in setMaterial: fluid is not a Fluid object.');
+                disp('Error in setMaterial: liquidFluid is not a Fluid object.');
                 error('Error in setMaterial.');
             end
             if ~isa(gasFluid,'Fluid')
-                disp('Error in setMaterial: fluid is not a Fluid object.');
+                disp('Error in setMaterial: gasFluid is not a Fluid object.');
                 error('Error in setMaterial.');
             end
-            this.mat  = struct( ...
-            'porousMedia',porousMedia, ...
-            'liquidFluid',liquidFluid,...
-            'gasFluid',gasFluid);
+            this.mat  = struct('porousMedia',porousMedia,'liquidFluid',liquidFluid,'gasFluid',gasFluid);
         end
 
         %------------------------------------------------------------------

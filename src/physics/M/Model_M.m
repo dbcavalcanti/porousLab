@@ -39,15 +39,14 @@ classdef Model_M < Model
         function setMaterial(this,porousMedia)
             if nargin < 2
                 disp('Error in setMaterial: insuficient number of inputs.');
-                disp('The HM physics requires two attributes: porousMedia.');
+                disp('Physics M requires 1 attribute(s): porousMedia.');
                 error('Error in setMaterial.');
             end
             if ~isa(porousMedia,'PorousMedia')
                 disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
                 error('Error in setMaterial.');
             end
-            this.mat  = struct( ...
-            'porousMedia',porousMedia);
+            this.mat = struct('porousMedia',porousMedia);
         end
 
         %------------------------------------------------------------------
