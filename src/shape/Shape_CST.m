@@ -21,12 +21,10 @@ classdef Shape_CST < Shape
 
     %% Public methods: methods defined in the abstract superclass
     methods
-
         % -----------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % quadrilateral isoparametric element.
          function N = shapeFnc(~,Xn)
-
             % Natural coordinates of the given point
             r = Xn(1); s = Xn(2);
 
@@ -35,69 +33,57 @@ classdef Shape_CST < Shape
             N2 = r;
             N3 = s;
             N   = [ N1  N2  N3 ];
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nm = shapeFncMtrx(this,Xn)
-
              % Vector with the shape functions
              Nm = this.shapeFnc(Xn);
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,N)
-
              % Vector with the shape functions
              Nu = [N(1)  0.0   N(2)  0.0   N(3)  0.0;
                    0.0   N(1)  0.0   N(2)  0.0   N(3)];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = shapeFncDrv(~,~)
-
             % Derivatives of the shape functions
             dN1_dr = -1.0;    dN1_ds = -1.0;
             dN2_dr =  1.0;    dN2_ds =  0.0;
             dN3_dr =  0.0;    dN3_ds =  1.0;
             dNdxn   = [ dN1_dr  dN2_dr  dN3_dr;
                         dN1_ds  dN2_ds  dN3_ds];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
-
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
             
             % Jacobian matrix
             J = dNdxn*X;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
-              
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
             detJ = det(J);
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
 
@@ -111,20 +97,17 @@ classdef Shape_CST < Shape
             % Compute the derivatives of the shape functions wrt to the
             % global cartesian coordinate system
             dNdx = J\dNdxn;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
-
             B = zeros(4,3*2);
             for i = 1:3
                 B(1,2*i-1) = dNdx(1,i); 
                 B(2,2*i)   = dNdx(2,i);
                 B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
             end
-
          end
 
          % -----------------------------------------------------------------
@@ -135,7 +118,6 @@ classdef Shape_CST < Shape
          %      w: Weight associated to each integration point
          % %      nIntPoints: Total number of integration points
          function [X,w,nIntPoints] = getIntegrationPointsCST(~,order)
-
              if order == 2
                  X          = [1/6,  1/6;
                                2/3,  1/6;
@@ -147,7 +129,6 @@ classdef Shape_CST < Shape
                  w          = 0.5;
                  nIntPoints = 1;
              end
-
          end
 
          %------------------------------------------------------------------
@@ -172,9 +153,7 @@ classdef Shape_CST < Shape
             end
 
             if subDivInt == false
-                
                 [X,W,n] = this.getIntegrationPointsCST(intOrder);
-
             else
                 elemNodes = [elem.node]; FractSeg = [];
                 nnodes = size(elem.node,1);
@@ -232,7 +211,6 @@ classdef Shape_CST < Shape
                     end
                 end 
             end
-
         end
 
          % -----------------------------------------------------------------
@@ -248,7 +226,6 @@ classdef Shape_CST < Shape
          %   X : vector with the x and y coordinates of a point in the 
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
-
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
@@ -262,7 +239,6 @@ classdef Shape_CST < Shape
             % Interpolation the position
             X(1) = Nv(1)*x(1) +  Nv(2)*x(2) +  Nv(3)*x(3);
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2) +  Nv(3)*y(3);
-
          end
 
          % ----------------------------------------------------------------
@@ -271,7 +247,6 @@ classdef Shape_CST < Shape
          % Reference: Section 7.3 from the book Concepts and Applications
          % of Finite Element Analysis from Cook et al. (2001)
          function Xn = coordCartesianToNatural(this,NODE,X)
-            
             % Compute the area of the triangle
             A = this.areaTriangle(NODE(1,:), NODE(2,:), NODE(3,:));
 
@@ -285,7 +260,6 @@ classdef Shape_CST < Shape
             xi3 = 1.0 - xi1 - xi2;
 
             Xn = [xi2, xi3];
-            
          end
 
         % -----------------------------------------------------------------
@@ -335,7 +309,6 @@ classdef Shape_CST < Shape
                 dS = [ 1.0    s ];
             end
         end
-
     end
 
     methods(Static)
@@ -349,7 +322,5 @@ classdef Shape_CST < Shape
              % Total number of integration points
              nIntPoints = 3;
         end
-
-        
     end
 end
