@@ -1,6 +1,16 @@
 %% MechanicalNonlinearElasticDruckerPrager class
 %
-% This class defines a nonlinear elastic stress-strain constitutive law
+% This class implements the surrogate nonlinear elastic model proposed by
+% Zhao et al. (2020). 
+% The implementation is based on the Abaqus UMAT implementation provided by
+% the authors in the reference.
+%
+% Reference:
+%
+% Zhao, T., Lages, E.N., Ramos, A.S. et al.
+% Topology optimization considering the Drucker–Prager criterion with
+% a surrogate nonlinear elastic constitutive model.
+% Struct Multidisc Optim 62, 3205–3227 (2020).
 %
 %% Author
 % Danilo Cavalcanti
