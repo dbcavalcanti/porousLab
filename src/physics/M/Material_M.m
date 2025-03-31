@@ -26,6 +26,8 @@ classdef Material_M < handle
                 this.mechanical = MechanicalElastoPlasticVonMises();
             elseif strcmp('druckerPrager',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalElastoPlasticDruckerPrager();
+            elseif strcmp('elasticDruckerPrager',matData.porousMedia.mechanical)
+                this.mechanical = MechanicalNonlinearElasticDruckerPrager();
             elseif strcmp('isoDamage',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalIsotropicDamage(lc);
             end
