@@ -16,51 +16,27 @@
 classdef Anl_Nonlinear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        method     = 0;   % Flag for solution method
-        adjustStep = 0;   % Flag for type of increment size adjustment
-        increment  = 0;   % Initial increment of load ratio
-        max_lratio = 0;   % Limit value of load ratio
-        max_step   = 0;   % Maximum number of steps
-        max_iter   = 0;   % Maximum number of iterations in each step
-        trg_iter   = 0;   % Desired number of iterations in each step
-        tol        = 0;   % Numerical tolerance for convergence
-        ctrlNode   = 0;   % Control node (for displacement control method)
-        ctrlDof    = 0;   % Control dof (for displacement control method)
-        incrSign   = 0;   % Sign of the increment of displacement
-        plotNd     = 1;   % Node that will be plotted the dof
-        plotDof    = 1;   % DOF (ux,uy) that will plotted
-        Uplot      = [];  % Matrix of nodal displacement vectors of all steps/modes
-        lbdplot    = [];  % Vector of load ratios of all steps
+        method       = 'LoadControl';   % Flag for solution method
+        adjustStep   = false;           % Flag for type of increment size adjustment
+        increment    = 0.1;             % Initial increment of load ratio
+        maxIncrement = 0.5;             % Maximum increment of load ratio
+        max_lratio   = 1.0;             % Limit value of load ratio
+        max_step     = 10;              % Maximum number of steps
+        max_iter     = 10;              % Maximum number of iterations in each step
+        trg_iter     = 3;               % Desired number of iterations in each step
+        tol          = 1.0e-5;          % Numerical tolerance for convergence
+        ctrlDof      = 1;               % Control dof (for displacement control method)
+        plotNd       = 1;               % Node that will be plotted the dof
+        plotDof      = 1;               % DOF (ux,uy) that will plotted
+        Uplot        = [];              % Matrix of nodal displacement vectors of all steps/modes
+        lbdplot      = [];              % Vector of load ratios of all steps
     end
 
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function anl = Anl_Nonlinear(method,adjustStep,increment,max_lratio,max_step,max_iter,trg_iter,tol)
+        function anl = Anl_Nonlinear()
             anl = anl@Anl('Nonlinear');
-
-            % Default analysis configuration
-            if nargin == 1
-                anl.method     = 'LoadControl';
-                anl.adjustStep = false;
-                anl.increment  = 0.1;
-                anl.max_lratio = 0.5;
-                anl.max_step   = 40;
-                anl.max_iter   = 10;
-                anl.trg_iter   = 3;
-                anl.tol        = 0.00001;
-            
-            % Given analysis configuration
-            else
-                anl.method     = method;
-                anl.adjustStep = adjustStep;
-                anl.increment  = increment;
-                anl.max_lratio = max_lratio;
-                anl.max_step   = max_step;
-                anl.max_iter   = max_iter;
-                anl.trg_iter   = trg_iter;
-                anl.tol        = tol;
-            end
         end
     end
     
@@ -130,6 +106,9 @@ classdef Anl_Nonlinear < Anl
                     % Predicted increment of load ratio
                     d_lbd0 = this.predictedIncrement(mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Fref);
                 end
+
+                % Check increment of load ratio
+                d_lbd0 = min(d_lbd0,this.maxIncrement);
 
                 % Limit increment of load ratio to make total load ratio smaller than maximum value
                 if ((this.max_lratio > 0.0 && lbd + d_lbd0 > this.max_lratio) ||...

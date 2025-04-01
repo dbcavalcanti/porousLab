@@ -27,12 +27,11 @@ mdl.gravityOn = true;
 
 %% MESH
 
-% Load nodes and elements
-load('NODE_2');
-load('ELEM_2');
+% Load the mesh
+load('MeshStripFooting');
 
 % Set mesh to model
-mdl.setMesh(NODE, ELEM);
+mdl.setMesh(node, elem);
 
 %% MATERIALS
 
@@ -64,20 +63,24 @@ end
 
 %% PROCESS
 
-% Analysis parameters
-adapt_incr = true;    % Increment size adjustment
-increment  = 0.01;     % Initial increment of load ratio
-max_lratio = 10.0;     % Limit value of load ratio
-max_step   = 15;      % Maximum number of steps
-max_iter   = 100;     % Maximum number of iterations in each step
-trg_iter   = 4;       % Desired number of iterations in each step
-tol        = 1.0e-5;  % Numerical tolerance for convergence
+% Configure analysis
+anl = Anl_Nonlinear();
+anl.method     = 'ArcLengthCylControl';
+anl.adjustStep = true;
+anl.increment  = 0.01;
+anl.max_lratio = 10.0;
+anl.max_step   = 50;
+anl.max_iter   = 100;
+anl.trg_iter   = 4;
+
+% Node and DOF used to plot Load Factor vs Displacement
+ndId = mdl.closestNodeToPoint([0.5, 5.0]);
+anl.setPlotDof(ndId, 2);
 
 % Run analysis
-anl = Anl_Nonlinear('LoadControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
 anl.run(mdl);
 
 %% POST-PROCESS
 
 % Plot contours
-mdl.plotField('Sxy');
+mdl.plotField('PEMAG');
