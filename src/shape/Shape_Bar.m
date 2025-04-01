@@ -1,15 +1,44 @@
-%% Shape_Bar class
-%
+%% Shape_Bar Class
 % This is class defines the behavior of a linear bar isoparametric element.
+% It provides methods for evaluation the shape functions, computing
+% derivatived, Jacobian matrices, stain-displacement matrices, and
+% performing coordinate transformations between natural and Cartesian
+% coordinate systems. Additionally, it supports integration point
+% generation and operations related to stress interpolation and Gram matrix
+% computation.
 %
+%% Methods
+% This class provides the following methods:
+% 
+% * *shapeFnc*: Evaluates the shape functions at a given point in the 
+%               natural coordinate system.
+% * *shapeFncMtrx*: Computes the shape function matrix.
+% * *shapeFncDrv*: Computes the derivatives of the shape functions with 
+%                  respect to the natural coordinate.
+% * *JacobianMtrx*: Computes the Jacobian matrix for the element.
+% * *detJacobian*: Computes the determinant of the Jacobian matrix.
+% * *dNdxMatrix*: Computes the derivatives of the shape functions with 
+%                 respect to the global coordinate system and the 
+%                 determinant of the Jacobian.
+% * *BMatrix*: Computes the strain-displacement matrix.
+% * *getIntegrationPoints*: Provides the integration points, weights, 
+%                           and the total number of integration points for 
+%                           a given integration order.
+% * *coordNaturalToCartesian*: Transforms a point from the natural 
+%                              coordinate system to the global Cartesian 
+%                              coordinate system.
+% * *coordCartesianToNatural*: Placeholder method to transform a point from 
+%                              the global Cartesian coordinate system to 
+%                              the natural coordinate system (not 
+%                              implemented).
+% 
 %% Author
-% Danilo Cavalcanti
+% - Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% - Version 1.00: Initial version (January 2023).
 %
-% Initial version:January 2023
-%
+%% Class Definition
 classdef Shape_Bar < Shape
     %% Constructor method
     methods

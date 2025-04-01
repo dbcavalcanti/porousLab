@@ -1,16 +1,64 @@
-%% Shape_ISOQ8 class
+%% Shape_ISOQ8 Class
+% This class defines the behavior of a quadratic quadrilateral isoparametric
+% element (ISOQ8). It provides methods for evaluating shape functions, 
+% computing derivatives, Jacobian matrices, and performing coordinate 
+% transformations between natural and global Cartesian systems. 
+% Additionally, it supports integration point generation and other 
+% utilities for finite element analysis.
+% 
+%% Methods
+% This class provides the following methods:
 %
-% This is class defines the behavior of a quadratic quadrilateral
-% isoparametric element.
-%
+% * *shapeFnc*: Evaluates the shape functions at a given point in the 
+%               natural coordinate system.
+% * *shapeFncMtrx*: Returns the shape function matrix for the given 
+%                   natural coordinates.
+% * *linearShapeFncMtrx*: Returns the linear shape function matrix for 
+%                         the given natural coordinates.
+% * *NuMtrx*: Constructs the shape function matrix for displacement 
+%             interpolation.
+% * *shapeFncDrv*: Computes the derivatives of the shape functions with 
+%                  respect to the natural coordinates.
+% * *linearShapeFncDrv*: Computes the derivatives of the linear shape 
+%                        functions with respect to the natural coordinates.
+% * *JacobianMtrx*: Computes the Jacobian matrix for the given nodal 
+%                   coordinates and natural coordinates.
+% * *linearJacobianMtrx*: Computes the Jacobian matrix for linear 
+%                         shape functions.
+% * *detJacobian*: Computes the determinant of the Jacobian matrix.
+% * *dNdxMatrix*: Computes the derivatives of the shape functions with 
+%                 respect to the global Cartesian coordinates and the 
+%                 determinant of the Jacobian matrix.
+% * *lineardNdxMatrix*: Computes the derivatives of the linear shape 
+%                       functions with respect to the global Cartesian 
+%                       coordinates.
+% * *BMatrix*: Constructs the strain-displacement matrix (B-matrix) for 
+%              the given shape function derivatives.
+% * *coordNaturalToCartesian*: Transforms a point from the natural 
+%                              coordinate system to the global Cartesian 
+%                              coordinate system.
+% * *coordCartesianToNatural*: Transforms a point from the global Cartesian 
+%                              coordinate system to the natural coordinate 
+%                              system.
+% * *getIntegrationPoints*: Computes the integration points and weights 
+%                           for numerical integration. Supports optional 
+%                           subdivision of the domain.
+% * *integrandGramMtrx*: Computes the integrand for the Gram matrix at a 
+%                        given point.
+% * *getSizeStressIntVct*: Returns the size of the stress interpolation 
+%                          vector.
+% * *integrandStressIntVct*: Computes the integrand for the stress 
+%                            interpolation vector.
+% * *getlineQuadrature*: Compute the Gauss integration points for a given
+%                        order.
+% 
 %% Author
-% Danilo Cavalcanti
+% - Danilo Cavalcanti
+% 
+%% Version History
+% - Version 1.00: Initial version (March 2023).
 %
-%% History
-% @version 1.00
-%
-% Initial version:March 2023
-%
+%% Class Definition
 classdef Shape_ISOQ8 < Shape
     %% Constructor method
     methods

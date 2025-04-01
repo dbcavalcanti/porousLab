@@ -1,15 +1,32 @@
-%% Shape class
+%% Shape Class
+% Abstract class defining the type of the element and providing a 
+% framework for implementing shape functions, jacobian computations, 
+% and other related operations needed for finite element analysis.
 %
-% This is an abstract class to define the type of the element
+%% Methods
+% This class provides the following methods:
+%
+% * *shapeFnc*: Evaluates the shape function at a given point.
+% * *shapeFncMtrx*: Returns the shape function matrix.
+% * *shapeFncDrv*: Computes the shape function derivatives matrix.
+% * *JacobianMtrx*: Computes the Jacobian matrix.
+% * *detJacobian*: Computes the determinant of the Jacobian matrix.
+% * *BMatrix*: Constructs the strain-displacement matrix.
+% * *coordNaturalToCartesian*: Transforms a point to the global Cartesian 
+%                              coordinate system.
+% * *coordCartesianToNatural*: Transforms a point to the natural coordinate 
+%                              system.
+% * *getIntegrationPoints*: Retrieves the integration points.
+% * *computeCentroid*: Computes the centroid of an element.
+% * *axisSymmetricFactor*: Computes the axisymmetric factor.
 %
 %% Author
-% Danilo Cavalcanti
+% - Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% - Version 1.00: Initial version (January 2023).
 %
-% Initial version:January 2023
-%
+%% Class Definition
 classdef Shape < handle
 
     %% Public attributes
@@ -60,6 +77,7 @@ classdef Shape < handle
     
     %% Public methods
     methods
+        % Compute the centroid af an element
         function Xc = computeCentroid(~,NODE)
             x = NODE(1:3,1);
             y = NODE(1:3,2);
@@ -68,6 +86,7 @@ classdef Shape < handle
             Xc = [xc yc];
         end
 
+        % Compute the axisymmetric factor
         function af = axisSymmetricFactor(~,N,X)
             r = N*X(:,1);
             af = 2.0 * r * pi;
