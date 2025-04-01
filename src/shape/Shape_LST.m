@@ -21,12 +21,10 @@ classdef Shape_LST < Shape
 
     %% Public methods: methods defined in the abstract superclass
     methods
-
         % -----------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % triangular isoparametric element.
          function N = shapeFnc(~,Xn)
-
             % Natural coordinates of the given point
             r = Xn(1); s = Xn(2);
 
@@ -38,33 +36,27 @@ classdef Shape_LST < Shape
             N5 = 4*r*s;
             N6 = 4*s - 4*r*s - 4*s*s;
             N   = [ N1  N2  N3  N4  N5  N6 ];
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function N = shapeFncMtrx(this,Xn)
-
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
-            
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,N)
-
              % Vector with the shape functions
              Nu = [N(1)  0.0   N(2)  0.0   N(3)  0.0   N(4)  0.0   N(5)  0.0   N(6)  0.0;
                    0.0   N(1)  0.0   N(2)  0.0   N(3)  0.0   N(4)  0.0   N(5)  0.0   N(6)];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = shapeFncDrv(~,Xn)
-
             % Natural coordinates of the given point
             r = Xn(1); s = Xn(2);
 
@@ -84,36 +76,30 @@ classdef Shape_LST < Shape
 
             dNdxn   = [ dN1_dr  dN2_dr  dN3_dr  dN4_dr  dN5_dr  dN6_dr;
                         dN1_ds  dN2_ds  dN3_ds  dN4_ds  dN5_ds  dN6_ds];
-
          end
 
          % -----------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
-
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
             
             % Jacobian matrix
             J = dNdxn*X;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
-              
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
             detJ = det(J);
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
 
@@ -127,20 +113,17 @@ classdef Shape_LST < Shape
             % Compute the derivatives of the shape functions wrt to the
             % global cartesian coordinate system
             dNdx = J\dNdxn;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
-
             B = zeros(4,6*2);
             for i = 1:6
                 B(1,2*i-1) = dNdx(1,i); 
                 B(2,2*i)   = dNdx(2,i);
                 B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
             end
-
          end
 
          % -----------------------------------------------------------------
@@ -202,7 +185,6 @@ classdef Shape_LST < Shape
          % Reference: Section 7.3 from the book Concepts and Applications
          % of Finite Element Analysis from Cook et al. (2001)
          function Xn = coordCartesianToNatural(this,NODE,X)
-            
             % Compute the area of the triangle
             A = this.areaTriangle(NODE(1,:), NODE(2,:), NODE(3,:));
 
@@ -216,7 +198,6 @@ classdef Shape_LST < Shape
             xi3 = 1.0 - xi1 - xi2;
 
             Xn = [xi2, xi3];
-            
          end
 
         % -----------------------------------------------------------------
@@ -299,7 +280,5 @@ classdef Shape_LST < Shape
              % Total number of integration points
              nIntPoints = 3;
         end
-
-        
     end
 end

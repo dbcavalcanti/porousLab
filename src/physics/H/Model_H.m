@@ -1,36 +1,24 @@
-%% Model_H2 class
+%% Model_H class
 %
 % Single-phase fluid flow finite element model.
 %
 % Each node has one degree of freedom (dof) which is the pore-pressure (p)
 %
 %% Author
-% Danilo Cavalcanti
-%
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class definition
 classdef Model_H < Model    
-    %% Public attributes
-    properties (SetAccess = public, GetAccess = public)
-        %% Degrees of freedom vectors
-        % Matrix with the dofs of each type of each element
-        GLP                 = [];
-        %% Matrix indicating the Dirichlet BCs 
-        SUPP_p              = [];
-        %% Matrix with the prescribed BC values 
-        PRESCDISPL_p        = [];
-        %% Matrix with the Neumann BCs
-        LOAD_p              = [];
-        %% Matrix with the initial conditions
-        INITCOND_p          = []; 
-    end
     %% Constructor method
     methods
-        function this = Model_H()
+        function this = Model_H(printFlag)
+            if nargin == 0, printFlag = true; end
             this = this@Model();
             this.ndof_nd = 1;       % Number of dofs per node
             this.physics = 'H';     % Tag with the physics name
-            disp("*** Physics: Single-phase fluid flow");
+            if (printFlag)
+                disp("*** Physics: Single-phase hydraulic (H)");
+            end
         end
     end
     
@@ -38,33 +26,21 @@ classdef Model_H < Model
     methods
 
         %------------------------------------------------------------------
-        function SUPP = dirichletConditionMatrix(this)
-            SUPP = this.SUPP_p;  
-        end
-
-        %------------------------------------------------------------------
-        function LOAD = neumannConditionMatrix(this)
-            LOAD = this.LOAD_p;  
-        end
-
-        %------------------------------------------------------------------
-        function INITCOND = initialConditionMatrix(this)
-            INITCOND = this.INITCOND_p;  
-        end
-
-        %------------------------------------------------------------------
-        function PRESCDISPL = prescribedDirichletMatrix(this)
-            PRESCDISPL = this.PRESCDISPL_p;  
-        end
-        %------------------------------------------------------------------
-        function assembleElementDofs(this)
-
-            this.GLP = zeros(this.nelem, this.nnd_el);
-            for el = 1:this.nelem
-                this.GLP(el,:) = reshape(this.ID(this.ELEM(el,:),1)',1,...
-                    this.nnd_el);
+        function setMaterial(this,porousMedia,fluid)
+            if nargin < 3
+                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Physics H requires 2 attribute(s): porousMedia, fluid.');
+                error('Error in setMaterial.');
             end
-            
+            if ~isa(porousMedia,'PorousMedia')
+                disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
+                error('Error in setMaterial.');
+            end
+            if ~isa(fluid,'Fluid')
+                disp('Error in setMaterial: fluid is not a Fluid object.');
+                error('Error in setMaterial.');
+            end
+            this.mat = struct('porousMedia',porousMedia,'fluid',fluid);
         end
 
         %------------------------------------------------------------------
@@ -78,22 +54,65 @@ classdef Model_H < Model
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'fluid',this.mat.fluid);
+                dof_e = this.getElementDofs(el,1);
                 if (this.enriched == false)
                     elements(el) = RegularElement_H(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLP(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 else
                     elements(el) = EnrichedElement_H(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLP(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                end
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
                 end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
         end
 
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setPressureNeumannBCAtBorder(this, border, value)
+            this.setNeumannBCAtBorder(border, 1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialPressureAtDomain(this, value)
+            this.setInitialDofAtDomain(1, value);
+        end
+
+        % -----------------------------------------------------------------
+        function setInitialPressureAtNode(this, nodeId, value)
+            this.setInitialDofAtNode(nodeId, 1, value);
+        end
 
         % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegArray(~,n)
@@ -117,27 +136,6 @@ classdef Model_H < Model
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
             EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        %------------------------------------------------------------------
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
         end
 
     end

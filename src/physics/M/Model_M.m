@@ -6,22 +6,12 @@
 % - 2 displacement components (ux,uy)
 %
 %% Author
-% Danilo Cavalcanti
-%
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class definition
 classdef Model_M < Model   
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        %% Degrees of freedom vectors
-        % Matrix with the dofs of each type of each element
-        GLU                 = [];
-        %% Matrix indicating the Dirichlet BCs 
-        SUPP_u              = [];
-        %% Matrix with the prescribed BC values 
-        PRESCDISPL_u        = [];
-        %% Matrix with the Neumann BCs
-        LOAD_u              = [];
         %% Model data
         isPlaneStress       = false;
         %% Embedded related data
@@ -31,11 +21,14 @@ classdef Model_M < Model
     
     %% Constructor method
     methods
-        function this = Model_M()
+        function this = Model_M(printFlag)
+            if nargin == 0, printFlag = true; end
             this = this@Model();
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'M';     % Tag with the physics name
-            disp("*** Physics: Mechanical");
+            if (printFlag)
+                disp("*** Physics: Mechanical");
+            end 
         end
     end
     
@@ -43,35 +36,17 @@ classdef Model_M < Model
     methods
 
         %------------------------------------------------------------------
-        function SUPP = dirichletConditionMatrix(this)
-            SUPP = this.SUPP_u;  
-        end
-
-        %------------------------------------------------------------------
-        function LOAD = neumannConditionMatrix(this)
-            LOAD = this.LOAD_u;  
-        end
-
-        %------------------------------------------------------------------
-        function INITCOND = initialConditionMatrix(this)
-            INITCOND_u = zeros(this.nnodes,2);
-            INITCOND = INITCOND_u;  
-        end
-
-        %------------------------------------------------------------------
-        function PRESCDISPL = prescribedDirichletMatrix(this)
-            PRESCDISPL = this.PRESCDISPL_u;  
-        end
-
-        %------------------------------------------------------------------
-        function assembleElementDofs(this)
-
-            this.GLU = zeros(this.nelem, this.nnd_el*2);
-            for el = 1:this.nelem
-                this.GLU(el,:) = reshape(this.ID(this.ELEM(el,:),1:2)',1,...
-                    this.nnd_el*2);
+        function setMaterial(this,porousMedia)
+            if nargin < 2
+                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Physics M requires 1 attribute(s): porousMedia.');
+                error('Error in setMaterial.');
             end
-
+            if ~isa(porousMedia,'PorousMedia')
+                disp('Error in setMaterial: porousMedia is not a PorousMedia object.');
+                error('Error in setMaterial.');
+            end
+            this.mat = struct('porousMedia',porousMedia);
         end
 
         %------------------------------------------------------------------
@@ -85,24 +60,126 @@ classdef Model_M < Model
                 emat =struct( ...
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'lc',this.getElementCharacteristicLength(el));
+                dof_e = this.getElementDofs(el,[1,2]);
                 if (this.enriched == false)
                     elements(el) = RegularElement_M(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLU(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress);
                 else
                     elements(el) = EnrichedElement_M(...
                                 this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                                this.t, emat, this.intOrder,this.GLU(el,:), ...
+                                this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                end
+                if this.gravityOn
+                    elements(el).type.gravityOn = true;
                 end
                 elements(el).type.initializeIntPoints();
             end
             this.element = elements;
             
-        end   
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtNode(this, nodeId, value)
+            this.setDirichletBCAtNode(nodeId, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtPoint(this, X, value)
+            this.setDirichletBCAtPoint(X, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function setDisplacementDirichletBCAtBorder(this, border, value)
+            this.setDirichletBCAtBorder(border, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function addLoadAtNode(this, nodeId, value)
+            this.setNeumannBCAtNode(nodeId, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function addLoadAtPoint(this, X, value)
+            this.setNeumannBCAtPoint(X, [1,2], value);
+        end
+
+        % -----------------------------------------------------------------
+        function addLoadAtBorder(this, border, dir, p)
+            % Get the nodes at the given border
+            if strcmp(border,'left')
+                ref = min(this.NODE(:,1));
+            elseif strcmp(border,'right')
+                ref = max(this.NODE(:,1));
+            elseif strcmp(border,'top')
+                ref = max(this.NODE(:,2));
+            elseif strcmp(border,'bottom')
+                ref = min(this.NODE(:,2));
+            else
+                disp('Warning: non-supported border.');
+                disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+            end
+            % Get number of linear interpolation points
+            nLinNodes = this.nnd_el;
+            quadMesh  = false;
+            if strcmp(this.type,'LST') || strcmp(this.type,'ISOQ8')
+                nLinNodes = nLinNodes / 2;
+                quadMesh  = true;
+            end
+            for el = 1:this.nelem 
+                % Get the number of edges of the element
+                nEdges = nLinNodes;
+            
+                % Get the coordinates of the element
+                cX = [this.NODE(this.ELEM(el,1:nLinNodes),1); this.NODE(this.ELEM(el,1),1)];
+                cY = [this.NODE(this.ELEM(el,1:nLinNodes),2); this.NODE(this.ELEM(el,1),2)];
+            
+                % Get the nodes of the borders
+                NdBorders = [this.ELEM(el,1:nLinNodes), this.ELEM(el,1)];
+            
+                % Loop through the edges of the element
+                for j = 1:nEdges
+            
+                    % coordinates of the edge
+                    edgeX = [cX(j) , cX(j+1)];
+                    edgeY = [cY(j) , cY(j+1)];
+            
+                    % select the edge
+                    if dir == 1
+                        edge = edgeX;
+                    elseif dir == 2
+                        edge = edgeY;
+                    end
+            
+                    % check if the edge belong to the boundary
+                    if norm(edge-ref) < 1.0e-12
+                        
+                        % Compute the length of the edge
+                        dx = edgeX(2) - edgeX(1);
+                        dy = edgeY(2) - edgeY(1);
+                        l = sqrt(dx*dx + dy*dy);
+            
+                        % id of the nodes of the edge
+                        idNds = [NdBorders(j); NdBorders(j+1)];
+            
+                        % Equivalent nodal load
+                        if quadMesh == false
+                            feq = [0.5*p*l;0.5*p*l];
+                        else
+                            feq = [p*l;p*l;4.0*p*l]/6.0;
+                            idNds = [idNds; this.ELEM(el,j+nLinNodes)];
+                        end
+            
+                        % Add contribution to the LOAD matrix
+                        this.LOAD(idNds,dir) = this.LOAD(idNds,dir) + feq;
+                    end
+                end
+            end
+        end
 
         % -----------------------------------------------------------------
         function seg = initializeDiscontinuitySegArray(~,n)
@@ -177,70 +254,13 @@ classdef Model_M < Model
                     end
                 end
                 this.element(el).type.result.setVertices(vertices);
-
-            end
-            
-        end
-
-        %------------------------------------------------------------------
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
             end
         end
-
     end
-        %% Static methods
+    %% Static methods
     methods (Static)
 
         % -----------------------------------------------------------------
-        % Print header of the results
         function printResultsHeader()
             fprintf('\n  Node           ux        uy\n');
         end

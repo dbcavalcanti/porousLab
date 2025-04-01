@@ -158,7 +158,7 @@ classdef EnrichedElement_M < RegularElement_M
                 fia = fia + Gv' * stress * c;
                 
                 % Compute the gravity forces
-                if (this.mat.porousMedia.gravityOn)
+                if (this.gravityOn)
                     fe = this.addGravityForces(fe,this.intPoint(i).X,c);
                 end
             end
