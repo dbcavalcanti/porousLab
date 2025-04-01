@@ -1,10 +1,76 @@
-%% Model class
+%% Model Class
+% Abstract class to create and manage a Finite Element model. It provides 
+% methods and properties to define the mesh, boundary conditions, material 
+% properties, and other essential components of a FEM simulation. 
+% The class also includes methods for pre-processing, assembling global 
+% matrices, applying boundary conditions, and updating state variables.
 %
-% Abstract class to create a Finite Element model.
+%% Methods
+% * *setMaterial*: Sets the material object.
+% * *initializeElements*: Initializes the element objects.
+% * *printResultsHeader*: Configures the header for printing results.
+% * *setMesh*: Sets the mesh nodes and connectivity.
+% * *initializeBasicVariables*: Initializes basic variables like number of 
+%                               nodes, elements, and DOFs.
+% * *checkMaterialId*: Ensures the material ID vector is initialized.
+% * *createNodeDofIdMtrx*: Creates the ID matrix and determines free and 
+%                          fixed DOFs.
+% * *setDirichletBCAtNode*: Sets Dirichlet boundary conditions at a 
+%                           specific node.
+% * *setDirichletBCAtPoint*: Sets Dirichlet boundary conditions at a 
+%                            specific point.
+% * *setDirichletBCAtBorder*: Sets Dirichlet boundary conditions along a 
+%                             border.
+% * *setNeumannBCAtNode*: Sets Neumann boundary conditions at a specific 
+%                         node.
+% * *setNeumannBCAtPoint*: Sets Neumann boundary conditions at a specific 
+%                          point.
+% * *setNeumannBCAtBorder*: Sets Neumann boundary conditions along a 
+%                           border.
+% * *setInitialDofAtDomain*: Sets initial DOF values for the entire domain.
+% * *setInitialDofAtNode*: Sets initial DOF values at a specific node.
+% * *getNodesAtBorder*: Retrieves nodes along a specified border.
+% * *closestNodeToPoint*: Finds the closest node to a given point.
+% * *preComputations*: Performs pre-processing tasks like initializing 
+%                      elements and assembling matrices.
+% * *getElementDofs*: Retrieves DOFs for a specific element.
+% * *initializeDisplacementVct*: Initializes the global displacement 
+%                                vector.
+% * *assembleDiscontinuitySegments*: Assembles discontinuity segments into 
+%                                    elements.
+% * *addNodalLoad*: Adds nodal loads to the reference load vector.
+% * *updateResultVertexData*: Updates result data for each element's 
+%                             vertices.
+% * *getElementsCharacteristicLength*: Computes characteristic lengths for 
+%                                      all elements.
+% * *getElementCharacteristicLength*: Computes the characteristic length 
+%                                     for a specific element.
+% * *getNodeCharacteristicLength*: Computes the mean characteristic length 
+%                                  for nodes.
+% * *initializeSparseMtrxAssemblageVariables*: Initializes variables for 
+%                                              sparse matrix assembly.
+% * *globalMatrices*: Assembles global system matrices and vectors.
+% * *getLinearSystem*: Assembles the linear system for solving.
+% * *applyDirichletBC*: Applies Dirichlet boundary conditions to the 
+%                       system.
+% * *updateStateVar*: Updates state variables at integration points.
+% * *resequenceNodes*: Resequences nodes using the reverse Cuthill-McKee 
+%                      algorithm.
+% * *rebuildConnectivity*: Rebuilds connectivity matrices after 
+%                          resequencing.
+% * *addPreExistingDiscontinuities*: Adds pre-existing discontinuities to 
+%                                    the model.
+% * *initializeDiscontinuitySegments*: Initializes discontinuity segments.
+% * *getNumberOfDiscontinuities*: Returns the number of discontinuities.
+% * *useEnrichedFormulation*: Enables or disables enriched formulation.
+% * *printResults*: Prints nodal results.
+% * *plotField*: Plots a specified field over the mesh.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00: Initial version (April 2023).
 %% Class definition
 classdef Model < handle    
     %% Public attributes
