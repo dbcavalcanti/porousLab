@@ -39,10 +39,10 @@
 %                           using the centroid as a reference.
 %
 %% Author
-% - Danilo Cavalcanti
+% Danilo Cavalcanti
 %
 %% Version History
-% - Version 1.00: Initial version (January 2023).
+% Version 1.00: Initial version (January 2023).
 %
 %% Class Definition
 classdef Shape_ISOQ4 < Shape

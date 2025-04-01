@@ -34,10 +34,10 @@
 %                                  weights for a triangle.
 % 
 %% Author
-% - Danilo Cavalcanti
+% Danilo Cavalcanti
 %
 %% Version History
-% - Version 1.00: Initial version (March 2023).
+% Version 1.00: Initial version (March 2023).
 %
 %% Class Definition
 classdef Shape_LST < Shape
