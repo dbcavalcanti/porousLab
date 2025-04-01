@@ -1,12 +1,58 @@
-%% EFEMDraw class
+%% EFEMDraw Class
 %
-% This class implements methods to plot graphical results
-% from the EFEM analysis
+% This class provides methods to visualize and plot graphical results 
+% from the EFEM (Embedded Finite Element Method) analysis. It includes 
+% utilities for drawing elements, fractures, pressure fields, displacements, 
+% cohesive stresses, and other related visualizations.
+%
+%% Methods 
+% * *square*: Plots a filled square with specified center, size, and color.
+% * *draftSquare*: Plots a hollow square for draft visualization.
+% * *triangle*: Plots a filled triangle with specified orientation, size, 
+%               and color.
+% * *draftTriangle*: Plots a hollow triangle for draft visualization.
+% * *circle*: Plots a circle outline with specified center, radius, 
+%             and color.
+% * *disk*: Plots a filled circle (disk) with specified center, radius, 
+%           and color.
+% * *arrow2D*: Plots a 2D arrow with specified length, orientation, 
+%              and color.
+% * *snapToStepValue*: Snaps a value to the nearest step value.
+% * *getMaxLoad*: Retrieves the maximum load from the model.
+% * *elements*: Draws all elements of the model with combined patches.
+% * *fractures*: Draws fractures in the model.
+% * *EFEMBoundBox*: Computes the bounding box of the model for 
+%                   visualization.
+% * *mesh*: Draws the mesh of the model with applied loads.
+% * *plotGasPressureAlongSegment*: Plots the gas pressure field along 
+%                                  a segment.
+% * *plotCapillaryPressureAlongSegment*: Plots the capillary pressure 
+%                                        field along a segment.
+% * *plotPressureAlongSegment*: Plots the pressure field along a segment.
+% * *plotDisplacementAlongSegment*: Plots displacement along a segment in 
+%                                   a specified direction.
+% * *plotDisplacementAlongDiscontinuity*: Plots displacement along 
+%                                         a discontinuity.
+% * *plotCohesiveStressesAlongDiscontinuity*: Plots cohesive stresses 
+%                                             along a discontinuity.
+% * *plotCohesiveStressesIncrementAlongDiscontinuity*: Plots cohesive 
+%                                                      stress increments 
+%                                                      along a 
+%                                                      discontinuity.
+% * *plotSlipTendencyAlongDiscontinuity*: Plots slip tendency along a 
+%                                         discontinuity.
+% * *plotConformityErrorAlongDiscontinuity*: Plots conformity error along 
+%                                            a discontinuity.
+% * *plotPressureAlongDiscontinuity*: Plots pressure along a discontinuity.
+% * *clean*: Cleans the EFEMDraw object by resetting the model property.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% Class definition
+%% Version History
+% Version 1.00: Initial version (February 2023).
+%
+%% Class Definition
 classdef EFEMDraw < handle
     %% Public properties
     properties
@@ -15,41 +61,54 @@ classdef EFEMDraw < handle
     
     %% Class (constant) properties
     properties (Constant)
-        supsize_fac = 0.035; % factor for support size
-        loadsize_fac = 0.3; % factor for maximum load size in relation to
-                             % half vertical window size
-        minloadsize_fac = 0.012 % factor for minimum load size
-        arrowsize_fac = 0.025; % factor for load arrow size
-        loadstep_fac = 0.05; % factor for load step
-        dimlineshift_fac = 0.85; % factor for down shift of dimension lines
-                                 % with respect to half Y size
-        dimlinetick_fac = 0.15; % factor for dimension line tick sizeEFEM
-                                % with respect to half Y size
-        maxdisplsize_fac = 0.60; % factor for maximum transversal size in
-                                 % relation to half vertical window size
-        inflectpt_fac = 0.005; % factor for size of inflection point disk
-        rotmeter_fac = 0.85; % factor for rotation meter size in
-                             % relation to half vertical window size
-        picktol_fac = 0.01; % factor for picking a point
-        minmemblen_fac = 0.05; % factor for minimum member length
-        ValidSupInsertion = 1; % status for valid support insertion
-        BeamLineNotFound = 2; % status for beam line not found for support insertion
-        SupInsertionNotValid = 3; % status for not valid position for support insertion
-        SupDelMinNumSup = 1; % status for minimum number of internal supports
-        ValidSupDeletion = 2; % status for valid support deletion
-        SupDelNotFound = 3; % status for support not found for deletion
-        MembLoadFound = 1; % status for pick member load found
-        MembLoadNotFound = 2 % status for pick member not found
-        SupMoveFound = 1; % status for support found for moving
-        SupMoveNotFound = 2; % status for support not found for moving
+        supsize_fac = 0.035;            % Factor for support size
+        loadsize_fac = 0.3;             % Factor for maximum load size in 
+                                        % relation to half vertical window size                       
+        minloadsize_fac = 0.012         % Factor for minimum load size
+        arrowsize_fac = 0.025;          % Factor for load arrow size
+        loadstep_fac = 0.05;            % Factor for load step
+        dimlineshift_fac = 0.85;        % Factor for down shift of 
+                                        % dimension lines with respect to 
+                                        % half Y size
+        dimlinetick_fac = 0.15;         % Factor for dimension line tick 
+                                        % sizeEFEM with respect to half Y 
+                                        % size
+        maxdisplsize_fac = 0.60;        % Factor for maximum transversal 
+                                        % size in relation to half 
+                                        % vertical window size
+        inflectpt_fac = 0.005;          % Factor for size of inflection 
+                                        % point disk
+        rotmeter_fac = 0.85;            % Factor for rotation meter size 
+                                        % in relation to half vertical 
+                                        % window size
+        picktol_fac = 0.01;             % Factor for picking a point
+        minmemblen_fac = 0.05;          % Factor for minimum member length
+        ValidSupInsertion = 1;          % Status for valid support 
+                                        % insertion
+        BeamLineNotFound = 2;           % Status for beam line not found 
+                                        % for support insertion
+        SupInsertionNotValid = 3;       % Status for not valid position 
+                                        % for support insertion
+        SupDelMinNumSup = 1;            % Status for minimum number of 
+                                        % internal supports
+        ValidSupDeletion = 2;           % Status for valid support deletion
+        SupDelNotFound = 3;             % Status for support not found 
+                                        % for deletion
+        MembLoadFound = 1;              % Status for pick member load found
+        MembLoadNotFound = 2            % Status for pick member not found
+        SupMoveFound = 1;               % Status for support found for 
+                                        % moving
+        SupMoveNotFound = 2;            % Status for support not found ç
+                                        % for moving
     end
     
     %% Private properties
     properties (Access = private)
-        pickmember = 0; % current member load picked
-        picksup = 0; % current support picked
-        orig_suppos = 0; % original moving support position
-        hnd_draft = []; % handle to draft graphics object being displayed
+        pickmember = 0;                 % Current member load picked
+        picksup = 0;                    % Current support picked
+        orig_suppos = 0;                % Original moving support position
+        hnd_draft = [];                 % Handle to draft graphics object 
+                                        % being displayed
     end
     
     %% Constructor method
