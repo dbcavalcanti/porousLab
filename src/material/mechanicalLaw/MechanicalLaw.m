@@ -176,6 +176,13 @@ classdef MechanicalLaw < handle
             ed(4) = strain(4) / 2.0;
         end
 
+        % Norm deviatoric strain
+        function ned = normDeviatoricStrain(this,strain)
+            ed = this.deviatoricStrain(strain);
+            ned = ed(1)*ed(1) + ed(2)*ed(2) + ed(3)*ed(3) + 2*ed(4)*ed(4);
+            ned = sqrt(ned);
+        end
+
         % I2 strain invariant
         function I2 = strainInvariantI2(~,strain)
             exx = strain(1);

@@ -20,12 +20,10 @@ classdef Shape_Bar < Shape
 
     %% Public methods: methods defined in the abstract superclass
     methods
-
         % -----------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % quadrilateral isoparametric element.
          function N = shapeFnc(~,Xn)
-
             % Natural coordinates of the given point
             s = Xn(1);
 
@@ -33,20 +31,17 @@ classdef Shape_Bar < Shape
             N1 = (1.0 - s)/2.0;
             N2 = (1.0 + s)/2.0;
             N   = [ N1  N2 ];
-
          end
 
          % -----------------------------------------------------------------
          % Get the shape function matrix
          function Nm = shapeFncMtrx(this,Xn)
-
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
             
              % Shape function matrix
              Nm = [N(1)  0.0   N(2)  0.0 ;
                    0.0   N(1)  0.0   N(2)];
-
          end
 
          % -----------------------------------------------------------------
@@ -59,30 +54,25 @@ classdef Shape_Bar < Shape
          % -----------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
-
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
             
             % Jacobian matrix
             J = dNdxn*X;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
-              
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
             detJ = norm(J);
-
          end
 
          % -----------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
 
@@ -96,20 +86,17 @@ classdef Shape_Bar < Shape
             % Compute the derivatives of the shape functions wrt to the
             % global cartesian coordinate system
             dNdx = J\dNdxn;
-
          end
 
          % -----------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
-
             B = zeros(4,4*2);
             for i = 1:4
                 B(1,2*i-1) = dNdx(1,i); 
                 B(2,2*i)   = dNdx(2,i);
                 B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
             end
-
          end
 
          % -----------------------------------------------------------------
@@ -138,7 +125,6 @@ classdef Shape_Bar < Shape
                  w          = [ 1/3, 4/3 , 4/3, 1/3];
                  nIntPoints = 4;
              end
-
          end
 
          % -----------------------------------------------------------------
@@ -154,7 +140,6 @@ classdef Shape_Bar < Shape
          %   X : vector with the x and y coordinates of a point in the 
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
-
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
@@ -168,7 +153,6 @@ classdef Shape_Bar < Shape
             % Interpolation the position
             X(1) = Nv(1)*x(1) +  Nv(2)*x(2);
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2);
-
          end
 
          % ----------------------------------------------------------------
@@ -178,7 +162,5 @@ classdef Shape_Bar < Shape
          function Xn = coordCartesianToNatural(~,~,~)
             Xn = [];  
          end
-
     end
-
 end

@@ -28,7 +28,6 @@ classdef Shape < handle
 
     %% Abstract methods
     methods (Abstract)
-
          % Evaluate the shape function at a given point X
          N = shapeFnc(this,Xn)
 
@@ -57,8 +56,8 @@ classdef Shape < handle
 
          % Get the integration points
          [X,W,n] = getIntegrationPoints(this,intOrder,elem)
-
     end
+    
     %% Public methods
     methods
         function Xc = computeCentroid(~,NODE)

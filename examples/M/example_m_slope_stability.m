@@ -38,9 +38,12 @@ mdl.setMesh(NODE, ELEM);
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.Young = 2.0e+7;       % Young modulus (Pa)
-rock.nu    = 0.49;         % Poisson ratio
-rock.rho   = 2039.567612;  % Density (kg/m3)
+rock.mechanical    = 'elasticDruckerPrager';  % Mechanical constitutive law
+rock.rho           = 2.0e+3;           % Density (kg/m3)
+rock.Young         = 2.0e+7;           % Young modulus (Pa)
+rock.nu            = 0.49;             % Poisson ratio
+rock.cohesion      = 5.0e+4;           % Cohesion (Pa)
+rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -52,13 +55,23 @@ mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
-%% PROCESS
+% Analysis parameters
+adapt_incr = true;    % Increment size adjustment
+increment  = 0.1;     % Initial increment of load ratio
+max_lratio = 5.0;     % Limit value of load ratio
+max_step   = 20;      % Maximum number of steps
+max_iter   = 100;     % Maximum number of iterations in each step
+trg_iter   = 4;       % Desired number of iterations in each step
+tol        = 1.0e-5;  % Numerical tolerance for convergence
 
 % Run analysis
-anl = Anl_Linear();
+anl = Anl_Nonlinear('ArcLengthCylControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
 anl.run(mdl);
 
 %% POST-PROCESS
 
 % Plot contours
-mdl.plotField('Sxy');
+mdl.plotField('S1');
+mdl.plotField('Ux');
+mdl.plotField('Sx');
+mdl.plotField('Sy');
