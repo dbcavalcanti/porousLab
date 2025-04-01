@@ -39,7 +39,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
             f = this.yieldCondition(material,ip,stress);
 
             % Elastic step
-            if f < 0.0, return, end
+            if f < this.returnYieldConditionTol, return, end
 
             % Material parameters
             tanPhi = tan(material.frictionAngle);
@@ -70,16 +70,34 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
                 dn = this.flowVectorGradient(material,ip,stress);
-                Psi = inv(Ce + lambda * dn);
-                Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
+                Psi = this.pseudoInv(Ce + lambda * dn);
+                Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
             else 
                 % Return to the apex of the surface
                 stress = (coh / tanPhi) * Id;
-                Dt = 1.0e-8*eye(4,4);
+                Dt = zeros(4,4);
             end
 
             % Update the plastic strain
             ip.plasticstrain = ip.strain - Ce * stress;
+        end
+
+        %------------------------------------------------------------------
+        function Ai = pseudoInv(~,A)
+            % Assume A is your input matrix
+            [U, S, V] = svd(A);  % Compute the SVD of A
+            
+            % Invert the non-zero singular values in S
+            S_inv = zeros(size(S'));  % Initialize a matrix for the pseudoinverse of S
+            tolerance = 1e-10;  % A tolerance for small singular values
+            for i = 1:min(size(S))
+                if S(i, i) > tolerance
+                    S_inv(i, i) = 1 / S(i, i);  % Inverse of the singular value
+                end
+            end
+            
+            % Compute the pseudoinverse of A
+            Ai = V * S_inv * U';
         end
 
         %------------------------------------------------------------------
