@@ -20,6 +20,7 @@ classdef PorousMedia < handle
         cohesion             = [];              % Cohesion (Pa)
         frictionAngle        = [];              % Friction angle (rad)
         dilationAngle        = [];              % Dilation angle (rad)
+        MCmatch              = 'planestrain';   %
         friction             = [];              % Friction coefficient
         asympt               = [];              % Asymptotic model
         eref                 = [];

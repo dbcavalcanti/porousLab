@@ -25,15 +25,21 @@ mdl = Model_M();
 % Set model options
 mdl.gravityOn = true;
 
+mdl.intOrder = 2;
+
 %% MESH
 
 % Load nodes and elements
-load('MeshSlopeStability');
-
+load('MeshSlopeStabilityTransfinite');
+[node, elem] = convertToQuadraticMesh(node, elem);
 % Set mesh to model
 mdl.setMesh(node,elem);
+mdl.resequenceNodes();
 
 %% MATERIALS
+
+phi = 20.0*pi/180;
+coh = 50.0;
 
 % Create porous media
 rock = PorousMedia('rock');
@@ -42,8 +48,9 @@ rock.rho           = 2.0;            % Density (kg/m3)
 rock.Young         = 2.0e+4;           % Young modulus (Pa)
 rock.nu            = 0.49;             % Poisson ratio
 rock.cohesion      = 50.0;           % Cohesion (Pa)
-rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
-rock.dilationAngle = 20*pi/180; 
+rock.frictionAngle = 20.0*pi/180;        % Friction angle (rad)
+rock.dilationAngle = 20.0*pi/180; 
+rock.MCmatch = "planestrain";
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -62,8 +69,8 @@ anl = Anl_NonlinearQuasiStatic();
 anl.method        = 'ArcLengthCylControl';
 anl.adjustStep    = true;
 anl.increment     = 0.1;
-anl.max_increment = 0.1;
-anl.max_lratio    = 3.0;
+anl.max_increment = 0.5;
+anl.max_lratio    = 10.0;
 anl.max_step      = 20;
 anl.max_iter      = 100;
 anl.trg_iter      = 9;
@@ -81,4 +88,4 @@ anl.run(mdl);
 anl.plotCurves();
 mdl.plotField('E1');
 mdl.plotField('S1');
-mdl.plotField('PEMAG');
+mdl.plotField('PEMAG',[0.0,0.5]);
