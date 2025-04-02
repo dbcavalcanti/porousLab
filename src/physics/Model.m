@@ -146,6 +146,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes the basic variables of the model
         function initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
             this.nelem         = size(this.ELEM,1);     
@@ -167,6 +168,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Check is the material is well defined or not
         function checkMaterialId(this)
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -174,6 +176,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Creates and assembles the matrix containing all the degrees of
+        % freedom
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -216,6 +220,7 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node
         function setDirichletBCAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error prescribing Dirichlet BC at a node');
@@ -236,12 +241,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a border
         function setDirichletBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -250,17 +257,20 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtNode(this, nodeId, dofId, value)
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a point
         function setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -269,6 +279,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at the whole
+        % domain
         function setInitialDofAtDomain(this, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -279,6 +291,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at a node
         function setInitialDofAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -289,6 +302,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Identify the nodes contained in any of the borders
         function nodeIds = getNodesAtBorder(this,border)
             % Get the nodes at the given border
             if strcmp(border,'left')
@@ -307,6 +321,7 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
+        % Find the closest node to a given point
         function nd = closestNodeToPoint(this,X)
             if size(X,1) == 2, X = X'; end
             d = vecnorm((this.NODE - X)');
@@ -315,6 +330,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Perform all the necessary pre-computations to initialize the 
+        % model
         function preComputations(this)
             if(this.initializeMdl == false)
                 disp("*** Pre-processing...");
@@ -343,11 +360,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Obtain all the element degrees of freedom
         function dof = getElementDofs(this,el,dofId)
             dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
+        % Initialize the vector containing all the displacement
+        % values
         function initializeDisplacementVct(this)
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
@@ -375,6 +395,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Assembly discontinuity segments for enriched elements
         function assembleDiscontinuitySegments(this)
             if (this.enriched == false)
                 return
@@ -479,6 +500,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Call the function to get characteristic length of the elements
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
@@ -488,6 +510,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Get characteristic length of the elements
         function Lce = getElementCharacteristicLength(this,el)
             % Vertices of the element el coordinates
             vx = this.NODE(this.ELEM(el,:),1); 
@@ -527,6 +550,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes variables related to the assembly of sparse matrices 
+        % in the model.
         function initializeSparseMtrxAssemblageVariables(this)
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
@@ -669,6 +694,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Appply the Dirichlet boundary conditions
         function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
@@ -683,6 +709,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Reorder the nodes to improve computational efficiency
         function resequenceNodes(this)
             % Get auxiliar variables
             nNode   = size(this.NODE,1);
@@ -709,6 +736,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Updates the connectivity of nodes and elements
         function rebuildConnectivity(this,cNode)
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
@@ -720,6 +748,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Adds pre-existing discontinuities to the model
         function addPreExistingDiscontinuities(this,dSet,additionalData)
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
@@ -730,6 +759,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializer the discontinuity segments
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -741,11 +771,13 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Get the total number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = length(this.discontinuitySet);
         end
 
         %------------------------------------------------------------------
+        % Flag to use the enriched formulation
         function useEnrichedFormulation(this,flag)
             this.enriched = flag;
         end

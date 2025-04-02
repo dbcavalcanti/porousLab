@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>Model Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-01">
+<meta name="DC.date" content="2025-04-02">
 <meta name="DC.source" content="Model.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -275,6 +275,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Initializes the basic variables of the model</span>
         <span class="keyword">function</span> initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
             this.nelem         = size(this.ELEM,1);
@@ -296,6 +297,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Check is the material is well defined or not</span>
         <span class="keyword">function</span> checkMaterialId(this)
             <span class="keyword">if</span> isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -303,6 +305,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Creates and assembles the matrix containing all the degrees of</span>
+        <span class="comment">% freedom</span>
         <span class="keyword">function</span> createNodeDofIdMtrx(this)
             <span class="comment">% Initialize the ID matrix and the number of fixed dof</span>
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -345,6 +349,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Dirichlet boundary condition at a node</span>
         <span class="keyword">function</span> setDirichletBCAtNode(this, nodeId, dofId, value)
             <span class="keyword">if</span> (length(dofId) ~= length(value))
                 disp(<span class="string">'Error prescribing Dirichlet BC at a node'</span>);
@@ -365,12 +370,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Dirichlet boundary condition at a node</span>
         <span class="keyword">function</span> setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Dirichlet boundary condition at a border</span>
         <span class="keyword">function</span> setDirichletBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             <span class="keyword">for</span> i = 1:length(nodeIds)
@@ -379,17 +386,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Neumann boundary condition at a node</span>
         <span class="keyword">function</span> setNeumannBCAtNode(this, nodeId, dofId, value)
             this.LOAD(nodeId,dofId) = value;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Dirichlet boundary condition at a point</span>
         <span class="keyword">function</span> setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe a Neumann boundary condition at a node</span>
         <span class="keyword">function</span> setNeumannBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             <span class="keyword">for</span> i = 1:length(nodeIds)
@@ -398,6 +408,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe an initial boundary condition at the whole</span>
+        <span class="comment">% domain</span>
         <span class="keyword">function</span> setInitialDofAtDomain(this, dofId, value)
             <span class="keyword">if</span> (length(dofId) ~= length(value))
                 disp(<span class="string">'Error setting initial dof value at the domain'</span>);
@@ -408,6 +420,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Prescribe an initial boundary condition at a node</span>
         <span class="keyword">function</span> setInitialDofAtNode(this, nodeId, dofId, value)
             <span class="keyword">if</span> (length(dofId) ~= length(value))
                 disp(<span class="string">'Error setting initial dof value at the domain'</span>);
@@ -418,6 +431,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Identify the nodes contained in any of the borders</span>
         <span class="keyword">function</span> nodeIds = getNodesAtBorder(this,border)
             <span class="comment">% Get the nodes at the given border</span>
             <span class="keyword">if</span> strcmp(border,<span class="string">'left'</span>)
@@ -436,6 +450,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Find the closest node to a given point</span>
         <span class="keyword">function</span> nd = closestNodeToPoint(this,X)
             <span class="keyword">if</span> size(X,1) == 2, X = X'; <span class="keyword">end</span>
             d = vecnorm((this.NODE - X)');
@@ -444,6 +459,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Perform all the necessary pre-computations to initialize the</span>
+        <span class="comment">% model</span>
         <span class="keyword">function</span> preComputations(this)
             <span class="keyword">if</span>(this.initializeMdl == false)
                 disp(<span class="string">"*** Pre-processing..."</span>);
@@ -472,11 +489,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Obtain all the element degrees of freedom</span>
         <span class="keyword">function</span> dof = getElementDofs(this,el,dofId)
             dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Initialize the vector containing all the displacement</span>
+        <span class="comment">% values</span>
         <span class="keyword">function</span> initializeDisplacementVct(this)
             <span class="comment">% Initialize the displacement vector</span>
             this.U = zeros(this.ndof,1);
@@ -504,6 +524,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Assembly discontinuity segments for enriched elements</span>
         <span class="keyword">function</span> assembleDiscontinuitySegments(this)
             <span class="keyword">if</span> (this.enriched == false)
                 <span class="keyword">return</span>
@@ -608,6 +629,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Call the function to get characteristic length of the elements</span>
         <span class="keyword">function</span> Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             <span class="keyword">for</span> el = 1:this.nelem
@@ -617,6 +639,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get characteristic length of the elements</span>
         <span class="keyword">function</span> Lce = getElementCharacteristicLength(this,el)
             <span class="comment">% Vertices of the element el coordinates</span>
             vx = this.NODE(this.ELEM(el,:),1);
@@ -656,6 +679,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Initializes variables related to the assembly of sparse matrices</span>
+        <span class="comment">% in the model.</span>
         <span class="keyword">function</span> initializeSparseMtrxAssemblageVariables(this)
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
@@ -798,6 +823,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Appply the Dirichlet boundary conditions</span>
         <span class="keyword">function</span> [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
@@ -812,6 +838,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Reorder the nodes to improve computational efficiency</span>
         <span class="keyword">function</span> resequenceNodes(this)
             <span class="comment">% Get auxiliar variables</span>
             nNode   = size(this.NODE,1);
@@ -838,6 +865,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Updates the connectivity of nodes and elements</span>
         <span class="keyword">function</span> rebuildConnectivity(this,cNode)
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
@@ -849,6 +877,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Adds pre-existing discontinuities to the model</span>
         <span class="keyword">function</span> addPreExistingDiscontinuities(this,dSet,additionalData)
             <span class="keyword">if</span> nargin &gt; 2
                 this.addDiscontinuityData(additionalData);
@@ -859,6 +888,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Initializer the discontinuity segments</span>
         <span class="keyword">function</span> initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             <span class="keyword">for</span> i = 1:nDiscontinuities
@@ -870,11 +900,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get the total number of discontinuities</span>
         <span class="keyword">function</span> n = getNumberOfDiscontinuities(this)
             n = length(this.discontinuitySet);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Flag to use the enriched formulation</span>
         <span class="keyword">function</span> useEnrichedFormulation(this,flag)
             this.enriched = flag;
         <span class="keyword">end</span>
@@ -1072,6 +1104,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Initializes the basic variables of the model
         function initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
             this.nelem         = size(this.ELEM,1);     
@@ -1093,6 +1126,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Check is the material is well defined or not
         function checkMaterialId(this)
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -1100,6 +1134,8 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Creates and assembles the matrix containing all the degrees of
+        % freedom
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -1142,6 +1178,7 @@ classdef Model < handle
         end
         
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Dirichlet boundary condition at a node
         function setDirichletBCAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error prescribing Dirichlet BC at a node');
@@ -1162,12 +1199,14 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Dirichlet boundary condition at a node        
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Dirichlet boundary condition at a border
         function setDirichletBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -1176,17 +1215,20 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtNode(this, nodeId, dofId, value)
             this.LOAD(nodeId,dofId) = value;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Dirichlet boundary condition at a point
         function setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -1195,6 +1237,8 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe an initial boundary condition at the whole
+        % domain
         function setInitialDofAtDomain(this, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -1205,6 +1249,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Prescribe an initial boundary condition at a node
         function setInitialDofAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -1215,6 +1260,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Identify the nodes contained in any of the borders
         function nodeIds = getNodesAtBorder(this,border)
             % Get the nodes at the given border
             if strcmp(border,'left')
@@ -1233,6 +1279,7 @@ classdef Model < handle
         end
         
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Find the closest node to a given point
         function nd = closestNodeToPoint(this,X)
             if size(X,1) == 2, X = X'; end
             d = vecnorm((this.NODE - X)');
@@ -1241,6 +1288,8 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Perform all the necessary pre-computations to initialize the 
+        % model
         function preComputations(this)
             if(this.initializeMdl == false)
                 disp("*** Pre-processing...");
@@ -1269,11 +1318,14 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Obtain all the element degrees of freedom
         function dof = getElementDofs(this,el,dofId)
             dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Initialize the vector containing all the displacement
+        % values
         function initializeDisplacementVct(this)
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
@@ -1301,6 +1353,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Assembly discontinuity segments for enriched elements
         function assembleDiscontinuitySegments(this)
             if (this.enriched == false)
                 return
@@ -1405,6 +1458,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Call the function to get characteristic length of the elements
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
@@ -1414,6 +1468,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get characteristic length of the elements
         function Lce = getElementCharacteristicLength(this,el)
             % Vertices of the element el coordinates
             vx = this.NODE(this.ELEM(el,:),1); 
@@ -1453,6 +1508,8 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Initializes variables related to the assembly of sparse matrices 
+        % in the model.
         function initializeSparseMtrxAssemblageVariables(this)
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
@@ -1595,6 +1652,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Appply the Dirichlet boundary conditions
         function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
@@ -1609,6 +1667,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Reorder the nodes to improve computational efficiency
         function resequenceNodes(this)
             % Get auxiliar variables
             nNode   = size(this.NODE,1);
@@ -1635,6 +1694,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Updates the connectivity of nodes and elements
         function rebuildConnectivity(this,cNode)
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
@@ -1646,6 +1706,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Adds pre-existing discontinuities to the model
         function addPreExistingDiscontinuities(this,dSet,additionalData)
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
@@ -1656,6 +1717,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Initializer the discontinuity segments
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -1667,11 +1729,13 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get the total number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = length(this.discontinuitySet);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Flag to use the enriched formulation
         function useEnrichedFormulation(this,flag)
             this.enriched = flag;
         end
