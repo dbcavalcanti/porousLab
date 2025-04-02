@@ -47,7 +47,7 @@ classdef Anl_Nonlinear < Anl
             % Initialize model object
             mdl.preComputations();
             
-            disp("*** Performing nonlinear analysis...")
+            disp("*** Performing quasi-static nonlinear analysis...")
 
             % Initialize results
             this.lbdplot = zeros(this.max_step+1,1);
@@ -67,6 +67,7 @@ classdef Anl_Nonlinear < Anl
             % Start incremental process
             while (step < this.max_step)
                 step = step + 1;
+                 fprintf("\n\t Step: %-4d \n", step);
 
                 % Tangent stiffness matrix
                 [K,~,~,Fref] = mdl.globalMatrices(U);
@@ -145,6 +146,7 @@ classdef Anl_Nonlinear < Anl
                     unbNorm = norm(R(mdl.doffree));
                     forNorm = norm(Fref(mdl.doffree));
                     conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < this.tol);
+                    fprintf("\t\t iter.: %3d , ||R||/||F|| = %7.3e \n",iter,unbNorm/forNorm);
                     if conv == 1
                         break;
                     end
@@ -184,7 +186,8 @@ classdef Anl_Nonlinear < Anl
                     disp('Unable to compute load increment!');
                     return;
                 end
-                fprintf('Step: %d | Iter: %d | ratio: %.2f\n',step,iter,lbd);
+                fprintf('\t\t Step %d converged in iteration %-3d\n',step,iter);
+                fprintf('\t\t Load factor: %f\n',lbd);
 
                 % Update state variables
                 mdl.updateStateVar();
