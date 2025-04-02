@@ -51,7 +51,7 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
             Dt = De;
 
             % Trial stress vector
-            stress = De * (ip.strain - ip.plasticstrain);
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
             % Evaluate the yield condition
             f = this.yieldCondition(material,ip,stress);
