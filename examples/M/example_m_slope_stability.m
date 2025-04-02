@@ -37,19 +37,13 @@ mdl.setMesh(node,elem);
 
 % Create porous media
 rock = PorousMedia('rock');
-% rock.mechanical = 'nonlinearAsymptotic';
-% rock.mechanical    = 'elasticDruckerPrager';  % Mechanical constitutive law
 rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
-rock.rho           = 2.0;           % Density (kg/m3)
-rock.Young         = 2.0e+4;           % Young modulus (kPa)
+rock.rho           = 2.0;            % Density (kg/m3)
+rock.Young         = 2.0e+4;           % Young modulus (Pa)
 rock.nu            = 0.49;             % Poisson ratio
-rock.cohesion      = 50.0;             % Cohesion (kPa)
+rock.cohesion      = 50.0;           % Cohesion (Pa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180; 
-% rock.eref       = 0.0001;
-% rock.sy = 1.3737e5;
-% rock.friction = 0.4837;
-% rock.asympt     = 'druckerPrager';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -65,13 +59,14 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
 % Configure analysis
 anl = Anl_Nonlinear();
-anl.method     = 'ArcLengthCylControl';
-anl.adjustStep = true;
-anl.increment  = 0.1;
-anl.max_lratio = 2.0;
-anl.max_step   = 100;
-anl.max_iter   = 100;
-anl.trg_iter   = 9;
+anl.method        = 'ArcLengthCylControl';
+anl.adjustStep    = true;
+anl.increment     = 0.1;
+anl.max_increment = 0.1;
+anl.max_lratio    = 3.0;
+anl.max_step      = 100;
+anl.max_iter      = 100;
+anl.trg_iter      = 9;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([35.0, 40.0]);
