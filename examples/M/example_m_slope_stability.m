@@ -58,13 +58,13 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 %% PROCESS
 
 % Configure analysis
-anl = Anl_Nonlinear();
+anl = Anl_NonlinearQuasiStatic();
 anl.method        = 'ArcLengthCylControl';
 anl.adjustStep    = true;
 anl.increment     = 0.1;
 anl.max_increment = 0.1;
 anl.max_lratio    = 3.0;
-anl.max_step      = 100;
+anl.max_step      = 20;
 anl.max_iter      = 100;
 anl.trg_iter      = 9;
 
@@ -78,6 +78,7 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % Plot contours
+anl.plotCurves();
 mdl.plotField('E1');
 mdl.plotField('S1');
 mdl.plotField('PEMAG');

@@ -1,42 +1,35 @@
-%% Anl_Nonlinear class
+%% Anl_NonlinearQuasiStatic class
 %
-% This class implements the solution of a nonlinear incremental-iterative analysis.
+% This class implements the solution of a quasi-static nonlinear
+% incremental-iterative analysis.
 %
-% The code was adapted from the Anl_Nonlinear class from NUMA-TF 
+% The code was adapted from the Anl_NonlinearQuasiStatic class from NUMA-TF 
 % (https://gitlab.com/rafaelrangel/numa-tf, Accessed on February 1st, 2023)
-% In the reference code, the stiffness matrix and the internal force vector
-% are computed through different methods. Here both are computed using the
-% % same function. Another change that was done was related to the input
-% variable to those methods, now the increment of the displacement vector
-% associated to the iteration is used as an input. To consider the possibility
-% of material nonlinearity, it was added a method to update the state variables
-% after the convergence of the iterative process. It was also added the
-% displacement control method.
 %
-classdef Anl_Nonlinear < Anl
+classdef Anl_NonlinearQuasiStatic < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        method       = 'LoadControl';   % Flag for solution method
-        adjustStep   = false;           % Flag for type of increment size adjustment
-        increment    = 0.1;             % Initial increment of load ratio
-        maxIncrement = 0.5;             % Maximum increment of load ratio
-        max_lratio   = 1.0;             % Limit value of load ratio
-        max_step     = 10;              % Maximum number of steps
-        max_iter     = 10;              % Maximum number of iterations in each step
-        trg_iter     = 3;               % Desired number of iterations in each step
-        tol          = 1.0e-5;          % Numerical tolerance for convergence
-        ctrlDof      = 1;               % Control dof (for displacement control method)
-        plotNd       = 1;               % Node that will be plotted the dof
-        plotDof      = 1;               % DOF (ux,uy) that will plotted
-        Uplot        = [];              % Matrix of nodal displacement vectors of all steps/modes
-        lbdplot      = [];              % Vector of load ratios of all steps
+        method        = 'LoadControl';   % Flag for solution method
+        adjustStep    = false;           % Flag for type of increment size adjustment
+        increment     = 0.1;             % Initial increment of load ratio
+        max_increment = 0.5;             % Maximum increment of load ratio
+        max_lratio    = 1.0;             % Limit value of load ratio
+        max_step      = 10;              % Maximum number of steps
+        max_iter      = 10;              % Maximum number of iterations in each step
+        trg_iter      = 3;               % Desired number of iterations in each step
+        tol           = 1.0e-5;          % Numerical tolerance for convergence
+        ctrlDof       = 1;               % Control dof (for displacement control method)
+        plotNd        = 1;               % Node that will be plotted the dof
+        plotDof       = 1;               % DOF (ux,uy) that will plotted
+        Uplot         = [];              % Matrix of nodal displacement vectors of all steps/modes
+        lbdplot       = [];              % Vector of load ratios of all steps
     end
 
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function anl = Anl_Nonlinear()
-            anl = anl@Anl('Nonlinear');
+        function anl = Anl_NonlinearQuasiStatic()
+            anl = anl@Anl('NonlinearQuasiStatic');
         end
     end
     
@@ -109,7 +102,7 @@ classdef Anl_Nonlinear < Anl
                 end
 
                 % Check increment of load ratio
-                d_lbd0 = min(d_lbd0,this.maxIncrement);
+                d_lbd0 = min(d_lbd0,this.max_increment);
 
                 % Limit increment of load ratio to make total load ratio smaller than maximum value
                 if ((this.max_lratio > 0.0 && lbd + d_lbd0 > this.max_lratio) ||...
@@ -213,8 +206,7 @@ classdef Anl_Nonlinear < Anl
                 this.lbdplot = this.lbdplot(1:step+1);
                 this.Uplot = this.Uplot(1:step+1);
             end
-
-            this.plotCurves();
+            
             mdl.U = U;
 
             disp("*** Analysis completed!");
@@ -373,13 +365,10 @@ classdef Anl_Nonlinear < Anl
             figure;
             hold on, box on, grid on, axis on;
             plot(this.Uplot, this.lbdplot, 'o-k');
-            xlabel('Displacement (mm)', 'Interpreter', 'latex');
-            ylabel('Load factor', 'Interpreter', 'latex');
-            xaxisproperties= get(gca, 'XAxis');
-            xaxisproperties.TickLabelInterpreter = 'latex'; 
-            yaxisproperties= get(gca, 'YAxis');
-            yaxisproperties.TickLabelInterpreter = 'latex';   
-            set(gca,'FontSize', 14);
+            xlabel('Displacement (m)');
+            ylabel('Load factor');
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
         end
     end
 end
