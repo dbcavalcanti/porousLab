@@ -1,11 +1,22 @@
-%% Material_M class
+%% MaterialDiscontinuity_M Class
+% This class represents a material discontinuity with mechanical and 
+% constitutive behavior. It provides methods to evaluate the mechanical 
+% constitutive law, retrieve the number of state variables, and check 
+% for plastic strain behavior.
 %
-%
+%% Methods
+% * *mechanicalLaw*: Evaluates the mechanical constitutive law at a given 
+%                    integration point and returns the stress and material 
+%                    stiffness matrix.
+% * *getNumberStateVar*: Returns the number of state variables associated 
+%                        with the mechanical constitutive law.
+% * *hasPlasticStrain*: Checks if the material exhibits elasto-plastic 
+%                       behavior.
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00: Initial version (January 2024).
 %
 %% Class definition
 classdef MaterialDiscontinuity_M < handle
@@ -45,6 +56,8 @@ classdef MaterialDiscontinuity_M < handle
             nstVar = this.mechanical.nstVar;
         end
 
+        % -----------------------------------------------------------------
+        % Check if the material is elasto-plastic or not
         function flag = hasPlasticStrain(this)
             flag = this.mechanical.isElastoPlastic();
         end
