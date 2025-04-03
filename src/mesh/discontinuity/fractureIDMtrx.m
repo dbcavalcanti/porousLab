@@ -1,3 +1,39 @@
+%% fractureIDMtrx Function
+% This function identifies the elements in a mesh that are intersected by 
+% fractures and computes an enrichment matrix to indicate these 
+% intersections. It also computes an adjacency matrix to represent 
+% connectivity between elements that share fracture nodes. The function 
+% uses geometric intersection tests to determine whether a fracture 
+% segment intersects an element edge.
+% 
+%% Inputs
+% * *NODE*: Matrix containing the coordinates of the mesh nodes. Each row 
+%           represents a node, with columns for x and y coordinates.
+% * *ELEM*: Matrix defining the connectivity of the mesh elements. Each 
+%           row represents an element, with columns indicating the node 
+%           indices.
+% * *NODE_D*: Matrix containing the coordinates of the nodes defining the 
+%             fractures. Each row represents a fracture node, with columns 
+%             for x and y coordinates.
+% * *FRACT*: Matrix defining the fractures in the mesh. Each row 
+%            represents a fracture segment, with columns indicating the 
+%            indices of the nodes that define the segment.
+%
+%% Outputs
+% * *IDenr*: Matrix indicating which elements are enriched by which 
+%            fractures. A value of 1 indicates that the corresponding 
+%            element is crossed by the corresponding fracture.
+% * *IDAdj*: Sparse adjacency matrix indicating connectivity between 
+%            elements based on shared fracture nodes. A value of 1 
+%            indicates adjacency.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [IDenr, IDAdj] = fractureIDMtrx(NODE,ELEM,NODE_D,FRACT)
 
 % Initialize the matrix

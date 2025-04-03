@@ -1,3 +1,29 @@
+%% findElemIntersected Function
+% This function checks which bars (defined by their endpoints in the 
+% NODE array) intersect a given rectangle defined by its minimum and 
+% maximum coordinates. The algorithm uses parametric line equations and 
+% checks for overlap in the parameter range for each bar.
+%
+%% Inputs
+% * *Amin*: A vector specifying the minimum coordinates of the rectangle.
+% * *Amax*: A vector specifying the maximum coordinates of the rectangle.
+% * *NODE*: An matrix where each row represents the coordinates of a node.
+% * *BARS*: An matrix where each row contains the indices of two nodes 
+%           defining a bar.
+%
+%% Outputs
+% * *elemID*: A logical array where each element is true if the 
+%             corresponding bar intersects the rectangle, and false 
+%             otherwise.
+%
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function elemID = findElemIntersected(Amin,Amax,NODE,BARS)
 
 % Amin and Amax are the rectangle's limit coords: minimum and maximum
