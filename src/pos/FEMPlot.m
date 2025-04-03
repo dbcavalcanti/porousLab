@@ -14,10 +14,15 @@ classdef FEMPlot < handle
     end
     %% Constant properties
     properties (Constant, Access = private)
-        DEFAULT_FONT_NAME = 'Times';    % Default font name for plots
-        DEFAULT_FONT_SIZE = 16;         % Default font size for plots
-        DEFAULT_COLOR = '-b';           % Default color and line style for plots
-        DEFAULT_LINE_WIDTH = 1.5;       % Default line width for plots
+        DEFAULT_FONT_NAME           = 'Times';        % Default font name for plots
+        DEFAULT_FONT_SIZE           = 16;             % Default font size for plots
+        DEFAULT_COLOR               = '-b';           % Default color and line style for plots
+        DEFAULT_LINE_WIDTH          = 1.5;            % Default line width for plots
+        DEFAULT_FACE_COLOR          = 'interp';       % Default face color scheme for plotting
+        DEFAULT_MARKER_TYPE         = 'None';         % Default type of marker
+        DEFAULT_MARKER_FACE_COLOR   = 'k';            % Default color of the face of the marker
+        DEFAULT_EDGES_THICKNESS     = 0.7;            % Default thickness of the lines
+        DEFAULT_COLORMAP_TYPE       = 'jet';          % Default colormap scheme
     end
     %% Constructor method
     methods
@@ -85,13 +90,13 @@ classdef FEMPlot < handle
             patch('Faces', allFaces, ...
                 'Vertices', allVertices, ...
                 'FaceVertexCData', allVertexData, ...
-                'FaceColor', 'interp', ...  % Use 'interp' for vertex-based colors
-                'LineWidth', this.model.element(1).type.result.edgesThickness, ...
+                'FaceColor', this.DEFAULT_FACE_COLOR, ...  % Use 'interp' for vertex-based colors
+                'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
                 'LineStyle', '-', ...
-                'Marker', 'none');  % Disable markers for batch plotting
+                'Marker', this.DEFAULT_MARKER_TYPE);  % Disable markers for batch plotting
             
             % Set the colormap
-            colormap(this.model.element(1).type.result.colormapType);
+            colormap(this.DEFAULT_COLORMAP_TYPE);
         end
         
         %------------------------------------------------------------------
@@ -146,11 +151,11 @@ classdef FEMPlot < handle
             figure
             hold on, box on, grid on
             if strcmp(axisPlot,'y')
-                plot(P,S,'-b','LineWidth',1.5);
+                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 xlabel('Gas pressure (kPa)');
                 ylabel('Longitudinal distance (m)');
             elseif strcmp(axisPlot,'x')
-                plot(S,P,'-b','LineWidth',1.5);
+                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 ylabel('Gas pressure (kPa)');
                 xlabel('Longitudinal distance (m)');
             end
@@ -190,11 +195,11 @@ classdef FEMPlot < handle
             figure
             hold on, box on, grid on
             if strcmp(axisPlot,'y')
-                plot(P,S,'-b','LineWidth',1.5);
+                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 xlabel('Capillary pressure (kPa)');
                 ylabel('Longitudinal distance (m)');
             elseif strcmp(axisPlot,'x')
-                plot(S,P,'-b','LineWidth',1.5);
+                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 ylabel('Capillary pressure (kPa)');
                 xlabel('Longitudinal distance (m)');
             end
@@ -234,11 +239,11 @@ classdef FEMPlot < handle
             figure
             hold on, box on, grid on
             if strcmp(axisPlot,'y')
-                plot(P,S,'-b','LineWidth',1.5);
+                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 xlabel('Pressure (kPa)');
                 ylabel('Longitudinal distance (m)');
             elseif strcmp(axisPlot,'x')
-                plot(S,P,'-b','LineWidth',1.5);
+                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 ylabel('Pressure (kPa)');
                 xlabel('Longitudinal distance (m)');
             end
@@ -279,7 +284,7 @@ classdef FEMPlot < handle
             figure
             hold on, box on, grid on
             if strcmp(axisPlot,'y')
-                plot(U,S,'-b','LineWidth',1.5);
+                plot(U,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 if dir == 1
                     xlabel('Horizontal displacement (m)');
                 elseif dir == 2
@@ -287,7 +292,7 @@ classdef FEMPlot < handle
                 end
                 ylabel('Longitudinal distance (m)');
             elseif strcmp(axisPlot,'x')
-                plot(S,U,'-b','LineWidth',1.5);
+                plot(S,U,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
                 if dir == 1
                     ylabel('Horizontal displacement (m)');
                 elseif dir == 2
@@ -297,189 +302,6 @@ classdef FEMPlot < handle
             end
             set(gca,'FontName',this.DEFAULT_FONT_NAME);
             set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the pressure field along a segment
-        function plotDisplacementAlongDiscontinuity(this, X0, axisPlot,resPath)
-            
-            mdl = this.model;
-            
-            % Initialize the stress vector at these points
-            % wn = zeros(2*size(mdl.FRACT,1),1);
-            % ws = zeros(2*size(mdl.FRACT,1),1);
-            % S  = zeros(2*size(mdl.FRACT,1),1);
-            
-            count = 1;
-            
-            % Calculate the pressure field in the points of the segment
-            for el = 1:mdl.nelem
-                if sum(mdl.IDenr(el,:)) >= 1
-                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
-                        
-                        % Get the coordinates of the integration point
-                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
-                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
-                        
-                        % Longitudinal coordinate of the point X(i) wrt to X0
-                        S(count) = norm(X-X0);
-                        
-                        % Get the stress vector
-                        STRAIN = mdl.element(el).type.fracture{1}.intPoint(i).strain;
-                        
-                        % Save the stress component
-                        ws(count) = STRAIN(1);
-                        wn(count) = STRAIN(2);
-                        
-                        % Update counter
-                        count = count + 1;
-                        
-                    end
-                    
-                end
-                
-            end
-            
-            [S,id] = sort(S);
-            ws = ws(id);
-            wn = wn(id);
-            
-            % Initialize, plot and configure the figure of the Shear stress
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(ws,S,'-b','LineWidth',1.5);
-                xlabel('Tangential displacement (m)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,ws,'-b','LineWidth',1.5);
-                ylabel('Tangential displacement (m)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontSize',16);
-            set(gca,'FontName','Times');
-            if isempty(resPath)== false
-                figName = fullfile(resPath,'faultTangentialDisplacement.fig');
-                savefig(gcf,figName);
-            end
-            
-            % Initialize, plot and configure the figure of the normal stress
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(wn,S,'-b','LineWidth',1.5);
-                xlabel('Normal displacement (m)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,wn,'-b','LineWidth',1.5);
-                ylabel('Normal displacement (m)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            if isempty(resPath)== false
-                figName = fullfile(resPath,'faultNormalDisplacement.fig');
-                savefig(gcf,figName);
-            end
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the cohesive stress field along a segment
-        function plotCohesiveStressesAlongDiscontinuity(this, X0 ,axisPlot,resPath)
-            
-            mdl = this.model;
-            
-            % Initialize the stress vector at these points
-            % tn    = zeros(2*size(mdl.FRACT,1),1);
-            % ts    = zeros(2*size(mdl.FRACT,1),1);
-            % S     = zeros(2*size(mdl.FRACT,1),1);
-            % Saux  = zeros(2*size(mdl.FRACT,1),1);
-            
-            count = 1;
-            
-            % Calculate the pressure field in the points of the segment
-            for el = 1:mdl.nelem
-                if sum(mdl.IDenr(el,:)) >= 1
-                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
-                        
-                        % Get the coordinates of the integration point
-                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
-                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
-                        
-                        % Get the centroid of the fracture
-                        Xref = mdl.element(el).type.fracture{1}.Xref;
-                        
-                        % Apply a pertubation to the coordinate X to avoid
-                        % the duplicated points in S. It will "attrack" the
-                        % point to the fracture centroid
-                        % dX = 1.0e-5*(Xref-X)/norm(Xref-X);
-                        
-                        % Longitudinal coordinate of the point X(i) wrt to X0
-                        S(count)    = norm(X-X0);
-                        % Saux(count) = norm(X + dX -X0);
-                        
-                        % Get the stress vector
-                        STRESS = mdl.element(el).type.fracture{1}.intPoint(i).stress;
-                        
-                        % Save the stress component
-                        ts(count) = STRESS(1);
-                        tn(count) = STRESS(2);
-                        
-                        % Update counter
-                        count = count + 1;
-                        
-                    end
-                    
-                end
-                
-            end
-            
-            % Sort the vectors
-            % [~,id] = sort(Saux);
-            [~,id] = sort(S);
-            S  = S(id);
-            ts = ts(id);
-            tn = tn(id);
-            
-            % Initialize, plot and configure the figure of the Shear stress
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(ts/1000,S,'-b','LineWidth',1.5);
-                xlabel('Shear cohesive stress (MPa/m)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,ts/1000,'-b','LineWidth',1.5);
-                ylabel('Shear cohesive stress (MPa/m)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            if isempty(resPath) == false
-                figName = fullfile(resPath,'faultShearCohesiveStress.fig');
-                savefig(gcf,figName);
-            end
-            
-            % Initialize, plot and configure the figure of the normal stress
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(tn/1000,S,'+-b','LineWidth',1.5);
-                xlabel('Normal cohesive stress (MPa/m)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,tn/1000,'+-b','LineWidth',1.5);
-                ylabel('Normal cohesive stress (MPa/m)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            if isempty(resPath) == false
-                figName = fullfile(resPath,'faultNormalCohesiveStress.fig');
-                savefig(gcf,figName);
-            end
             
         end
     end

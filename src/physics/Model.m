@@ -704,8 +704,7 @@ classdef Model < handle
             if nargin < 3, range = []; end
 
             this.updateResultVertexData(fieldPlot)
-            FEMPlot = FEMPlot(this);
-            FEMPlot.plotMesh();
+            FEMPlot(this).plotMesh();
             if isempty(range)
                 colorbar;
             else
