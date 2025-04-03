@@ -214,8 +214,8 @@ classdef Model_M < Model
         % Plot the mesh with the boundary conditions
         function plotDisplacementAlongSegment(this, dir, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotDisplacementAlongSegment(dir, Xi, Xf, npts,axisPlot);
+            FEMPlot = FEMPlot(this);
+            FEMPlot.plotDisplacementAlongSegment(dir, Xi, Xf, npts,axisPlot);
         end
 
         % -----------------------------------------------------------------
@@ -223,8 +223,8 @@ classdef Model_M < Model
         function plotDeformedMesh(this,amplFactor)
 
             this.updateResultVertices('Deformed',amplFactor);
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            FEMPlot = FEMPlot(this);
+            FEMPlot.plotMesh();
 
         end
 

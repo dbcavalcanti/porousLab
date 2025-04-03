@@ -24,14 +24,6 @@ classdef Result < handle
         faces           = [];           % Faces definitions
         vertexData      = [];           % Values associated to the vertices
         dataLabel       = '';           % Label of the result being plotted
-
-        % Patch properties
-        faceColor       = 'interp';     % Face color scheme for plotting
-        markerType      = 'None';          % Type of marker 
-        markerFaceColor = 'k';          % Color of the face of the marker
-        edgesThickness  = 0.7;          % Thickness of the lines
-        % colormapType    = 'jet(13)';        % Type of colormap scheme
-        colormapType    = 'jet';        % Type of colormap scheme
     end
 
     %% Constructor method

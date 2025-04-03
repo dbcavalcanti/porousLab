@@ -134,8 +134,8 @@ classdef Model_H < Model
         % -----------------------------------------------------------------
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
+            FEMPlot = FEMPlot(this);
+            FEMPlot.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
         end
 
     end
