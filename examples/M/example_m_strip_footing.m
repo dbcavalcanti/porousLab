@@ -22,15 +22,17 @@ print_header;
 % Create model
 mdl = Model_M();
 
+% Integration quadrature order
+mdl.intOrder = 2;
+
 %% MESH
 
 % Load the mesh
 load('MeshStripFooting');
 [node, elem] = convertToQuadraticMesh(node, elem);
-mdl.re
-
 % Set mesh to model
-mdl.setMesh(node, elem);
+mdl.setMesh(node,elem);
+mdl.resequenceNodes();
 
 %% MATERIALS
 
@@ -42,7 +44,7 @@ rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
-rock.MCmatch       = "planestrain";
+rock.MCmatch       = 'planestrain';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -64,14 +66,14 @@ end
 
 % Configure analysis
 anl = Anl_NonlinearQuasiStatic();
-anl.method     = 'GeneralizedDisplacement';
-anl.adjustStep = true;
-anl.increment  = 0.01;
-anl.max_increment  = 1.0e3;
-anl.max_lratio = 10.0;
-anl.max_step   = 59;
-anl.max_iter   = 100;
-anl.trg_iter   = 4;
+anl.method        = 'GeneralizedDisplacement';
+anl.adjustStep    = true;
+anl.increment     = 0.01;
+anl.max_increment = 0.1;
+anl.max_lratio    = 10.0;
+anl.max_step      = 60;
+anl.max_iter      = 100;
+anl.trg_iter      = 3;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([0.5, 5.0]);
@@ -84,4 +86,5 @@ anl.run(mdl);
 
 anl.plotCurves();
 % Plot contours
-mdl.plotField('PEMAG');
+mdl.plotField('PEMAG',[0.0,0.0001]);
+mdl.plotField('Uy');
