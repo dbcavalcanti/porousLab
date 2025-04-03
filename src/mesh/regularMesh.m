@@ -25,6 +25,12 @@
 %           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
 %           each row has 3 nodes.
 %
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
 %% Function definition
 function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 

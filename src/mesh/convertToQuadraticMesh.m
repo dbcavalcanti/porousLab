@@ -15,7 +15,13 @@
 %                and the newly created mid-edge nodes.
 % * *ELEM_quad*: An updated connectivity matrix that includes the 
 %                quadratic connectivity for each element.
-% 
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
 %% Function definition
 function [NODE_quad, ELEM_quad] = convertToQuadraticMesh(NODE, ELEM)
 

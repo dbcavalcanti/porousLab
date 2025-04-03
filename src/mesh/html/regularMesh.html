@@ -90,7 +90,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <a href="#2">Outputs</a>
 </li>
 <li>
-<a href="#3">Function definition</a>
+<a href="#3">Author</a>
+</li>
+<li>
+<a href="#4">Version History</a>
+</li>
+<li>
+<a href="#5">Function definition</a>
 </li>
 </ul>
 </div>
@@ -126,7 +132,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <b>ELEM</b>: Matrix of element connectivity. Each row defines the nodes forming an element. For 'Q4', each row has 4 nodes; for 'CST', each row has 3 nodes.</li>
 </ul>
 </div>
-<h2 id="3">Function definition</h2>
+<h2 id="3">Author</h2>
+<p>Danilo Cavalcanti</p>
+<h2 id="4">Version History</h2>
+<p>Version 1.00.</p>
+<h2 id="5">Function definition</h2>
 <pre class="codeinput">
 <span class="keyword">function</span> [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 
@@ -218,7 +228,7 @@ x = sort(x);
 </pre>
 <pre class="codeoutput error">Not enough input arguments.
 
-Error in regularMesh (line 37)
+Error in regularMesh (line 43)
     xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
                                         ^^</pre>
 <p class="footer">
@@ -255,6 +265,12 @@ Error in regularMesh (line 37)
 % * *ELEM*: Matrix of element connectivity. Each row defines the nodes
 %           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
 %           each row has 3 nodes.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
 %
 %% Function definition
 function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)

@@ -90,7 +90,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <a href="#2">Outputs</a>
 </li>
 <li>
-<a href="#3">Function definition</a>
+<a href="#3">Author</a>
+</li>
+<li>
+<a href="#4">Version History</a>
+</li>
+<li>
+<a href="#5">Function definition</a>
 </li>
 </ul>
 </div>
@@ -112,7 +118,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <b>ELEM_quad</b>: An updated connectivity matrix that includes the quadratic connectivity for each element.</li>
 </ul>
 </div>
-<h2 id="3">Function definition</h2>
+<h2 id="3">Author</h2>
+<p>Danilo Cavalcanti</p>
+<h2 id="4">Version History</h2>
+<p>Version 1.00.</p>
+<h2 id="5">Function definition</h2>
 <pre class="codeinput">
 <span class="keyword">function</span> [NODE_quad, ELEM_quad] = convertToQuadraticMesh(NODE, ELEM)
 
@@ -176,7 +186,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre>
 <pre class="codeoutput error">Not enough input arguments.
 
-Error in convertToQuadraticMesh (line 23)
+Error in convertToQuadraticMesh (line 29)
     num_nodes = size(NODE, 1);
                      ^^^^</pre>
 <p class="footer">
@@ -204,7 +214,13 @@ Error in convertToQuadraticMesh (line 23)
 %                and the newly created mid-edge nodes.
 % * *ELEM_quad*: An updated connectivity matrix that includes the 
 %                quadratic connectivity for each element.
-% 
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
 %% Function definition
 function [NODE_quad, ELEM_quad] = convertToQuadraticMesh(NODE, ELEM)
 
