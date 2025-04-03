@@ -71,6 +71,7 @@
 %
 %% Version History
 % Version 1.00: Initial version (April 2023).
+% 
 %% Class definition
 classdef Model < handle    
     %% Public attributes

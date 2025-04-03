@@ -1,12 +1,43 @@
-%% Model_M class
+%% Model_M Class
+% This class represents a mechanical finite element model. It extends the
+% _Model_ class and is specifically designed for mechanical physics 
+% simulations. Each node in the model has 2 degrees of freedom, which are 
+% 2 displacement components (ux, uy)
 %
-% Mechanical finite element model.
-%
-% Each node has 2 degrees of freedom (dof):
-% - 2 displacement components (ux,uy)
-%
+%% Methods
+% * *setMaterial*: Sets the material properties using a _PorousMedia_ 
+%                  object.
+% * *initializeElements*: Initializes the elements of the model with their 
+%                         properties.
+% * *setDirichletBCAtNode*: Sets displacement Dirichlet boundary 
+%                           conditions at a specific node.
+% * *setDirichletBCAtPoint*: Sets displacement Dirichlet boundary 
+%                            conditions at a specific point.
+% * *setDirichletBCAtBorder*: Sets displacement Dirichlet boundary 
+%                             conditions along a border.
+% * *addLoadAtNode*: Adds a load at a specific node.
+% * *addLoadAtPoint*: Adds a load at a specific point.
+% * *addLoadAtBorder*: Adds a load along a specified border in a given 
+%                      direction.
+% * *initializeDiscontinuitySegArray*: Initializes an array of 
+%                                      discontinuity segments.
+% * *initializeDiscontinuitySegment*: Initializes a single discontinuity 
+%                                     segment.
+% * *addDiscontinuityData*: Adds additional discontinuity data.
+% * *initializeDiscontinuitySegments*: Initializes discontinuity segments.
+% * *plotDisplacementAlongSegment*: Plots displacement along a segment.
+% * *plotDeformedMesh*: Plots the deformed mesh with a specified 
+%                       amplification factor.
+% * *updateResultVertices*: Updates the result vertices of each element 
+%                           based on the specified configuration and 
+%                           factor.
+% * *printResultsHeader*: Prints the header for the results table.
+% 
 %% Author
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Model_M < Model   
@@ -36,6 +67,7 @@ classdef Model_M < Model
     methods
 
         %------------------------------------------------------------------
+        % Sets the material properties
         function setMaterial(this,porousMedia)
             if nargin < 2
                 disp('Error in setMaterial: insuficient number of inputs.');
@@ -50,6 +82,8 @@ classdef Model_M < Model
         end
 
         %------------------------------------------------------------------
+        % Initializes the elements of the model with the corresponding
+        % properties
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -84,31 +118,37 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a displacement Dirichlet boundary condition at a node
         function setDisplacementDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, [1,2], value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a displacement Dirichlet boundary condition at a point
         function setDisplacementDirichletBCAtPoint(this, X, value)
             this.setDirichletBCAtPoint(X, [1,2], value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a displacement Dirichlet boundary condition at a border
         function setDisplacementDirichletBCAtBorder(this, border, value)
             this.setDirichletBCAtBorder(border, [1,2], value);
         end
 
         % -----------------------------------------------------------------
+        % Impose a load at a node
         function addLoadAtNode(this, nodeId, value)
             this.setNeumannBCAtNode(nodeId, [1,2], value);
         end
 
         % -----------------------------------------------------------------
+        % Impose a load at a point
         function addLoadAtPoint(this, X, value)
             this.setNeumannBCAtPoint(X, [1,2], value);
         end
 
         % -----------------------------------------------------------------
+        % Impose a load at a border
         function addLoadAtBorder(this, border, dir, p)
             % Get the nodes at the given border
             if strcmp(border,'left')
@@ -182,22 +222,26 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
+        % Initializes an array of discontinuity segments
         function seg = initializeDiscontinuitySegArray(~,n)
             seg(n,1) = DiscontinuityElement_M([],[]);
         end
 
         % -----------------------------------------------------------------
+        % Initializes a single discontinuity segment
         function seg = initializeDiscontinuitySegment(~,nodeD,matD)
             seg = DiscontinuityElement_M(nodeD,matD);
         end
 
         % -----------------------------------------------------------------
+        % Adds some additional discontinuity data
         function addDiscontinuityData(this,additionalData)
             this.addRelRotationMode = additionalData.addRelRotationMode;
             this.addStretchingMode  = additionalData.addStretchingMode;
         end
 
         %------------------------------------------------------------------
+        % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -261,6 +305,7 @@ classdef Model_M < Model
     methods (Static)
 
         % -----------------------------------------------------------------
+        % Prints the header for the results table
         function printResultsHeader()
             fprintf('\n  Node           ux        uy\n');
         end
