@@ -1,13 +1,48 @@
-%% Model_HM class
-%
-% Hydromechanical wiht single-phase fluid flow finite element model.
-%
-% Each node has 3 degrees of freedom (dof):
-% - 2 displacement components (ux,uy)
-% - 1 pore pressure (p)
-%
+%% Model_HM Class
+% This class defines a hydromechanical finite element model with 
+% single-phase fluid flow. It extends the _Model_M_ class and incorporates 
+% specific functionalities for hydromechanical analysis. Each node in the 
+% model has three degrees of freedom:
+% 
+% * 2 displacement components (ux, uy)
+% * 1 pore pressure (p)
+% 
+%% Methods
+% * *setMaterial*: Sets the material properties using a _PorousMedia_ 
+%                  object.
+% * *initializeElements*: Initializes the elements of the model with their 
+%                         properties..
+% * *setPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
+%                                   conditions at a specific node.
+% * *setPressureDirichletBCAtPoint*: Sets pressure Dirichlet boundary 
+%                                    conditions at a specific point.
+% * *setPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
+%                                     conditions at a specific border.
+% * *setPressureNeumannBCAtNode*: Sets a Neumann boundary condition for 
+%                                 pressure at a specific node.
+% * *setPressureNeumannBCAtPoint*: Sets a Neumann boundary condition for 
+%                                  pressure at a specific point.
+% * *setPressureNeumannBCAtBorder*: Sets a Neumann boundary condition for 
+%                                   pressure along a border.
+% * *setInitialPressureAtDomain*: Sets the initial pressure value for the 
+%                                 entire domain.
+% * *setInitialPressureAtNode*: Sets the initial pressure value at a 
+%                               specific node.
+% * *initializeDiscontinuitySegArray*: Initializes an array of 
+%                                      discontinuity segments.
+% * *initializeDiscontinuitySegment*: Initializes a single discontinuity 
+%                                     segment.
+% * *plotPressureAlongSegment*: Plots the pressure distribution along a 
+%                               segment defined by start and end points. 
+% * *printResultsHeader*: Prints the header for the results table, 
+%                         displaying node ID, displacement components 
+%                         (ux, uy), and pore pressure (Pl).
+% 
 %% Author
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Model_HM < Model_M     
@@ -25,6 +60,7 @@ classdef Model_HM < Model_M
     methods
 
         %------------------------------------------------------------------
+        % Sets de material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
                 disp('Error in setMaterial: insuficient number of inputs.');
@@ -43,6 +79,8 @@ classdef Model_HM < Model_M
         end
 
         %------------------------------------------------------------------
+        % Initializes the elements of the model with the corresponding
+        % properties
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -69,51 +107,61 @@ classdef Model_HM < Model_M
         end
         
         % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a node
         function setPressureDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, 1, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a point
         function setPressureDirichletBCAtPoint(this, X, value)
             this.setDirichletBCAtPoint(X, 1, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a border
         function setPressureDirichletBCAtBorder(this, border, value)
             this.setDirichletBCAtBorder(border, 3, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a pressure Neumann boundary condition at a node
         function setPressureNeumannBCAtNode(this, nodeId, value)
             this.setNeumannBCAtNode(nodeId, 3, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a pressure Neumann boundary condition at a point
         function setPressureNeumannBCAtPoint(this, X, value)
             this.setNeumannBCAtPoint(X, 3, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a pressure Neumann boundary condition at a border
         function setPressureNeumannBCAtBorder(this, border, value)
             this.setNeumannBCAtBorder(border, 3, value);
         end
 
         % -----------------------------------------------------------------
+        % Sets the initial pressure value for the whole domain
         function setInitialPressureAtDomain(this, value)
             this.setInitialDofAtDomain(3, value);
         end
 
         % -----------------------------------------------------------------
+        % Sets the initial pressure value at a node
         function setInitialPressureAtNode(this, nodeId, value)
             this.setInitialDofAtNode(nodeId, 3, value);
         end
 
         % -----------------------------------------------------------------
+        % Initializes an array of discontinuity segments
         function seg = initializeDiscontinuitySegArray(~,n)
             seg(n,1) = DiscontinuityElement_H([],[]);
         end
 
         % -----------------------------------------------------------------
+        % Initializes a single discontinuity segment
         function seg = initializeDiscontinuitySegment(~,nodeD,matD)
             seg = DiscontinuityElement_H(nodeD,matD);
         end

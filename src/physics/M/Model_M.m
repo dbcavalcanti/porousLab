@@ -1,8 +1,9 @@
 %% Model_M Class
 % This class represents a mechanical finite element model. It extends the
 % _Model_ class and is specifically designed for mechanical physics 
-% simulations. Each node in the model has 2 degrees of freedom, which are 
-% 2 displacement components (ux, uy)
+% simulations. Each node in the model has 2 degrees of freedom:
+% 
+% * 2 displacement components (ux, uy)
 %
 %% Methods
 % * *setMaterial*: Sets the material properties using a _PorousMedia_ 

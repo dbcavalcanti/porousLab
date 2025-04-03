@@ -1,10 +1,33 @@
 %% RegularElement_HM class
+% This class defines a single-phase hydromechanical finite element. It 
+% extends the _RegularElement_ class and incorporates additional 
+% attributes and methods specific to hydromechanical analysis.
 %
-% This class defines a single-phase hydromechanical finite element 
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          element using the shape function and material 
+%                          properties.
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
+%                                  matrix based on the element volume and 
+%                                  compressibility coefficients.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalDisplacement*: Retrieves the nodal displacement values.
+% * *getNodalPressure*: Retrieves the nodal liquid pressure values.
+% * *pressureField*: Computes the pressure field inside the element at a 
+%                    given position in the global Cartesian coordinate 
+%                    system.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_HM < RegularElement    
     %% Public attributes
