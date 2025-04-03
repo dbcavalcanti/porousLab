@@ -122,8 +122,8 @@ classdef Model_HM < Model_M
         % Plot the mesh with the boundary conditions
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts, axisPlot);
+            FEMPlot = FEMPlot(this);
+            FEMPlot.plotPressureAlongSegment(Xi, Xf, npts, axisPlot);
         end
 
     end

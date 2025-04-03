@@ -704,8 +704,8 @@ classdef Model < handle
             if nargin < 3, range = []; end
 
             this.updateResultVertexData(fieldPlot)
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            FEMPlot = FEMPlot(this);
+            FEMPlot.plotMesh();
             if isempty(range)
                 colorbar;
             else
