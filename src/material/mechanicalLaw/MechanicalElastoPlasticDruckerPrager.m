@@ -22,64 +22,77 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
     %% Public methods
     methods
+        %------------------------------------------------------------------
+        % Compute the stress vector and the constitutive matrix
+        function [stress,Dt] = eval(this,material,ip)
+            if strcmp(material.stressIntAlgorithm,'implicit')
+                 [stress,Dt] = eval@MechanicalElastoPlastic(this,material,ip);
+            elseif strcmp(material.stressIntAlgorithm,'alternative')
+                [stress,Dt] = this.alternativeStressIntegration(material,ip);
+            else
+                disp('Error: the given stress integration algorithm is not available');
+                disp('Tags of the methods available: ''implicit'', ''alternative''');
+                error('Error: stressIntAlgorithm is not available');
+            end
+        end
 
         %------------------------------------------------------------------
         % Compute the stress vector and the constitutive matrix
-        % function [stress,Dt] = eval(this,material,ip)
-        % 
-        %     % Constitutive matrix
-        %     De = this.elasticConstitutiveMatrix(material,ip);
-        %     Ce = this.elasticFlexibilityMatrix(material,ip);
-        %     Dt = De;
-        % 
-        %     % Trial stress vector
-        %     stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
-        % 
-        %     % Evaluate the yield condition
-        %     f = this.yieldCondition(material,ip,stress);
-        % 
-        %     % Elastic step
-        %     if f < this.returnYieldConditionTol, return, end
-        % 
-        %     % Material parameters
-        %     [eta, xi, etaB] = this.getMohrCoulombCorrespondence(material);
-        %     coh    = material.cohesion;
-        %     Id     = this.gradientI1(stress);
-        % 
-        %     % Elastic properties
-        %     K = this.bulkModulus(material);
-        %     G = this.shearModulus(material);
-        % 
-        %     % Stress invariants
-        %     p = this.hydrostaticStress(stress);
-        %     J2 = this.stressInvariantJ2(stress);
-        % 
-        %     % Deviatoric stresses
-        %     s = this.deviatoricStress(stress);
-        % 
-        %     % Plastic multiplier
-        %     lambda = f / (G + K * eta * etaB);
-        % 
-        %     % Stress update to the smooth part of the cone 
-        %     factor = 1.0 - G * lambda / sqrt(J2);
-        %     if J2 > 0.0    
-        %         s = factor * s;
-        %         p = p - lambda * etaB * K;
-        %         stress = s + p * Id;
-        %         df = this.yieldStressGradient(material,ip,stress);
-        %         n  = this.flowVector(material,ip,stress);
-        %         dn = this.flowVectorGradient(material,ip,stress);
-        %         Psi = this.pseudoInv(Ce + lambda * dn);
-        %         Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
-        %     else 
-        %         % Return to the apex of the surface
-        %         stress = (xi * coh / eta) * Id;
-        %         Dt = zeros(4,4);
-        %     end
-        % 
-        %     % Update the plastic strain
-        %     ip.plasticstrain = ip.strain - Ce * stress;
-        % end
+        function [stress,Dt] = alternativeStressIntegration(this,material,ip)
+
+            % Constitutive matrix
+            De = this.elasticConstitutiveMatrix(material,ip);
+            Ce = this.elasticFlexibilityMatrix(material,ip);
+            Dt = De;
+
+            % Trial stress vector
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
+
+            % Evaluate the yield condition
+            f = this.yieldCondition(material,ip,stress);
+
+            % Elastic step
+            if f < this.returnYieldConditionTol, return, end
+
+            % Material parameters
+            [eta, xi, etaB] = this.getMohrCoulombCorrespondence(material);
+            coh    = material.cohesion;
+            Id     = this.gradientI1(stress);
+
+            % Elastic properties
+            K = this.bulkModulus(material);
+            G = this.shearModulus(material);
+
+            % Stress invariants
+            p = this.hydrostaticStress(stress);
+            J2 = this.stressInvariantJ2(stress);
+
+            % Deviatoric stresses
+            s = this.deviatoricStress(stress);
+
+            % Plastic multiplier
+            lambda = f / (G + K * eta * etaB);
+
+            % Stress update to the smooth part of the cone 
+            factor = 1.0 - G * lambda / sqrt(J2);
+            if J2 > 0.0    
+                s = factor * s;
+                p = p - lambda * etaB * K;
+                stress = s + p * Id;
+                df = this.yieldStressGradient(material,ip,stress);
+                n  = this.flowVector(material,ip,stress);
+                dn = this.flowVectorGradient(material,ip,stress);
+                Psi = this.pseudoInv(Ce + lambda * dn);
+                Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
+            else 
+                % Return to the apex of the surface
+                stress = (xi * coh / eta) * Id;
+                Dt = zeros(4,4);
+            end
+
+            % Update the plastic strain
+            ip.plasticstrain = ip.strain - Ce * stress;
+        end
 
         %------------------------------------------------------------------
         function [eta, xi, etab] = getMohrCoulombCorrespondence(~,material)
