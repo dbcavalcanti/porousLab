@@ -25,6 +25,7 @@ mdl = Model_M();
 % Set model options
 mdl.gravityOn = true;
 
+% Integration quadrature order
 mdl.intOrder = 2;
 
 %% MESH
@@ -38,19 +39,16 @@ mdl.resequenceNodes();
 
 %% MATERIALS
 
-phi = 20.0*pi/180;
-coh = 50.0;
-
 % Create porous media
 rock = PorousMedia('rock');
 rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
-rock.rho           = 2.0;            % Density (kg/m3)
-rock.Young         = 2.0e+4;           % Young modulus (Pa)
+rock.rho           = 2.0;              % Density (g/cm3)
+rock.Young         = 2.0e+4;           % Young modulus (kPa)
 rock.nu            = 0.49;             % Poisson ratio
-rock.cohesion      = 50.0;           % Cohesion (Pa)
-rock.frictionAngle = 20.0*pi/180;        % Friction angle (rad)
-rock.dilationAngle = 20.0*pi/180; 
-rock.MCmatch = "planestrain";
+rock.cohesion      = 50.0;             % Cohesion (kPa)
+rock.frictionAngle = 20.0*pi/180;      % Friction angle (rad)
+rock.dilationAngle = 20.0*pi/180;      % Dilation angle
+rock.MCmatch       = "planestrain";    % How the Drucker-Prager surfaces matches the Mohr-Coulomb
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -88,4 +86,4 @@ anl.run(mdl);
 anl.plotCurves();
 mdl.plotField('E1');
 mdl.plotField('S1');
-mdl.plotField('PEMAG',[0.0,0.5]);
+mdl.plotField('PEMAG',[0.0,1.0]);
