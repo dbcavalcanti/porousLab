@@ -6,14 +6,14 @@
 % degress of freedom:
 %
 % * 2 displacement components (ux,uy)
-% * 1 liquid-phase pore pressure (pl)
-% * 1 gas-phase pore pressure (pg)
+% * 1 liquid-phase pore pressure (Pl)
+% * 1 gas-phase pore pressure (Pg)
 %
 %% Methods
 % * *setMaterial*: Sets the material properties using a _PorousMedia_ 
 %                  object.
 % * *initializeElements*: Initializes the elements of the model with their 
-%                         properties..
+%                         properties.
 % * *setPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
 %                                   conditions at a specific node.
 % * *setPressureDirichletBCAtPoint*: Sets pressure Dirichlet boundary 
@@ -33,7 +33,7 @@
 % * *setGasPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureDirichletBCAtPointe*: Sets pressure Dirichlet boundary 
+% * *setGasPressureDirichletBCAtPoint*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
 % * *setGasPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
@@ -42,7 +42,7 @@
 % * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureNuemannBCAtPointe*: Sets pressure Nuemann boundary 
+% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
 % * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
@@ -240,7 +240,7 @@ classdef Model_H2M < Model_M
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
+        % Plot liquid pressure field along a segment
         function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -248,7 +248,7 @@ classdef Model_H2M < Model_M
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
+        % Plot the gas pressure field along a segment
         function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -256,7 +256,7 @@ classdef Model_H2M < Model_M
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
+        % Plot the capillary pressure field along a segment
         function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);

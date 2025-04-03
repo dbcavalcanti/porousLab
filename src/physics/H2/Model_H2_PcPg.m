@@ -1,10 +1,36 @@
-%% Model_H2 class
-%
-% Two-phase flow finite element model
-%
+%% Model_H2_PcPg Class
+% This class extends the _Model_H2_ and represents a two-phase flow finite
+% element model.
+% Each node has two degrees of freedom:
+% 
+% * 1 capillary phase pressure (Pc)
+% * 1 gas phase pressure (Pg)
+%% Methods
+% * *initializeElements*: Initializes the elements of the model with their 
+%                         properties.
+% * *setCapillaryPressureDirichletBCAtNode*: Sets pressure Dirichlet 
+%                                            boundary conditions for 
+%                                            gas-phase pore pressure at a 
+%                                            specific node.
+% * *setCapillaryPressureDirichletBCAtPoint*: Sets pressure Dirichlet 
+%                                             boundary conditions for 
+%                                             gas-phase pore pressure at a 
+%                                             specific point.
+% * *setCapillaryPressureDirichletBCAtBorder*: Sets pressure Dirichlet 
+%                                              boundary conditions for 
+%                                              gas-phase pore pressure at 
+%                                              a specific border.
+% * *setInitialCapillaryPressureAtDomain*: Sets the initial capillary 
+%                                          pressure value across the 
+%                                          entire domain.
+% * *printResultsHeader*: Prints a header for the results table, showing
+%                         node ID, and pressures (Pc, Pg).
+% 
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Model_H2_PcPg < Model_H2    
@@ -21,6 +47,8 @@ classdef Model_H2_PcPg < Model_H2
     methods
 
         %------------------------------------------------------------------
+        % Initializes the elements of the model with the corresponding
+        % properties
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -47,21 +75,28 @@ classdef Model_H2_PcPg < Model_H2
         end
 
         % -----------------------------------------------------------------
+        % Prescribe the capillary pressure Dirichlet boundary condition at 
+        % a node
         function setCapillaryPressureDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, 1, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe the capillary pressure Dirichlet boundary condition at 
+        % a point
         function setCapillaryPressureDirichletBCAtPoint(this, X, value)
             this.setDirichletBCAtPoint(X, 1, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe the capillary pressure Dirichlet boundary condition at 
+        % a border
         function setCapillaryPressureDirichletBCAtBorder(this, border, value)
             this.setDirichletBCAtBorder(border, 1, value);
         end
 
         % -----------------------------------------------------------------
+        % Sets the initial capillary pressure value for the whole domain
         function setInitialCapillaryPressureAtDomain(this, value)
             this.setInitialDofAtDomain(1, value);
         end

@@ -6,11 +6,11 @@
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
       -->
-<title>Model_H2M Class</title>
+<title>Model_H2 Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
 <meta name="DC.date" content="2025-04-03">
-<meta name="DC.source" content="Model_H2M.m">
+<meta name="DC.source" content="Model_H2.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
@@ -76,18 +76,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </head>
 <body>
 <div class="content">
-<h1>Model_H2M Class</h1>
+<h1>Model_H2 Class</h1>
 <!--introduction-->
-<p>This class represents a hydromechanical finite element model with two-phase fluid flow. It extends the <i>Model_M</i> class and is designed to handle problems involving coupled solid deformation and fluid flow (liquid and gas phases) in porous media. Each node in the model has four degress of freedom:</p>
+<p>This class represents a two-phase flow finite element model. Each node has two degrees of freedom:</p>
 <div>
 <ul>
-<li>2 displacement components (ux,uy)</li>
-<li>1 liquid-phase pore pressure (pl)</li>
-<li>1 gas-phase pore pressure (pg)</li>
+<li>1 liquid phase pressure (p)</li>
+<li>1 gas phase pressure (pg)</li>
 </ul>
 </div>
-<pre class="codeoutput error">Error using Model_H2M
-The specified superclass 'Model_M' contains a parse error, cannot be found on MATLAB's search path, or is shadowed by another
+<pre class="codeoutput error">Error using Model_H2
+The specified superclass 'Model_H' contains a parse error, cannot be found on MATLAB's search path, or is shadowed by another
 file with the same name.
 </pre>
 <!--/introduction-->
@@ -125,22 +124,6 @@ file with the same name.
 <li>
 <b>initializeElements</b>: Initializes the elements of the model with their properties.</li>
 <li>
-<b>setPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary conditions at a specific node.</li>
-<li>
-<b>setPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary conditions at a specific point.</li>
-<li>
-<b>setPressureDirichletBCAtBorder</b>: Sets pressure Dirichlet boundary conditions at a specific border.</li>
-<li>
-<b>setPressureNeumannBCAtNode</b>: Sets a Neumann boundary condition for pressure at a specific node.</li>
-<li>
-<b>setPressureNeumannBCAtPoint</b>: Sets a Neumann boundary condition for pressure at a specific point.</li>
-<li>
-<b>setPressureNeumannBCAtBorder</b>: Sets a Neumann boundary condition for pressure along a border.</li>
-<li>
-<b>setInitialPressureAtDomain</b>: Sets the initial pressure value for the entire domain.</li>
-<li>
-<b>setInitialPressureAtNode</b>: Sets the initial pressure value at a specific node.</li>
-<li>
 <b>setGasPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary conditions for gas-phase pore pressure at a specific node.</li>
 <li>
 <b>setGasPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary conditions for gas-phase pore pressure at a specific point.</li>
@@ -149,7 +132,7 @@ file with the same name.
 <li>
 <b>setGasPressureNuemannBCAtNode</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific node.</li>
 <li>
-<b>setGasPressureNuemannBCAtPointe</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific point.</li>
+<b>setGasPressureNuemannBCAtPoint</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific point.</li>
 <li>
 <b>setGasPressureNuemannBCAtBorder</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific border.</li>
 <li>
@@ -157,13 +140,11 @@ file with the same name.
 <li>
 <b>setInitialGasPressureAtNode</b>: Sets the initial gas-phase pressure value at a specific node.</li>
 <li>
-<b>plotPressureAlongSegment</b>: Plots the pressure distribution along a segment defined by start and end points.</li>
-<li>
 <b>plotGasPressureAlongSegment</b>: Plots the gas-phase pressure distribution along a segment defined by start and end points.</li>
 <li>
 <b>plotCapillaryPressureAlongSegment</b>: Plots capillary pressure along a specified segment.</li>
 <li>
-<b>printResultsHeader</b>: Prints a header for the results table, showing node ID, displacements (ux, uy), and pressures (Pl, Pg).</li>
+<b>printResultsHeader</b>: Prints a header for the results table, showing node ID, and pressures (Pl, Pg).</li>
 </ul>
 </div>
 <h2 id="2">Author</h2>
@@ -172,15 +153,15 @@ file with the same name.
 <p>Version 1.00.</p>
 <h2 id="4">Class definition</h2>
 <pre class="codeinput">
-<span class="keyword">classdef</span> Model_H2M &lt; Model_M
+<span class="keyword">classdef</span> Model_H2 &lt; Model_H
 </pre>
 <h2 id="5">Constructor method</h2>
 <pre class="codeinput">    methods
-        <span class="keyword">function</span> this = Model_H2M()
-            this = this@Model_M(false);
-            this.ndof_nd = 4;        <span class="comment">% Number of dofs per node</span>
-            this.physics = <span class="string">'H2M'</span>;    <span class="comment">% Tag with the physics name</span>
-            disp(<span class="string">"*** Physics: Two-phase flow hydro-mechanical (H2M)"</span>);
+        <span class="keyword">function</span> this = Model_H2()
+            this = this@Model_H(false);
+            this.ndof_nd = 2;       <span class="comment">% Number of dofs per node</span>
+            this.physics = <span class="string">'H2'</span>;    <span class="comment">% Tag with the physics name</span>
+            disp(<span class="string">"*** Physics: Two-phase hydraulic (H2)"</span>);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre>
@@ -188,11 +169,11 @@ file with the same name.
 <pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Sets de material properties</span>
+        <span class="comment">% Sets the material properties</span>
         <span class="keyword">function</span> setMaterial(this,porousMedia,liquidFluid,gasFluid)
             <span class="keyword">if</span> nargin &lt; 4
                 disp(<span class="string">'Error in setMaterial: insuficient number of inputs.'</span>);
-                disp(<span class="string">'Physics H2M requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.'</span>);
+                disp(<span class="string">'Physics H2 requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.'</span>);
                 error(<span class="string">'Error in setMaterial.'</span>);
             <span class="keyword">end</span>
             <span class="keyword">if</span> ~isa(porousMedia,<span class="string">'PorousMedia'</span>)
@@ -207,7 +188,7 @@ file with the same name.
                 disp(<span class="string">'Error in setMaterial: gasFluid is not a Fluid object.'</span>);
                 error(<span class="string">'Error in setMaterial.'</span>);
             <span class="keyword">end</span>
-            this.mat  = struct(<span class="string">'porousMedia'</span>,porousMedia,<span class="string">'liquidFluid'</span>,liquidFluid,<span class="string">'gasFluid'</span>,gasFluid);
+            this.mat = struct(<span class="string">'porousMedia'</span>,porousMedia,<span class="string">'liquidFluid'</span>,liquidFluid,<span class="string">'gasFluid'</span>,gasFluid);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
@@ -224,14 +205,12 @@ file with the same name.
                         <span class="string">'porousMedia'</span>,this.mat.porousMedia(this.matID(el)), <span class="keyword">...</span>
                         <span class="string">'liquidFluid'</span>,this.mat.liquidFluid,<span class="keyword">...</span>
                         <span class="string">'gasFluid'</span>,this.mat.gasFluid);
-                udofs = this.getElementDofs(el,[1,2]);
-                pl_dofs = this.getElementDofs(el,3);
-                pg_dofs = this.getElementDofs(el,4);
-                elements(el) = RegularElement_H2M(<span class="keyword">...</span>
+                pl_dofs = this.getElementDofs(el,1);
+                pg_dofs = this.getElementDofs(el,2);
+                elements(el) = RegularElement_H2(<span class="keyword">...</span>
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),<span class="keyword">...</span>
-                            this.t, emat, this.intOrder,udofs,pl_dofs,pg_dofs, <span class="keyword">...</span>
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric, <span class="keyword">...</span>
-                            this.isPlaneStress);
+                            this.t, emat, this.intOrder, pl_dofs, pg_dofs, <span class="keyword">...</span>
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 <span class="keyword">if</span> this.gravityOn
                     elements(el).type.gravityOn = true;
                 <span class="keyword">end</span>
@@ -241,117 +220,61 @@ file with the same name.
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Dirichlet boundary condition at a node</span>
-        <span class="keyword">function</span> setPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Dirichlet boundary condition at a point</span>
-        <span class="keyword">function</span> setPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Dirichlet boundary condition at a border</span>
-        <span class="keyword">function</span> setPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Neumann boundary condition at a node</span>
-        <span class="keyword">function</span> setPressureNeumannBCAtNode(this, nodeId, value)
-            this.setNeumannBCAtNode(nodeId, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Neumann boundary condition at a point</span>
-        <span class="keyword">function</span> setPressureNeumannBCAtPoint(this, X, value)
-            this.setNeumannBCAtPoint(X, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Prescribe a pressure Neumann boundary condition at a border</span>
-        <span class="keyword">function</span> setPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Sets the initial pressure value for the whole domain</span>
-        <span class="keyword">function</span> setInitialPressureAtDomain(this, value)
-            this.setInitialDofAtDomain(3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Sets the initial pressure value at a node</span>
-        <span class="keyword">function</span> setInitialPressureAtNode(this, nodeId, value)
-            this.setInitialDofAtNode(nodeId, 3, value);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Dirichlet boundary condition at</span>
         <span class="comment">% a node</span>
         <span class="keyword">function</span> setGasPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 4, value);
+            this.setDirichletBCAtNode(nodeId, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Dirichlet boundary condition at</span>
         <span class="comment">% a point</span>
         <span class="keyword">function</span> setGasPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 4, value);
+            this.setDirichletBCAtPoint(X, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Dirichlet boundary condition at</span>
         <span class="comment">% a border</span>
         <span class="keyword">function</span> setGasPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 4, value);
+            this.setDirichletBCAtBorder(border, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Neumann boundary condition at a</span>
         <span class="comment">% node</span>
         <span class="keyword">function</span> setGasPressureNeumannBCAtNode(this, nodeId, value)
-            this.setNeumannBCAtNode(nodeId, 4, value);
+            this.setNeumannBCAtNode(nodeId, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Neumann boundary condition at a</span>
         <span class="comment">% point</span>
         <span class="keyword">function</span> setGasPressureNeumannBCAtPoint(this, X, value)
-            this.setNeumannBCAtPoint(X, 4, value);
+            this.setNeumannBCAtPoint(X, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prescribe a gas-phase pressure Neumann boundary condition at a</span>
         <span class="comment">% border</span>
         <span class="keyword">function</span> setGasPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 4, value);
+            this.setNeumannBCAtBorder(border, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Sets the initial gas-phase pressure value for the whole domain</span>
         <span class="keyword">function</span> setInitialGasPressureAtDomain(this, value)
-            this.setInitialDofAtDomain(4, value);
+            this.setInitialDofAtDomain(2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Sets the initial gas-phase pressure value at a node</span>
         <span class="keyword">function</span> setInitialGasPressureAtNode(this, nodeId, value)
-            this.setInitialDofAtNode(nodeId, 4, value);
+            this.setInitialDofAtNode(nodeId, 2, value);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Plot the mesh with the boundary conditions</span>
-        <span class="keyword">function</span> plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            <span class="keyword">if</span> nargin &lt; 4, npts = 10; <span class="keyword">end</span>
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        <span class="keyword">end</span>
-
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Plot the mesh with the boundary conditions</span>
+        <span class="comment">% Plot the gas pressure field along a segment</span>
         <span class="keyword">function</span> plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             <span class="keyword">if</span> nargin &lt; 4, npts = 10; <span class="keyword">end</span>
             EFEMdraw = EFEMDraw(this);
@@ -359,7 +282,7 @@ file with the same name.
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Plot the mesh with the boundary conditions</span>
+        <span class="comment">% Plot the capillary pressure field along a segment</span>
         <span class="keyword">function</span> plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             <span class="keyword">if</span> nargin &lt; 4, npts = 10; <span class="keyword">end</span>
             EFEMdraw = EFEMDraw(this);
@@ -374,7 +297,7 @@ file with the same name.
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Print header of the results</span>
         <span class="keyword">function</span> printResultsHeader()
-            fprintf(<span class="string">'\n  Node           ux        uy        Pl        Pg\n'</span>);
+            fprintf(<span class="string">'\n  Node           Pl        Pg\n'</span>);
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
@@ -390,38 +313,18 @@ file with the same name.
 </div>
 <!--
 ##### SOURCE BEGIN #####
-%% Model_H2M Class
-% This class represents a hydromechanical finite element model with 
-% two-phase fluid flow. It extends the _Model_M_ class and is designed to 
-% handle problems involving coupled solid deformation and fluid flow
-% (liquid and gas phases) in porous media. Each node in the model has four
-% degress of freedom:
-%
-% * 2 displacement components (ux,uy)
-% * 1 liquid-phase pore pressure (pl)
-% * 1 gas-phase pore pressure (pg)
+%% Model_H2 Class
+% This class represents a two-phase flow finite element model.
+% Each node has two degrees of freedom:
+% 
+% * 1 liquid phase pressure (p)
+% * 1 gas phase pressure (pg)
 %
 %% Methods
 % * *setMaterial*: Sets the material properties using a _PorousMedia_ 
 %                  object.
 % * *initializeElements*: Initializes the elements of the model with their 
 %                         properties.
-% * *setPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
-%                                   conditions at a specific node.
-% * *setPressureDirichletBCAtPoint*: Sets pressure Dirichlet boundary 
-%                                    conditions at a specific point.
-% * *setPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
-%                                     conditions at a specific border.
-% * *setPressureNeumannBCAtNode*: Sets a Neumann boundary condition for 
-%                                 pressure at a specific node.
-% * *setPressureNeumannBCAtPoint*: Sets a Neumann boundary condition for 
-%                                  pressure at a specific point.
-% * *setPressureNeumannBCAtBorder*: Sets a Neumann boundary condition for 
-%                                   pressure along a border.
-% * *setInitialPressureAtDomain*: Sets the initial pressure value for the 
-%                                 entire domain.
-% * *setInitialPressureAtNode*: Sets the initial pressure value at a 
-%                               specific node.
 % * *setGasPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
@@ -434,7 +337,7 @@ file with the same name.
 % * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureNuemannBCAtPointe*: Sets pressure Nuemann boundary 
+% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
 % * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
@@ -444,16 +347,13 @@ file with the same name.
 %                                    value for the entire domain.
 % * *setInitialGasPressureAtNode*: Sets the initial gas-phase pressure 
 %                                  value at a specific node.
-% * *plotPressureAlongSegment*: Plots the pressure distribution along a 
-%                               segment defined by start and end points. 
 % * *plotGasPressureAlongSegment*: Plots the gas-phase pressure 
 %                                  distribution along a segment defined 
 %                                  by start and end points.
 % * *plotCapillaryPressureAlongSegment*: Plots capillary pressure along a
 %                                        specified segment.
 % * *printResultsHeader*: Prints a header for the results table, showing
-%                         node ID, displacements (ux, uy), and pressures 
-%                         (Pl, Pg).
+%                         node ID, and pressures (Pl, Pg).
 % 
 %% Author
 % Danilo Cavalcanti
@@ -462,14 +362,14 @@ file with the same name.
 % Version 1.00.
 %
 %% Class definition
-classdef Model_H2M < Model_M    
+classdef Model_H2 < Model_H
     %% Constructor method
     methods
-        function this = Model_H2M()
-            this = this@Model_M(false);
-            this.ndof_nd = 4;        % Number of dofs per node
-            this.physics = 'H2M';    % Tag with the physics name
-            disp("*** Physics: Two-phase flow hydro-mechanical (H2M)");
+        function this = Model_H2()
+            this = this@Model_H(false);
+            this.ndof_nd = 2;       % Number of dofs per node
+            this.physics = 'H2';    % Tag with the physics name
+            disp("*** Physics: Two-phase hydraulic (H2)");
         end
     end
     
@@ -477,11 +377,11 @@ classdef Model_H2M < Model_M
     methods
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Sets de material properties
+        % Sets the material properties
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
                 disp('Error in setMaterial: insuficient number of inputs.');
-                disp('Physics H2M requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
+                disp('Physics H2 requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
                 error('Error in setMaterial.');
             end
             if ~isa(porousMedia,'PorousMedia')
@@ -496,7 +396,7 @@ classdef Model_H2M < Model_M
                 disp('Error in setMaterial: gasFluid is not a Fluid object.');
                 error('Error in setMaterial.');
             end
-            this.mat  = struct('porousMedia',porousMedia,'liquidFluid',liquidFluid,'gasFluid',gasFluid);
+            this.mat = struct('porousMedia',porousMedia,'liquidFluid',liquidFluid,'gasFluid',gasFluid);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -513,14 +413,12 @@ classdef Model_H2M < Model_M
                         'porousMedia',this.mat.porousMedia(this.matID(el)), ...
                         'liquidFluid',this.mat.liquidFluid,...
                         'gasFluid',this.mat.gasFluid);
-                udofs = this.getElementDofs(el,[1,2]);
-                pl_dofs = this.getElementDofs(el,3);
-                pg_dofs = this.getElementDofs(el,4);
-                elements(el) = RegularElement_H2M(...
+                pl_dofs = this.getElementDofs(el,1);
+                pg_dofs = this.getElementDofs(el,2);
+                elements(el) = RegularElement_H2(...
                             this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
-                            this.t, emat, this.intOrder,udofs,pl_dofs,pg_dofs, ...
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                            this.isPlaneStress);
+                            this.t, emat, this.intOrder, pl_dofs, pg_dofs, ...
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
@@ -530,117 +428,61 @@ classdef Model_H2M < Model_M
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Dirichlet boundary condition at a node
-        function setPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Dirichlet boundary condition at a point
-        function setPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Dirichlet boundary condition at a border
-        function setPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Neumann boundary condition at a node
-        function setPressureNeumannBCAtNode(this, nodeId, value)
-            this.setNeumannBCAtNode(nodeId, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Neumann boundary condition at a point
-        function setPressureNeumannBCAtPoint(this, X, value)
-            this.setNeumannBCAtPoint(X, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Prescribe a pressure Neumann boundary condition at a border
-        function setPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Sets the initial pressure value for the whole domain
-        function setInitialPressureAtDomain(this, value)
-            this.setInitialDofAtDomain(3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Sets the initial pressure value at a node
-        function setInitialPressureAtNode(this, nodeId, value)
-            this.setInitialDofAtNode(nodeId, 3, value);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Dirichlet boundary condition at 
         % a node
         function setGasPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 4, value);
+            this.setDirichletBCAtNode(nodeId, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Dirichlet boundary condition at 
         % a point
         function setGasPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 4, value);
+            this.setDirichletBCAtPoint(X, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Dirichlet boundary condition at 
         % a border
         function setGasPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 4, value);
+            this.setDirichletBCAtBorder(border, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Neumann boundary condition at a 
         % node
         function setGasPressureNeumannBCAtNode(this, nodeId, value)
-            this.setNeumannBCAtNode(nodeId, 4, value);
+            this.setNeumannBCAtNode(nodeId, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Neumann boundary condition at a 
         % point
         function setGasPressureNeumannBCAtPoint(this, X, value)
-            this.setNeumannBCAtPoint(X, 4, value);
+            this.setNeumannBCAtPoint(X, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Prescribe a gas-phase pressure Neumann boundary condition at a 
         % border
         function setGasPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 4, value);
+            this.setNeumannBCAtBorder(border, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Sets the initial gas-phase pressure value for the whole domain
         function setInitialGasPressureAtDomain(this, value)
-            this.setInitialDofAtDomain(4, value);
+            this.setInitialDofAtDomain(2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Sets the initial gas-phase pressure value at a node
         function setInitialGasPressureAtNode(this, nodeId, value)
-            this.setInitialDofAtNode(nodeId, 4, value);
+            this.setInitialDofAtNode(nodeId, 2, value);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Plot the mesh with the boundary conditions
-        function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Plot the mesh with the boundary conditions
+        % Plot the gas pressure field along a segment
         function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -648,7 +490,7 @@ classdef Model_H2M < Model_M
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Plot the mesh with the boundary conditions
+        % Plot the capillary pressure field along a segment
         function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
             if nargin < 4, npts = 10; end
             EFEMdraw = EFEMDraw(this);
@@ -656,13 +498,14 @@ classdef Model_H2M < Model_M
         end
 
     end
-        %% Static methods
+
+    %% Static methods
     methods (Static)
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Print header of the results
         function printResultsHeader()
-            fprintf('\n  Node           ux        uy        Pl        Pg\n');
+            fprintf('\n  Node           Pl        Pg\n');
         end
 
     end
