@@ -78,7 +78,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <div class="content">
 <h1>RegularElement_H2M Class</h1>
 <!--introduction-->
-<p>This class defines a finite element for a two-phase flow formulation using displacement, liquid pressure (Pl) and gas pressure (Pg) as primary variables. It extends the <i>RegularElement</i> class and incorporates additional attributes and methods specific to hydromechanical coupling in porous media.</p>
+<p>This class defines a finite element for a two-phase flow formulation using displacements (ux, uy), liquid pressure (Pl) and gas pressure (Pg) as primary variables. It extends the <i>RegularElement</i> class and incorporates additional attributes and methods specific to hydromechanical coupling in porous media.</p>
 <pre class="codeoutput error">Error using RegularElement_H2M
 The specified superclass 'RegularElement' contains a parse error, cannot be found on MATLAB's search path, or is shadowed by
 another file with the same name.
@@ -596,8 +596,8 @@ another file with the same name.
 ##### SOURCE BEGIN #####
 %% RegularElement_H2M Class
 % This class defines a finite element for a two-phase flow formulation 
-% using displacement, liquid pressure (Pl) and gas pressure (Pg) as 
-% primary variables. It extends the _RegularElement_ class and 
+% using displacements (ux, uy), liquid pressure (Pl) and gas pressure (Pg) 
+% as primary variables. It extends the _RegularElement_ class and 
 % incorporates additional attributes and methods specific to 
 % hydromechanical coupling in porous media.
 %

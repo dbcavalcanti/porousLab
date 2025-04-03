@@ -1,7 +1,7 @@
 %% RegularElement_H2M Class
 % This class defines a finite element for a two-phase flow formulation 
-% using displacement, liquid pressure (Pl) and gas pressure (Pg) as 
-% primary variables. It extends the _RegularElement_ class and 
+% using displacements (ux, uy), liquid pressure (Pl) and gas pressure (Pg) 
+% as primary variables. It extends the _RegularElement_ class and 
 % incorporates additional attributes and methods specific to 
 % hydromechanical coupling in porous media.
 %
