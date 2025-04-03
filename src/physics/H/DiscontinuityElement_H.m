@@ -1,9 +1,27 @@
-%% Mechanical discontinuity element class
+%% DiscontinuityElement_H Class
+% This class defines a hydraulic discontinuity element for modeling 
+% discontinuities in porous media mechanics. It inherits from the 
+% _DiscontinuityElement_ base class and provides specific implementations 
+% for handling hydraulic discontinuities.
 %
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          discontinuity element. Retrieves integration 
+%                          points' coordinates and weights, and creates 
+%                          _IntPoint_ objects with the associated material 
+%                          model.
+% * *elementData*: Computes the element stiffness matrix, internal force 
+%                  vector, and other element data based on the input 
+%                  displacement vector. Performs numerical integration 
+%                  over the integration points.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% Class definition
+%% Version History
+% Version 1.00.
+%
+%% Class Definition
 classdef DiscontinuityElement_H < DiscontinuityElement    
     %% Constructor method
     methods
@@ -18,6 +36,8 @@ classdef DiscontinuityElement_H < DiscontinuityElement
     methods
 
         %------------------------------------------------------------------
+        % Initializes the integration points for the element obtaining the
+        % coordinates and weights
         function initializeIntPoints(this)
 
             % Get integration points coordinates and weights
@@ -34,6 +54,17 @@ classdef DiscontinuityElement_H < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Computes the element stiffness matrix, internal force vector and
+        % other optional outputs using numerical integration over the
+        % element
+        % 
+        % Outputs:
+        %   Ke    - Element stiffness matrix.
+        %   Ce    - Element damping matrix.
+        %   fi    - Internal force vector.
+        %   fe    - External force vector.
+        %   dfidu - Derivative of internal force with respect to 
+        %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
             
             % Declare output matrices that won't be used

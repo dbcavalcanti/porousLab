@@ -1,11 +1,23 @@
-%% Material_H class
+%% Material_H Class
+% This class represents a material model that combines fluid and porous 
+% media properties. It provides methods to compute material properties 
+% such as permeability tensor and compressibility coefficient.
 %
-%
+%% Methods
+% * *permeabilityTensor*: Computes and returns the permeability tensor of 
+%                         the material, which is derived from the 
+%                         intrinsic permeability matrix of the porous 
+%                         media and the fluid viscosity.
+% * *compressibilityCoeff*: Computes and returns the compressibility 
+%                           coefficient of the material based on Biot's 
+%                           coefficient, porosity, solid bulk modulus, 
+%                           and fluid bulk modulus.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Material_H < handle
