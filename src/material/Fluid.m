@@ -1,14 +1,20 @@
-%% Fluid class
+%% Fluid Class
+% This class defines a fluid object with properties such as density, 
+% viscosity, and compressibility. It provides methods to access these 
+% properties and allows initialization with specific values.
 %
-% This class defines a fluid object
+%% Methods
+% * *Fluid*: Constructor to initialize the fluid object. If only the id is 
+%           provided, other properties are set to their default values.
+% * *getDensity*: Returns the density of the fluid.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef Fluid < handle  
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
@@ -20,6 +26,7 @@ classdef Fluid < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
+        % Initialization of the fluid
         function this = Fluid(id, density, viscosity, compressibility)
             if nargin == 1
                 this.id = id; 
@@ -31,8 +38,10 @@ classdef Fluid < handle
             end
         end
     end
-    %%
+    %% Public methods
     methods
+        %------------------------------------------------------------------
+        % Get the density of the fluid
         function rho = getDensity(this,~)
             rho = this.rho;
         end

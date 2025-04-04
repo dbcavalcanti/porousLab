@@ -1,14 +1,24 @@
-%% Fluid class
+%% IdealGas Class
+% This class is a subclass of the _Fluid_ class that represents an ideal 
+% gas. It provides methods to calculate the density of the gas based on 
+% the ideal gas law and allows setting key properties such as the 
+% universal gas constant, molar mass, and temperature.
 %
-% This class defines a fluid object
+%% Methods
+% * *getDensity*: Calculates the density of the gas using the ideal gas
+%                 law considering the gas pressure
+% * *setUniversalGasConstant*: Sets the value of the universal gas
+%                              constant.
+% * *setMolarMass*: Sets the molar mass of the gas.
+% * *setTemperature*: Sets the temperature of the gas.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef IdealGas < Fluid   
     %% Public attributes
     properties (SetAccess = private, GetAccess = public)
@@ -29,20 +39,24 @@ classdef IdealGas < Fluid
             end
         end
     end
-    %%
+    %% Public methods
     methods
+        %------------------------------------------------------------------
         % Get the fluid density based on the ideal Gas law
         function rho = getDensity(this,pg)
             rho = pg * this.M / (this.R * this.T);
         end
+        %------------------------------------------------------------------
         % Set the value of the universal gas constant
         function setUniversalGasConstant(this,R)
             this.R = R;
         end
+        %------------------------------------------------------------------
         % Set the value of the gas molar mass
         function setMolarMass(this,M)
             this.M = M;
         end
+        %------------------------------------------------------------------
         % Set the value of the temperature
         function setTemperature(this,T)
             this.T = T;
