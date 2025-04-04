@@ -1,14 +1,26 @@
-%% Material_Elastic class
+%% CapillaryPressureLiakopoulos class
+% This class implements the capillary pressure-saturation relationship 
+% based on the Liakopoulos model. It inherits from the _CapillaryPressure_ 
+% base class and provides methods to compute the saturation degree and 
+% its derivative with respect to capillary pressure.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Methods
+% * *saturationDegree*: Computes the liquid phase saturation degree Sl 
+%                       based on the capillary pressure. Ensures that Sl 
+%                       is not less than Slmin.
+% * *derivativeSaturationDegree*: Computes the derivative of the liquid 
+%                                 phase saturation degree with respect to 
+%                                 the capillary pressure. Ensures that pc 
+%                                 does not exceed the maximum value 
+%                                 corresponding to Slmin.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef CapillaryPressureLiakopoulos < CapillaryPressure  
     %% Properties
     % Parameters taken from OGS-6. 

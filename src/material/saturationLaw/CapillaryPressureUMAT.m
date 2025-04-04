@@ -1,14 +1,32 @@
 %% Material_Elastic class
+% This class defines a capillary pressure constitutive law for porous 
+% media using a user-defined material model (UMAT). It inherits from the 
+% _CapillaryPressure_ base class.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Methods
+% * *saturationDegree*: Computes the liquid phase saturation degree Sl for 
+%                       a given capillary pressure pc and porous media 
+%                       properties. The result is clamped between the 
+%                       residual saturation limits (Slr and 1.0 - Sgr).
+% * *derivativeSaturationDegree*: Computes the derivative of the 
+%                                 saturation degree dSldpc with respect to 
+%                                 capillary pressure pc using the selected 
+%                                 derivative method.
+% * *GetCurveDerivative*: Computes the derivative of the saturation degree 
+%                         curve at a given saturation degree. The method 
+%                         supports two approaches: Piecewise constant, 
+%                         which corresponds to derivativeMethod = 0 and 
+%                         Smoothed, which is derivativeMethod = 1, and it 
+%                         uses weighted averaging of slopes for smoother 
+%                         transitions.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef CapillaryPressureUMAT < CapillaryPressure 
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
