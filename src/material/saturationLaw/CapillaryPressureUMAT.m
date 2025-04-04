@@ -1,4 +1,4 @@
-%% Material_Elastic class
+%% CapillaryPressureUMAT class
 % This class defines a capillary pressure constitutive law for porous 
 % media using a user-defined material model (UMAT). It inherits from the 
 % _CapillaryPressure_ base class.
