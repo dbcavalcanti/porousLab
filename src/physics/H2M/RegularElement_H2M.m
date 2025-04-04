@@ -214,6 +214,7 @@ classdef RegularElement_H2M < RegularElement
                     Qul , Sll , Slg ;
                     Qug , Sgl , Sgg ];
 
+            % TODO: Check if Kuu is considered twice or not
             dfidu = [ Kuu , -Qul', -Qug';
                       Opu,   Opp ,  Opp ;
                       Opu,   Opp ,  Opp ;];
