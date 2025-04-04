@@ -1,15 +1,31 @@
-%% MechanicalElastoPlasticDruckerPrager class
+%% MechanicalElastoPlasticDruckerPrager Class
+% This class implements the Drucker-Prager criteria for the elasto-plastic
+% material law. It provides methods for evaluating stress, constitutive
+% matrices, yield conditions, flow vectors, and their gradients, as well
+% as handling plastic strain updates.
 %
-% This class implements the Drucker-Prager criteria for the elastoplastic
-% material law
+%% Methods
+% * *eval*: Computes the stress vector and the constitutive matrix for the 
+%           material at a given integration point. Handles both elastic 
+%           and plastic steps.
+% * *yieldCondition*: Defines the yield function based on the Drucker-
+%                     Prager criteria.
+% * *yieldStressGradient*: Computes the gradient of the yield function 
+%                          with respect to the stress vector.
+% * *flowVector*: Computes the flow vector for the plastic potential.
+% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+%                         respect to the stress vector.
+% * *hardening*: Returns the hardening value.
+% * *hardeningStressGradient*: Returns the gradient of the hardening law 
+%                              with respect to the stress vector  
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic  
     %% Constructor method
     methods

@@ -1,14 +1,28 @@
-%% MechanicalIsotropicDamage class
+%% MechanicalIsotropicDamage Class
+% This class defines an isotropic damage material model for mechanical 
+% analysis. It extends the _MechanicalLinearElastic_ class and 
+% incorporates damage mechanics to simulate material degradation.
 %
-% This class defines a isotropic damage material model
+%% Methods
+% * *eval*: Computes the stress vector and the constitutive matrix for the 
+%           material at a given integration point.
+% * *equivalentStrain*: Computes the von Mises equivalent strain and its 
+%                       derivative with respect to the strain tensor.
+% * *damageCriteria*: Evaluates the damage criteria and updates the damage 
+%                     threshold based on the equivalent strain.
+% * *damageLaw*: Implements the exponential damage law and computes the 
+%                scalar damage and its derivative with respect to the 
+%                damage threshold.
+% * *tangentConstitutiveMatrix*: Computes the tangent constitutive matrix 
+%                                considering the damage effects.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalIsotropicDamage < MechanicalLinearElastic  
     properties (SetAccess = public, GetAccess = public)
         lc = [];
@@ -50,7 +64,7 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
         end
 
         %------------------------------------------------------------------
-        % von Mises equivalent strain and its derivative wrt to the strain
+        % Von Mises equivalent strain and its derivative wrt to the strain
         % tensor
         function [eqstrain,Deqstrain] = equivalentStrain(this,material,ip)
             % Get the material parameters
@@ -126,6 +140,8 @@ classdef MechanicalIsotropicDamage < MechanicalLinearElastic
     end
     %%
     methods (Static)
+        %------------------------------------------------------------------
+        % Flag to indicate if the material is elasto-plastic or not
         function flag = isElastoPlastic()
             flag = false;
         end
