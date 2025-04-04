@@ -130,14 +130,6 @@ classdef Model_H < Model
                 'fluid',this.fluid, ...
                 'initialAperture',this.initialAperture);
         end
-
-        % -----------------------------------------------------------------
-        function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            FEMPlot = FEMPlot(this);
-            FEMPlot.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
     end
 
     %% Static methods

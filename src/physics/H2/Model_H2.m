@@ -110,21 +110,6 @@ classdef Model_H2 < Model_H
         function setInitialGasPressureAtNode(this, nodeId, value)
             this.setInitialDofAtNode(nodeId, 2, value);
         end
-
-        % -----------------------------------------------------------------
-        function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            FEMPlot = FEMPlot(this);
-            FEMPlot.plotGasPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
-        % -----------------------------------------------------------------
-        function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            FEMPlot = FEMPlot(this);
-            FEMPlot.plotCapillaryPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
     end
 
     %% Static methods

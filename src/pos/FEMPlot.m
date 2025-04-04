@@ -60,7 +60,87 @@ classdef FEMPlot < handle
         end
 
         %------------------------------------------------------------------
-        function elements(this)
+        % Plots the continuum elements of the mesh
+        function plotMesh(this)
+            
+            % Initialize the figure
+            figure
+            hold on, 
+
+            % Get patches
+            [Faces, Vertices, VertexData] = this.getElementsPatches();
+            
+            % Plot the continuum elements
+            patch('Faces', Faces, ...
+                  'Vertices', Vertices, ...
+                  'FaceVertexCData', VertexData, ...
+                  'FaceColor', this.DEFAULT_FACE_COLOR, ...  
+                  'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
+                  'LineStyle', '-', ...
+                  'Marker', this.DEFAULT_MARKER_TYPE);
+            
+            % Set the colormap
+            colormap(this.DEFAULT_COLORMAP_TYPE);
+            
+            % Get the bounding box
+            bbox = this.getBoundingBox();
+            xlim([bbox(1) bbox(3)]);
+            ylim([bbox(2) bbox(4)]);
+            
+            % Formatting the figure
+            box on, grid on, axis equal;
+            set(gca,'FontName',this.DEFAULT_FONT_NAME);
+            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
+            
+        end
+
+        %------------------------------------------------------------------
+        % Plots the field along a segment defined by two points Xi and Xf
+        function plotFieldAlongSegment(this, field, Xi, Xf, npts, axisPlot)
+
+            % Coordinates of the points where the given field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize vector at these points
+            F = zeros(size(X,1),1);   % Field vector
+            S = zeros(size(X,1),1);   % Longitudinal coordinate vector
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+                
+                % Find in each element this point is inside
+                elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
+                
+                % Calculate the given field in the point X using the
+                % shape function of the element
+                F(i) = this.model.evaluateField(field, elem, X(i,:));
+                
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(F,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
+                xlabel(field);
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,F,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
+                ylabel(field);
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontName',this.DEFAULT_FONT_NAME);
+            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
+
+        end
+
+        %------------------------------------------------------------------
+        % Combines faces, vertices, and vertex data from all elements in the model.
+        function [allFaces, allVertices, allVertexData] = getElementsPatches(this)
             
             % Initialize combined matrices
             allFaces      = [];      % Combined faces connectivity
@@ -85,224 +165,6 @@ classdef FEMPlot < handle
                 % Update vertex offset for the next element
                 vertexOffset = vertexOffset + size(res.vertices, 1);
             end
-            
-            % Draw all patches at once
-            patch('Faces', allFaces, ...
-                'Vertices', allVertices, ...
-                'FaceVertexCData', allVertexData, ...
-                'FaceColor', this.DEFAULT_FACE_COLOR, ...  % Use 'interp' for vertex-based colors
-                'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
-                'LineStyle', '-', ...
-                'Marker', this.DEFAULT_MARKER_TYPE);  % Disable markers for batch plotting
-            
-            % Set the colormap
-            colormap(this.DEFAULT_COLORMAP_TYPE);
-        end
-        
-        %------------------------------------------------------------------
-        % Plots the continuum elements of the mesh
-        function plotMesh(this)
-            
-            figure
-            hold on, box on, grid on
-            axis equal
-            
-            % Plot the continuum elements
-            this.elements();
-            
-            % Get the bounding box
-            bbox = this.getBoundingBox();
-            xlim([bbox(1) bbox(3)]);
-            ylim([bbox(2) bbox(4)]);
-            
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the pressure field along a segment
-        function plotGasPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            
-            % Coordinates of the points where the pressure field is going
-            % to be evaluated
-            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
-            
-            % Initialize the pressure vector at these points
-            P = zeros(size(X,1),1);
-            S = zeros(size(X,1),1);
-            
-            % Calculate the pressure field in the points of the segment
-            for i = 1:npts
-                
-                % Longitudinal coordinate of the point X(i) wrt to Xi
-                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
-                
-                % Find in each element this point is inside
-                elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
-                
-                % Calculate the pressure field in the point X using the
-                % shape function of the elem
-                P(i) = this.model.element(elem).type.gasPressureField(X(i,:));
-                
-            end
-            
-            % Initialize, plot and configure the figure
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                xlabel('Gas pressure (kPa)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                ylabel('Gas pressure (kPa)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the pressure field along a segment
-        function plotCapillaryPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            
-            % Coordinates of the points where the pressure field is going
-            % to be evaluated
-            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
-            
-            % Initialize the pressure vector at these points
-            P = zeros(size(X,1),1);
-            S = zeros(size(X,1),1);
-            
-            % Calculate the pressure field in the points of the segment
-            for i = 1:npts
-                
-                % Longitudinal coordinate of the point X(i) wrt to Xi
-                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
-                
-                % Find in each element this point is inside
-                elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
-                
-                % Calculate the pressure field in the point X using the
-                % shape function of the elem
-                P(i) = this.model.element(elem).type.capillaryPressureField(X(i,:));
-                
-            end
-            
-            % Initialize, plot and configure the figure
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                xlabel('Capillary pressure (kPa)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                ylabel('Capillary pressure (kPa)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the pressure field along a segment
-        function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            
-            % Coordinates of the points where the pressure field is going
-            % to be evaluated
-            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
-            
-            % Initialize the pressure vector at these points
-            P = zeros(size(X,1),1);
-            S = zeros(size(X,1),1);
-            
-            % Calculate the pressure field in the points of the segment
-            for i = 1:npts
-                
-                % Longitudinal coordinate of the point X(i) wrt to Xi
-                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
-                
-                % Find in each element this point is inside
-                elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
-                
-                % Calculate the pressure field in the point X using the
-                % shape function of the elem
-                P(i) = this.model.element(elem).type.pressureField(X(i,:));
-                
-            end
-            
-            % Initialize, plot and configure the figure
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(P,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                xlabel('Pressure (kPa)');
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,P,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                ylabel('Pressure (kPa)');
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
-        end
-        
-        %------------------------------------------------------------------
-        % Plot the pressure field along a segment
-        function plotDisplacementAlongSegment(this, dir, Xi, Xf, npts, axisPlot)
-            
-            % Coordinates of the points where the pressure field is going
-            % to be evaluated
-            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
-            
-            % Initialize the pressure vector at these points
-            U = zeros(size(X,1),1);
-            S = zeros(size(X,1),1);
-            
-            % Calculate the pressure field in the points of the segment
-            for i = 1:npts
-                
-                % Longitudinal coordinate of the point X(i) wrt to Xi
-                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
-                
-                % Find in each element this point is inside
-                elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
-                
-                % Calculate the pressure field in the point X using the
-                % shape function of the elem
-                u = this.model.element(elem).type.displacementField(X(i,:));
-                U(i) = u(dir);
-                
-            end
-            
-            % Initialize, plot and configure the figure
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(U,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                if dir == 1
-                    xlabel('Horizontal displacement (m)');
-                elseif dir == 2
-                    xlabel('Vertical displacement (m)');
-                end
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,U,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                if dir == 1
-                    ylabel('Horizontal displacement (m)');
-                elseif dir == 2
-                    ylabel('Vertical displacement (m)');
-                end
-                xlabel('Longitudinal distance (m)');
-            end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
         end
     end
 end
