@@ -1,14 +1,26 @@
-%% Material_Elastic class
+%% MechanicalCohesiveLinearElastic Class
+% This class implements a linear elastic cohesive law for mechanical 
+% materials. It provides methods to compute the stress vector and the 
+% constitutive matrix based on the material properties and the strain 
+% state at integration points.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Methods
+% * *eval*: Computes the stress vector and the constitutive matrix for the 
+%           given material and integration point.
+% * *isElastoPlastic*: Static method that indicates that the material is 
+%                      not elasto-plastic.
+% * *elasticConstitutiveMatrix*: Static method that computes the elastic 
+%                                constitutive matrix based on the material 
+%                                properties and the strain state at the 
+%                                integration point.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalCohesiveLinearElastic < handle  
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
@@ -39,6 +51,7 @@ classdef MechanicalCohesiveLinearElastic < handle
     %% Public methods
     methods (Static)
         %------------------------------------------------------------------
+        % Flag to return that the material is not elasto-plastic
         function flag = isElastoPlastic()
             flag = false;
         end
