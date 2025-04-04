@@ -82,4 +82,4 @@ mdl.plotField('Pressure');
 
 % Plot graphs
 Xi = [0.0, Ly/2.0]; Xf = [Lx, Ly/2.0];
-mdl.plotPressureAlongSegment(Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'x');
