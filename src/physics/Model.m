@@ -342,81 +342,9 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'LiquidPressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'CapillaryPressure')
-                        p = this.element(el).type.capillaryPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'GasPressure')
-                        p = this.element(el).type.gasPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'LiquidSaturation')
-                        Sl = this.element(el).type.liquidSaturationField(X);
-                        vertexData(i) = Sl;
-                    elseif strcmp(type,'GasSaturation')
-                        Sg = this.element(el).type.gasSaturationField(X);
-                        vertexData(i) = Sg;
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
-        end
-
-        %------------------------------------------------------------------
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
-                % Characteristic lenght (quadrilateral elements)
                 Lce(el) = this.getElementCharacteristicLength(el);
             end
         end
@@ -698,12 +626,80 @@ classdef Model < handle
             end
         end
 
+        %------------------------------------------------------------------
+        % Evaluate a field at in a point inside an element
+        % Assumes that the point is in the element domain
+        function fieldValue = evaluateField(this, field, el, X)
+            if strcmp(field,'Model')
+                fieldValue = this.matID(el);
+            elseif strcmp(field,'Pressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'Ux')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(1);
+            elseif strcmp(field,'Uy')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(2);
+            elseif strcmp(field,'E1')
+                s = this.element(el).type.strainField(X);
+                sp = this.element(el).type.principalStrain(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'PEMAG')
+                fieldValue = this.element(el).type.plasticstrainMagnitude(X);
+            elseif strcmp(field,'Sx')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(1);
+            elseif strcmp(field,'Sy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(2);
+            elseif strcmp(field,'Sxy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(4);
+            elseif strcmp(field,'S1')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'S2')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(2);
+            elseif strcmp(field,'Sr')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.stressCylindrical(s,X);
+                fieldValue = sp(1);
+            elseif strcmp(field,'LiquidPressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'CapillaryPressure')
+                fieldValue = this.element(el).type.capillaryPressureField(X);
+            elseif strcmp(field,'GasPressure')
+                fieldValue = this.element(el).type.gasPressureField(X);
+            elseif strcmp(field,'LiquidSaturation')
+                fieldValue = this.element(el).type.liquidSaturationField(X);
+            elseif strcmp(field,'GasSaturation')
+                fieldValue = this.element(el).type.gasSaturationField(X);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Update the result nodes data of each element
+        function updateResultVertexData(this,field)
+            for el = 1:this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle); 
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                for i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    vertexData(i) = this.evaluateField(field, el, X);
+                end
+                this.element(el).type.result.setVertexData(vertexData);
+            end
+        end
+
         % -----------------------------------------------------------------
         % Plot given field over the mesh
-        function plotField(this,fieldPlot,range)
+        function plotField(this,field,range)
             if nargin < 3, range = []; end
 
-            this.updateResultVertexData(fieldPlot)
+            this.updateResultVertexData(field)
             FEMPlot(this).plotMesh();
             if isempty(range)
                 colorbar;
@@ -713,6 +709,16 @@ classdef Model < handle
                 set(c,'Limits',range)
             end
 
+        end
+
+        % -----------------------------------------------------------------
+        % Plot given field along a given segment
+        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot)
+            if nargin < 5
+                npts     = 100;
+                axisPlot = 'x';
+            end
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
         end
 
     end
