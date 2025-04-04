@@ -1,14 +1,24 @@
-%% Material class
+%% CapillaryPressure Class
+% This class defines an abstract base class for modeling capillary pressure 
+% and its associated properties in porous media. It provides a framework 
+% for implementing specific capillary pressure-saturation relationships 
+% and their derivatives.
 %
-% This class defines an abstract stress-strain constitutive law
+%% Methods
+% * *saturationDegree*: Computes the liquid saturation degree based on the 
+%                       capillary pressure and porous media properties.
+% 
+% * *derivativeSaturationDegree*: Computes the derivative of the liquid 
+%                                 saturation degree with respect to the 
+%                                 capillary pressure.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef CapillaryPressure < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)

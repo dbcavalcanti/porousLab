@@ -1,4 +1,4 @@
-%% Material_Elastic class
+%% CapillaryPressureBrooksCorey class
 %
 % This class defines an linear elastic stress-strain constitutive law
 %
