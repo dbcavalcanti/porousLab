@@ -83,13 +83,14 @@ mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) 
 
 % Configure analysis
 anl = Anl_NonlinearQuasiStatic();
-anl.method     = 'ArcLengthCylControl';
-anl.adjustStep = true;
-anl.increment  = 0.1;
-anl.max_lratio = 2.0;
-anl.max_step   = 100;
-anl.max_iter   = 100;
-anl.trg_iter   = 4;
+anl.method         = 'ArcLengthCylControl';
+anl.adjustStep    = true;
+anl.increment     = 0.1;
+anl.max_increment = 0.1;
+anl.max_lratio    = 2.0;
+anl.max_step      = 100;
+anl.max_iter      = 100;
+anl.trg_iter      = 4;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([ri, 0.0]);
@@ -101,6 +102,7 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % plot contours
+anl.plotCurves();
 mdl.plotField('S1');
 mdl.plotField('Sr');
 mdl.plotField('Sx');

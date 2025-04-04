@@ -12,8 +12,8 @@
 classdef MechanicalElastoPlastic < MechanicalLinearElastic  
     properties (SetAccess = public, GetAccess = public)
         returnMappingMaxIter = 100;
-        returnYieldConditionTol = 1.0e-6;
-        returnNormResidualFlowRuleTol = 1.0e-6;
+        returnYieldConditionTol = 1.0e-8;
+        returnNormResidualFlowRuleTol = 1.0e-8;
     end
     %% Constructor method
     methods
