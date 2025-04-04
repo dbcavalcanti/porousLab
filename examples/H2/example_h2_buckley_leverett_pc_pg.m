@@ -99,6 +99,6 @@ mdl.plotField('GasPressure');
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [Lx, 0.0];
-mdl.plotPressureAlongSegment(Xi, Xf, 500, 'x');
-mdl.plotGasPressureAlongSegment(Xi, Xf, 500, 'x');
-mdl.plotCapillaryPressureAlongSegment(Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('LiquidPressure', Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('CapillaryPressure', Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('GasPressure', Xi, Xf, 500, 'x');

@@ -97,4 +97,4 @@ mdl.plotField('GasSaturation');
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [Lx, Ly];
-mdl.plotPressureAlongSegment(Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('LiquidPressure', Xi, Xf, 500, 'x');
