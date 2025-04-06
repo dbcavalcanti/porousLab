@@ -1,4 +1,4 @@
-%% Material class
+%% Material_H2 class
 % This class defines the material properties and behavior for a porous 
 % medium involving liquid and gas phases. It includes methods for 
 % computing relative permeabilities, saturation degrees, permeability 

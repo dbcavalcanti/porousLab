@@ -1,4 +1,4 @@
-%% Mechanical discontinuity element Class
+%% DiscontinuityElement_M Class
 % This class defines a mechanical discontinuity element that extends the
 % _DiscontinuityElement_ base class. It includes additional functionality
 % for handling stretching and relative rotation modes, as well as methods

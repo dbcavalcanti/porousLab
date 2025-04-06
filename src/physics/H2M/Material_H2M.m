@@ -1,4 +1,4 @@
-%% Material_H2 Class
+%% Material_H2M Class
 % This class extends the `Material_H2` class to include mechanical 
 % constitutive behavior for porous media. It provides methods to evaluate 
 % mechanical laws, retrieve state variables, and compute mechanical 
