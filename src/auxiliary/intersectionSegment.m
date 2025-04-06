@@ -1,4 +1,27 @@
-% Intersection of two segments
+%% intersectionSegment Function
+% This function determines whether two line segments intersect and, if so,
+% computes the intersection point and the parametric coordinates of the
+% intersection along each segment.
+% 
+%% Inputs
+% * *p1, p2*: Endpoints of the first segment, specified as 1x2 vectors.
+% * *p3, p4*: Endpoints of the second segment, specified as 1x2 vectors.
+% 
+%% Outputs
+% * *flagInt*: Flag indicating whether the segments intersect or not.
+% * *pint*: Intersection point as a 1x2 vector. Empty if no intersection.
+% * *t12*: Parametric coordinate of the intersection along the first 
+%          segment. Empty if no intersection.
+% * *t34*: Parametric coordinate of the intersection along the second 
+%          segment. Empty if no intersection.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [flagInt,pint,t12,t34] = intersectionSegment(segment1,segment2)
     % Extract the points
     p1 = segment1(1, :);
