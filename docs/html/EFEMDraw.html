@@ -1,0 +1,2280 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>EFEMDraw Class</title>
+<meta name="generator" content="MATLAB 24.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2025-04-06">
+<meta name="DC.source" content="EFEMDraw.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<h1>EFEMDraw Class</h1>
+<!--introduction-->
+<p>This class provides methods to visualize and plot graphical results from the EFEM (Embedded Finite Element Method) analysis. It includes utilities for drawing elements, fractures, pressure fields, displacements, cohesive stresses, and other related visualizations.</p>
+<!--/introduction-->
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Methods</a>
+</li>
+<li>
+<a href="#2">Author</a>
+</li>
+<li>
+<a href="#3">Version History</a>
+</li>
+<li>
+<a href="#4">Class Definition</a>
+</li>
+<li>
+<a href="#5">Public properties</a>
+</li>
+<li>
+<a href="#6">Class (constant) properties</a>
+</li>
+<li>
+<a href="#7">Private properties</a>
+</li>
+<li>
+<a href="#8">Constructor method</a>
+</li>
+<li>
+<a href="#9">Class (static) auxiliary functions</a>
+</li>
+<li>
+<a href="#10">Protect methods</a>
+</li>
+<li>
+<a href="#11">Public methods</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Methods</h2>
+<div>
+<ul>
+<li>
+<b>square</b>: Plots a filled square with specified center, size, and color.</li>
+<li>
+<b>draftSquare</b>: Plots a hollow square for draft visualization.</li>
+<li>
+<b>triangle</b>: Plots a filled triangle with specified orientation, size, and color.</li>
+<li>
+<b>draftTriangle</b>: Plots a hollow triangle for draft visualization.</li>
+<li>
+<b>circle</b>: Plots a circle outline with specified center, radius, and color.</li>
+<li>
+<b>disk</b>: Plots a filled circle (disk) with specified center, radius, and color.</li>
+<li>
+<b>arrow2D</b>: Plots a 2D arrow with specified length, orientation, and color.</li>
+<li>
+<b>snapToStepValue</b>: Snaps a value to the nearest step value.</li>
+<li>
+<b>getMaxLoad</b>: Retrieves the maximum load from the model.</li>
+<li>
+<b>elements</b>: Draws all elements of the model with combined patches.</li>
+<li>
+<b>fractures</b>: Draws fractures in the model.</li>
+<li>
+<b>EFEMBoundBox</b>: Computes the bounding box of the model for visualization.</li>
+<li>
+<b>mesh</b>: Draws the mesh of the model with applied loads.</li>
+<li>
+<b>plotGasPressureAlongSegment</b>: Plots the gas pressure field along a segment.</li>
+<li>
+<b>plotCapillaryPressureAlongSegment</b>: Plots the capillary pressure field along a segment.</li>
+<li>
+<b>plotPressureAlongSegment</b>: Plots the pressure field along a segment.</li>
+<li>
+<b>plotDisplacementAlongSegment</b>: Plots displacement along a segment in a specified direction.</li>
+<li>
+<b>plotDisplacementAlongDiscontinuity</b>: Plots displacement along a discontinuity.</li>
+<li>
+<b>plotCohesiveStressesAlongDiscontinuity</b>: Plots cohesive stresses along a discontinuity.</li>
+<li>
+<b>plotCohesiveStressesIncrementAlongDiscontinuity</b>: Plots cohesive stress increments along a discontinuity.</li>
+<li>
+<b>plotSlipTendencyAlongDiscontinuity</b>: Plots slip tendency along a discontinuity.</li>
+<li>
+<b>plotConformityErrorAlongDiscontinuity</b>: Plots conformity error along a discontinuity.</li>
+<li>
+<b>plotPressureAlongDiscontinuity</b>: Plots pressure along a discontinuity.</li>
+<li>
+<b>clean</b>: Cleans the EFEMDraw object by resetting the model property.</li>
+</ul>
+</div>
+<h2 id="2">Author</h2>
+<p>Danilo Cavalcanti</p>
+<h2 id="3">Version History</h2>
+<p>Version 1.00: Initial version (February 2023).</p>
+<h2 id="4">Class Definition</h2>
+<pre class="codeinput">
+<span class="keyword">classdef</span> EFEMDraw &lt; handle
+</pre>
+<h2 id="5">Public properties</h2>
+<pre class="codeinput">    properties
+        model = []; <span class="comment">% handle to an object of the EFEMmodel class</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="6">Class (constant) properties</h2>
+<pre class="codeinput">    properties (Constant)
+        supsize_fac = 0.035;            <span class="comment">% Factor for support size</span>
+        loadsize_fac = 0.3;             <span class="comment">% Factor for maximum load size in</span>
+                                        <span class="comment">% relation to half vertical window size</span>
+        minloadsize_fac = 0.012         <span class="comment">% Factor for minimum load size</span>
+        arrowsize_fac = 0.025;          <span class="comment">% Factor for load arrow size</span>
+        loadstep_fac = 0.05;            <span class="comment">% Factor for load step</span>
+        dimlineshift_fac = 0.85;        <span class="comment">% Factor for down shift of</span>
+                                        <span class="comment">% dimension lines with respect to</span>
+                                        <span class="comment">% half Y size</span>
+        dimlinetick_fac = 0.15;         <span class="comment">% Factor for dimension line tick</span>
+                                        <span class="comment">% sizeEFEM with respect to half Y</span>
+                                        <span class="comment">% size</span>
+        maxdisplsize_fac = 0.60;        <span class="comment">% Factor for maximum transversal</span>
+                                        <span class="comment">% size in relation to half</span>
+                                        <span class="comment">% vertical window size</span>
+        inflectpt_fac = 0.005;          <span class="comment">% Factor for size of inflection</span>
+                                        <span class="comment">% point disk</span>
+        rotmeter_fac = 0.85;            <span class="comment">% Factor for rotation meter size</span>
+                                        <span class="comment">% in relation to half vertical</span>
+                                        <span class="comment">% window size</span>
+        picktol_fac = 0.01;             <span class="comment">% Factor for picking a point</span>
+        minmemblen_fac = 0.05;          <span class="comment">% Factor for minimum member length</span>
+        ValidSupInsertion = 1;          <span class="comment">% Status for valid support</span>
+                                        <span class="comment">% insertion</span>
+        BeamLineNotFound = 2;           <span class="comment">% Status for beam line not found</span>
+                                        <span class="comment">% for support insertion</span>
+        SupInsertionNotValid = 3;       <span class="comment">% Status for not valid position</span>
+                                        <span class="comment">% for support insertion</span>
+        SupDelMinNumSup = 1;            <span class="comment">% Status for minimum number of</span>
+                                        <span class="comment">% internal supports</span>
+        ValidSupDeletion = 2;           <span class="comment">% Status for valid support deletion</span>
+        SupDelNotFound = 3;             <span class="comment">% Status for support not found</span>
+                                        <span class="comment">% for deletion</span>
+        MembLoadFound = 1;              <span class="comment">% Status for pick member load found</span>
+        MembLoadNotFound = 2            <span class="comment">% Status for pick member not found</span>
+        SupMoveFound = 1;               <span class="comment">% Status for support found for</span>
+                                        <span class="comment">% moving</span>
+        SupMoveNotFound = 2;            <span class="comment">% Status for support not found &ccedil;</span>
+                                        <span class="comment">% for moving</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="7">Private properties</h2>
+<pre class="codeinput">    properties (Access = private)
+        pickmember = 0;                 <span class="comment">% Current member load picked</span>
+        picksup = 0;                    <span class="comment">% Current support picked</span>
+        orig_suppos = 0;                <span class="comment">% Original moving support position</span>
+        hnd_draft = [];                 <span class="comment">% Handle to draft graphics object</span>
+                                        <span class="comment">% being displayed</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="8">Constructor method</h2>
+<pre class="codeinput">    methods
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="keyword">function</span> draw = EFEMDraw(model)
+            <span class="keyword">if</span> (nargin &gt; 0)
+                draw.model = model;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="9">Class (static) auxiliary functions</h2>
+<pre class="codeinput">    methods (Static)
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a square with defined center coordinates, side length and</span>
+        <span class="comment">% color.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  x: center coordinate on the X axis</span>
+        <span class="comment">%  y: center coordinate on the Y axis</span>
+        <span class="comment">%  l: side length</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> square(cnv,x,y,l,c)
+            X = [x - l/2, x + l/2, x + l/2, x - l/2];
+            Y = [y - l/2, y - l/2, y + l/2, y + l/2];
+            fill(cnv, X, Y, c);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a draft version of a square with defined center coordinates,</span>
+        <span class="comment">% side length and color.</span>
+        <span class="comment">% It draws a hollow square and sets its parent property as the</span>
+        <span class="comment">% given handle to the group of graphics objects.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  hnd: handle to group of graphics objects</span>
+        <span class="comment">%  x: center coordinate on the X axis</span>
+        <span class="comment">%  y: center coordinate on the Y axis</span>
+        <span class="comment">%  l: side length</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> draftSquare(cnv,hnd,x,y,l,c)
+            X = [x - l/2, x + l/2, x + l/2, x - l/2, x - l/2];
+            Y = [y - l/2, y - l/2, y + l/2, y + l/2, y - l/2];
+            plot(cnv, X, Y, <span class="string">'color'</span>, c, <span class="string">'Parent'</span>, hnd);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a triangle with defined top coordinates, height, base,</span>
+        <span class="comment">% orientation, and color.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  x: top coordinate on the X axis</span>
+        <span class="comment">%  y: top coordinate on the Y axis</span>
+        <span class="comment">%  h: triangle height</span>
+        <span class="comment">%  b: triangle base</span>
+        <span class="comment">%  ang: angle (in radian) between the axis of symmetry and the</span>
+        <span class="comment">%       horizontal direction (counterclockwise) - 0 rad when</span>
+        <span class="comment">%       triangle is pointing left</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> triangle(x,y,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + h * cx + b/2 * cy, x + h * cx - b/2 * cy];
+            Y = [y, y + h * cy - b/2 * cx, y + h * cy + b/2 * cx];
+            fill(X, Y, c);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a draft version of a triangle with defined top coordinates,</span>
+        <span class="comment">% height, base, orientation, and color.</span>
+        <span class="comment">% It draws a hollow triangle and sets its parent property as the</span>
+        <span class="comment">% given handle to the group of graphics objects.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  hnd: handle to group of graphics objects</span>
+        <span class="comment">%  x: top coordinate on the X axis</span>
+        <span class="comment">%  y: top coordinate on the Y axis</span>
+        <span class="comment">%  h: triangle height</span>
+        <span class="comment">%  b: triangle base</span>
+        <span class="comment">%  ang: angle (in radian) between the axis of symmetry and the</span>
+        <span class="comment">%       horizontal direction (counterclockwise) - 0 rad when</span>
+        <span class="comment">%       triangle is pointing left</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> draftTriangle(hnd,x,y,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + h * cx + b/2 * cy, x + h * cx - b/2 * cy, x];
+            Y = [y, y + h * cy - b/2 * cx, y + h * cy + b/2 * cx, y];
+            plot(X, Y, <span class="string">'color'</span>, c, <span class="string">'Parent'</span>, hnd);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a circle with defined center coordinates, radius and color.</span>
+        <span class="comment">% This method is used to draw hinges on 2D models.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  x: center coordinate on the X axis</span>
+        <span class="comment">%  y: center coordinate on the Y axis</span>
+        <span class="comment">%  r: circle radius</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> circle(cnv,x,y,r,c)
+            circ = 0 : pi/50 : 2*pi;
+            xcirc = x + r * cos(circ);
+            ycirc = y + r * sin(circ);
+            plot(cnv, xcirc, ycirc, <span class="string">'color'</span>, c);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots a circle disk with defined center coordinates, radius and</span>
+        <span class="comment">% color. The circle is filled with the given color</span>
+        <span class="comment">% This method is used to inflection on 2D models.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  x: center coordinate on the X axis</span>
+        <span class="comment">%  y: center coordinate on the Y axis</span>
+        <span class="comment">%  r: circle radius</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> disk(cnv,x,y,r,c)
+            circ = 0 : pi/50 : 2*pi;
+            xcirc = x + r * cos(circ);
+            ycirc = y + r * sin(circ);
+            fill(cnv, xcirc, ycirc, c);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots an arrow with defined beggining coordinates, length,</span>
+        <span class="comment">% arrowhead height, arrowhead base, orientation, and color.</span>
+        <span class="comment">% This method is used to draw load symbols on 2D models.</span>
+        <span class="comment">% Input arguments:</span>
+        <span class="comment">%  cnv: graphics context (axes)</span>
+        <span class="comment">%  x: beggining coordinate on the X axis</span>
+        <span class="comment">%  y: beggining coordinate on the Y axis</span>
+        <span class="comment">%  l: arrow length</span>
+        <span class="comment">%  h: arrowhead height</span>
+        <span class="comment">%  b: arrowhead base</span>
+        <span class="comment">%  ang: pointing direction (angle in radian with the horizontal</span>
+        <span class="comment">%       direction - counterclockwise) - 0 rad when pointing left</span>
+        <span class="comment">%  c: color (RGB vector)</span>
+        <span class="keyword">function</span> arrow2D(cnv,x,y,l,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + l * cx];
+            Y = [y, y + l * cy];
+            line(cnv, X, Y, <span class="string">'Color'</span>, c,<span class="string">'LineWidth'</span>,2);
+            EFEMDraw.triangle(x, y, h, b, ang, c);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Snap a value to the closest step value.</span>
+        <span class="keyword">function</span> snap_val = snapToStepValue(val,step)
+            fp = val / step;   <span class="comment">% "fraction" part</span>
+            ip = floor(fp);    <span class="comment">% integer part</span>
+            fp = fp - ip;
+            <span class="keyword">if</span> fp &gt; 0.5
+                snap_val = (ip + 1.0) * step;
+            <span class="keyword">elseif</span> fp &lt; -0.5
+                snap_val = (ip - 1.0) * step;
+            <span class="keyword">else</span>
+                snap_val = ip * step;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="10">Protect methods</h2>
+<pre class="codeinput">    methods (Access = public) <span class="comment">% Access from methods in subclasses</span>
+
+        <span class="keyword">function</span> max_load = getMaxLoad(draw)
+            max_load = max(draw.model.F);
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> elements(draw)
+
+            <span class="comment">% Initialize combined matrices</span>
+            allFaces = [];          <span class="comment">% Combined faces connectivity</span>
+            allVertices = [];       <span class="comment">% Combined vertices coordinates</span>
+            allVertexData = [];     <span class="comment">% Combined vertex data</span>
+            vertexOffset = 0;       <span class="comment">% Offset for face indices due to combined vertices</span>
+
+            <span class="comment">% Loop through all elements to build combined matrices</span>
+            <span class="keyword">for</span> el = 1:draw.model.nelem
+                <span class="comment">% Get the current element and its results</span>
+                element = draw.model.element(el).type;
+                res = element.result;
+
+                <span class="comment">% Adjust face indices for combined vertices</span>
+                faces = res.faces + vertexOffset;
+
+                <span class="comment">% Append to combined matrices</span>
+                allFaces = [allFaces; faces];
+                allVertices = [allVertices; res.vertices];
+                allVertexData = [allVertexData; res.vertexData];
+
+                <span class="comment">% Update vertex offset for the next element</span>
+                vertexOffset = vertexOffset + size(res.vertices, 1);
+            <span class="keyword">end</span>
+
+            <span class="comment">% Draw all patches at once</span>
+            patch(<span class="string">'Faces'</span>, allFaces, <span class="keyword">...</span>
+                  <span class="string">'Vertices'</span>, allVertices, <span class="keyword">...</span>
+                  <span class="string">'FaceVertexCData'</span>, allVertexData, <span class="keyword">...</span>
+                  <span class="string">'FaceColor'</span>, <span class="string">'interp'</span>, <span class="keyword">...</span><span class="comment">  % Use 'interp' for vertex-based colors</span>
+                  <span class="string">'LineWidth'</span>, draw.model.element(1).type.result.edgesThickness, <span class="keyword">...</span>
+                  <span class="string">'LineStyle'</span>, <span class="string">'-'</span>, <span class="keyword">...</span>
+                  <span class="string">'Marker'</span>, <span class="string">'none'</span>);  <span class="comment">% Disable markers for batch plotting</span>
+
+            <span class="comment">% Set the colormap</span>
+            colormap(draw.model.element(1).type.result.colormapType);
+
+            <span class="comment">% If there are enriched elements, draw fractures separately</span>
+            <span class="keyword">for</span> el = 1:draw.model.nelem
+                element = draw.model.element(el).type;
+                <span class="keyword">if</span> isa(element, <span class="string">'EnrichedElement'</span>)
+                    fractureRes = element.fracture{1}.result;
+                    patch(<span class="string">'Faces'</span>, fractureRes.faces, <span class="keyword">...</span>
+                          <span class="string">'Vertices'</span>, fractureRes.vertices, <span class="keyword">...</span>
+                          <span class="string">'FaceColor'</span>, <span class="string">'white'</span>, <span class="keyword">...</span>
+                          <span class="string">'EdgeColor'</span>, <span class="string">'k'</span>, <span class="keyword">...</span>
+                          <span class="string">'EdgeAlpha'</span>, 0.5, <span class="keyword">...</span>
+                          <span class="string">'LineStyle'</span>, <span class="string">'--'</span>, <span class="keyword">...</span>
+                          <span class="string">'LineWidth'</span>, fractureRes.edgesThickness, <span class="keyword">...</span>
+                          <span class="string">'Marker'</span>, fractureRes.markerType, <span class="keyword">...</span>
+                          <span class="string">'MarkerFaceColor'</span>, fractureRes.markerFaceColor);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fractures(draw)
+            <span class="keyword">for</span> el = 1:size(draw.model.FRACT,1)
+                x = [draw.model.NODE_D(draw.model.FRACT(el,:),1)];
+                y = [draw.model.NODE_D(draw.model.FRACT(el,:),2)];
+                p = plot(x,y,<span class="string">'k--'</span>,<span class="string">'MarkerFaceColor'</span>,<span class="string">'w'</span>,<span class="string">'MarkerEdgeColor'</span>,<span class="string">'k'</span>,<span class="string">'LineWidth'</span>,1);
+                <span class="comment">% p.Color(4) = 0.3;</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre>
+<h2 id="11">Public methods</h2>
+<pre class="codeinput">    methods
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Returns the bounding box (x and y limits) of a continuous beam</span>
+        <span class="comment">% model. The returned box has xmin = 0, xmax = totalLen,</span>
+        <span class="comment">% ymin = -totalLen * 0.05, ymax = +totalLen * 0.05, in which</span>
+        <span class="comment">% totalLen is the length of the entire beam model.</span>
+        <span class="comment">% The y limits are fictitious. They are equal in module and</span>
+        <span class="comment">% equal to a small percentage of the total length to force</span>
+        <span class="comment">% the adjustment of the box in the y direction, keeping y = 0</span>
+        <span class="comment">% in the center of the canvas.</span>
+        <span class="keyword">function</span> bbox = EFEMBoundBox(draw)
+            minX = Inf; minY = Inf; maxX = -Inf; maxY = -Inf;
+            <span class="keyword">for</span> el = 1:draw.model.nelem
+                res = draw.model.element(el).type.result;
+                minX = min(minX,min(res.vertices(:,1)));
+                minY = min(minY,min(res.vertices(:,2)));
+                maxX = max(maxX,max(res.vertices(:,1)));
+                maxY = max(maxY,max(res.vertices(:,2)));
+            <span class="keyword">end</span>
+            tolx = 0.10*abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1)));
+            toly = 0.10*abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1)));
+            bbox(1) = minX - tolx;
+            bbox(2) = minY - toly;
+            bbox(3) = maxX + tolx;
+            bbox(4) = maxY + toly;
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Draws a continuous beam model with applied loads.</span>
+        <span class="comment">% Input:</span>
+        <span class="comment">% - cnv: graphics context (owning canvas)</span>
+        <span class="keyword">function</span> mesh(draw)
+
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            axis <span class="string">equal</span>
+
+            <span class="comment">% Draw continuous mesh</span>
+            draw.elements();
+
+            <span class="comment">% Draw fractures</span>
+            <span class="comment">% draw.fractures();</span>
+
+            <span class="comment">% Get the bounding box</span>
+            bbox = draw.EFEMBoundBox();
+            xlim([bbox(1) bbox(3)]);
+            ylim([bbox(2) bbox(4)]);
+
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>,<span class="string">'FontSize'</span>,16)
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the pressure field along a segment</span>
+        <span class="keyword">function</span> plotGasPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            <span class="comment">% Coordinates of the points where the pressure field is going</span>
+            <span class="comment">% to be evaluated</span>
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            <span class="comment">% Initialize the pressure vector at these points</span>
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> i = 1:npts
+
+                <span class="comment">% Longitudinal coordinate of the point X(i) wrt to Xi</span>
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                <span class="comment">% Find in each element this point is inside</span>
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                <span class="comment">% Calculate the pressure field in the point X using the</span>
+                <span class="comment">% shape function of the elem</span>
+                P(i) = draw.model.element(elem).type.gasPressureField(X(i,:));
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(P,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Gas pressure (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,P,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Gas pressure (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the pressure field along a segment</span>
+        <span class="keyword">function</span> plotCapillaryPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            <span class="comment">% Coordinates of the points where the pressure field is going</span>
+            <span class="comment">% to be evaluated</span>
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            <span class="comment">% Initialize the pressure vector at these points</span>
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> i = 1:npts
+
+                <span class="comment">% Longitudinal coordinate of the point X(i) wrt to Xi</span>
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                <span class="comment">% Find in each element this point is inside</span>
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                <span class="comment">% Calculate the pressure field in the point X using the</span>
+                <span class="comment">% shape function of the elem</span>
+                P(i) = draw.model.element(elem).type.capillaryPressureField(X(i,:));
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(P,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Capillary pressure (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,P,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Capillary pressure (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the pressure field along a segment</span>
+        <span class="keyword">function</span> plotPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            <span class="comment">% Coordinates of the points where the pressure field is going</span>
+            <span class="comment">% to be evaluated</span>
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            <span class="comment">% Initialize the pressure vector at these points</span>
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> i = 1:npts
+
+                <span class="comment">% Longitudinal coordinate of the point X(i) wrt to Xi</span>
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                <span class="comment">% Find in each element this point is inside</span>
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                <span class="comment">% Calculate the pressure field in the point X using the</span>
+                <span class="comment">% shape function of the elem</span>
+                P(i) = draw.model.element(elem).type.pressureField(X(i,:));
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(P,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Pressure (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,P,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Pressure (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the pressure field along a segment</span>
+        <span class="keyword">function</span> plotDisplacementAlongSegment(draw, dir, Xi, Xf, npts, axisPlot)
+
+            <span class="comment">% Coordinates of the points where the pressure field is going</span>
+            <span class="comment">% to be evaluated</span>
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            <span class="comment">% Initialize the pressure vector at these points</span>
+            U = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> i = 1:npts
+
+                <span class="comment">% Longitudinal coordinate of the point X(i) wrt to Xi</span>
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                <span class="comment">% Find in each element this point is inside</span>
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                <span class="comment">% Calculate the pressure field in the point X using the</span>
+                <span class="comment">% shape function of the elem</span>
+                u = draw.model.element(elem).type.displacementField(X(i,:));
+                U(i) = u(dir);
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(U,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                <span class="keyword">if</span> dir == 1
+                    xlabel(<span class="string">'Horizontal displacement (m)'</span>);
+                <span class="keyword">elseif</span> dir == 2
+                    xlabel(<span class="string">'Vertical displacement (m)'</span>);
+                <span class="keyword">end</span>
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,U,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                <span class="keyword">if</span> dir == 1
+                    ylabel(<span class="string">'Horizontal displacement (m)'</span>);
+                <span class="keyword">elseif</span> dir == 2
+                    ylabel(<span class="string">'Vertical displacement (m)'</span>);
+                <span class="keyword">end</span>
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the pressure field along a segment</span>
+        <span class="keyword">function</span> plotDisplacementAlongDiscontinuity(draw, X0, axisPlot,resPath)
+
+            mdl = draw.model;
+
+            <span class="comment">% Initialize the stress vector at these points</span>
+            <span class="comment">% wn = zeros(2*size(mdl.FRACT,1),1);</span>
+            <span class="comment">% ws = zeros(2*size(mdl.FRACT,1),1);</span>
+            <span class="comment">% S  = zeros(2*size(mdl.FRACT,1),1);</span>
+
+            count = 1;
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> el = 1:mdl.nelem
+                <span class="keyword">if</span> sum(mdl.IDenr(el,:)) &gt;= 1
+                    <span class="keyword">for</span> i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        <span class="comment">% Get the coordinates of the integration point</span>
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+                        S(count) = norm(X-X0);
+
+                        <span class="comment">% Get the stress vector</span>
+                        STRAIN = mdl.element(el).type.fracture{1}.intPoint(i).strain;
+
+                        <span class="comment">% Save the stress component</span>
+                        ws(count) = STRAIN(1);
+                        wn(count) = STRAIN(2);
+
+                        <span class="comment">% Update counter</span>
+                        count = count + 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            [S,id] = sort(S);
+            ws = ws(id);
+            wn = wn(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(ws,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Tangential displacement (m)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,ws,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Tangential displacement (m)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            <span class="keyword">if</span> isempty(resPath)== false
+                figName = fullfile(resPath,<span class="string">'faultTangentialDisplacement.fig'</span>);
+                savefig(gcf,figName);
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure of the normal stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(wn,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Normal displacement (m)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,wn,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Normal displacement (m)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            <span class="keyword">if</span> isempty(resPath)== false
+                figName = fullfile(resPath,<span class="string">'faultNormalDisplacement.fig'</span>);
+                savefig(gcf,figName);
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the cohesive stress field along a segment</span>
+        <span class="keyword">function</span> plotCohesiveStressesAlongDiscontinuity(draw, X0 ,axisPlot,resPath)
+
+            mdl = draw.model;
+
+            <span class="comment">% Initialize the stress vector at these points</span>
+            <span class="comment">% tn    = zeros(2*size(mdl.FRACT,1),1);</span>
+            <span class="comment">% ts    = zeros(2*size(mdl.FRACT,1),1);</span>
+            <span class="comment">% S     = zeros(2*size(mdl.FRACT,1),1);</span>
+            <span class="comment">% Saux  = zeros(2*size(mdl.FRACT,1),1);</span>
+
+            count = 1;
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> el = 1:mdl.nelem
+                <span class="keyword">if</span> sum(mdl.IDenr(el,:)) &gt;= 1
+                    <span class="keyword">for</span> i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        <span class="comment">% Get the coordinates of the integration point</span>
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        <span class="comment">% Get the centroid of the fracture</span>
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        <span class="comment">% Apply a pertubation to the coordinate X to avoid</span>
+                        <span class="comment">% the duplicated points in S. It will "attrack" the</span>
+                        <span class="comment">% point to the fracture centroid</span>
+                        <span class="comment">% dX = 1.0e-5*(Xref-X)/norm(Xref-X);</span>
+
+                        <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+                        S(count)    = norm(X-X0);
+                        <span class="comment">% Saux(count) = norm(X + dX -X0);</span>
+
+                        <span class="comment">% Get the stress vector</span>
+                        STRESS = mdl.element(el).type.fracture{1}.intPoint(i).stress;
+
+                        <span class="comment">% Save the stress component</span>
+                        ts(count) = STRESS(1);
+                        tn(count) = STRESS(2);
+
+                        <span class="comment">% Update counter</span>
+                        count = count + 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Sort the vectors</span>
+            <span class="comment">% [~,id] = sort(Saux);</span>
+            [~,id] = sort(S);
+            S  = S(id);
+            ts = ts(id);
+            tn = tn(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(ts/1000,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Shear cohesive stress (MPa/m)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,ts/1000,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Shear cohesive stress (MPa/m)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            <span class="keyword">if</span> isempty(resPath) == false
+                figName = fullfile(resPath,<span class="string">'faultShearCohesiveStress.fig'</span>);
+                savefig(gcf,figName);
+            <span class="keyword">end</span>
+
+            <span class="comment">% Initialize, plot and configure the figure of the normal stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(tn/1000,S,<span class="string">'+-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Normal cohesive stress (MPa/m)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,tn/1000,<span class="string">'+-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Normal cohesive stress (MPa/m)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            <span class="keyword">if</span> isempty(resPath) == false
+                figName = fullfile(resPath,<span class="string">'faultNormalCohesiveStress.fig'</span>);
+                savefig(gcf,figName);
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the cohesive stress field along a segment</span>
+        <span class="keyword">function</span> plotCohesiveStressesIncrementAlongDiscontinuity(draw, X0 ,axisPlot,resPath)
+
+            mdl = draw.model;
+
+            <span class="comment">% Initialize the stress vector at these points</span>
+            tn = zeros(2*size(mdl.FRACT,1),1);
+            ts = zeros(2*size(mdl.FRACT,1),1);
+            S  = zeros(2*size(mdl.FRACT,1),1);
+            Saux  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> el = 1:mdl.nelem
+                <span class="keyword">if</span> sum(mdl.IDenr(el,:)) &gt;= 1
+                    <span class="keyword">for</span> i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        <span class="comment">% Get the coordinates of the integration point</span>
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        SGeo = mdl.element(el).type.fracture{1}.geostaticStressAtPoint(X, mdl.element(el).type, mdl.K0, mdl.yTop);
+
+                        <span class="comment">% Get the centroid of the fracture</span>
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        <span class="comment">% Apply a pertubation to the coordinate X to avoid</span>
+                        <span class="comment">% the duplicated points in S. It will "attrack" the</span>
+                        <span class="comment">% point to the fracture centroid</span>
+                        dX = 1.0e-5*(Xref-X)/norm(Xref-X);
+
+                        <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+                        S(count)    = norm(X-X0);
+                        Saux(count) = norm(X + dX -X0);
+
+                        <span class="comment">% Get the stress vector</span>
+                        STRESS = mdl.element(el).type.fracture{1}.intPoint(i).stress;
+
+                        <span class="comment">% Save the stress component</span>
+                        ts(count) = STRESS(1) - SGeo(1);
+                        tn(count) = STRESS(2) - SGeo(2);
+
+                        <span class="comment">% Update counter</span>
+                        count = count + 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Sort the vectors</span>
+            [~,id] = sort(Saux);
+            S  = S(id);
+            ts = ts(id);
+            tn = tn(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(ts,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Shear cohesive stress increment (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,ts,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Shear cohesive stress increment (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            figName = fullfile(resPath,<span class="string">'faultShearCohesiveStressIncrement.fig'</span>);
+            savefig(gcf,figName);
+
+            <span class="comment">% Initialize, plot and configure the figure of the normal stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(tn,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Normal cohesive stress increment (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,tn,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Normal cohesive stress increment (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+            figName = fullfile(resPath,<span class="string">'faultNormalCohesiveStressIncrement.fig'</span>);
+            savefig(gcf,figName);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the cohesive stress field along a segment</span>
+        <span class="keyword">function</span> plotSlipTendencyAlongDiscontinuity(draw, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            <span class="comment">% Initialize the stress vector at these points</span>
+            ST = zeros(2*size(mdl.FRACT,1),1);
+            S  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> el = 1:mdl.nelem
+                <span class="keyword">if</span> sum(mdl.IDenr(el,:)) &gt;= 1
+                    <span class="keyword">for</span> i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        <span class="comment">% Get the coordinates of the integration point</span>
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+                        S(count) = norm(X-X0);
+
+                        <span class="comment">% Get the stress vector</span>
+                        ST(count) = mdl.element(el).type.fracture{1}.intPoint(i).statevar(end);
+
+                        <span class="comment">% Update counter</span>
+                        count = count + 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            [S,id] = sort(S);
+            ST = ST(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(ST,S,<span class="string">'o-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Slip tendency'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,ST,<span class="string">'o-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Slip tendency'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the cohesive stress field along a segment</span>
+        <span class="keyword">function</span> plotConformityErrorAlongDiscontinuity(draw, err, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            <span class="comment">% Number of fracture nodes</span>
+            nfracNodes = size(mdl.NODE_D,1);
+
+            <span class="comment">% Initialize the path vector</span>
+            S  = zeros(nfracNodes,1);
+
+            <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+            <span class="keyword">for</span> i = 1:nfracNodes
+                X  = mdl.NODE_D(i,:);
+                S(i) = norm(X-X0);
+            <span class="keyword">end</span>
+
+            [S,id] = sort(S);
+            err = err(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(err,S,<span class="string">'o-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                xlabel(<span class="string">'Conformity error'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,err,<span class="string">'o-b'</span>,<span class="string">'LineWidth'</span>,1.5);
+                ylabel(<span class="string">'Conformity error'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plot the cohesive stress field along a segment</span>
+        <span class="keyword">function</span> plotPressureAlongDiscontinuity(draw, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            <span class="comment">% Initialize the stress vector at these points</span>
+            P     = zeros(2*size(mdl.FRACT,1),1);
+            Ptop  = zeros(2*size(mdl.FRACT,1),1);
+            Pbot  = zeros(2*size(mdl.FRACT,1),1);
+            S     = zeros(2*size(mdl.FRACT,1),1);
+            Saux  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            <span class="comment">% Calculate the pressure field in the points of the segment</span>
+            <span class="keyword">for</span> el = 1:mdl.nelem
+                <span class="keyword">if</span> mdl.element(el).type.isEnriched
+                    Ue = mdl.U(mdl.element(el).type.gle);
+                    <span class="comment">% Number of pressure dofs associated with the continuum</span>
+                    nglpc = mdl.element(el).type.nglptot - mdl.element(el).type.nglpenrPf;
+                    <span class="keyword">if</span> mdl.element(el).type.staticCondensation.DisplJump
+                        pc = mdl.element(el).type.ue(1+mdl.element(el).type.nglu:this.nglu+nglpc);
+                    <span class="keyword">else</span>
+                        pc = mdl.element(el).type.ue(1+mdl.element(el).type.nglutot:mdl.element(el).type.nglutot+nglpc);
+                    <span class="keyword">end</span>
+                    pf = mdl.element(el).type.getDiscontinuityMidPlanePressure(pc);
+                    pc = Ue(1+mdl.element(el).type.nglutot:mdl.element(el).type.nglutot+nglpc);
+                    <span class="keyword">for</span> i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        <span class="comment">% Get the coordinates of the integration point</span>
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        <span class="comment">% Get the centroid of the fracture</span>
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        <span class="comment">% Apply a pertubation to the coordinate X to avoid</span>
+                        <span class="comment">% the duplicated points in S. It will "attrack" the</span>
+                        <span class="comment">% point to the fracture centroid</span>
+                        dX = 1.0e-5*(Xref-X)/norm(Xref-X);
+
+                        <span class="comment">% Longitudinal coordinate of the point X(i) wrt to X0</span>
+                        S(count)    = norm(X-X0);
+                        Saux(count) = norm(X + dX -X0);
+
+                        <span class="comment">% Get the mid-plane pressure</span>
+                        P(count) = pf(i);
+
+                        <span class="comment">% Natural coordinates associated with the continuum element</span>
+                        <span class="comment">% of this point</span>
+                        Xnc = mdl.element(el).type.shape.coordCartesianToNatural(mdl.element(el).type.node,X);
+
+                        <span class="comment">% Shape function matrix of the continuum</span>
+                        N = mdl.element(el).type.shape.shapeFncMtrx(Xnc);
+
+                        <span class="comment">% Get the top plane pressure</span>
+                        Ntop = mdl.element(el).type.topEnhancedShapeFncMtrx(N,Xnc,1);
+                        Ptop(count) = [N , Ntop]*pc;
+
+                        <span class="comment">% Get the bottom plane pressure</span>
+                        Nbot = mdl.element(el).type.bottomEnhancedShapeFncMtrx(N,Xnc,1);
+                        Pbot(count) = [N , Nbot]*pc;
+
+                        <span class="comment">% Update counter</span>
+                        count = count + 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Sort the vectors</span>
+            [~,id] = sort(Saux);
+            S = S(id);
+            P = P(id);
+            Ptop = Ptop(id);
+            Pbot = Pbot(id);
+
+            <span class="comment">% Initialize, plot and configure the figure of the Shear stress</span>
+            figure
+            hold <span class="string">on</span>, box <span class="string">on</span>, grid <span class="string">on</span>
+            <span class="keyword">if</span> strcmp(axisPlot,<span class="string">'y'</span>)
+                plot(Ptop,S,<span class="string">'--k'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'(+)-plane'</span>);
+                plot(P,S,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'Mid-plane'</span>);
+                plot(Pbot,S,<span class="string">'-.k'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'(-)-plane'</span>);
+                xlabel(<span class="string">'Discontinuity internal pressure (kPa)'</span>);
+                ylabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">elseif</span> strcmp(axisPlot,<span class="string">'x'</span>)
+                plot(S,Ptop,<span class="string">'--k'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'(+)-plane'</span>);
+                plot(S,P,<span class="string">'-b'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'Mid-plane'</span>);
+                plot(S,Pbot,<span class="string">'-.k'</span>,<span class="string">'LineWidth'</span>,1.5,<span class="string">'DisplayName'</span>,<span class="string">'(-)-plane'</span>);
+                ylabel(<span class="string">'Discontinuity internal pressure (kPa)'</span>);
+                xlabel(<span class="string">'Longitudinal distance (m)'</span>);
+            <span class="keyword">end</span>
+            legend;
+            set(gca,<span class="string">'FontSize'</span>,16);
+            set(gca,<span class="string">'FontName'</span>,<span class="string">'Times'</span>);
+
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Cleans data structure of a EFEMmodel object.</span>
+        <span class="keyword">function</span> draw = clean(draw)
+            draw.model = [];
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre>
+<pre class="codeinput">
+<span class="keyword">end</span>
+</pre>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+%% EFEMDraw Class
+%
+% This class provides methods to visualize and plot graphical results 
+% from the EFEM (Embedded Finite Element Method) analysis. It includes 
+% utilities for drawing elements, fractures, pressure fields, displacements, 
+% cohesive stresses, and other related visualizations.
+%
+%% Methods 
+% * *square*: Plots a filled square with specified center, size, and color.
+% * *draftSquare*: Plots a hollow square for draft visualization.
+% * *triangle*: Plots a filled triangle with specified orientation, size, 
+%               and color.
+% * *draftTriangle*: Plots a hollow triangle for draft visualization.
+% * *circle*: Plots a circle outline with specified center, radius, 
+%             and color.
+% * *disk*: Plots a filled circle (disk) with specified center, radius, 
+%           and color.
+% * *arrow2D*: Plots a 2D arrow with specified length, orientation, 
+%              and color.
+% * *snapToStepValue*: Snaps a value to the nearest step value.
+% * *getMaxLoad*: Retrieves the maximum load from the model.
+% * *elements*: Draws all elements of the model with combined patches.
+% * *fractures*: Draws fractures in the model.
+% * *EFEMBoundBox*: Computes the bounding box of the model for 
+%                   visualization.
+% * *mesh*: Draws the mesh of the model with applied loads.
+% * *plotGasPressureAlongSegment*: Plots the gas pressure field along 
+%                                  a segment.
+% * *plotCapillaryPressureAlongSegment*: Plots the capillary pressure 
+%                                        field along a segment.
+% * *plotPressureAlongSegment*: Plots the pressure field along a segment.
+% * *plotDisplacementAlongSegment*: Plots displacement along a segment in 
+%                                   a specified direction.
+% * *plotDisplacementAlongDiscontinuity*: Plots displacement along 
+%                                         a discontinuity.
+% * *plotCohesiveStressesAlongDiscontinuity*: Plots cohesive stresses 
+%                                             along a discontinuity.
+% * *plotCohesiveStressesIncrementAlongDiscontinuity*: Plots cohesive 
+%                                                      stress increments 
+%                                                      along a 
+%                                                      discontinuity.
+% * *plotSlipTendencyAlongDiscontinuity*: Plots slip tendency along a 
+%                                         discontinuity.
+% * *plotConformityErrorAlongDiscontinuity*: Plots conformity error along 
+%                                            a discontinuity.
+% * *plotPressureAlongDiscontinuity*: Plots pressure along a discontinuity.
+% * *clean*: Cleans the EFEMDraw object by resetting the model property.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00: Initial version (February 2023).
+%
+%% Class Definition
+classdef EFEMDraw < handle
+    %% Public properties
+    properties
+        model = []; % handle to an object of the EFEMmodel class
+    end
+    
+    %% Class (constant) properties
+    properties (Constant)
+        supsize_fac = 0.035;            % Factor for support size
+        loadsize_fac = 0.3;             % Factor for maximum load size in 
+                                        % relation to half vertical window size                       
+        minloadsize_fac = 0.012         % Factor for minimum load size
+        arrowsize_fac = 0.025;          % Factor for load arrow size
+        loadstep_fac = 0.05;            % Factor for load step
+        dimlineshift_fac = 0.85;        % Factor for down shift of 
+                                        % dimension lines with respect to 
+                                        % half Y size
+        dimlinetick_fac = 0.15;         % Factor for dimension line tick 
+                                        % sizeEFEM with respect to half Y 
+                                        % size
+        maxdisplsize_fac = 0.60;        % Factor for maximum transversal 
+                                        % size in relation to half 
+                                        % vertical window size
+        inflectpt_fac = 0.005;          % Factor for size of inflection 
+                                        % point disk
+        rotmeter_fac = 0.85;            % Factor for rotation meter size 
+                                        % in relation to half vertical 
+                                        % window size
+        picktol_fac = 0.01;             % Factor for picking a point
+        minmemblen_fac = 0.05;          % Factor for minimum member length
+        ValidSupInsertion = 1;          % Status for valid support 
+                                        % insertion
+        BeamLineNotFound = 2;           % Status for beam line not found 
+                                        % for support insertion
+        SupInsertionNotValid = 3;       % Status for not valid position 
+                                        % for support insertion
+        SupDelMinNumSup = 1;            % Status for minimum number of 
+                                        % internal supports
+        ValidSupDeletion = 2;           % Status for valid support deletion
+        SupDelNotFound = 3;             % Status for support not found 
+                                        % for deletion
+        MembLoadFound = 1;              % Status for pick member load found
+        MembLoadNotFound = 2            % Status for pick member not found
+        SupMoveFound = 1;               % Status for support found for 
+                                        % moving
+        SupMoveNotFound = 2;            % Status for support not found ç
+                                        % for moving
+    end
+    
+    %% Private properties
+    properties (Access = private)
+        pickmember = 0;                 % Current member load picked
+        picksup = 0;                    % Current support picked
+        orig_suppos = 0;                % Original moving support position
+        hnd_draft = [];                 % Handle to draft graphics object 
+                                        % being displayed
+    end
+    
+    %% Constructor method
+    methods
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        function draw = EFEMDraw(model)
+            if (nargin > 0)
+                draw.model = model;
+            end
+        end
+    end
+    
+    %% Class (static) auxiliary functions
+    methods (Static)
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a square with defined center coordinates, side length and
+        % color.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  l: side length
+        %  c: color (RGB vector)
+        function square(cnv,x,y,l,c)
+            X = [x - l/2, x + l/2, x + l/2, x - l/2];
+            Y = [y - l/2, y - l/2, y + l/2, y + l/2];
+            fill(cnv, X, Y, c);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a draft version of a square with defined center coordinates,
+        % side length and color.
+        % It draws a hollow square and sets its parent property as the
+        % given handle to the group of graphics objects.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  hnd: handle to group of graphics objects
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  l: side length
+        %  c: color (RGB vector)
+        function draftSquare(cnv,hnd,x,y,l,c)
+            X = [x - l/2, x + l/2, x + l/2, x - l/2, x - l/2];
+            Y = [y - l/2, y - l/2, y + l/2, y + l/2, y - l/2];
+            plot(cnv, X, Y, 'color', c, 'Parent', hnd);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a triangle with defined top coordinates, height, base,
+        % orientation, and color.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  x: top coordinate on the X axis
+        %  y: top coordinate on the Y axis
+        %  h: triangle height
+        %  b: triangle base
+        %  ang: angle (in radian) between the axis of symmetry and the
+        %       horizontal direction (counterclockwise) - 0 rad when
+        %       triangle is pointing left
+        %  c: color (RGB vector)
+        function triangle(x,y,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + h * cx + b/2 * cy, x + h * cx - b/2 * cy];
+            Y = [y, y + h * cy - b/2 * cx, y + h * cy + b/2 * cx];
+            fill(X, Y, c);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a draft version of a triangle with defined top coordinates,
+        % height, base, orientation, and color.
+        % It draws a hollow triangle and sets its parent property as the
+        % given handle to the group of graphics objects.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  hnd: handle to group of graphics objects
+        %  x: top coordinate on the X axis
+        %  y: top coordinate on the Y axis
+        %  h: triangle height
+        %  b: triangle base
+        %  ang: angle (in radian) between the axis of symmetry and the
+        %       horizontal direction (counterclockwise) - 0 rad when
+        %       triangle is pointing left
+        %  c: color (RGB vector)
+        function draftTriangle(hnd,x,y,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + h * cx + b/2 * cy, x + h * cx - b/2 * cy, x];
+            Y = [y, y + h * cy - b/2 * cx, y + h * cy + b/2 * cx, y];
+            plot(X, Y, 'color', c, 'Parent', hnd);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a circle with defined center coordinates, radius and color.
+        % This method is used to draw hinges on 2D models.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  r: circle radius
+        %  c: color (RGB vector)
+        function circle(cnv,x,y,r,c)
+            circ = 0 : pi/50 : 2*pi;
+            xcirc = x + r * cos(circ);
+            ycirc = y + r * sin(circ);
+            plot(cnv, xcirc, ycirc, 'color', c);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots a circle disk with defined center coordinates, radius and
+        % color. The circle is filled with the given color
+        % This method is used to inflection on 2D models.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  r: circle radius
+        %  c: color (RGB vector)
+        function disk(cnv,x,y,r,c)
+            circ = 0 : pi/50 : 2*pi;
+            xcirc = x + r * cos(circ);
+            ycirc = y + r * sin(circ);
+            fill(cnv, xcirc, ycirc, c);
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots an arrow with defined beggining coordinates, length,
+        % arrowhead height, arrowhead base, orientation, and color.
+        % This method is used to draw load symbols on 2D models.
+        % Input arguments:
+        %  cnv: graphics context (axes)
+        %  x: beggining coordinate on the X axis
+        %  y: beggining coordinate on the Y axis
+        %  l: arrow length
+        %  h: arrowhead height
+        %  b: arrowhead base
+        %  ang: pointing direction (angle in radian with the horizontal
+        %       direction - counterclockwise) - 0 rad when pointing left
+        %  c: color (RGB vector)
+        function arrow2D(cnv,x,y,l,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+
+            X = [x, x + l * cx];
+            Y = [y, y + l * cy];
+            line(cnv, X, Y, 'Color', c,'LineWidth',2);
+            EFEMDraw.triangle(x, y, h, b, ang, c);
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Snap a value to the closest step value.
+        function snap_val = snapToStepValue(val,step)
+            fp = val / step;   % "fraction" part
+            ip = floor(fp);    % integer part
+            fp = fp - ip;
+            if fp > 0.5
+                snap_val = (ip + 1.0) * step;
+            elseif fp < -0.5
+                snap_val = (ip - 1.0) * step;
+            else
+                snap_val = ip * step;
+            end
+        end
+    end
+
+    %% Protect methods
+    methods (Access = public) % Access from methods in subclasses
+        
+        function max_load = getMaxLoad(draw)
+            max_load = max(draw.model.F);
+        end
+
+        function elements(draw)
+        
+            % Initialize combined matrices
+            allFaces = [];          % Combined faces connectivity
+            allVertices = [];       % Combined vertices coordinates
+            allVertexData = [];     % Combined vertex data
+            vertexOffset = 0;       % Offset for face indices due to combined vertices
+        
+            % Loop through all elements to build combined matrices
+            for el = 1:draw.model.nelem
+                % Get the current element and its results
+                element = draw.model.element(el).type;
+                res = element.result;
+        
+                % Adjust face indices for combined vertices
+                faces = res.faces + vertexOffset;
+        
+                % Append to combined matrices
+                allFaces = [allFaces; faces];
+                allVertices = [allVertices; res.vertices];
+                allVertexData = [allVertexData; res.vertexData];
+
+                % Update vertex offset for the next element
+                vertexOffset = vertexOffset + size(res.vertices, 1);
+            end
+        
+            % Draw all patches at once
+            patch('Faces', allFaces, ...
+                  'Vertices', allVertices, ...
+                  'FaceVertexCData', allVertexData, ...
+                  'FaceColor', 'interp', ...  % Use 'interp' for vertex-based colors
+                  'LineWidth', draw.model.element(1).type.result.edgesThickness, ...
+                  'LineStyle', '-', ...
+                  'Marker', 'none');  % Disable markers for batch plotting
+        
+            % Set the colormap
+            colormap(draw.model.element(1).type.result.colormapType);
+        
+            % If there are enriched elements, draw fractures separately
+            for el = 1:draw.model.nelem
+                element = draw.model.element(el).type;
+                if isa(element, 'EnrichedElement')
+                    fractureRes = element.fracture{1}.result;
+                    patch('Faces', fractureRes.faces, ...
+                          'Vertices', fractureRes.vertices, ...
+                          'FaceColor', 'white', ...
+                          'EdgeColor', 'k', ...
+                          'EdgeAlpha', 0.5, ...
+                          'LineStyle', 'REPLACE_WITH_DASH_DASH', ...
+                          'LineWidth', fractureRes.edgesThickness, ...
+                          'Marker', fractureRes.markerType, ...
+                          'MarkerFaceColor', fractureRes.markerFaceColor);
+                end
+            end
+        end
+        function fractures(draw)
+            for el = 1:size(draw.model.FRACT,1)
+                x = [draw.model.NODE_D(draw.model.FRACT(el,:),1)];
+                y = [draw.model.NODE_D(draw.model.FRACT(el,:),2)];
+                p = plot(x,y,'kREPLACE_WITH_DASH_DASH','MarkerFaceColor','w','MarkerEdgeColor','k','LineWidth',1);
+                % p.Color(4) = 0.3;
+            end
+        end
+    end
+    
+    %% Public methods
+    methods        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Returns the bounding box (x and y limits) of a continuous beam
+        % model. The returned box has xmin = 0, xmax = totalLen,
+        % ymin = -totalLen * 0.05, ymax = +totalLen * 0.05, in which
+        % totalLen is the length of the entire beam model.
+        % The y limits are fictitious. They are equal in module and 
+        % equal to a small percentage of the total length to force 
+        % the adjustment of the box in the y direction, keeping y = 0
+        % in the center of the canvas.
+        function bbox = EFEMBoundBox(draw)
+            minX = Inf; minY = Inf; maxX = -Inf; maxY = -Inf;
+            for el = 1:draw.model.nelem
+                res = draw.model.element(el).type.result;
+                minX = min(minX,min(res.vertices(:,1)));
+                minY = min(minY,min(res.vertices(:,2)));
+                maxX = max(maxX,max(res.vertices(:,1)));
+                maxY = max(maxY,max(res.vertices(:,2)));
+            end
+            tolx = 0.10*abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1)));
+            toly = 0.10*abs(max(draw.model.NODE(:,1)) - min(draw.model.NODE(:,1)));
+            bbox(1) = minX - tolx;
+            bbox(2) = minY - toly;
+            bbox(3) = maxX + tolx;
+            bbox(4) = maxY + toly;
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Draws a continuous beam model with applied loads.
+        % Input:
+        % - cnv: graphics context (owning canvas)
+        function mesh(draw)
+
+            figure
+            hold on, box on, grid on
+            axis equal
+            
+            % Draw continuous mesh
+            draw.elements();
+
+            % Draw fractures
+            % draw.fractures();
+
+            % Get the bounding box
+            bbox = draw.EFEMBoundBox();
+            xlim([bbox(1) bbox(3)]);
+            ylim([bbox(2) bbox(4)]);
+
+            set(gca,'FontName','Times','FontSize',16)
+            
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the pressure field along a segment
+        function plotGasPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                P(i) = draw.model.element(elem).type.gasPressureField(X(i,:));
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(P,S,'-b','LineWidth',1.5);
+                xlabel('Gas pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,P,'-b','LineWidth',1.5);
+                ylabel('Gas pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the pressure field along a segment
+        function plotCapillaryPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                P(i) = draw.model.element(elem).type.capillaryPressureField(X(i,:));
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(P,S,'-b','LineWidth',1.5);
+                xlabel('Capillary pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,P,'-b','LineWidth',1.5);
+                ylabel('Capillary pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the pressure field along a segment
+        function plotPressureAlongSegment(draw, Xi, Xf, npts,axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            P = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                P(i) = draw.model.element(elem).type.pressureField(X(i,:));
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(P,S,'-b','LineWidth',1.5);
+                xlabel('Pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,P,'-b','LineWidth',1.5);
+                ylabel('Pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the pressure field along a segment
+        function plotDisplacementAlongSegment(draw, dir, Xi, Xf, npts, axisPlot)
+
+            % Coordinates of the points where the pressure field is going
+            % to be evaluated
+            X = [linspace(Xi(1), Xf(1),npts);linspace(Xi(2), Xf(2),npts)]';
+
+            % Initialize the pressure vector at these points
+            U = zeros(size(X,1),1);
+            S = zeros(size(X,1),1);
+
+            % Calculate the pressure field in the points of the segment
+            for i = 1:npts
+                
+                % Longitudinal coordinate of the point X(i) wrt to Xi
+                S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
+
+                % Find in each element this point is inside
+                elem = findElementInMesh(draw.model.NODE, draw.model.ELEM, X(i,:));
+
+                % Calculate the pressure field in the point X using the
+                % shape function of the elem
+                u = draw.model.element(elem).type.displacementField(X(i,:));
+                U(i) = u(dir);
+
+            end
+
+            % Initialize, plot and configure the figure
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(U,S,'-b','LineWidth',1.5);
+                if dir == 1
+                    xlabel('Horizontal displacement (m)');
+                elseif dir == 2
+                    xlabel('Vertical displacement (m)');
+                end
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,U,'-b','LineWidth',1.5);
+                if dir == 1
+                    ylabel('Horizontal displacement (m)');
+                elseif dir == 2
+                    ylabel('Vertical displacement (m)');
+                end
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the pressure field along a segment
+        function plotDisplacementAlongDiscontinuity(draw, X0, axisPlot,resPath)
+
+            mdl = draw.model;
+
+            % Initialize the stress vector at these points
+            % wn = zeros(2*size(mdl.FRACT,1),1);
+            % ws = zeros(2*size(mdl.FRACT,1),1);
+            % S  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            % Calculate the pressure field in the points of the segment
+            for el = 1:mdl.nelem
+                if sum(mdl.IDenr(el,:)) >= 1
+                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        % Get the coordinates of the integration point
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        % Longitudinal coordinate of the point X(i) wrt to X0
+                        S(count) = norm(X-X0);
+        
+                        % Get the stress vector
+                        STRAIN = mdl.element(el).type.fracture{1}.intPoint(i).strain;
+
+                        % Save the stress component
+                        ws(count) = STRAIN(1);
+                        wn(count) = STRAIN(2);
+                        
+                        % Update counter
+                        count = count + 1;
+
+                    end
+
+                end
+
+            end
+
+            [S,id] = sort(S);
+            ws = ws(id);
+            wn = wn(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(ws,S,'-b','LineWidth',1.5);
+                xlabel('Tangential displacement (m)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,ws,'-b','LineWidth',1.5);
+                ylabel('Tangential displacement (m)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            if isempty(resPath)== false
+                figName = fullfile(resPath,'faultTangentialDisplacement.fig');
+                savefig(gcf,figName);
+            end
+
+            % Initialize, plot and configure the figure of the normal stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(wn,S,'-b','LineWidth',1.5);
+                xlabel('Normal displacement (m)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,wn,'-b','LineWidth',1.5);
+                ylabel('Normal displacement (m)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            if isempty(resPath)== false
+                figName = fullfile(resPath,'faultNormalDisplacement.fig');
+                savefig(gcf,figName);
+            end
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the cohesive stress field along a segment
+        function plotCohesiveStressesAlongDiscontinuity(draw, X0 ,axisPlot,resPath)
+
+            mdl = draw.model;
+
+            % Initialize the stress vector at these points
+            % tn    = zeros(2*size(mdl.FRACT,1),1);
+            % ts    = zeros(2*size(mdl.FRACT,1),1);
+            % S     = zeros(2*size(mdl.FRACT,1),1);
+            % Saux  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            % Calculate the pressure field in the points of the segment
+            for el = 1:mdl.nelem
+                if sum(mdl.IDenr(el,:)) >= 1
+                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        % Get the coordinates of the integration point
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        % Get the centroid of the fracture
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        % Apply a pertubation to the coordinate X to avoid
+                        % the duplicated points in S. It will "attrack" the
+                        % point to the fracture centroid
+                        % dX = 1.0e-5*(Xref-X)/norm(Xref-X);
+
+                        % Longitudinal coordinate of the point X(i) wrt to X0
+                        S(count)    = norm(X-X0);
+                        % Saux(count) = norm(X + dX -X0);
+        
+                        % Get the stress vector
+                        STRESS = mdl.element(el).type.fracture{1}.intPoint(i).stress;
+
+                        % Save the stress component
+                        ts(count) = STRESS(1);
+                        tn(count) = STRESS(2);
+                        
+                        % Update counter
+                        count = count + 1;
+
+                    end
+
+                end
+
+            end
+            
+            % Sort the vectors
+            % [~,id] = sort(Saux);
+            [~,id] = sort(S);
+            S  = S(id);
+            ts = ts(id);
+            tn = tn(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(ts/1000,S,'-b','LineWidth',1.5);
+                xlabel('Shear cohesive stress (MPa/m)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,ts/1000,'-b','LineWidth',1.5);
+                ylabel('Shear cohesive stress (MPa/m)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            if isempty(resPath) == false
+                figName = fullfile(resPath,'faultShearCohesiveStress.fig');
+                savefig(gcf,figName);
+            end
+
+            % Initialize, plot and configure the figure of the normal stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(tn/1000,S,'+-b','LineWidth',1.5);
+                xlabel('Normal cohesive stress (MPa/m)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,tn/1000,'+-b','LineWidth',1.5);
+                ylabel('Normal cohesive stress (MPa/m)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            if isempty(resPath) == false
+                figName = fullfile(resPath,'faultNormalCohesiveStress.fig');
+                savefig(gcf,figName);
+            end
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the cohesive stress field along a segment
+        function plotCohesiveStressesIncrementAlongDiscontinuity(draw, X0 ,axisPlot,resPath)
+
+            mdl = draw.model;
+
+            % Initialize the stress vector at these points
+            tn = zeros(2*size(mdl.FRACT,1),1);
+            ts = zeros(2*size(mdl.FRACT,1),1);
+            S  = zeros(2*size(mdl.FRACT,1),1);
+            Saux  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            % Calculate the pressure field in the points of the segment
+            for el = 1:mdl.nelem
+                if sum(mdl.IDenr(el,:)) >= 1
+                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        % Get the coordinates of the integration point
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        SGeo = mdl.element(el).type.fracture{1}.geostaticStressAtPoint(X, mdl.element(el).type, mdl.K0, mdl.yTop);
+
+                        % Get the centroid of the fracture
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        % Apply a pertubation to the coordinate X to avoid
+                        % the duplicated points in S. It will "attrack" the
+                        % point to the fracture centroid
+                        dX = 1.0e-5*(Xref-X)/norm(Xref-X);
+
+                        % Longitudinal coordinate of the point X(i) wrt to X0
+                        S(count)    = norm(X-X0);
+                        Saux(count) = norm(X + dX -X0);
+        
+                        % Get the stress vector
+                        STRESS = mdl.element(el).type.fracture{1}.intPoint(i).stress;
+
+                        % Save the stress component
+                        ts(count) = STRESS(1) - SGeo(1);
+                        tn(count) = STRESS(2) - SGeo(2);
+                        
+                        % Update counter
+                        count = count + 1;
+
+                    end
+
+                end
+
+            end
+
+            % Sort the vectors
+            [~,id] = sort(Saux);
+            S  = S(id);
+            ts = ts(id);
+            tn = tn(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(ts,S,'-b','LineWidth',1.5);
+                xlabel('Shear cohesive stress increment (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,ts,'-b','LineWidth',1.5);
+                ylabel('Shear cohesive stress increment (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            figName = fullfile(resPath,'faultShearCohesiveStressIncrement.fig');
+            savefig(gcf,figName);
+
+            % Initialize, plot and configure the figure of the normal stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(tn,S,'-b','LineWidth',1.5);
+                xlabel('Normal cohesive stress increment (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,tn,'-b','LineWidth',1.5);
+                ylabel('Normal cohesive stress increment (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            figName = fullfile(resPath,'faultNormalCohesiveStressIncrement.fig');
+            savefig(gcf,figName);
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the cohesive stress field along a segment
+        function plotSlipTendencyAlongDiscontinuity(draw, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            % Initialize the stress vector at these points
+            ST = zeros(2*size(mdl.FRACT,1),1);
+            S  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            % Calculate the pressure field in the points of the segment
+            for el = 1:mdl.nelem
+                if sum(mdl.IDenr(el,:)) >= 1
+                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        % Get the coordinates of the integration point
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+
+                        % Longitudinal coordinate of the point X(i) wrt to X0
+                        S(count) = norm(X-X0);
+        
+                        % Get the stress vector
+                        ST(count) = mdl.element(el).type.fracture{1}.intPoint(i).statevar(end);
+                        
+                        % Update counter
+                        count = count + 1;
+
+                    end
+
+                end
+
+            end
+
+            [S,id] = sort(S);
+            ST = ST(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(ST,S,'o-b','LineWidth',1.5);
+                xlabel('Slip tendency');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,ST,'o-b','LineWidth',1.5);
+                ylabel('Slip tendency');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the cohesive stress field along a segment
+        function plotConformityErrorAlongDiscontinuity(draw, err, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            % Number of fracture nodes
+            nfracNodes = size(mdl.NODE_D,1);
+
+            % Initialize the path vector
+            S  = zeros(nfracNodes,1);
+
+            % Longitudinal coordinate of the point X(i) wrt to X0
+            for i = 1:nfracNodes
+                X  = mdl.NODE_D(i,:);
+                S(i) = norm(X-X0);
+            end
+
+            [S,id] = sort(S);
+            err = err(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(err,S,'o-b','LineWidth',1.5);
+                xlabel('Conformity error');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,err,'o-b','LineWidth',1.5);
+                ylabel('Conformity error');
+                xlabel('Longitudinal distance (m)');
+            end
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plot the cohesive stress field along a segment
+        function plotPressureAlongDiscontinuity(draw, X0 ,axisPlot)
+
+            mdl = draw.model;
+
+            % Initialize the stress vector at these points
+            P     = zeros(2*size(mdl.FRACT,1),1);
+            Ptop  = zeros(2*size(mdl.FRACT,1),1);
+            Pbot  = zeros(2*size(mdl.FRACT,1),1);
+            S     = zeros(2*size(mdl.FRACT,1),1);
+            Saux  = zeros(2*size(mdl.FRACT,1),1);
+
+            count = 1;
+
+            % Calculate the pressure field in the points of the segment
+            for el = 1:mdl.nelem
+                if mdl.element(el).type.isEnriched
+                    Ue = mdl.U(mdl.element(el).type.gle);
+                    % Number of pressure dofs associated with the continuum
+                    nglpc = mdl.element(el).type.nglptot - mdl.element(el).type.nglpenrPf;
+                    if mdl.element(el).type.staticCondensation.DisplJump
+                        pc = mdl.element(el).type.ue(1+mdl.element(el).type.nglu:this.nglu+nglpc);
+                    else
+                        pc = mdl.element(el).type.ue(1+mdl.element(el).type.nglutot:mdl.element(el).type.nglutot+nglpc);
+                    end 
+                    pf = mdl.element(el).type.getDiscontinuityMidPlanePressure(pc);
+                    pc = Ue(1+mdl.element(el).type.nglutot:mdl.element(el).type.nglutot+nglpc);
+                    for i = 1:mdl.element(el).type.fracture{1}.nIntPoints
+
+                        % Get the coordinates of the integration point
+                        Xn = mdl.element(el).type.fracture{1}.intPoint(i).X;
+                        X  = mdl.element(el).type.fracture{1}.shape.coordNaturalToCartesian(mdl.element(el).type.fracture{1}.node,Xn);
+                        
+                        % Get the centroid of the fracture
+                        Xref = mdl.element(el).type.fracture{1}.Xref;
+
+                        % Apply a pertubation to the coordinate X to avoid
+                        % the duplicated points in S. It will "attrack" the
+                        % point to the fracture centroid
+                        dX = 1.0e-5*(Xref-X)/norm(Xref-X);
+
+                        % Longitudinal coordinate of the point X(i) wrt to X0
+                        S(count)    = norm(X-X0);
+                        Saux(count) = norm(X + dX -X0);
+        
+                        % Get the mid-plane pressure
+                        P(count) = pf(i);
+
+                        % Natural coordinates associated with the continuum element
+                        % of this point
+                        Xnc = mdl.element(el).type.shape.coordCartesianToNatural(mdl.element(el).type.node,X);
+
+                        % Shape function matrix of the continuum
+                        N = mdl.element(el).type.shape.shapeFncMtrx(Xnc);
+
+                        % Get the top plane pressure
+                        Ntop = mdl.element(el).type.topEnhancedShapeFncMtrx(N,Xnc,1);
+                        Ptop(count) = [N , Ntop]*pc;
+
+                        % Get the bottom plane pressure
+                        Nbot = mdl.element(el).type.bottomEnhancedShapeFncMtrx(N,Xnc,1);
+                        Pbot(count) = [N , Nbot]*pc;
+                        
+                        % Update counter
+                        count = count + 1;
+
+                    end
+
+                end
+
+            end
+            
+            % Sort the vectors
+            [~,id] = sort(Saux);
+            S = S(id);
+            P = P(id);
+            Ptop = Ptop(id);
+            Pbot = Pbot(id);
+
+            % Initialize, plot and configure the figure of the Shear stress
+            figure
+            hold on, box on, grid on
+            if strcmp(axisPlot,'y')
+                plot(Ptop,S,'REPLACE_WITH_DASH_DASHk','LineWidth',1.5,'DisplayName','(+)-plane');
+                plot(P,S,'-b','LineWidth',1.5,'DisplayName','Mid-plane');      
+                plot(Pbot,S,'-.k','LineWidth',1.5,'DisplayName','(-)-plane');
+                xlabel('Discontinuity internal pressure (kPa)');
+                ylabel('Longitudinal distance (m)');
+            elseif strcmp(axisPlot,'x')
+                plot(S,Ptop,'REPLACE_WITH_DASH_DASHk','LineWidth',1.5,'DisplayName','(+)-plane');
+                plot(S,P,'-b','LineWidth',1.5,'DisplayName','Mid-plane');       
+                plot(S,Pbot,'-.k','LineWidth',1.5,'DisplayName','(-)-plane');
+                ylabel('Discontinuity internal pressure (kPa)');
+                xlabel('Longitudinal distance (m)');
+            end
+            legend;
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
+            
+
+        end
+        
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Cleans data structure of a EFEMmodel object.
+        function draw = clean(draw)
+            draw.model = [];
+        end
+    end
+end
+##### SOURCE END #####
+-->
+</body>
+</html>

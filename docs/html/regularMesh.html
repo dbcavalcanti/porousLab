@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>regularMesh Function</title>
+<meta name="generator" content="MATLAB 24.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2025-04-06">
+<meta name="DC.source" content="regularMesh.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<h1>regularMesh Function</h1>
+<!--introduction-->
+<p>This function generates a regular finite element mesh with quadrilateral elements. It allows for optional quadratic distribution of nodes in the x and y directions and supports both linear quadrilateral (Q4) and constant strain triangle (CST) element types.</p>
+<!--/introduction-->
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Inputs</a>
+</li>
+<li>
+<a href="#2">Outputs</a>
+</li>
+<li>
+<a href="#3">Author</a>
+</li>
+<li>
+<a href="#4">Version History</a>
+</li>
+<li>
+<a href="#5">Function definition</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Inputs</h2>
+<div>
+<ul>
+<li>
+<b>Lx</b>: Length in the x-direction (scalar)</li>
+<li>
+<b>Ly</b>: Length in the y-direction (scalar)</li>
+<li>
+<b>Nx</b>: Number of elements in the x-direction (integer)</li>
+<li>
+<b>Ny</b>: Number of elements in the y-direction (integer)</li>
+<li>
+<b>xo</b>: Fixed x-coordinates (optional, default: [])</li>
+<li>
+<b>yo</b>: Fixed y-coordinates (optional, default: [])</li>
+<li>
+<b>type</b>: Type of finite element ('Q4' for quadrilateral or 'CST' for constant strain triangle, default: 'Q4')</li>
+<li>
+<b>quadDistrX</b>: Flag for quadratic distribution in x-direction (optional, default: false)</li>
+<li>
+<b>quadDistrY</b>: Flag for quadratic distribution in y-direction (optional, default: false)</li>
+</ul>
+</div>
+<h2 id="2">Outputs</h2>
+<div>
+<ul>
+<li>
+<b>Node</b>: Matrix of node coordinates (Nx*Ny x 2), where each row contains the x and y coordinates of a node.</li>
+<li>
+<b>ELEM</b>: Matrix of element connectivity. Each row defines the nodes forming an element. For 'Q4', each row has 4 nodes; for 'CST', each row has 3 nodes.</li>
+</ul>
+</div>
+<h2 id="3">Author</h2>
+<p>Danilo Cavalcanti</p>
+<h2 id="4">Version History</h2>
+<p>Version 1.00.</p>
+<h2 id="5">Function definition</h2>
+<pre class="codeinput">
+<span class="keyword">function</span> [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
+
+<span class="keyword">if</span> nargin &lt; 5, xo = []; yo = []; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin &lt; 7, type = <span class="string">'Q4'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin &lt; 9, quadDistrX = false; quadDistrY = false; <span class="keyword">end</span>
+
+<span class="comment">% Get the x and y coordinates of the nodes</span>
+<span class="keyword">if</span> quadDistrX == false
+    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
+<span class="keyword">else</span>
+    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.2*Lx/Nx);
+    xcoord = xcoord.^2;
+    xcoord = xcoord * Lx;
+<span class="keyword">end</span>
+<span class="keyword">if</span> quadDistrY == false
+    ycoord = getUniquePoints(linspace(0,Ly,Ny+1),yo, 0.2*Ly/Ny);
+<span class="keyword">else</span>
+    ycoord = getUniquePoints(linspace(0,1,Ny+1),yo, 0.2*Ly/Ny);
+    ycoord = ycoord.^2;
+    ycoord = ycoord * Ly;
+<span class="keyword">end</span>
+
+<span class="comment">% Number of nodes in each direction</span>
+Nx = length(xcoord) - 1;
+Ny = length(ycoord) - 1;
+
+<span class="comment">% Coordinates of the nodes</span>
+<span class="keyword">if</span> Nx &lt; Ny
+    <span class="comment">% Number the nodes first along x and then along y</span>
+    [Y,X]= meshgrid(ycoord,xcoord);
+<span class="keyword">else</span>
+    <span class="comment">% Number the nodes first along y and then along x</span>
+    [X,Y]= meshgrid(xcoord,ycoord);
+<span class="keyword">end</span>
+Node= [reshape(X,numel(X),1) reshape(Y,numel(Y),1)];
+
+<span class="comment">% Initialize the element matrix</span>
+<span class="keyword">if</span> strcmp(type,<span class="string">'CST'</span>)
+    ELEM= zeros(2*Nx*Ny,3);
+<span class="keyword">else</span>
+    ELEM= zeros(Nx*Ny,4);
+<span class="keyword">end</span>
+
+<span class="comment">% Numbering elements first along x and then along y</span>
+k= 1;
+<span class="keyword">if</span> Nx &lt; Ny
+    <span class="keyword">for</span> j=1:Ny
+        <span class="keyword">for</span> i=1:Nx
+            n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
+            ELEM(k,:) = [n1, n1+1, n2+1, n2];
+            k = k+1;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">else</span>
+    <span class="keyword">for</span> j=1:Ny
+        <span class="keyword">for</span> i=1:Nx
+            n1 = (i-1)*(Ny+1)+j; n2 = i*(Ny+1)+j;
+            <span class="keyword">if</span> strcmp(type,<span class="string">'CST'</span>)
+                ELEM(k,:)   = [n1 n2 n2+1];
+                ELEM(k+1,:) = [n2+1 n1+1 n1];
+                k = k+2;
+            <span class="keyword">else</span>
+                ELEM(k,:) = [n1 n2 n2+1 n1+1];
+                k = k+1;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Filters and combines unique points from two sets of points</span>
+<span class="keyword">function</span> x = getUniquePoints(x0,xfix,tol)
+<span class="keyword">if</span> isempty(xfix) == true
+    x = x0;
+    <span class="keyword">return</span>
+<span class="keyword">end</span>
+x = xfix;
+<span class="keyword">for</span> i = 1:length(x0)
+    dx = abs(x0(i) - xfix);
+    <span class="keyword">if</span> any(dx &lt; tol) == false
+        x = [x, x0(i)];
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+x = sort(x);
+<span class="keyword">end</span>
+</pre>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+%% regularMesh Function
+% This function generates a regular finite element mesh with quadrilateral
+% elements. It allows for optional quadratic distribution of nodes in the
+% x and y directions and supports both linear quadrilateral (Q4) and
+% constant strain triangle (CST) element types.
+% 
+%% Inputs
+% * *Lx*: Length in the x-direction (scalar)
+% * *Ly*: Length in the y-direction (scalar)
+% * *Nx*: Number of elements in the x-direction (integer)
+% * *Ny*: Number of elements in the y-direction (integer)
+% * *xo*: Fixed x-coordinates (optional, default: [])
+% * *yo*: Fixed y-coordinates (optional, default: [])
+% * *type*: Type of finite element ('Q4' for quadrilateral or 'CST' for 
+%           constant strain triangle, default: 'Q4')
+% * *quadDistrX*: Flag for quadratic distribution in x-direction 
+%                 (optional, default: false)
+% * *quadDistrY*: Flag for quadratic distribution in y-direction 
+%                 (optional, default: false)
+%
+%% Outputs
+% * *Node*: Matrix of node coordinates (Nx*Ny x 2), where each row 
+%           contains the x and y coordinates of a node.
+% * *ELEM*: Matrix of element connectivity. Each row defines the nodes
+%           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
+%           each row has 3 nodes.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
+function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
+
+if nargin < 5, xo = []; yo = []; end
+if nargin < 7, type = 'Q4'; end
+if nargin < 9, quadDistrX = false; quadDistrY = false; end
+
+% Get the x and y coordinates of the nodes
+if quadDistrX == false
+    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
+else
+    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.2*Lx/Nx);
+    xcoord = xcoord.^2;
+    xcoord = xcoord * Lx;
+end
+if quadDistrY == false
+    ycoord = getUniquePoints(linspace(0,Ly,Ny+1),yo, 0.2*Ly/Ny);
+else
+    ycoord = getUniquePoints(linspace(0,1,Ny+1),yo, 0.2*Ly/Ny);
+    ycoord = ycoord.^2;
+    ycoord = ycoord * Ly;
+end
+
+% Number of nodes in each direction
+Nx = length(xcoord) - 1;
+Ny = length(ycoord) - 1;
+
+% Coordinates of the nodes
+if Nx < Ny
+    % Number the nodes first along x and then along y
+    [Y,X]= meshgrid(ycoord,xcoord);
+else
+    % Number the nodes first along y and then along x
+    [X,Y]= meshgrid(xcoord,ycoord);
+end
+Node= [reshape(X,numel(X),1) reshape(Y,numel(Y),1)];
+
+% Initialize the element matrix
+if strcmp(type,'CST')
+    ELEM= zeros(2*Nx*Ny,3);
+else
+    ELEM= zeros(Nx*Ny,4);
+end
+
+% Numbering elements first along x and then along y
+k= 1;
+if Nx < Ny 
+    for j=1:Ny
+        for i=1:Nx  
+            n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
+            ELEM(k,:) = [n1, n1+1, n2+1, n2];
+            k = k+1;
+        end
+    end
+else
+    for j=1:Ny
+        for i=1:Nx  
+            n1 = (i-1)*(Ny+1)+j; n2 = i*(Ny+1)+j;
+            if strcmp(type,'CST')
+                ELEM(k,:)   = [n1 n2 n2+1];
+                ELEM(k+1,:) = [n2+1 n1+1 n1];
+                k = k+2;
+            else
+                ELEM(k,:) = [n1 n2 n2+1 n1+1];
+                k = k+1;
+            end
+        end
+    end
+end
+
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Filters and combines unique points from two sets of points
+function x = getUniquePoints(x0,xfix,tol)
+if isempty(xfix) == true
+    x = x0;
+    return
+end
+x = xfix;
+for i = 1:length(x0)
+    dx = abs(x0(i) - xfix);
+    if any(dx < tol) == false
+        x = [x, x0(i)];
+    end
+end
+x = sort(x);
+end
+##### SOURCE END #####
+-->
+</body>
+</html>
