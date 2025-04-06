@@ -1,24 +1,26 @@
 %% MechanicalNonlinearElasticDruckerPrager class
-%
-% This class implements the surrogate nonlinear elastic model proposed by
-% Zhao et al. (2020). 
-% The implementation is based on the Abaqus UMAT implementation provided by
-% the authors in the reference.
+% This class implements a nonlinear elastic constitutive model based on the 
+% Drucker-Prager criterion. The model is a surrogate nonlinear elastic 
+% formulation proposed by Zhao et al. (2020) and is implemented following 
+% the Abaqus UMAT provided by the authors.
 %
 % Reference:
-%
 % Zhao, T., Lages, E.N., Ramos, A.S. et al.
 % Topology optimization considering the Drucker–Prager criterion with
 % a surrogate nonlinear elastic constitutive model.
 % Struct Multidisc Optim 62, 3205–3227 (2020).
 %
+%% Methods
+% * *eval*: Computes the stress vector and constitutive matrix based on 
+%           material properties and integration point data.
+%
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic  
     %% Constructor method
     methods
