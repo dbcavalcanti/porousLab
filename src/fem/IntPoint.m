@@ -1,7 +1,36 @@
-%% IntPoint class
+%% IntPoint Class
+% This class defines an integration point object used in finite element
+% analysis. It stores the properties and methods required to manage the
+% state of an integration point, including its coordinates, weights,
+% strain, stress, plastic strain, state variables, and constitutive model.
 %
-% This class defines an integration point object.
+%% Methods
+% * *IntPoint*: Constructor to initialize the integration point with 
+%               coordinates, weight, and constitutive model.
+% * *initializeMechanicalAnalysisModel*: Initializes the mechanical 
+%                                        analysis model and allocates 
+%                                        memory for strain, stress, and 
+%                                        state variables based on the 
+%                                        analysis type.
+% * *updateStrainVct*: Updates the current strain vector and plastic 
+%                      strain vector to their previous states.
+% * *updateStateVar*: Updates the current state variable vector to 
+%                     its previous state.
+% * *updateStressVct*: Updates the current stress vector to its 
+%                      previous state.
+% * *getConstitutiveMtrx*: Retrieves the current constitutive matrix based 
+%                          on the given strain increment.
+% * *mechanicalLaw*: Computes the stress and constitutive matrix using 
+%                    the constitutive model and updates the current 
+%                    stress vector.
 %
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef IntPoint < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
@@ -35,7 +64,7 @@ classdef IntPoint < handle
     %% Public methods
     methods
         %------------------------------------------------------------------
-        %  Initialize analysis model (mechanical part).
+        % Initialize analysis model (mechanical part)
         function initializeMechanicalAnalysisModel(this,anm)
             this.anm = anm;
 
@@ -64,32 +93,32 @@ classdef IntPoint < handle
         end
 
         %------------------------------------------------------------------
-        %  Update current strain vector.
+        % Update current strain vector
         function updateStrainVct(this)
             this.strainOld        = this.strain;
             this.plasticstrainOld = this.plasticstrain;
         end
 
         %------------------------------------------------------------------
-        %  Update current state variable vector.
+        % Update current state variable vector
         function updateStateVar(this)
             this.statevarOld = this.statevar;
         end
 
         %------------------------------------------------------------------
-        %  Update current stress vector.
+        % Update current stress vector
         function updateStressVct(this)
             this.stressOld = this.stress;
         end
 
         %------------------------------------------------------------------
-        %  Get current constitutive matrix.
+        % Get current constitutive matrix
         function D = getConstitutiveMtrx(this,dStrain)
             D = this.constitutiveMdl.constitutiveMtrx(dStrain,this);
         end
 
         %------------------------------------------------------------------
-        %  Get current constitutive matrix.
+        % Get current constitutive matrix
         function [stress,D] = mechanicalLaw(this)
             [stress,D] = this.constitutiveMdl.mechanicalLaw(this);
             this.stress = stress;

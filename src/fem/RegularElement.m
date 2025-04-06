@@ -1,5 +1,37 @@
-%% RegularElement class
+%% RegularElement Class
+% This class represents a regular finite element in a finite element mesh.
+% It provides properties and methods to define the element's geometry, 
+% material properties, numerical integration, and other characteristics 
+% required for finite element analysis.
 %
+%% Methods
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *elementLinearSystem*: Assembles the element's linear system matrices 
+%                          and vectors.
+% * *updateStateVar*: Updates the state variables, stress, and strain 
+%                     vectors.
+% * *characteristicLength*: Computes the characteristic length of the 
+%                           element.
+% * *getDomainArea*: Computes the area of the element's domain.
+% * *calculateArea*: Static method to calculate the area of a polygon 
+%                    given its vertices.
+% * *updateResultVertices*: Updates the result object's vertices property 
+%                           based on configuration.
+% * *updateResultFaces*: Updates the result object's faces property.
+% * *updateResultVertexData*: Updates the result object's vertex data 
+%                             property based on type.
+% * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef RegularElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
@@ -60,8 +92,20 @@ classdef RegularElement < handle
 
     %% Abstract methods
     methods(Abstract)
+        
         %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        %
+        % Output:
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
+        %
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
+    
     end
 
     %% Public methods
@@ -113,7 +157,8 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to be done.
+        % If the 'Undeformed' configuration is selected, nothing needs to 
+        % be done.
         function updateResultVertices(this,configuration)
             if strcmp(configuration,'Deformed')
                 Nodes = this.getDeformedConfiguration();
@@ -123,7 +168,8 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to be done.
+        % If the 'Undeformed' configuration is selected, nothing needs to 
+        % be done.
         function updateResultFaces(this,faces)
             this.result.setFaces(faces);
         end
