@@ -90,9 +90,12 @@ classdef RegularElement_HM < RegularElement
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 

@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>RegularElement_H Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-03">
+<meta name="DC.date" content="2025-04-06">
 <meta name="DC.source" content="RegularElement_H.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -80,8 +80,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <!--introduction-->
 <p>This class defines a single-phase fluid flow finite element. It extends the <i>RegularElement</i> class and includes additional properties and methods specific to handling pore pressure degrees of freedom and related computations.</p>
 <pre class="codeoutput error">Error using RegularElement_H
-The specified superclass 'RegularElement' contains a parse error, cannot be found on MATLAB's search path, or is shadowed by
-another file with the same name.
+The specified superclass 'RegularElement' contains a parse error, cannot be found on MATLAB's search
+path, or is shadowed by another file with the same name.
 </pre>
 <!--/introduction-->
 <h2>Contents</h2>
@@ -185,9 +185,12 @@ another file with the same name.
         <span class="comment">% This function assembles the element matrices and vectors</span>
         <span class="comment">%</span>
         <span class="comment">% Output:</span>
-        <span class="comment">%   Ke : element "stiffness" matrix</span>
-        <span class="comment">%   Ce : element "damping" matrix</span>
-        <span class="comment">%   fe : element "internal force" vector</span>
+        <span class="comment">%    Ke : element "stiffness" matrix</span>
+        <span class="comment">%    Ce : element "damping" matrix</span>
+        <span class="comment">%    fe : element "external force" vector</span>
+        <span class="comment">%    fi : element "internal force" vector</span>
+        <span class="comment">% dfidu : element matrix of derivative of the internal force with</span>
+        <span class="comment">%         respect to displacement</span>
         <span class="comment">%</span>
         <span class="keyword">function</span> [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
@@ -406,9 +409,12 @@ classdef RegularElement_H < RegularElement
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
