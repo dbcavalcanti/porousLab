@@ -1,14 +1,29 @@
+%% convertToQuadraticMesh function
+% This function converts a linear mesh into a quadratic mesh.
+% 
+%% Inputs
+% * *NODE*: A matrix of size Nx2 containing the x and y coordinates of 
+%           the nodes. Each row represents a node, with the first column 
+%           as the x-coordinate and the second column as the y-coordinate.
+% * *ELEM*: A connectivity matrix of size Mx4 (for Q4 elements) or Mx3 
+%           (for T3 elements). Each row represents an element, with 
+%           columns specifying the indices of the nodes that form the 
+%           element.
+% 
+%% Outputs
+% * *NODE_quad*: An updated NODE matrix that includes the original nodes 
+%                and the newly created mid-edge nodes.
+% * *ELEM_quad*: An updated connectivity matrix that includes the 
+%                quadratic connectivity for each element.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [NODE_quad, ELEM_quad] = convertToQuadraticMesh(NODE, ELEM)
-    % Function to convert a linear mesh into a quadratic mesh
-    % Supports Q4 -> Q8 and T3 -> T6 elements
-    %
-    % Inputs:
-    %   NODE - Matrix with x and y coordinates of the nodes (size Nx2)
-    %   ELEM - Connectivity matrix (size Mx4 for Q4 or Mx3 for T3)
-    %
-    % Outputs:
-    %   NODE_quad - Updated NODE matrix with mid-edge nodes
-    %   ELEM_quad - Updated ELEM matrix with quadratic connectivity
 
     % Initialize
     num_nodes = size(NODE, 1);

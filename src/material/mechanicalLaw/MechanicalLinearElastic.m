@@ -1,14 +1,25 @@
-%% MechanicalLinearElastic class
+%% MechanicalLinearElastic Class
+% This class defines an linear elastic stress-strain constitutive law. The 
+% class provides methods to compute the stress vector, constitutive 
+% matrix, elastic constants (shear modulus and bulk modulus), and elastic
+% tensors (constitutive and flexibility matrices). It also includes a 
+% method to determine if the material is elasto-plastic.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Methods
+% * *eval*: Computes the stress vector and the constitutive matrix based 
+%           on the material properties and integration point data.
+% * *shearModulus*: Computes the shear modulus using Young's modulus and 
+%                   Poisson's ratio.
+% * *bulkModulus*: Computes the bulk modulus using Young's modulus and 
+%                  Poisson's ratio.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalLinearElastic < MechanicalLaw  
     %% Constructor method
     methods
@@ -20,6 +31,8 @@ classdef MechanicalLinearElastic < MechanicalLaw
 
     %% Public methods
     methods
+
+        %------------------------------------------------------------------
         % Compute the stress vector and the constitutive matrix
         function [stress,De] = eval(this,material,ip)
 
@@ -31,10 +44,15 @@ classdef MechanicalLinearElastic < MechanicalLaw
 
         end
         %% Elastic constants
+
+        %------------------------------------------------------------------
+        % Computes the shear modulus of the material
         function G = shearModulus(~,material)
             G = material.Young / (2.0 * (1.0 + material.nu));
         end
 
+        %------------------------------------------------------------------
+        % Computes the bulk modulus of the material
         function K = bulkModulus(~,material)
             K = material.Young / (3.0 * (1.0 - 2.0*material.nu));
         end 
@@ -46,6 +64,8 @@ classdef MechanicalLinearElastic < MechanicalLaw
             flag = false;
         end
         %% Elastic tensors
+        
+        %------------------------------------------------------------------
         % Compute the elastic constitutive matrix
         function De = elasticConstitutiveMatrix(material,ip)
 

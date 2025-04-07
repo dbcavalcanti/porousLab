@@ -1,16 +1,47 @@
-%% Shape_CST class
-%
-% This is class defines the behavior of a constant strain triangular
-% isoparametric element.
-%
+%% Shape_CST Class
+% This class defines the behavior of a constant strain triangular (CST)
+% isoparametric element. It provides methods for evaluating shape functions,
+% computing Jacobian matrices, derivatives, strain-displacement matrices, 
+% and integration points for finite element analysis.
+% 
+%% Methods:
+% * *shapeFnc*: Evaluate the shape functions at a given point in the 
+%               natural coordinate system.
+% * *shapeFncMtrx*: Get the shape function matrix.
+% * *NuMtrx*: Compute the shape function matrix for displacement 
+%             interpolation.
+% * *shapeFncDrv*: Compute the derivatives of the shape functions with 
+%                  respect to natural coordinates.
+% * *JacobianMtrx*: Compute the Jacobian matrix for the element.
+% * *detJacobian*: Compute the determinant of the Jacobian matrix.
+% * *dNdxMatrix*: Compute the derivatives of the shape functions with 
+%                 respect to global coordinates.
+% * *BMatrix*: Compute the strain-displacement matrix.
+% * *getIntegrationPointsCST*: Get integration points and weights for CST 
+%                              elements based on quadrature order.
+% * *getIntegrationPoints*: Get integration points and weights, with 
+%                           optional subdivision for fractured elements.
+% * *coordNaturalToCartesian*: Transform a point from natural to global 
+%                              Cartesian coordinates.
+% * *coordCartesianToNatural*: Transform a point from global Cartesian to 
+%                              natural coordinates.
+% * *areaTriangle*: Compute the area of a triangle given its vertices.
+% * *getSizeGramMtrx*: Get the size of the Gram matrix.
+% * *integrandGramMtrx*: Compute the integrand for the Gram matrix.
+% * *getSizeStressIntVct*: Get the size of the stress interpolation vector.
+% * *polynomialStress*: Define the polynomial stress interpolation.
+% * *integrandStressIntVct*: Compute the integrand for the stress 
+%                            interpolation vector.
+% * *getTriangleLinearQuadrature*: Get integration points and weights for 
+%                                  linear quadrature in a triangle.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00: Initial version (January 2023).
 %
-% Initial version:January 2023
-%
+%% Class Definition
 classdef Shape_CST < Shape
     %% Constructor method
     methods

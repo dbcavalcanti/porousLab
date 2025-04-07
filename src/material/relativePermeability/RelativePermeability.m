@@ -1,14 +1,20 @@
-%% Material class
+%% RelativePermeability Class
+% This class defines an abstract base class for modeling relative 
+% permeability in porous media. It provides a framework for implementing 
+% specific relative permeability models by defining an abstract method 
+% _calculate_ that must be implemented in derived classes.
 %
-% This class defines an abstract stress-strain constitutive law
+%% Methods
+% *calculate*: Abstract method to compute the relative permeability. This 
+%              method must be implemented in subclasses.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef RelativePermeability < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
@@ -27,7 +33,7 @@ classdef RelativePermeability < handle
     methods(Abstract)
 
         %------------------------------------------------------------------
-        % compute the relative permeability
+        % Compute the relative permeability
         kr = calculate(this, Sw, porousMedia);
         
     end

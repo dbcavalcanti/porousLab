@@ -1,14 +1,36 @@
-%% Fluid class
+%% PorousMedia Class
+% This class defines a porous media object with various physical and 
+% mechanical properties. It includes methods for setting and retrieving 
+% these properties, as well as performing calculations related to porous 
+% media behavior.
 %
-% This class defines a fluid object
+%% Methods
+% * *effectiveSaturationDegree*: Computes the effective saturation degree.
+% * *intrinsicPermeabilityMatrix*: Returns the intrinsic permeability 
+%                                  matrix.
+% * *setMinLiquidRelPermeability*: Sets the minimum liquid relative 
+%                                  permeability.
+% * *setMinGasRelPermeability*: Sets the minimum gas relative 
+%                               permeability.
+% * *setUMATCapillaryPressureCurve*: Sets the user-defined capillary 
+%                                    pressure curve.
+% * *setUMATLiquidRelPermCurve*: Sets the user-defined liquid relative 
+%                                permeability curve.
+% * *setUMATGasRelPermCurve*: Sets the user-defined gas relative 
+%                             permeability curve.
+% * *setMechanicalConstitutiveLaw*: Sets the mechanical constitutive law.
+% * *setMechanicalProperties*: Sets the mechanical properties (Young's 
+%                              modulus and Poisson's ratio).
+% * *setDensity*: Sets the density.
+% * *getDensity*: Retrieves the density.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef PorousMedia < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
@@ -83,50 +105,72 @@ classdef PorousMedia < handle
     end
     %% Public methods
     methods
+        % -----------------------------------------------------------------
+        % Compute the effective saturation degree
         function Se = effectiveSaturationDegree(this,Sl)
             Se = (Sl - this.Slr)/(1.0 - this.Slr - this.Sgr);
         end
 
+        % -----------------------------------------------------------------
+        % Create the intrinsic permeability matrix
         function Km = intrinsicPermeabilityMatrix(this)
             Km = this.K * eye(2);
         end
 
+        % -----------------------------------------------------------------
+        % Set the minimum liquid relative permeability
         function setMinLiquidRelPermeability(this,klrmin)
             this.klrmin = klrmin;
         end
 
+        % -----------------------------------------------------------------
+        % Set the minimum gas relative permeability
         function setMinGasRelPermeability(this,kgrmin)
             this.kgrmin = kgrmin;
         end
 
+        % -----------------------------------------------------------------
+        % Set the user defined capillary pressure curve
         function setUMATCapillaryPressureCurve(this,curve)
             curve = sortrows(curve, 2);
             this.SlPc_umat = curve;
         end
 
+        % -----------------------------------------------------------------
+        % Set the user defined liquid relative permeability curve
         function setUMATLiquidRelPermCurve(this,curve)
             curve = sortrows(curve, 1);
             this.klr_umat = curve;
         end
 
+        % -----------------------------------------------------------------
+        % Set the user defined gas relative permeability curve
         function setUMATGasRelPermCurve(this,curve)
             curve = sortrows(curve, 1);
             this.kgr_umat = curve;
         end
 
+        % -----------------------------------------------------------------
+        % Set the mecahnical constitutive law
         function setMechanicalConstitutiveLaw(this,law)
             this.mechanical = law;
         end
 
+        % -----------------------------------------------------------------
+        % Set the mechanical properties of the material
         function setMechanicalProperties(this,E,nu)
             this.Young = E;
             this.nu = nu;
         end
 
+        % -----------------------------------------------------------------
+        % Set the density of the material
         function setDensity(this,rho)
             this.rho = rho;
         end
 
+        % -----------------------------------------------------------------
+        % Get the density of the material
         function rho = getDensity(this)
             rho = this.rho;
         end

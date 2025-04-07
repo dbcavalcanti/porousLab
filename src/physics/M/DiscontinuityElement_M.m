@@ -1,9 +1,35 @@
-%% Mechanical discontinuity element class
+%% DiscontinuityElement_M Class
+% This class defines a mechanical discontinuity element that extends the
+% _DiscontinuityElement_ base class. It includes additional functionality
+% for handling stretching and relative rotation modes, as well as methods
+% for initializing integration points and computing element data.
 %
+%% Methods
+% * *addStretchingMode*: Enables or disables the stretching mode based on 
+%                        the flag.
+% * *addRelRotationMode*: Enables or disables the relative rotation mode 
+%                         based on the flag.
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          discontinuity element. Retrieves integration 
+%                          points' coordinates and weights, and creates 
+%                          _IntPoint_ objects with the associated material 
+%                          model.
+% * *elementData*: Computes the element stiffness matrix, internal force 
+%                  vector, and other element data based on the input 
+%                  displacement vector. Performs numerical integration 
+%                  over the integration points.
+% * *enrichmentInterpolationMatrix*: Computes the enrichment interpolation 
+%                                    matrix for the given integration point
+%                                    coordinates, reference point, and 
+%                                    tangential vector.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% Class definition
+%% Version History
+% Version 1.00: Initial version (January 2024).
+%
+%% Class Definition
 classdef DiscontinuityElement_M < DiscontinuityElement    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
@@ -23,6 +49,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
     methods
 
         %------------------------------------------------------------------
+        % Enables the stretching mode. If enables, the number of degrees of
+        % freedom increases by 1
         function addStretchingMode(this,flag)
             this.stretchingMode = flag;
             if flag == true
@@ -31,6 +59,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Enables the rotation mode. If enables, the number of degrees of
+        % freedom increases by 1
         function addRelRotationMode(this,flag)
             this.relRotationMode = flag;
             if flag == true
@@ -39,6 +69,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Initializes the integration points for the element obtaining the
+        % coordinates and weights
         function initializeIntPoints(this)
 
             % Get integration points coordinates and weights
@@ -56,6 +88,17 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Computes the element stiffness matrix, internal force vector and
+        % other optional outputs using numerical integration over the
+        % element
+        % 
+        % Outputs:
+        %   Ke    - Element stiffness matrix.
+        %   Ce    - Element damping matrix.
+        %   fi    - Internal force vector.
+        %   fe    - External force vector.
+        %   dfidu - Derivative of internal force with respect to 
+        %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = elementData(this, ae)
             
             % Declare output matrices that won't be used
@@ -102,6 +145,9 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Computes the enrichment interpolation matrix for the given
+        % integration point coordinates, reference point and tangential
+        % vector
         function Nd = enrichmentInterpolationMatrix(this,X,Xr,m)
             Nd = zeros(2,this.ndof);
             Nd(1,1) = 1.0;

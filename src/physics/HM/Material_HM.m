@@ -1,11 +1,27 @@
-%% Material_HM class
-%
-%
+%% Material_HM Class
+% The _Material_HM_ class represents a material model for hydro-mechanical
+% analysis. It encapsulates the properties and behaviors of the fluid, 
+% porous media, and mechanical constitutive behavior.
+% 
+%% Methods
+% * *mechanicalLaw*: Evaluates the mechanical constitutive law at a given 
+%                    integration point and returns the stress and the 
+%                    constitutive matrix.
+% * *getNumberStateVar*: Returns the number of state variables associated 
+%                        with the mechanical constitutive law.
+% * *biotCoeff*: Returns the Biot coefficient of the porous media.
+% * *permeabilityTensor*: Computes and returns the permeability tensor, 
+%                         accounting for the fluid viscosity.
+% * *compressibilityCoeff*: Computes and returns the compressibility 
+%                           coefficient of the material.
+% * *hasPlasticStrain*: Checks if the material exhibits elasto-plastic 
+%                       behavior.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Material_HM < handle
@@ -49,7 +65,7 @@ classdef Material_HM < handle
         end
 
         % -----------------------------------------------------------------
-        % Returns the biot coefficient
+        % Returns the permeability tensor
         function kh = permeabilityTensor(this)
             kh = this.porousMedia.intrinsicPermeabilityMatrix();
             kh = kh / this.fluid.mu;
@@ -63,11 +79,12 @@ classdef Material_HM < handle
             phi  = this.porousMedia.phi;      % Porosity
             Ks   = this.porousMedia.Ks;       % Solid bulk modulus
             Kf   = this.fluid.K;              % Fluid bulk modulus
-            % Compute teh compressibility
+            % Compute the compressibility
             comp = (biot - phi)/Ks + phi/Kf;
         end
         
         % -----------------------------------------------------------------
+        % Checks if the material exhibits elasto-plastic behaviour
         function flag = hasPlasticStrain(this)
             flag = this.mechanical.isElastoPlastic();
         end

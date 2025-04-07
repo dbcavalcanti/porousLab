@@ -1,10 +1,33 @@
 %% RegularElement_HM class
+% This class defines a single-phase hydromechanical finite element. It 
+% extends the _RegularElement_ class and incorporates additional 
+% attributes and methods specific to hydromechanical analysis.
 %
-% This class defines a single-phase hydromechanical finite element 
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          element using the shape function and material 
+%                          properties.
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
+%                                  matrix based on the element volume and 
+%                                  compressibility coefficients.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalDisplacement*: Retrieves the nodal displacement values.
+% * *getNodalPressure*: Retrieves the nodal liquid pressure values.
+% * *pressureField*: Computes the pressure field inside the element at a 
+%                    given position in the global Cartesian coordinate 
+%                    system.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_HM < RegularElement_M    
     %% Public attributes
@@ -53,9 +76,12 @@ classdef RegularElement_HM < RegularElement_M
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
@@ -178,7 +204,7 @@ classdef RegularElement_HM < RegularElement_M
 
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
-        function S= lumpedCompressibilityMatrix(this, vol)
+        function S = lumpedCompressibilityMatrix(this, vol)
 
             % Get compressibility coefficients
             comp = this.intPoint(1).constitutiveMdl.compressibilityCoeff();

@@ -1,11 +1,40 @@
+%% fractureMesh Function
+% This function creates a fracture mesh by dividing a fracture segment 
+% based on the continuum finite element mesh. It does not assume that the 
+% continuum mesh is structured. The function also perturbs nodes to avoid 
+% coinciding nodes between the fracture and continuum meshes.
+%
+%% Inputs
+% * *NODE*: Nodal coordinates of the continuum mesh (Nx2 array).
+% * *ELEM*: Element connectivity of the continuum mesh (MxK array).
+% * *XD*: Coordinates of the fracture segment endpoints (2x2 array).
+% * *SEGD*: Indices of the fracture segment endpoints in XD (1x2 array).
+% * *aperture*: Aperture of the fracture.
+% * *leakoff*: Leakoff coefficient for the fracture.
+% * *TIP*: Logical flag indicating if the fracture has a tip.
+% * *FixedPressureJump*: Logical flag to fix pressure jump (default: true).
+% * *FixedPf*: Logical flag to fix pressure field (default: false).
+% * *FixedDisplJump*: Logical flag to fix displacement jump (default: true).
+% * *ptol*: Perturbation tolerance for node adjustments (default: 1.0e-2).
+%
+%% Outputs
+% * *NODE_D*: Nodal coordinates of the fracture mesh.
+% * *FRACT*: Element connectivity of the fracture mesh.
+% * *NODE_D_TIPS*: Coordinates of the fracture tip nodes.
+% * *NODE*: Updated nodal coordinates of the continuum mesh.
+% * *W*: Fracture aperture values.
+% * *LEAKOFF*: Leakoff values for the fracture.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [NODE_D, FRACT, NODE_D_TIPS, NODE, W, LEAKOFF] = fractureMesh(NODE, ELEM, XD, ...
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump, ptol)
-% 
-% This function divides a fracture segment according to the continuum
-% finite element mesh.
-%
-% It does not assume that the continuum mesh is structured.
-%
+
 if nargin < 10
     FixedPf           = false;
     FixedDisplJump    = true;

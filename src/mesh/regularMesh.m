@@ -1,19 +1,38 @@
-function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
-% -------------------------------------------------------------------------
+%% regularMesh Function
 % This function generates a regular finite element mesh with quadrilateral
-% elements.
+% elements. It allows for optional quadratic distribution of nodes in the
+% x and y directions and supports both linear quadrilateral (Q4) and
+% constant strain triangle (CST) element types.
+% 
+%% Inputs
+% * *Lx*: Length in the x-direction (scalar)
+% * *Ly*: Length in the y-direction (scalar)
+% * *Nx*: Number of elements in the x-direction (integer)
+% * *Ny*: Number of elements in the y-direction (integer)
+% * *xo*: Fixed x-coordinates (optional, default: [])
+% * *yo*: Fixed y-coordinates (optional, default: [])
+% * *type*: Type of finite element ('Q4' for quadrilateral or 'CST' for 
+%           constant strain triangle, default: 'Q4')
+% * *quadDistrX*: Flag for quadratic distribution in x-direction 
+%                 (optional, default: false)
+% * *quadDistrY*: Flag for quadratic distribution in y-direction 
+%                 (optional, default: false)
 %
-% Input:
-%   Lx:   length in the x-direction
-%   Ly:   lenght in the y-direction
-%   Nx:   number of elements in the x-direction
-%   Ny:   number of elements in the y-direction
-%   type: type of finite element (default: linear quadrilateral)
+%% Outputs
+% * *Node*: Matrix of node coordinates (Nx*Ny x 2), where each row 
+%           contains the x and y coordinates of a node.
+% * *ELEM*: Matrix of element connectivity. Each row defines the nodes
+%           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
+%           each row has 3 nodes.
 %
-% Output:
-%   NODE: matrix with the nodes coordinates
-%   ELEM: matrix with the elements connectivity
-% -------------------------------------------------------------------------
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
+function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 
 if nargin < 5, xo = []; yo = []; end
 if nargin < 7, type = 'Q4'; end
@@ -85,6 +104,7 @@ end
 end
 
 % -------------------------------------------------------------------------
+% Filters and combines unique points from two sets of points
 function x = getUniquePoints(x0,xfix,tol)
 if isempty(xfix) == true
     x = x0;

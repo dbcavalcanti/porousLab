@@ -1,12 +1,28 @@
-%% RegularElementPcPg class
-%
-% This class defines a finite element of a two-phase flow formulation using
-% the capillary pressure (Pc) and the gas pressure (Pg) as primary
-% variables.
+%% RegularElement_H2_PcPg Class
+% This class represents a finite element for a two-phase flow formulation 
+% using capillary pressure (Pc) and gas pressure (Pg) as primary variables. 
+% It extends the _RegularElement_H2_ class and provides methods for 
+% computing permeability tensors, compressibility coefficients, and 
+% gravitational force contributions, as well as retrieving nodal values 
+% for capillary and liquid pressures.
+% 
+%% Methods
+% * *permeabilityTensors*: Computes the permeability tensors for the 
+%                          element.
+% * *compressibilityCoeffs*: Computes the compressibility coefficients 
+%                            for the element.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalCapillaryPressure*: Retrieves the nodal capillary pressure 
+%                                values.
+% * *getNodalLiquidPressure*: Retrieves the nodal liquid pressure values.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_H2_PcPg < RegularElement_H2  
     %% Constructor method

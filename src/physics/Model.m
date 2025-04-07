@@ -1,10 +1,81 @@
-%% Model class
+%% Model Class
+% Abstract class to create and manage a Finite Element model. It provides 
+% methods and properties to define the mesh, boundary conditions, material 
+% properties, and other essential components of a FEM simulation. 
+% The class also includes methods for pre-processing, assembling global 
+% matrices, applying boundary conditions, and updating state variables.
 %
-% Abstract class to create a Finite Element model.
+%% Methods
+% * *setMaterial*: Sets the material object.
+% * *initializeElements*: Initializes the element objects.
+% * *printResultsHeader*: Configures the header for printing results.
+% * *setMesh*: Sets the mesh nodes and connectivity.
+% * *initializeBasicVariables*: Initializes basic variables like number of 
+%                               nodes, elements, and DOFs.
+% * *checkMaterialId*: Ensures the material ID vector is initialized.
+% * *createNodeDofIdMtrx*: Creates the ID matrix and determines free and 
+%                          fixed DOFs.
+% * *setDirichletBCAtNode*: Sets Dirichlet boundary conditions at a 
+%                           specific node.
+% * *setDirichletBCAtPoint*: Sets Dirichlet boundary conditions at a 
+%                            specific point.
+% * *setDirichletBCAtBorder*: Sets Dirichlet boundary conditions along a 
+%                             border.
+% * *setNeumannBCAtNode*: Sets Neumann boundary conditions at a specific 
+%                         node.
+% * *setNeumannBCAtPoint*: Sets Neumann boundary conditions at a specific 
+%                          point.
+% * *setNeumannBCAtBorder*: Sets Neumann boundary conditions along a 
+%                           border.
+% * *setInitialDofAtDomain*: Sets initial DOF values for the entire domain.
+% * *setInitialDofAtNode*: Sets initial DOF values at a specific node.
+% * *getNodesAtBorder*: Retrieves nodes along a specified border.
+% * *closestNodeToPoint*: Finds the closest node to a given point.
+% * *preComputations*: Performs pre-processing tasks like initializing 
+%                      elements and assembling matrices.
+% * *getElementDofs*: Retrieves DOFs for a specific element.
+% * *initializeDisplacementVct*: Initializes the global displacement 
+%                                vector.
+% * *assembleDiscontinuitySegments*: Assembles discontinuity segments into 
+%                                    elements.
+% * *addNodalLoad*: Adds nodal loads to the reference load vector.
+% * *getElementsCharacteristicLength*: Obtain the characteristic length of
+%                                      the finite element.
+% * *getElementCharacteristicLength*: Computes the characteristic length 
+%                                     for a specific element.
+% * *getNodeCharacteristicLength*: Compute the mean characteristic length
+%                                  of the elements associated with each
+%                                  node.
+% * *initializeSparseMtrxAssemblageVariables*: Initializes variables for 
+%                                              sparse matrix assembly.
+% * *globalMatrices*: Assembles global system matrices and vectors.
+% * *getLinearSystem*: Assembles the linear system for solving.
+% * *applyDirichletBC*: Applies Dirichlet boundary conditions to the 
+%                       system.
+% * *updateStateVar*: Updates state variables at integration points.
+% * *resequenceNodes*: Resequences nodes using the reverse Cuthill-McKee 
+%                      algorithm.
+% * *rebuildConnectivity*: Rebuilds connectivity matrices after 
+%                          resequencing.
+% * *addPreExistingDiscontinuities*: Adds pre-existing discontinuities to 
+%                                    the model.
+% * *initializeDiscontinuitySegments*: Initializes discontinuity segments.
+% * *getNumberOfDiscontinuities*: Returns the number of discontinuities.
+% * *useEnrichedFormulation*: Enables or disables enriched formulation.
+% * *printResults*: Prints nodal results.
+% * *evaluateField*: Evaluate a field at in a point inside an element. It
+%                    assumes that the point is in the element domain.
+% * *updateResultVertexData*: Updates result data for each element's 
+%                             vertices.
+% * *plotField*: Plots a specified field over the mesh.
+% * *plotFieldAlongSegment*: Plot a given field along a given segment.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00: Initial version (April 2023).
+% 
 %% Class definition
 classdef Model < handle    
     %% Public attributes
@@ -80,6 +151,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes the basic variables of the model
         function initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
             this.nelem         = size(this.ELEM,1);     
@@ -101,6 +173,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Check is the material is well defined or not
         function checkMaterialId(this)
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -108,6 +181,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Creates and assembles the matrix containing all the degrees of
+        % freedom
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -150,6 +225,7 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node
         function setDirichletBCAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error prescribing Dirichlet BC at a node');
@@ -170,12 +246,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a border
         function setDirichletBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -184,17 +262,20 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtNode(this, nodeId, dofId, value)
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a point
         function setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -203,6 +284,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at the whole
+        % domain
         function setInitialDofAtDomain(this, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -213,6 +296,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at a node
         function setInitialDofAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -223,6 +307,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Identify the nodes contained in any of the borders
         function nodeIds = getNodesAtBorder(this,border)
             % Get the nodes at the given border
             if strcmp(border,'left')
@@ -241,6 +326,7 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
+        % Find the closest node to a given point
         function nd = closestNodeToPoint(this,X)
             if size(X,1) == 2, X = X'; end
             d = vecnorm((this.NODE - X)');
@@ -249,6 +335,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Perform all the necessary pre-computations to initialize the 
+        % model
         function preComputations(this)
             if(this.initializeMdl == false)
                 disp("*** Pre-processing...");
@@ -277,11 +365,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Obtain all the element degrees of freedom
         function dof = getElementDofs(this,el,dofId)
             dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
+        % Initialize the vector containing all the displacement
+        % values
         function initializeDisplacementVct(this)
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
@@ -309,6 +400,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Assembly discontinuity segments for enriched elements
         function assembleDiscontinuitySegments(this)
             if (this.enriched == false)
                 return
@@ -342,6 +434,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Obtain the characteristic length of the finite element
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
@@ -350,6 +443,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Get characteristic length of the elements
         function Lce = getElementCharacteristicLength(this,el)
             % Vertices of the element el coordinates
             vx = this.NODE(this.ELEM(el,:),1); 
@@ -389,6 +483,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes variables related to the assembly of sparse matrices 
+        % in the model.
         function initializeSparseMtrxAssemblageVariables(this)
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
@@ -531,6 +627,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Appply the Dirichlet boundary conditions
         function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
@@ -545,6 +642,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Reorder the nodes to improve computational efficiency
         function resequenceNodes(this)
             % Get auxiliar variables
             nNode   = size(this.NODE,1);
@@ -571,6 +669,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Updates the connectivity of nodes and elements
         function rebuildConnectivity(this,cNode)
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
@@ -582,6 +681,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Adds pre-existing discontinuities to the model
         function addPreExistingDiscontinuities(this,dSet,additionalData)
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
@@ -592,6 +692,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializer the discontinuity segments
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -603,11 +704,13 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Get the total number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = length(this.discontinuitySet);
         end
 
         %------------------------------------------------------------------
+        % Flag to use the enriched formulation
         function useEnrichedFormulation(this,flag)
             this.enriched = flag;
         end

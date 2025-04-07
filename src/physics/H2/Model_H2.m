@@ -1,12 +1,45 @@
-%% Model_H2 class
+%% Model_H2 Class
+% This class represents a two-phase flow finite element model.
+% Each node has two degrees of freedom:
+% 
+% * 1 liquid phase pressure (Pl)
+% * 1 gas phase pressure (Pg)
 %
-% Two-phase flow finite element model.
-%
-% Each node has two degrees of freedom (dof). The liquid phase pressure (p)
-% and the gas phase pressure (pg).
-%
+%% Methods
+% * *setMaterial*: Sets the material properties using a _PorousMedia_ 
+%                  object.
+% * *initializeElements*: Initializes the elements of the model with their 
+%                         properties.
+% * *setGasPressureDirichletBCAtNode*: Sets pressure Dirichlet boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific node.
+% * *setGasPressureDirichletBCAtPoint*: Sets pressure Dirichlet boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific point.
+% * *setGasPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific border.
+% * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific node.
+% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific point.
+% * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+%                                      conditions for gas-phase pore 
+%                                      pressure at a specific border.
+% * *setInitialGasPressureAtDomain*: Sets the initial gas-phase pressure 
+%                                    value for the entire domain.
+% * *setInitialGasPressureAtNode*: Sets the initial gas-phase pressure 
+%                                  value at a specific node.
+% * *printResultsHeader*: Prints a header for the results table, showing
+%                         node ID, and pressures (Pl, Pg).
+% 
 %% Author
-% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Model_H2 < Model_H
@@ -24,6 +57,7 @@ classdef Model_H2 < Model_H
     methods
 
         %------------------------------------------------------------------
+        % Sets the material properties
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
                 disp('Error in setMaterial: insuficient number of inputs.');
@@ -46,6 +80,8 @@ classdef Model_H2 < Model_H
         end
 
         %------------------------------------------------------------------
+        % Initializes the elements of the model with the corresponding
+        % properties
         function initializeElements(this)
             % Initialize the vector with the Element's objects
             elements(this.nelem,1) = Element(); 
@@ -72,41 +108,55 @@ classdef Model_H2 < Model_H
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Dirichlet boundary condition at 
+        % a node
         function setGasPressureDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Dirichlet boundary condition at 
+        % a point
         function setGasPressureDirichletBCAtPoint(this, X, value)
             this.setDirichletBCAtPoint(X, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Dirichlet boundary condition at 
+        % a border
         function setGasPressureDirichletBCAtBorder(this, border, value)
             this.setDirichletBCAtBorder(border, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Neumann boundary condition at a 
+        % node
         function setGasPressureNeumannBCAtNode(this, nodeId, value)
             this.setNeumannBCAtNode(nodeId, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Neumann boundary condition at a 
+        % point
         function setGasPressureNeumannBCAtPoint(this, X, value)
             this.setNeumannBCAtPoint(X, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Prescribe a gas-phase pressure Neumann boundary condition at a 
+        % border
         function setGasPressureNeumannBCAtBorder(this, border, value)
             this.setNeumannBCAtBorder(border, 2, value);
         end
 
         % -----------------------------------------------------------------
+        % Sets the initial gas-phase pressure value for the whole domain
         function setInitialGasPressureAtDomain(this, value)
             this.setInitialDofAtDomain(2, value);
         end
 
         % -----------------------------------------------------------------
+        % Sets the initial gas-phase pressure value at a node
         function setInitialGasPressureAtNode(this, nodeId, value)
             this.setInitialDofAtNode(nodeId, 2, value);
         end

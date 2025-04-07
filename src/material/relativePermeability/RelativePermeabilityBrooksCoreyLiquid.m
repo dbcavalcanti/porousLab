@@ -1,14 +1,20 @@
-%% Material_Elastic class
+%% RelativePermeabilityBrooksCoreyLiquid Class
+% This class implements the Brooks-Corey model for calculating the relative 
+% permeability of the liquid phase in a porous medium. It inherits from the 
+% _RelativePermeability_ base class.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Method
+% * *calculate*: Computes the liquid phase relative permeability based on 
+%                the effective saturation degree Se and the Brooks-Corey 
+%                model.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef RelativePermeabilityBrooksCoreyLiquid < RelativePermeability  
     %% Constructor method
     methods

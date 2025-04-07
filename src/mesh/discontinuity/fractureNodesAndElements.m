@@ -1,10 +1,38 @@
+%% fractureNodesAndElements Function
+% This function identifies the intersection points between fracture
+% segments and the continuum finite element mesh. It divides the fracture 
+% segments into smaller segments based on the intersections and assigns 
+% properties such as aperture and leakoff to each segment. The function 
+% also identifies crack tip nodes and assigns their status based on the 
+% input flags.
+%
+%% Inputs
+% * *NODE*: Array of nodal coordinates of the finite element mesh.
+% * *ELEM*: Array of element connectivity of the finite element mesh.
+% * *XD*: Array of coordinates of the fracture segment endpoints.
+% * *SEGD*: Array defining the fracture segments by their endpoint indices.
+% * *aperture*: Array of aperture values for each fracture segment.
+% * *leakoff*: Array of leakoff values for each fracture segment.
+% * *TIP*: Array of indices identifying crack tip nodes.
+% * *FixedPressureJump*: Boolean flag indicating if a fixed pressure jump is applied.
+% * *FixedPf*: Boolean flag indicating if a fixed pressure field is applied.
+% * *FixedDisplJump*: Boolean flag indicating if a fixed displacement jump is applied.
+%
+%% Outputs
+% * *NODE_D*: Array of coordinates of the discontinuity nodes.
+% * *FRACT*: Array defining the fracture segments by their node indices.
+% * *NODE_D_TIPS*: Array indicating the crack tip status of the discontinuity nodes.
+% * *W*: Array of aperture values for each fracture segment.
+% * *LEAKOFF*: Array of leakoff values for each fracture segment.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump)
-% 
-% This function divides a fracture segment according to the continuum
-% finite element mesh.
-%
-% It does not assume that the continuum mesh is structured.
-%
 
 % Initialize the output arrays
 NODE_D      = [];

@@ -1,12 +1,20 @@
-%% Brooks and Corey for the gas phase
+%% RelativePermeabilityBrooksCoreyGas Class
+% This class implements the Brooks-Corey model for calculating the 
+% relative permeability of the gas phase in porous media. The model is 
+% based on the effective saturation degree and incorporates a minimum 
+% relative permeability threshold.
+%
+%% Method
+% * *calculate*: Computes the gas phase relative permeability based on the  
+%                effective saturation degree Se and the Brooks-Corey model.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef RelativePermeabilityBrooksCoreyGas < RelativePermeability  
     %% Constructor method
     methods

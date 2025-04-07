@@ -1,12 +1,35 @@
-%% Material class
+%% Material_H2 class
+% This class defines the material properties and behavior for a porous 
+% medium involving liquid and gas phases. It includes methods for 
+% computing relative permeabilities, saturation degrees, permeability 
+% matrices, and compressibility coefficients for the liquid and gas phases.
 %
-% This class defines an abstract stress-strain constitutive law
-%
+%% Methods
+% * *saturationDegree*: Computes the liquid saturation degree based on 
+%                       the capillary pressure pc.
+% * *permeabilityMtrcs*: Computes the permeability matrices for the liquid
+%                        and gas phases based on the liquid saturation 
+%                        degree Sl, liquid pressure pl, and gas 
+%                        pressure pg.
+% * *permeabilityMtrcsPgPc*: Computes the permeability matrices for the
+%                            liquid and gas phases considering the 
+%                            gas-to-liquid density ratio.
+% * *compressibilityCoeffs*: Computes the compressibility coefficients for
+%                            the liquid and gas phases based on the liquid 
+%                            saturation degree Sl, liquid pressure pl, 
+%                            and gas pressure pg.
+% * *compressibilityCoeffsPgPc*: Computes the compressibility coefficients
+%                                considering the gas-to-liquid 
+%                                density ratio.
+% * *derivativeGasDensityWrtGasPressure*: Computes the derivative of the 
+%                                         gas density with respect to the 
+%                                         gas pressure Pg.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Material_H2 < handle    
@@ -104,7 +127,7 @@ classdef Material_H2 < handle
         end
 
         %------------------------------------------------------------------
-        % Compute compressibility coefficients
+        % Compute the compressibility coefficients
         function [cll, clg, cgl, cgg] = compressibilityCoeffs(this,Sl,pl,pg)
             % Get porous media parameters
             biot = this.porousMedia.biot;
@@ -127,7 +150,7 @@ classdef Material_H2 < handle
         end
 
         %------------------------------------------------------------------
-        % Compute compressibility coefficients
+        % Compute the compressibility coefficients
         function [ccc, ccg, cgc,cgg] = compressibilityCoeffsPgPc(this,Sl,pl,pg)
             % Get porous media parameters
             phi  = this.porousMedia.phi;

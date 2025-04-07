@@ -1,5 +1,32 @@
-%% RegularElement class
+%% DiscontinuityElement Class
+% This class represents a discontinuity element in a finite element mesh.
+% It provides methods to compute geometric and physical properties of the
+% discontinuity, such as its reference point, length, tangential and normal
+% vectors, and the associated Heaviside function. The class also supports
+% updating state variables for integration points.
+% 
+%% Methods
+% * *DiscontinuityElement*: Constructor to initialize the element with 
+%                           given nodes and material.
+% * *elementData*: Abstract method to compute element data such as 
+%                  stiffness matrix, damping matrix, and force vectors.
+% * *referencePoint*: Computes the reference point of the discontinuity.
+% * *ld*: Computes the length of the discontinuity.
+% * *tangentialVector*: Computes the tangential vector of the 
+%                       discontinuity.
+% * *normalVector*: Computes the normal vector of the discontinuity.
+% * *heaviside*: Computes the Heaviside function associated with the 
+%                discontinuity at a given point X.
+% * *updateStateVar*: Updates the state variables, stress vector, and 
+%                     strain vector for all integration points.
 %
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef DiscontinuityElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
@@ -28,6 +55,16 @@ classdef DiscontinuityElement < handle
     %% Abstract methods
     methods(Abstract)
         %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        %
+        % Output:
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
+        %
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     end
 

@@ -1,3 +1,8 @@
+%% print_header Function
+% This function displays the header containing the software name, version,
+% release date, and the associated institution and group. It also includes
+% the contact information of the main developer.
+
 fprintf('==================================================================\n');
 fprintf('                            PorousLab                             \n');
 fprintf('       FEM solver for multiphysics problems in porous media       \n\n');

@@ -1,14 +1,24 @@
-%% Material_Elastic class
+%% CapillaryPressureBrooksCorey Class
+% This class implements the Brooks-Corey capillary pressure model, which 
+% is used to compute the saturation degree and its derivative for a porous
+% medium. It inherits from the _CapillaryPressure_ base class.
 %
-% This class defines an linear elastic stress-strain constitutive law
+% 
+%% Methods
+% * *saturationDegree*: Computes the liquid phase saturation degree based 
+%                       on the capillary pressure and the properties of 
+%                       the porous medium. 
+% * *derivativeSaturationDegree*: Computes the derivative of the liquid 
+%                                 phase saturation degree with respect to 
+%                                 the capillary pressure.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef CapillaryPressureBrooksCorey < CapillaryPressure  
     %% Constructor method
     methods

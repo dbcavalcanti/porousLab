@@ -1,4 +1,27 @@
-% Intersection of two segments
+%% intersectionSegment Function
+% This function determines whether two line segments intersect and, if so,
+% computes the intersection point and the parametric coordinates of the
+% intersection along each segment.
+
+%% Inputs
+% * *segment1*: Endpoints of the first segment, specified as 1x2 vectors.
+% * *segment2*: Endpoints of the second segment, specified as 1x2 vectors.
+% 
+%% Outputs
+% * *flagInt*: Flag indicating whether the segments intersect or not.
+% * *pint*: Intersection point as a 1x2 vector. Empty if no intersection.
+% * *t12*: Parametric coordinate of the intersection along the first 
+%          segment. Empty if no intersection.
+% * *t34*: Parametric coordinate of the intersection along the second 
+%          segment. Empty if no intersection.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function [flagInt,pint,t12,t34] = intersectionSegment(segment1,segment2)
 
     % Extract the points
@@ -149,7 +172,6 @@ function [flagInt,pint,t12,t34] = intersectionSegment(segment1,segment2)
 end
 
 % Sign of the oriented area
-
 function signArea = signArea2d(p1,p2,p3)
     det = area2d(p1,p2,p3);
     if abs(det) < 1e-8
@@ -164,7 +186,6 @@ function signArea = signArea2d(p1,p2,p3)
 end
 
 % Twice the area defined by three points p1, p2 and p3
-
 function area = area2d(p1, p2, p3)
     P2P1 = p2 - p1;
     P3P1 = p3 - p1;
@@ -172,7 +193,6 @@ function area = area2d(p1, p2, p3)
 end
 
 % Cross-product between two vectors
-
 function cprod = crossProd2D(v1, v2)
     cprod = v1(1)*v2(2) - v2(1)*v1(2);
 end

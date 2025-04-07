@@ -1,11 +1,40 @@
-%% Anl_NonlinearQuasiStatic class
+%% Anl_NonlinearQuasiStatic Class
+% This MATLAB class implements the solution of a nonlinear incremental-
+% iterative analysis. It is designed to handle nonlinear structural 
+% analysis using various solution methods, including load control, 
+% displacement control, and arc-length methods.
 %
-% This class implements the solution of a quasi-static nonlinear
-% incremental-iterative analysis.
-%
-% The code was adapted from the Anl_NonlinearQuasiStatic class from NUMA-TF 
+% The code was adapted from the Anl_Nonlinear class from NUMA-TF 
 % (https://gitlab.com/rafaelrangel/numa-tf, Accessed on February 1st, 2023)
+% In the reference code, the stiffness matrix and the internal force vector
+% are computed through different methods. Here both are computed using the
+% same function. Another change that was done was related to the input
+% variable to those methods, now the increment of the displacement vector
+% associated to the iteration is used as an input. To consider the 
+% possibility of material nonlinearity, it was added a method to update 
+% the state variables after the convergence of the iterative process. It 
+% was also added the displacement control method.
 %
+%% Methods
+% * *run*: Executes the nonlinear analysis process, handles iterative
+%          steps, convergence checks, and state variables updates. It also
+%          plots the load-displacement curve upon completion.
+% * *solveSystem*: Solves the partitioned linear system of equations for 
+%                  free degrees of freedom.
+% * *predictedIncrement*: Computes the predicted increment of load ratio 
+%                         for the first iteration.
+% * *correctedIncrement*: Computes the corrected increment of load ratio 
+%                         for subsequent iterations.
+% * *setPlotDof*: Sets the node and degree of freedom to be plotted.
+% * *plotCurves*: Plots the load-displacement curve for the analysis.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef Anl_NonlinearQuasiStatic < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
@@ -36,6 +65,9 @@ classdef Anl_NonlinearQuasiStatic < Anl
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Executes the nonlinear analysis process, handles iterative
+        % steps, convergence checks, and state variables updates. It also
+        % plots the load-displacement curve upon completion.
         function run(this,mdl)
             % Initialize model object
             mdl.preComputations();
@@ -355,12 +387,14 @@ classdef Anl_NonlinearQuasiStatic < Anl
         end
 
         %------------------------------------------------------------------
+        % Sets the node and degree of freedom to be plotted
         function setPlotDof(this,nd,dof)
             this.plotNd  = nd;
             this.plotDof = dof;
         end
 
         %------------------------------------------------------------------
+        % Plots the load-displacement curve for the analysis
         function plotCurves(this)
             figure;
             hold on, box on, grid on, axis on;
