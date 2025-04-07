@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>PorousMedia Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="PorousMedia.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -151,6 +151,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         cohesion             = [];              <span class="comment">% Cohesion (Pa)</span>
         frictionAngle        = [];              <span class="comment">% Friction angle (rad)</span>
         dilationAngle        = [];              <span class="comment">% Dilation angle (rad)</span>
+        stressIntAlgorithm   = <span class="string">'implicit'</span>;      <span class="comment">% Stress integration algorithm</span>
+        MCmatch              = <span class="string">'planestrain'</span>;   <span class="comment">% How the DP surfaces match the MC ones</span>
+        friction             = [];              <span class="comment">% Friction coefficient</span>
+        asympt               = [];              <span class="comment">% Asymptotic model</span>
+        eref                 = [];              <span class="comment">% Reference strain for asymptotic model</span>
+        sy                   = [];              <span class="comment">% Isotropic tensile limit (Pa)</span>
+        tauy                 = [];              <span class="comment">% Shear yield stress (Pa)</span>
         kappa                = [];              <span class="comment">% Ratio between the uniaxial compressive strength and the uniaxial tensile strength</span>
         DamageThreshold      = [];              <span class="comment">% Damage threshold</span>
         FractureEnergyMode1  = [];              <span class="comment">% Fracture energy associated with mode 1 (N/m)</span>
@@ -334,6 +341,13 @@ classdef PorousMedia < handle
         cohesion             = [];              % Cohesion (Pa)
         frictionAngle        = [];              % Friction angle (rad)
         dilationAngle        = [];              % Dilation angle (rad)
+        stressIntAlgorithm   = 'implicit';      % Stress integration algorithm
+        MCmatch              = 'planestrain';   % How the DP surfaces match the MC ones
+        friction             = [];              % Friction coefficient
+        asympt               = [];              % Asymptotic model
+        eref                 = [];              % Reference strain for asymptotic model
+        sy                   = [];              % Isotropic tensile limit (Pa)
+        tauy                 = [];              % Shear yield stress (Pa)
         kappa                = [];              % Ratio between the uniaxial compressive strength and the uniaxial tensile strength
         DamageThreshold      = [];              % Damage threshold
         FractureEnergyMode1  = [];              % Fracture energy associated with mode 1 (N/m)

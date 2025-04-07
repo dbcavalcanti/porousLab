@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>Result Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="Result.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -139,14 +139,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         faces           = [];           <span class="comment">% Faces definitions</span>
         vertexData      = [];           <span class="comment">% Values associated to the vertices</span>
         dataLabel       = <span class="string">''</span>;           <span class="comment">% Label of the result being plotted</span>
-
-        <span class="comment">% Patch properties</span>
-        faceColor       = <span class="string">'interp'</span>;     <span class="comment">% Face color scheme for plotting</span>
-        markerType      = <span class="string">'None'</span>;          <span class="comment">% Type of marker</span>
-        markerFaceColor = <span class="string">'k'</span>;          <span class="comment">% Color of the face of the marker</span>
-        edgesThickness  = 0.7;          <span class="comment">% Thickness of the lines</span>
-        <span class="comment">% colormapType    = 'jet(13)';        % Type of colormap scheme</span>
-        colormapType    = <span class="string">'jet'</span>;        <span class="comment">% Type of colormap scheme</span>
     <span class="keyword">end</span>
 </pre>
 <h2 id="7">Constructor method</h2>
@@ -235,14 +227,6 @@ classdef Result < handle
         faces           = [];           % Faces definitions
         vertexData      = [];           % Values associated to the vertices
         dataLabel       = '';           % Label of the result being plotted
-
-        % Patch properties
-        faceColor       = 'interp';     % Face color scheme for plotting
-        markerType      = 'None';          % Type of marker 
-        markerFaceColor = 'k';          % Color of the face of the marker
-        edgesThickness  = 0.7;          % Thickness of the lines
-        % colormapType    = 'jet(13)';        % Type of colormap scheme
-        colormapType    = 'jet';        % Type of colormap scheme
     end
 
     %% Constructor method

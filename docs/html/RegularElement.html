@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>RegularElement Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="RegularElement.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -277,33 +277,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 this.result.setVertices(Nodes);
             <span class="keyword">end</span>
         <span class="keyword">end</span>
-
-        <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update result's object vertices property.</span>
-        <span class="comment">% If the 'Undeformed' configuration is selected, nothing needs to</span>
-        <span class="comment">% be done.</span>
-        <span class="keyword">function</span> updateResultFaces(this,faces)
-            this.result.setFaces(faces);
-        <span class="keyword">end</span>
-
-        <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update result's object vertices data property.</span>
-        <span class="keyword">function</span> updateResultVertexData(this,type)
-            this.result.setDataLabel(type);
-            <span class="keyword">switch</span> type
-                <span class="keyword">case</span> <span class="string">'Ux'</span>
-                    ndResults = this.getNodalDisplacementField(1);
-                <span class="keyword">case</span> <span class="string">'Uy'</span>
-                    ndResults = this.getNodalDisplacementField(2);
-                <span class="keyword">case</span> <span class="string">'Sxx'</span>
-                    ndResults = this.getNodalStressField(1);
-                <span class="keyword">case</span> <span class="string">'Syy'</span>
-                    ndResults = this.getNodalStressField(2);
-                <span class="keyword">case</span> <span class="string">'Sxy'</span>
-                    ndResults = this.getNodalStressField(3);
-            <span class="keyword">end</span>
-            this.result.setVertexData(ndResults);
-        <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre>
 <h2 id="9">Static methods</h2>
@@ -502,33 +475,6 @@ classdef RegularElement < handle
                 Nodes = this.getDeformedConfiguration();
                 this.result.setVertices(Nodes);
             end  
-        end
-
-        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to 
-        % be done.
-        function updateResultFaces(this,faces)
-            this.result.setFaces(faces);
-        end
-
-        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update result's object vertices data property.
-        function updateResultVertexData(this,type)
-            this.result.setDataLabel(type);
-            switch type
-                case 'Ux'
-                    ndResults = this.getNodalDisplacementField(1);
-                case 'Uy'
-                    ndResults = this.getNodalDisplacementField(2);
-                case 'Sxx'
-                    ndResults = this.getNodalStressField(1);
-                case 'Syy'
-                    ndResults = this.getNodalStressField(2);
-                case 'Sxy'
-                    ndResults = this.getNodalStressField(3);
-            end
-            this.result.setVertexData(ndResults);
         end
     end
 

@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>MechanicalElastoPlasticDruckerPrager Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="MechanicalElastoPlasticDruckerPrager.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -135,16 +135,29 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = MechanicalElastoPlasticDruckerPrager()
             this = this@MechanicalElastoPlastic();
-            this.nstVar = 5;   <span class="comment">% Hardening + Kinematic hardening</span>
+            this.nstVar = 0;   <span class="comment">% Hardening + Kinematic hardening</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre>
 <h2 id="6">Public methods</h2>
 <pre class="codeinput">    methods
-
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Compute the stress vector and the constitutive matrix</span>
         <span class="keyword">function</span> [stress,Dt] = eval(this,material,ip)
+            <span class="keyword">if</span> strcmp(material.stressIntAlgorithm,<span class="string">'implicit'</span>)
+                 [stress,Dt] = eval@MechanicalElastoPlastic(this,material,ip);
+            <span class="keyword">elseif</span> strcmp(material.stressIntAlgorithm,<span class="string">'alternative'</span>)
+                [stress,Dt] = this.alternativeStressIntegration(material,ip);
+            <span class="keyword">else</span>
+                disp(<span class="string">'Error: the given stress integration algorithm is not available'</span>);
+                disp(<span class="string">'Tags of the methods available: ''implicit'', ''alternative'''</span>);
+                error(<span class="string">'Error: stressIntAlgorithm is not available'</span>);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Compute the stress vector and the constitutive matrix</span>
+        <span class="keyword">function</span> [stress,Dt] = alternativeStressIntegration(this,material,ip)
 
             <span class="comment">% Constitutive matrix</span>
             De = this.elasticConstitutiveMatrix(material,ip);
@@ -152,17 +165,16 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             Dt = De;
 
             <span class="comment">% Trial stress vector</span>
-            stress = De * (ip.strain - ip.plasticstrain);
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
             <span class="comment">% Evaluate the yield condition</span>
             f = this.yieldCondition(material,ip,stress);
 
             <span class="comment">% Elastic step</span>
-            <span class="keyword">if</span> f &lt; 0.0, <span class="keyword">return</span>, <span class="keyword">end</span>
+            <span class="keyword">if</span> f &lt; this.returnYieldConditionTol, <span class="keyword">return</span>, <span class="keyword">end</span>
 
             <span class="comment">% Material parameters</span>
-            tanPhi = tan(material.frictionAngle);
-            tanPsi = tan(material.dilationAngle);
+            [eta, xi, etaB] = this.getMohrCoulombCorrespondence(material);
             coh    = material.cohesion;
             Id     = this.gradientI1(stress);
 
@@ -172,29 +184,29 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
             <span class="comment">% Stress invariants</span>
             p = this.hydrostaticStress(stress);
-            q = this.vonMisesStress(stress);
+            J2 = this.stressInvariantJ2(stress);
 
             <span class="comment">% Deviatoric stresses</span>
             s = this.deviatoricStress(stress);
 
             <span class="comment">% Plastic multiplier</span>
-            lambda = (q + p * tanPhi - coh) / (3.0 * G + K * tanPhi * tanPsi);
+            lambda = f / (G + K * eta * etaB);
 
-            <span class="comment">% Stress update</span>
-            factor = 1.0 - 3.0 * G * lambda / q;
-            <span class="keyword">if</span> factor &gt;= 0.0
+            <span class="comment">% Stress update to the smooth part of the cone</span>
+            factor = 1.0 - G * lambda / sqrt(J2);
+            <span class="keyword">if</span> J2 &gt; 0.0
                 s = factor * s;
-                p = p - lambda * K * tanPsi;
+                p = p - lambda * etaB * K;
                 stress = s + p * Id;
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
                 dn = this.flowVectorGradient(material,ip,stress);
-                Psi = inv(Ce + lambda * dn);
-                Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
+                Psi = this.pseudoInv(Ce + lambda * dn);
+                Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
             <span class="keyword">else</span>
                 <span class="comment">% Return to the apex of the surface</span>
-                stress = (coh / tanPhi) * Id;
-                Dt = 1.0e-8*eye(4,4);
+                stress = (xi * coh / eta) * Id;
+                Dt = zeros(4,4);
             <span class="keyword">end</span>
 
             <span class="comment">% Update the plastic strain</span>
@@ -202,30 +214,58 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="keyword">function</span> [eta, xi, etab] = getMohrCoulombCorrespondence(~,material)
+            <span class="comment">% Mohr-Coulomb parameters</span>
+            phi = material.frictionAngle;
+            psi = material.dilationAngle;
+            <span class="keyword">if</span> strcmp(material.MCmatch,<span class="string">'inner'</span>)
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 + sin(psi))));
+            <span class="keyword">elseif</span>  strcmp(material.MCmatch,<span class="string">'outer'</span>)
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 - sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 - sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 - sin(psi))));
+            <span class="keyword">elseif</span> strcmp(material.MCmatch,<span class="string">'planestrain'</span>)
+                xi   = 3.0 / (sqrt(9.0 + 12.0*tan(phi)*tan(phi)));
+                eta  = 3.0 * tan(phi) / (sqrt(9.0 + 12.0*tan(phi)*tan(phi)));
+                etab = 3.0 * tan(psi) / (sqrt(9.0 + 12.0*tan(psi)*tan(psi)));
+            <span class="keyword">else</span>
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 + sin(psi))));
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Yield function definition</span>
         <span class="keyword">function</span> f = yieldCondition(this,material,~,stress)
             <span class="comment">% Material parameters</span>
-            coh = material.cohesion;
-            phi = material.frictionAngle;
+            [eta, xi] = this.getMohrCoulombCorrespondence(material);
             <span class="comment">% Stress invariants</span>
-            I1 = this.stressInvariantI1(stress);
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
+            p  = this.hydrostaticStress(stress);
+            J2 = this.stressInvariantJ2(stress);
             <span class="comment">% Yield surface</span>
-            f  = tan(phi) * I1 / 3.0 + sqrt(3.0 * J2) - coh;
+            f = sqrt(J2) + eta * p - xi * material.cohesion;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Gradient of the yield function wrt to the stress vector</span>
         <span class="keyword">function</span> df = yieldStressGradient(this,material,ip,stress)
             <span class="comment">% Material parameters</span>
-            phi = material.frictionAngle;
+            eta = this.getMohrCoulombCorrespondence(material);
+            <span class="comment">% Deviatoric stress invariant</span>
+            J2 = this.stressInvariantJ2(stress);
             <span class="comment">% Stress invariants gradients</span>
             dI1 = this.gradientI1(stress);
             dJ2 = this.gradientJ2(stress);
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
             <span class="comment">% Derivatives of the yield surface wrt to the invariants</span>
-            dfdI1 = tan(phi) / 3.0;
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
+            dfdI1 = eta / 3.0;
+            <span class="keyword">if</span> J2 &gt; 0.0
+                dfdJ2 = 1.0 /(2.0 * sqrt(J2));
+            <span class="keyword">else</span>
+                dfdJ2 = 0.0;
+            <span class="keyword">end</span>
             <span class="comment">% Yield surface gradient</span>
             df = dfdI1 * dI1 + dfdJ2 * dJ2;
             <span class="keyword">if</span> strcmp(ip.anm,<span class="string">'PlaneStress'</span>)
@@ -237,15 +277,19 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">% Flow vector</span>
         <span class="keyword">function</span> n = flowVector(this,material,ip,stress)
             <span class="comment">% Material parameters</span>
-            psi = material.dilationAngle;
+            [~,~,etaB] = this.getMohrCoulombCorrespondence(material);
             <span class="comment">% Deviatoric stress invariant</span>
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
+            J2 = this.stressInvariantJ2(stress);
             <span class="comment">% Stress invariants gradients</span>
             dI1 = this.gradientI1(stress);
             dJ2 = this.gradientJ2(stress);
             <span class="comment">% Derivatives of the yield surface wrt to the invariants</span>
-            dfdI1 = tan(psi) / 3.0;
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
+            dfdI1 = etaB / 3.0;
+            <span class="keyword">if</span> J2 &gt; 0.0
+                dfdJ2 = 1.0 /(2.0 * sqrt(J2));
+            <span class="keyword">else</span>
+                dfdJ2 = 0.0;
+            <span class="keyword">end</span>
             <span class="comment">% Yield surface gradient</span>
             n = dfdI1 * dI1 + dfdJ2 * dJ2;
             <span class="keyword">if</span> strcmp(ip.anm,<span class="string">'PlaneStress'</span>)
@@ -257,12 +301,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">% Flow vector gradient</span>
         <span class="keyword">function</span> dn = flowVectorGradient(this,~,ip,stress)
             <span class="comment">% Deviatoric stress invariant</span>
-            J2   = max(this.stressInvariantJ2(stress),1.0e-8);
+            J2   = this.stressInvariantJ2(stress);
             dJ2  = this.gradientJ2(stress);
             d2J2 = this.hessianJ2();
             <span class="comment">% Derivatives of the yield surface wrt to the invariants</span>
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
-            d2fdJ2 = -0.25 * sqrt(3.0 / J2 / J2 / J2);
+            <span class="keyword">if</span> J2 &gt; 0.0
+                dfdJ2 = 0.5 * sqrt(1.0 / J2);
+                d2fdJ2 = -0.25 * sqrt(1.0 / J2 / J2 / J2);
+            <span class="keyword">else</span>
+                dfdJ2 = 0.0;
+                d2fdJ2 = 0.0;
+            <span class="keyword">end</span>
             <span class="comment">% Yield surface gradient</span>
             dn = d2fdJ2 * (dJ2 * dJ2') + dfdJ2 * d2J2;
             <span class="keyword">if</span> strcmp(ip.anm,<span class="string">'PlaneStress'</span>)
@@ -270,6 +319,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 dn(:,3) = 0.0;
                 dn(3,3) = 1.0;
             <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="keyword">function</span> Ai = pseudoInv(~,A)
+            <span class="comment">% Assume A is your input matrix</span>
+            [U, S, V] = svd(A);  <span class="comment">% Compute the SVD of A</span>
+
+            <span class="comment">% Invert the non-zero singular values in S</span>
+            S_inv = zeros(size(S'));  <span class="comment">% Initialize a matrix for the pseudoinverse of S</span>
+            tolerance = 1e-10;  <span class="comment">% A tolerance for small singular values</span>
+            <span class="keyword">for</span> i = 1:min(size(S))
+                <span class="keyword">if</span> S(i, i) &gt; tolerance
+                    S_inv(i, i) = 1 / S(i, i);  <span class="comment">% Inverse of the singular value</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+
+            <span class="comment">% Compute the pseudoinverse of A</span>
+            Ai = V * S_inv * U';
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
@@ -331,16 +398,29 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         function this = MechanicalElastoPlasticDruckerPrager()
             this = this@MechanicalElastoPlastic();
-            this.nstVar = 5;   % Hardening + Kinematic hardening
+            this.nstVar = 0;   % Hardening + Kinematic hardening
         end
     end
 
     %% Public methods
     methods
-
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Compute the stress vector and the constitutive matrix
         function [stress,Dt] = eval(this,material,ip)
+            if strcmp(material.stressIntAlgorithm,'implicit')
+                 [stress,Dt] = eval@MechanicalElastoPlastic(this,material,ip);
+            elseif strcmp(material.stressIntAlgorithm,'alternative')
+                [stress,Dt] = this.alternativeStressIntegration(material,ip);
+            else
+                disp('Error: the given stress integration algorithm is not available');
+                disp('Tags of the methods available: ''implicit'', ''alternative''');
+                error('Error: stressIntAlgorithm is not available');
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Compute the stress vector and the constitutive matrix
+        function [stress,Dt] = alternativeStressIntegration(this,material,ip)
 
             % Constitutive matrix
             De = this.elasticConstitutiveMatrix(material,ip);
@@ -348,17 +428,16 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
             Dt = De;
 
             % Trial stress vector
-            stress = De * (ip.strain - ip.plasticstrain);
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
             % Evaluate the yield condition
             f = this.yieldCondition(material,ip,stress);
 
             % Elastic step
-            if f < 0.0, return, end
+            if f < this.returnYieldConditionTol, return, end
 
             % Material parameters
-            tanPhi = tan(material.frictionAngle);
-            tanPsi = tan(material.dilationAngle);
+            [eta, xi, etaB] = this.getMohrCoulombCorrespondence(material);
             coh    = material.cohesion;
             Id     = this.gradientI1(stress);
 
@@ -368,29 +447,29 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
             % Stress invariants
             p = this.hydrostaticStress(stress);
-            q = this.vonMisesStress(stress);
+            J2 = this.stressInvariantJ2(stress);
 
             % Deviatoric stresses
             s = this.deviatoricStress(stress);
 
             % Plastic multiplier
-            lambda = (q + p * tanPhi - coh) / (3.0 * G + K * tanPhi * tanPsi);
+            lambda = f / (G + K * eta * etaB);
 
-            % Stress update
-            factor = 1.0 - 3.0 * G * lambda / q;
-            if factor >= 0.0
+            % Stress update to the smooth part of the cone 
+            factor = 1.0 - G * lambda / sqrt(J2);
+            if J2 > 0.0    
                 s = factor * s;
-                p = p - lambda * K * tanPsi;
+                p = p - lambda * etaB * K;
                 stress = s + p * Id;
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
                 dn = this.flowVectorGradient(material,ip,stress);
-                Psi = inv(Ce + lambda * dn);
-                Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
+                Psi = this.pseudoInv(Ce + lambda * dn);
+                Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
             else 
                 % Return to the apex of the surface
-                stress = (coh / tanPhi) * Id;
-                Dt = 1.0e-8*eye(4,4);
+                stress = (xi * coh / eta) * Id;
+                Dt = zeros(4,4);
             end
 
             % Update the plastic strain
@@ -398,30 +477,58 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        function [eta, xi, etab] = getMohrCoulombCorrespondence(~,material)
+            % Mohr-Coulomb parameters
+            phi = material.frictionAngle;
+            psi = material.dilationAngle;
+            if strcmp(material.MCmatch,'inner')
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 + sin(psi))));
+            elseif  strcmp(material.MCmatch,'outer')
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 - sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 - sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 - sin(psi))));
+            elseif strcmp(material.MCmatch,'planestrain')
+                xi   = 3.0 / (sqrt(9.0 + 12.0*tan(phi)*tan(phi)));
+                eta  = 3.0 * tan(phi) / (sqrt(9.0 + 12.0*tan(phi)*tan(phi)));
+                etab = 3.0 * tan(psi) / (sqrt(9.0 + 12.0*tan(psi)*tan(psi)));
+            else
+                xi   = 6.0 * cos(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                eta  = 6.0 * sin(phi) / (sqrt(3.0 * (3.0 + sin(phi))));
+                etab = 6.0 * sin(psi) / (sqrt(3.0 * (3.0 + sin(psi))));
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Yield function definition
         function f = yieldCondition(this,material,~,stress)
             % Material parameters
-            coh = material.cohesion;
-            phi = material.frictionAngle;
+            [eta, xi] = this.getMohrCoulombCorrespondence(material);
             % Stress invariants
-            I1 = this.stressInvariantI1(stress);
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
+            p  = this.hydrostaticStress(stress);
+            J2 = this.stressInvariantJ2(stress);
             % Yield surface
-            f  = tan(phi) * I1 / 3.0 + sqrt(3.0 * J2) - coh;
+            f = sqrt(J2) + eta * p - xi * material.cohesion;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Gradient of the yield function wrt to the stress vector
         function df = yieldStressGradient(this,material,ip,stress)
             % Material parameters
-            phi = material.frictionAngle;
+            eta = this.getMohrCoulombCorrespondence(material);
+            % Deviatoric stress invariant
+            J2 = this.stressInvariantJ2(stress);
             % Stress invariants gradients
             dI1 = this.gradientI1(stress);
             dJ2 = this.gradientJ2(stress);
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
             % Derivatives of the yield surface wrt to the invariants
-            dfdI1 = tan(phi) / 3.0;
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
+            dfdI1 = eta / 3.0;
+            if J2 > 0.0
+                dfdJ2 = 1.0 /(2.0 * sqrt(J2));
+            else
+                dfdJ2 = 0.0;
+            end
             % Yield surface gradient
             df = dfdI1 * dI1 + dfdJ2 * dJ2;
             if strcmp(ip.anm,'PlaneStress')
@@ -433,15 +540,19 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         % Flow vector
         function n = flowVector(this,material,ip,stress)
             % Material parameters
-            psi = material.dilationAngle;
+            [~,~,etaB] = this.getMohrCoulombCorrespondence(material);
             % Deviatoric stress invariant
-            J2 = max(this.stressInvariantJ2(stress),1.0e-8);
+            J2 = this.stressInvariantJ2(stress);
             % Stress invariants gradients
             dI1 = this.gradientI1(stress);
             dJ2 = this.gradientJ2(stress);
             % Derivatives of the yield surface wrt to the invariants
-            dfdI1 = tan(psi) / 3.0;
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
+            dfdI1 = etaB / 3.0;
+            if J2 > 0.0
+                dfdJ2 = 1.0 /(2.0 * sqrt(J2));
+            else
+                dfdJ2 = 0.0;
+            end
             % Yield surface gradient
             n = dfdI1 * dI1 + dfdJ2 * dJ2;
             if strcmp(ip.anm,'PlaneStress')
@@ -453,12 +564,17 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         % Flow vector gradient
         function dn = flowVectorGradient(this,~,ip,stress)
             % Deviatoric stress invariant 
-            J2   = max(this.stressInvariantJ2(stress),1.0e-8);
+            J2   = this.stressInvariantJ2(stress);
             dJ2  = this.gradientJ2(stress);
             d2J2 = this.hessianJ2();
             % Derivatives of the yield surface wrt to the invariants
-            dfdJ2 = 0.5 * sqrt(3.0 / J2);
-            d2fdJ2 = -0.25 * sqrt(3.0 / J2 / J2 / J2);
+            if J2 > 0.0
+                dfdJ2 = 0.5 * sqrt(1.0 / J2);
+                d2fdJ2 = -0.25 * sqrt(1.0 / J2 / J2 / J2);
+            else
+                dfdJ2 = 0.0;
+                d2fdJ2 = 0.0;
+            end
             % Yield surface gradient
             dn = d2fdJ2 * (dJ2 * dJ2') + dfdJ2 * d2J2;
             if strcmp(ip.anm,'PlaneStress')
@@ -466,6 +582,24 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
                 dn(:,3) = 0.0;
                 dn(3,3) = 1.0;
             end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        function Ai = pseudoInv(~,A)
+            % Assume A is your input matrix
+            [U, S, V] = svd(A);  % Compute the SVD of A
+            
+            % Invert the non-zero singular values in S
+            S_inv = zeros(size(S'));  % Initialize a matrix for the pseudoinverse of S
+            tolerance = 1e-10;  % A tolerance for small singular values
+            for i = 1:min(size(S))
+                if S(i, i) > tolerance
+                    S_inv(i, i) = 1 / S(i, i);  % Inverse of the singular value
+                end
+            end
+            
+            % Compute the pseudoinverse of A
+            Ai = V * S_inv * U';
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH

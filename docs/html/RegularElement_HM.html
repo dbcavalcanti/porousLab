@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>RegularElement_HM class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="RegularElement_HM.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -131,15 +131,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <p>Version 1.00.</p>
 <h2 id="4">Class definition</h2>
 <pre class="codeinput">
-<span class="keyword">classdef</span> RegularElement_HM &lt; RegularElement
+<span class="keyword">classdef</span> RegularElement_HM &lt; RegularElement_M
 </pre>
 <h2 id="5">Public attributes</h2>
 <pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
-        glu        = [];            <span class="comment">% Displacement dofs</span>
         glp        = [];            <span class="comment">% Liquid phase pressure dofs</span>
-        nglu       = 0;             <span class="comment">% Number of regular u-dof</span>
         nglp       = 0;             <span class="comment">% Number of regular p-dof</span>
-        anm        = <span class="string">'PlaneStrain'</span>; <span class="comment">% Analysis model</span>
     <span class="keyword">end</span>
 </pre>
 <h2 id="6">Constructor method</h2>
@@ -148,24 +145,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">function</span> this = RegularElement_HM(type, node, elem, t, <span class="keyword">...</span>
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, <span class="keyword">...</span>
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(type, node, elem, t, <span class="keyword">...</span>
-                mat, intOrder, massLumping, lumpStrategy, <span class="keyword">...</span>
-                isAxisSymmetric);
-            this.glu      = glu;
-            this.glp      = glp;
-            this.gle      = [glu, glp];
-            <span class="keyword">if</span> (length(this.glp) ~= length(this.glp))
-                error(<span class="string">'Wrong number of pressure dofs'</span>);
-            <span class="keyword">end</span>
-            this.nglu     = length(this.glu);
-            this.nglp     = length(this.glp);
-            this.ngle     = length(this.gle);
-            <span class="keyword">if</span> isPlaneStress
-                this.anm = <span class="string">'PlaneStress'</span>;
-            <span class="keyword">end</span>
-            <span class="keyword">if</span> isAxisSymmetric
-                this.anm = <span class="string">'AxisSymmetrical'</span>;
-            <span class="keyword">end</span>
+            this = this@RegularElement_M(type, node, elem, t, <span class="keyword">...</span>
+                mat, intOrder, glu, massLumping, lumpStrategy, <span class="keyword">...</span>
+                isAxisSymmetric,isPlaneStress);
+            this.glp  = glp;
+            this.gle  = [glu, glp];
+            this.nglp = length(this.glp);
+            this.ngle = length(this.gle);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre>
@@ -439,14 +425,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 % 
 %% Class definition
-classdef RegularElement_HM < RegularElement    
+classdef RegularElement_HM < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glu        = [];            % Displacement dofs
         glp        = [];            % Liquid phase pressure dofs
-        nglu       = 0;             % Number of regular u-dof
         nglp       = 0;             % Number of regular p-dof
-        anm        = 'PlaneStrain'; % Analysis model
     end
     %% Constructor method
     methods
@@ -454,24 +437,13 @@ classdef RegularElement_HM < RegularElement
         function this = RegularElement_HM(type, node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(type, node, elem, t, ...
-                mat, intOrder, massLumping, lumpStrategy, ...
-                isAxisSymmetric);
-            this.glu      = glu;
-            this.glp      = glp;
-            this.gle      = [glu, glp];
-            if (length(this.glp) ~= length(this.glp))
-                error('Wrong number of pressure dofs');
-            end
-            this.nglu     = length(this.glu);
-            this.nglp     = length(this.glp);
-            this.ngle     = length(this.gle);
-            if isPlaneStress
-                this.anm = 'PlaneStress';
-            end
-            if isAxisSymmetric
-                this.anm = 'AxisSymmetrical';
-            end
+            this = this@RegularElement_M(type, node, elem, t, ...
+                mat, intOrder, glu, massLumping, lumpStrategy, ...
+                isAxisSymmetric,isPlaneStress);
+            this.glp  = glp;
+            this.gle  = [glu, glp];
+            this.nglp = length(this.glp);
+            this.ngle = length(this.gle);
         end
     end
     

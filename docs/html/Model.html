@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>Model Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-06">
+<meta name="DC.date" content="2025-04-07">
 <meta name="DC.source" content="Model.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -556,82 +556,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update the result nodes data of each element</span>
-        <span class="keyword">function</span> updateResultVertexData(this,type)
-            <span class="keyword">for</span> el = 1:this.nelem
-                <span class="comment">% Update the nodal displacement vector associated to the</span>
-                <span class="comment">% element. This displacement can contain the enhancement</span>
-                <span class="comment">% degrees of freedom.</span>
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                <span class="keyword">for</span> i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    <span class="keyword">if</span> strcmp(type,<span class="string">'Model'</span>)
-                        vertexData(i) = this.matID(el);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Pressure'</span>)
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Ux'</span>)
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Uy'</span>)
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'E1'</span>)
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'PEMAG'</span>)
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Sx'</span>)
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Sy'</span>)
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Sxy'</span>)
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'S1'</span>)
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'S2'</span>)
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'Sr'</span>)
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'LiquidPressure'</span>)
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'CapillaryPressure'</span>)
-                        p = this.element(el).type.capillaryPressureField(X);
-                        vertexData(i) = p;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'GasPressure'</span>)
-                        p = this.element(el).type.gasPressureField(X);
-                        vertexData(i) = p;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'LiquidSaturation'</span>)
-                        Sl = this.element(el).type.liquidSaturationField(X);
-                        vertexData(i) = Sl;
-                    <span class="keyword">elseif</span> strcmp(type,<span class="string">'GasSaturation'</span>)
-                        Sg = this.element(el).type.gasSaturationField(X);
-                        vertexData(i) = Sg;
-                    <span class="keyword">end</span>
-                <span class="keyword">end</span>
-                this.element(el).type.result.setVertexData(vertexData);
-            <span class="keyword">end</span>
-        <span class="keyword">end</span>
-
-        <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Call the function to get characteristic length of the elements</span>
         <span class="keyword">function</span> Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             <span class="keyword">for</span> el = 1:this.nelem
-                <span class="comment">% Characteristic lenght (quadrilateral elements)</span>
                 Lce(el) = this.getElementCharacteristicLength(el);
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -923,14 +850,81 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
 
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Evaluate a field at in a point inside an element</span>
+        <span class="comment">% Assumes that the point is in the element domain</span>
+        <span class="keyword">function</span> fieldValue = evaluateField(this, field, el, X)
+            <span class="keyword">if</span> strcmp(field,<span class="string">'Model'</span>)
+                fieldValue = this.matID(el);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Pressure'</span>)
+                fieldValue = this.element(el).type.pressureField(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Ux'</span>)
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Uy'</span>)
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(2);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'E1'</span>)
+                s = this.element(el).type.strainField(X);
+                sp = this.element(el).type.principalStrain(s);
+                fieldValue = sp(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'PEMAG'</span>)
+                fieldValue = this.element(el).type.plasticstrainMagnitude(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Sx'</span>)
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Sy'</span>)
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(2);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Sxy'</span>)
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(4);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'S1'</span>)
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'S2'</span>)
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(2);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Sr'</span>)
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.stressCylindrical(s,X);
+                fieldValue = sp(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'LiquidPressure'</span>)
+                fieldValue = this.element(el).type.pressureField(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'CapillaryPressure'</span>)
+                fieldValue = this.element(el).type.capillaryPressureField(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'GasPressure'</span>)
+                fieldValue = this.element(el).type.gasPressureField(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'LiquidSaturation'</span>)
+                fieldValue = this.element(el).type.liquidSaturationField(X);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'GasSaturation'</span>)
+                fieldValue = this.element(el).type.gasSaturationField(X);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Update the result nodes data of each element</span>
+        <span class="keyword">function</span> updateResultVertexData(this,field)
+            <span class="keyword">for</span> el = 1:this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle);
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                <span class="keyword">for</span> i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    vertexData(i) = this.evaluateField(field, el, X);
+                <span class="keyword">end</span>
+                this.element(el).type.result.setVertexData(vertexData);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Plot given field over the mesh</span>
-        <span class="keyword">function</span> plotField(this,fieldPlot,range)
+        <span class="keyword">function</span> plotField(this,field,range)
             <span class="keyword">if</span> nargin &lt; 3, range = []; <span class="keyword">end</span>
 
-            this.updateResultVertexData(fieldPlot)
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            this.updateResultVertexData(field)
+            FEMPlot(this).plotMesh();
             <span class="keyword">if</span> isempty(range)
                 colorbar;
             <span class="keyword">else</span>
@@ -939,6 +933,16 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 set(c,<span class="string">'Limits'</span>,range)
             <span class="keyword">end</span>
 
+        <span class="keyword">end</span>
+
+        <span class="comment">% -----------------------------------------------------------------</span>
+        <span class="comment">% Plot given field along a given segment</span>
+        <span class="keyword">function</span> plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot)
+            <span class="keyword">if</span> nargin &lt; 5
+                npts     = 100;
+                axisPlot = <span class="string">'x'</span>;
+            <span class="keyword">end</span>
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
@@ -1386,82 +1390,9 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'LiquidPressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'CapillaryPressure')
-                        p = this.element(el).type.capillaryPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'GasPressure')
-                        p = this.element(el).type.gasPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'LiquidSaturation')
-                        Sl = this.element(el).type.liquidSaturationField(X);
-                        vertexData(i) = Sl;
-                    elseif strcmp(type,'GasSaturation')
-                        Sg = this.element(el).type.gasSaturationField(X);
-                        vertexData(i) = Sg;
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
-        end
-
-        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Call the function to get characteristic length of the elements
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
-                % Characteristic lenght (quadrilateral elements)
                 Lce(el) = this.getElementCharacteristicLength(el);
             end
         end
@@ -1753,14 +1684,81 @@ classdef Model < handle
             end
         end
 
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Evaluate a field at in a point inside an element
+        % Assumes that the point is in the element domain
+        function fieldValue = evaluateField(this, field, el, X)
+            if strcmp(field,'Model')
+                fieldValue = this.matID(el);
+            elseif strcmp(field,'Pressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'Ux')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(1);
+            elseif strcmp(field,'Uy')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(2);
+            elseif strcmp(field,'E1')
+                s = this.element(el).type.strainField(X);
+                sp = this.element(el).type.principalStrain(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'PEMAG')
+                fieldValue = this.element(el).type.plasticstrainMagnitude(X);
+            elseif strcmp(field,'Sx')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(1);
+            elseif strcmp(field,'Sy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(2);
+            elseif strcmp(field,'Sxy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(4);
+            elseif strcmp(field,'S1')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'S2')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(2);
+            elseif strcmp(field,'Sr')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.stressCylindrical(s,X);
+                fieldValue = sp(1);
+            elseif strcmp(field,'LiquidPressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'CapillaryPressure')
+                fieldValue = this.element(el).type.capillaryPressureField(X);
+            elseif strcmp(field,'GasPressure')
+                fieldValue = this.element(el).type.gasPressureField(X);
+            elseif strcmp(field,'LiquidSaturation')
+                fieldValue = this.element(el).type.liquidSaturationField(X);
+            elseif strcmp(field,'GasSaturation')
+                fieldValue = this.element(el).type.gasSaturationField(X);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Update the result nodes data of each element
+        function updateResultVertexData(this,field)
+            for el = 1:this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle); 
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                for i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    vertexData(i) = this.evaluateField(field, el, X);
+                end
+                this.element(el).type.result.setVertexData(vertexData);
+            end
+        end
+
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Plot given field over the mesh
-        function plotField(this,fieldPlot,range)
+        function plotField(this,field,range)
             if nargin < 3, range = []; end
 
-            this.updateResultVertexData(fieldPlot)
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            this.updateResultVertexData(field)
+            FEMPlot(this).plotMesh();
             if isempty(range)
                 colorbar;
             else
@@ -1769,6 +1767,16 @@ classdef Model < handle
                 set(c,'Limits',range)
             end
 
+        end
+
+        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+        % Plot given field along a given segment
+        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot)
+            if nargin < 5
+                npts     = 100;
+                axisPlot = 'x';
+            end
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
         end
 
     end
