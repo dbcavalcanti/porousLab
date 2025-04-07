@@ -1,12 +1,28 @@
-%% FEMDraw class
+%% FEMPlot Class
+% This class provides methods to visualize graphical results from Finite 
+% Element Method (FEM) analysis. It includes functionalities to plot 
+% meshes, evaluate fields along segments, and compute bounding boxes for 
+% models.
 %
-% This class implements methods to plot graphical results
-% from the FEM analysis
+%% Methods
+% * *getBoundingBox*: Computes the bounding box of the model with a 
+%                     tolerance.
+% * *plotMesh*: Plots the continuum elements of the mesh. It also
+%               configures the figure wth default font, size and colormap.
+% * *plotFieldAlongSegment*: Plots the specified field along a segment
+%                            defined by two points.
+% *getElementsPatches*: It combines faces, vertices and vertex data from
+%                       all the elements in the model, returning combined
+%                       faces connectivity, vertices coordinates and
+%                       combined vertex data.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% Class definition
+%% Version History
+% Version 1.00.
+%
+%% Class Definition
 classdef FEMPlot < handle
     %% Public properties
     properties
