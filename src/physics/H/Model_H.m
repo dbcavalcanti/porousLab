@@ -27,7 +27,7 @@
 % * *setPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
 %                                   conditions for liquid-phase pore 
 %                                   pressure at a specific border.
-% * *setInitialPressureAtDomain: Sets the initial pressure value for the 
+% * *setInitialPressureAtDomain*: Sets the initial pressure value for the 
 %                                entire domain.
 % * *setInitialPressureAtNode*: Sets the initial pressure value at a 
 %                               specific node.
