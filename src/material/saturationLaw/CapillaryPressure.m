@@ -7,7 +7,6 @@
 %% Methods
 % * *saturationDegree*: Computes the liquid saturation degree based on the 
 %                       capillary pressure and porous media properties.
-% 
 % * *derivativeSaturationDegree*: Computes the derivative of the liquid 
 %                                 saturation degree with respect to the 
 %                                 capillary pressure.
