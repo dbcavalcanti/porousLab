@@ -109,6 +109,10 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <li>
 <b>eval</b>: Computes the stress vector and the constitutive matrix for the material at a given integration point. Handles both elastic and plastic steps.</li>
 <li>
+<b>alternativeStressIntegration</b>: Implements an alternative stress integration algorithm for the material.</li>
+<li>
+<b>getMohrCoulombCorrespondence</b>: Computes the Mohr-Coulomb correspondence parameters for the material.</li>
+<li>
 <b>yieldCondition</b>: Defines the yield function based on the Drucker- Prager criteria.</li>
 <li>
 <b>yieldStressGradient</b>: Computes the gradient of the yield function with respect to the stress vector.</li>
@@ -116,6 +120,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <b>flowVector</b>: Computes the flow vector for the plastic potential.</li>
 <li>
 <b>flowVectorGradient</b>: Computes the gradient of the flow vector with respect to the stress vector.</li>
+<li>
+<b>pseudoInv</b>: Computes the pseudoinverse of a given matrix using SVD.</li>
 <li>
 <b>hardening</b>: Returns the hardening value.</li>
 <li>
@@ -322,6 +328,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Computes the pseudoinverse of a given matrix using SVD</span>
         <span class="keyword">function</span> Ai = pseudoInv(~,A)
             <span class="comment">% Assume A is your input matrix</span>
             [U, S, V] = svd(A);  <span class="comment">% Compute the SVD of A</span>
@@ -340,7 +347,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Hardening law</span>
+        <span class="comment">% Returns the hardening value</span>
         <span class="keyword">function</span> h = hardening(~,~,~,~)
             h = 0.0;
         <span class="keyword">end</span>
@@ -374,6 +381,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % * *eval*: Computes the stress vector and the constitutive matrix for the 
 %           material at a given integration point. Handles both elastic 
 %           and plastic steps.
+% * *alternativeStressIntegration*: Implements an alternative stress 
+%                                   integration algorithm for the material.
+% * *getMohrCoulombCorrespondence*: Computes the Mohr-Coulomb 
+%                                   correspondence parameters for the 
+%                                   material.
 % * *yieldCondition*: Defines the yield function based on the Drucker-
 %                     Prager criteria.
 % * *yieldStressGradient*: Computes the gradient of the yield function 
@@ -381,6 +393,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % * *flowVector*: Computes the flow vector for the plastic potential.
 % * *flowVectorGradient*: Computes the gradient of the flow vector with 
 %                         respect to the stress vector.
+% * *pseudoInv*: Computes the pseudoinverse of a given matrix using SVD.
 % * *hardening*: Returns the hardening value.
 % * *hardeningStressGradient*: Returns the gradient of the hardening law 
 %                              with respect to the stress vector  
@@ -585,6 +598,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Computes the pseudoinverse of a given matrix using SVD
         function Ai = pseudoInv(~,A)
             % Assume A is your input matrix
             [U, S, V] = svd(A);  % Compute the SVD of A
@@ -603,7 +617,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Hardening law
+        % Returns the hardening value
         function h = hardening(~,~,~,~)
             h = 0.0;
         end

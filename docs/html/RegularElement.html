@@ -130,10 +130,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <li>
 <b>updateResultVertices</b>: Updates the result object's vertices property based on configuration.</li>
 <li>
-<b>updateResultFaces</b>: Updates the result object's faces property.</li>
-<li>
-<b>updateResultVertexData</b>: Updates the result object's vertex data property based on type.</li>
-<li>
 <b>sortCounterClockWise</b>: Static method to sort nodes in counterclockwise order.</li>
 </ul>
 </div>
@@ -253,6 +249,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">function</span> A = getDomainArea(this)
             A = this.calculateArea(this.node);
         <span class="keyword">end</span>
+
+        <span class="comment">% -----------------------------------------------------------------</span>
+        <span class="comment">% Calculate the area of the element given its vertices</span>
         <span class="keyword">function</span> A = calculateArea(~,node)
             <span class="comment">% Vertices of the coordinates</span>
             vx = node(:,1);
@@ -331,9 +330,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 %                    given its vertices.
 % * *updateResultVertices*: Updates the result object's vertices property 
 %                           based on configuration.
-% * *updateResultFaces*: Updates the result object's faces property.
-% * *updateResultVertexData*: Updates the result object's vertex data 
-%                             property based on type.
 % * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
 %
 %% Author
@@ -452,6 +448,9 @@ classdef RegularElement < handle
         function A = getDomainArea(this)
             A = this.calculateArea(this.node);
         end
+
+        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+        % Calculate the area of the element given its vertices
         function A = calculateArea(~,node)
             % Vertices of the coordinates
             vx = node(:,1); 

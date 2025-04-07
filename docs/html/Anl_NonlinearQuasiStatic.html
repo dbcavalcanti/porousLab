@@ -6,7 +6,7 @@
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
       -->
-<title>Anl_Nonlinear Class</title>
+<title>Anl_NonlinearQuasiStatic Class</title>
 <meta name="generator" content="MATLAB 24.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
 <meta name="DC.date" content="2025-04-07">
@@ -76,7 +76,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </head>
 <body>
 <div class="content">
-<h1>Anl_Nonlinear Class</h1>
+<h1>Anl_NonlinearQuasiStatic Class</h1>
 <!--introduction-->
 <p>This MATLAB class implements the solution of a nonlinear incremental- iterative analysis. It is designed to handle nonlinear structural analysis using various solution methods, including load control, displacement control, and arc-length methods.</p>
 <p>The code was adapted from the Anl_Nonlinear class from NUMA-TF (<a href="https://gitlab.com/rafaelrangel/numa-tf">https://gitlab.com/rafaelrangel/numa-tf</a>, Accessed on February 1st, 2023) In the reference code, the stiffness matrix and the internal force vector are computed through different methods. Here both are computed using the same function. Another change that was done was related to the input variable to those methods, now the increment of the displacement vector associated to the iteration is used as an input. To consider the possibility of material nonlinearity, it was added a method to update the state variables after the convergence of the iterative process. It was also added the displacement control method.</p>
@@ -130,7 +130,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <p>Version 1.00.</p>
 <h2 id="4">Class definition</h2>
 <pre class="codeinput">
-<span class="keyword">classdef</span> Anl_Nonlinear &lt; Anl
+<span class="keyword">classdef</span> Anl_NonlinearQuasiStatic &lt; Anl
 </pre>
 <h2 id="5">Public properties</h2>
 <pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
@@ -513,7 +513,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </div>
 <!--
 ##### SOURCE BEGIN #####
-%% Anl_Nonlinear Class
+%% Anl_NonlinearQuasiStatic Class
 % This MATLAB class implements the solution of a nonlinear incremental-
 % iterative analysis. It is designed to handle nonlinear structural 
 % analysis using various solution methods, including load control, 
@@ -550,7 +550,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 % 
 %% Class definition
-classdef Anl_Nonlinear < Anl
+classdef Anl_NonlinearQuasiStatic < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         method        = 'LoadControl';   % Flag for solution method

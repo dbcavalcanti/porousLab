@@ -1,16 +1,31 @@
-%% MechanicalNonlinearAsymptotic class
-%
+%% MechanicalNonlinearAsymptotic Class
+% This class implements a nonlinear asymptotic mechanical law for material
+% behavior. It extends the _MechanicalLinearElastic_ class and provides
+% methods to compute the stress vector, constitutive matrix, shear modulus,
+% and its gradient based on the material properties and strain invariants.
+% 
+% Reference:
 % Pasquali, Paulo Roberto Zanella.
 % "Análise limite de estruturas através de uma formulação em elasticidade
 % não-linear." (2008).
 %
+%% Methods
+% * *eval*: Computes the stress vector and the constitutive matrix for the 
+%           material based on the material properties and strain
+%           invariants.
+% * *getShearModulus*: Computes the shear modulus based on the material 
+%                      properties, volumetric strain, norm of the 
+%                      deviatoric strain, and bulk modulus.
+% * *getGradientShearModulus*: Computes the gradient of the shear modulus 
+%                              with respect to the strain.
+%
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalNonlinearAsymptotic < MechanicalLinearElastic  
     %% Constructor method
     methods
@@ -22,6 +37,7 @@ classdef MechanicalNonlinearAsymptotic < MechanicalLinearElastic
 
     %% Public methods
     methods
+        %------------------------------------------------------------------
         % Compute the stress vector and the constitutive matrix
         function [stress,De] = eval(this,material,ip)
 
@@ -54,6 +70,7 @@ classdef MechanicalNonlinearAsymptotic < MechanicalLinearElastic
             De = De + 2.0 * dmude * (Id * ed)';
         end
 
+        %------------------------------------------------------------------
         % Compute the shear modulus
         function mu = getShearModulus(~,material,ev,ned,K)
             if strcmp(material.asympt,'vonMises')
@@ -64,6 +81,7 @@ classdef MechanicalNonlinearAsymptotic < MechanicalLinearElastic
             mu = mu / (material.eref + ned);
         end
 
+        %------------------------------------------------------------------
         % Compute the gradient of the shear modulus
         function dmude = getGradientShearModulus(this,material,strain,ev,ned,K)
             if strcmp(material.asympt,'vonMises')

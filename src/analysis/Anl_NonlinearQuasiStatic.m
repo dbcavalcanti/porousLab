@@ -1,4 +1,4 @@
-%% Anl_Nonlinear Class
+%% Anl_NonlinearQuasiStatic Class
 % This MATLAB class implements the solution of a nonlinear incremental-
 % iterative analysis. It is designed to handle nonlinear structural 
 % analysis using various solution methods, including load control, 
@@ -35,7 +35,7 @@
 % Version 1.00.
 % 
 %% Class definition
-classdef Anl_Nonlinear < Anl
+classdef Anl_NonlinearQuasiStatic < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         method        = 'LoadControl';   % Flag for solution method

@@ -157,13 +157,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <li>
 <b>addNodalLoad</b>: Adds nodal loads to the reference load vector.</li>
 <li>
-<b>updateResultVertexData</b>: Updates result data for each element's vertices.</li>
-<li>
-<b>getElementsCharacteristicLength</b>: Computes characteristic lengths for all elements.</li>
+<b>getElementsCharacteristicLength</b>: Obtain the characteristic length of the finite element.</li>
 <li>
 <b>getElementCharacteristicLength</b>: Computes the characteristic length for a specific element.</li>
 <li>
-<b>getNodeCharacteristicLength</b>: Computes the mean characteristic length for nodes.</li>
+<b>getNodeCharacteristicLength</b>: Compute the mean characteristic length of the elements associated with each node.</li>
 <li>
 <b>initializeSparseMtrxAssemblageVariables</b>: Initializes variables for sparse matrix assembly.</li>
 <li>
@@ -189,7 +187,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <li>
 <b>printResults</b>: Prints nodal results.</li>
 <li>
+<b>evaluateField</b>: Evaluate a field at in a point inside an element. It assumes that the point is in the element domain.</li>
+<li>
+<b>updateResultVertexData</b>: Updates result data for each element's vertices.</li>
+<li>
 <b>plotField</b>: Plots a specified field over the mesh.</li>
+<li>
+<b>plotFieldAlongSegment</b>: Plot a given field along a given segment.</li>
 </ul>
 </div>
 <h2 id="2">Author</h2>
@@ -556,6 +560,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Obtain the characteristic length of the finite element</span>
         <span class="keyword">function</span> Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             <span class="keyword">for</span> el = 1:this.nelem
@@ -999,14 +1004,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % * *assembleDiscontinuitySegments*: Assembles discontinuity segments into 
 %                                    elements.
 % * *addNodalLoad*: Adds nodal loads to the reference load vector.
-% * *updateResultVertexData*: Updates result data for each element's 
-%                             vertices.
-% * *getElementsCharacteristicLength*: Computes characteristic lengths for 
-%                                      all elements.
+% * *getElementsCharacteristicLength*: Obtain the characteristic length of
+%                                      the finite element.
 % * *getElementCharacteristicLength*: Computes the characteristic length 
 %                                     for a specific element.
-% * *getNodeCharacteristicLength*: Computes the mean characteristic length 
-%                                  for nodes.
+% * *getNodeCharacteristicLength*: Compute the mean characteristic length
+%                                  of the elements associated with each
+%                                  node.
 % * *initializeSparseMtrxAssemblageVariables*: Initializes variables for 
 %                                              sparse matrix assembly.
 % * *globalMatrices*: Assembles global system matrices and vectors.
@@ -1024,7 +1028,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % * *getNumberOfDiscontinuities*: Returns the number of discontinuities.
 % * *useEnrichedFormulation*: Enables or disables enriched formulation.
 % * *printResults*: Prints nodal results.
+% * *evaluateField*: Evaluate a field at in a point inside an element. It
+%                    assumes that the point is in the element domain.
+% * *updateResultVertexData*: Updates result data for each element's 
+%                             vertices.
 % * *plotField*: Plots a specified field over the mesh.
+% * *plotFieldAlongSegment*: Plot a given field along a given segment.
 %
 %% Author
 % Danilo Cavalcanti
@@ -1390,6 +1399,7 @@ classdef Model < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Obtain the characteristic length of the finite element
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem

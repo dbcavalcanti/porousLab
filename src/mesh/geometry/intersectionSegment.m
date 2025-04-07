@@ -4,8 +4,8 @@
 % intersection along each segment.
 
 %% Inputs
-% * *p1, p2*: Endpoints of the first segment, specified as 1x2 vectors.
-% * *p3, p4*: Endpoints of the second segment, specified as 1x2 vectors.
+% * *segment1*: Endpoints of the first segment, specified as 1x2 vectors.
+% * *segment2*: Endpoints of the second segment, specified as 1x2 vectors.
 % 
 %% Outputs
 % * *flagInt*: Flag indicating whether the segments intersect or not.

@@ -204,7 +204,7 @@ classdef RegularElement_HM < RegularElement_M
 
         %------------------------------------------------------------------
         % Compute the lumped mass matrices
-        function S= lumpedCompressibilityMatrix(this, vol)
+        function S = lumpedCompressibilityMatrix(this, vol)
 
             % Get compressibility coefficients
             comp = this.intPoint(1).constitutiveMdl.compressibilityCoeff();

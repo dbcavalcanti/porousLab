@@ -308,7 +308,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Compute the lumped mass matrices</span>
-        <span class="keyword">function</span> S= lumpedCompressibilityMatrix(this, vol)
+        <span class="keyword">function</span> S = lumpedCompressibilityMatrix(this, vol)
 
             <span class="comment">% Get compressibility coefficients</span>
             comp = this.intPoint(1).constitutiveMdl.compressibilityCoeff();
@@ -600,7 +600,7 @@ classdef RegularElement_HM < RegularElement_M
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Compute the lumped mass matrices
-        function S= lumpedCompressibilityMatrix(this, vol)
+        function S = lumpedCompressibilityMatrix(this, vol)
 
             % Get compressibility coefficients
             comp = this.intPoint(1).constitutiveMdl.compressibilityCoeff();

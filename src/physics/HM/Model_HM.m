@@ -32,8 +32,6 @@
 %                                      discontinuity segments.
 % * *initializeDiscontinuitySegment*: Initializes a single discontinuity 
 %                                     segment.
-% * *plotPressureAlongSegment*: Plots the pressure distribution along a 
-%                               segment defined by start and end points. 
 % * *printResultsHeader*: Prints the header for the results table, 
 %                         displaying node ID, displacement components 
 %                         (ux, uy), and pore pressure (Pl).

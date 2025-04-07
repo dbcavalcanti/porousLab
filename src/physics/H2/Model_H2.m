@@ -32,11 +32,6 @@
 %                                    value for the entire domain.
 % * *setInitialGasPressureAtNode*: Sets the initial gas-phase pressure 
 %                                  value at a specific node.
-% * *plotGasPressureAlongSegment*: Plots the gas-phase pressure 
-%                                  distribution along a segment defined 
-%                                  by start and end points.
-% * *plotCapillaryPressureAlongSegment*: Plots capillary pressure along a
-%                                        specified segment.
 % * *printResultsHeader*: Prints a header for the results table, showing
 %                         node ID, and pressures (Pl, Pg).
 % 

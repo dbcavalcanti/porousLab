@@ -39,14 +39,13 @@
 % * *assembleDiscontinuitySegments*: Assembles discontinuity segments into 
 %                                    elements.
 % * *addNodalLoad*: Adds nodal loads to the reference load vector.
-% * *updateResultVertexData*: Updates result data for each element's 
-%                             vertices.
-% * *getElementsCharacteristicLength*: Computes characteristic lengths for 
-%                                      all elements.
+% * *getElementsCharacteristicLength*: Obtain the characteristic length of
+%                                      the finite element.
 % * *getElementCharacteristicLength*: Computes the characteristic length 
 %                                     for a specific element.
-% * *getNodeCharacteristicLength*: Computes the mean characteristic length 
-%                                  for nodes.
+% * *getNodeCharacteristicLength*: Compute the mean characteristic length
+%                                  of the elements associated with each
+%                                  node.
 % * *initializeSparseMtrxAssemblageVariables*: Initializes variables for 
 %                                              sparse matrix assembly.
 % * *globalMatrices*: Assembles global system matrices and vectors.
@@ -64,7 +63,12 @@
 % * *getNumberOfDiscontinuities*: Returns the number of discontinuities.
 % * *useEnrichedFormulation*: Enables or disables enriched formulation.
 % * *printResults*: Prints nodal results.
+% * *evaluateField*: Evaluate a field at in a point inside an element. It
+%                    assumes that the point is in the element domain.
+% * *updateResultVertexData*: Updates result data for each element's 
+%                             vertices.
 % * *plotField*: Plots a specified field over the mesh.
+% * *plotFieldAlongSegment*: Plot a given field along a given segment.
 %
 %% Author
 % Danilo Cavalcanti
@@ -430,6 +434,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Obtain the characteristic length of the finite element
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem

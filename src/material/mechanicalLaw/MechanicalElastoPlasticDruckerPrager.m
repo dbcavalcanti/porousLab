@@ -8,6 +8,11 @@
 % * *eval*: Computes the stress vector and the constitutive matrix for the 
 %           material at a given integration point. Handles both elastic 
 %           and plastic steps.
+% * *alternativeStressIntegration*: Implements an alternative stress 
+%                                   integration algorithm for the material.
+% * *getMohrCoulombCorrespondence*: Computes the Mohr-Coulomb 
+%                                   correspondence parameters for the 
+%                                   material.
 % * *yieldCondition*: Defines the yield function based on the Drucker-
 %                     Prager criteria.
 % * *yieldStressGradient*: Computes the gradient of the yield function 
@@ -15,6 +20,7 @@
 % * *flowVector*: Computes the flow vector for the plastic potential.
 % * *flowVectorGradient*: Computes the gradient of the flow vector with 
 %                         respect to the stress vector.
+% * *pseudoInv*: Computes the pseudoinverse of a given matrix using SVD.
 % * *hardening*: Returns the hardening value.
 % * *hardeningStressGradient*: Returns the gradient of the hardening law 
 %                              with respect to the stress vector  
@@ -219,6 +225,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
+        % Computes the pseudoinverse of a given matrix using SVD
         function Ai = pseudoInv(~,A)
             % Assume A is your input matrix
             [U, S, V] = svd(A);  % Compute the SVD of A
@@ -237,7 +244,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
-        % Hardening law
+        % Returns the hardening value
         function h = hardening(~,~,~,~)
             h = 0.0;
         end

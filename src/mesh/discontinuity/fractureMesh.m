@@ -1,4 +1,4 @@
-%% fractureMesh function
+%% fractureMesh Function
 % This function creates a fracture mesh by dividing a fracture segment 
 % based on the continuum finite element mesh. It does not assume that the 
 % continuum mesh is structured. The function also perturbs nodes to avoid 

@@ -42,10 +42,6 @@
 %                                  material properties such as fluid and 
 %                                  initial aperture.
 %
-% * *plotPressureAlongSegment*: Plots the pressure distribution along a 
-%                               segment defined by initial point a final 
-%                               point. The number of points can be 
-%                               specified.
 % * *printResultsHeader*: Prints a header for the results table, showing
 %                         node ID and liquid pressure (Pl).
 % 

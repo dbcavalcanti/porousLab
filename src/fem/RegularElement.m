@@ -20,9 +20,6 @@
 %                    given its vertices.
 % * *updateResultVertices*: Updates the result object's vertices property 
 %                           based on configuration.
-% * *updateResultFaces*: Updates the result object's faces property.
-% * *updateResultVertexData*: Updates the result object's vertex data 
-%                             property based on type.
 % * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
 %
 %% Author
@@ -141,6 +138,9 @@ classdef RegularElement < handle
         function A = getDomainArea(this)
             A = this.calculateArea(this.node);
         end
+
+        % -----------------------------------------------------------------
+        % Calculate the area of the element given its vertices
         function A = calculateArea(~,node)
             % Vertices of the coordinates
             vx = node(:,1); 
