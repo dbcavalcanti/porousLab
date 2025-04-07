@@ -38,51 +38,27 @@
 classdef Anl_Nonlinear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        method     = 0;   % Flag for solution method
-        adjustStep = 0;   % Flag for type of increment size adjustment
-        increment  = 0;   % Initial increment of load ratio
-        max_lratio = 0;   % Limit value of load ratio
-        max_step   = 0;   % Maximum number of steps
-        max_iter   = 0;   % Maximum number of iterations in each step
-        trg_iter   = 0;   % Desired number of iterations in each step
-        tol        = 0;   % Numerical tolerance for convergence
-        ctrlNode   = 0;   % Control node (for displacement control method)
-        ctrlDof    = 0;   % Control dof (for displacement control method)
-        incrSign   = 0;   % Sign of the increment of displacement
-        plotNd     = 1;   % Node that will be plotted the dof
-        plotDof    = 1;   % DOF (ux,uy) that will plotted
-        Uplot      = [];  % Matrix of nodal displacement vectors of all steps/modes
-        lbdplot    = [];  % Vector of load ratios of all steps
+        method        = 'LoadControl';   % Flag for solution method
+        adjustStep    = false;           % Flag for type of increment size adjustment
+        increment     = 0.1;             % Initial increment of load ratio
+        max_increment = 0.5;             % Maximum increment of load ratio
+        max_lratio    = 1.0;             % Limit value of load ratio
+        max_step      = 10;              % Maximum number of steps
+        max_iter      = 10;              % Maximum number of iterations in each step
+        trg_iter      = 3;               % Desired number of iterations in each step
+        tol           = 1.0e-5;          % Numerical tolerance for convergence
+        ctrlDof       = 1;               % Control dof (for displacement control method)
+        plotNd        = 1;               % Node that will be plotted the dof
+        plotDof       = 1;               % DOF (ux,uy) that will plotted
+        Uplot         = [];              % Matrix of nodal displacement vectors of all steps/modes
+        lbdplot       = [];              % Vector of load ratios of all steps
     end
 
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function anl = Anl_Nonlinear(method,adjustStep,increment,max_lratio,max_step,max_iter,trg_iter,tol)
-            anl = anl@Anl('Nonlinear');
-
-            % Default analysis configuration
-            if nargin == 1
-                anl.method     = 'LoadControl';
-                anl.adjustStep = false;
-                anl.increment  = 0.1;
-                anl.max_lratio = 0.5;
-                anl.max_step   = 40;
-                anl.max_iter   = 10;
-                anl.trg_iter   = 3;
-                anl.tol        = 0.00001;
-            
-            % Given analysis configuration
-            else
-                anl.method     = method;
-                anl.adjustStep = adjustStep;
-                anl.increment  = increment;
-                anl.max_lratio = max_lratio;
-                anl.max_step   = max_step;
-                anl.max_iter   = max_iter;
-                anl.trg_iter   = trg_iter;
-                anl.tol        = tol;
-            end
+        function anl = Anl_NonlinearQuasiStatic()
+            anl = anl@Anl('NonlinearQuasiStatic');
         end
     end
     
@@ -96,7 +72,7 @@ classdef Anl_Nonlinear < Anl
             % Initialize model object
             mdl.preComputations();
             
-            disp("*** Performing nonlinear analysis...")
+            disp("*** Performing quasi-static nonlinear analysis...")
 
             % Initialize results
             this.lbdplot = zeros(this.max_step+1,1);
@@ -116,6 +92,7 @@ classdef Anl_Nonlinear < Anl
             % Start incremental process
             while (step < this.max_step)
                 step = step + 1;
+                 fprintf("\n\t Step: %-4d \n", step);
 
                 % Tangent stiffness matrix
                 [K,~,~,Fref] = mdl.globalMatrices(U);
@@ -156,6 +133,9 @@ classdef Anl_Nonlinear < Anl
                     d_lbd0 = this.predictedIncrement(mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Fref);
                 end
 
+                % Check increment of load ratio
+                d_lbd0 = min(d_lbd0,this.max_increment);
+
                 % Limit increment of load ratio to make total load ratio smaller than maximum value
                 if ((this.max_lratio > 0.0 && lbd + d_lbd0 > this.max_lratio) ||...
                     (this.max_lratio < 0.0 && lbd + d_lbd0 < this.max_lratio))
@@ -191,6 +171,7 @@ classdef Anl_Nonlinear < Anl
                     unbNorm = norm(R(mdl.doffree));
                     forNorm = norm(Fref(mdl.doffree));
                     conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < this.tol);
+                    fprintf("\t\t iter.: %3d , ||R||/||F|| = %7.3e \n",iter,unbNorm/forNorm);
                     if conv == 1
                         break;
                     end
@@ -230,7 +211,8 @@ classdef Anl_Nonlinear < Anl
                     disp('Unable to compute load increment!');
                     return;
                 end
-                fprintf('Step: %d | Iter: %d | ratio: %.2f\n',step,iter,lbd);
+                fprintf('\t\t Step %d converged in iteration %-3d\n',step,iter);
+                fprintf('\t\t Load factor: %f\n',lbd);
 
                 % Update state variables
                 mdl.updateStateVar();
@@ -256,8 +238,7 @@ classdef Anl_Nonlinear < Anl
                 this.lbdplot = this.lbdplot(1:step+1);
                 this.Uplot = this.Uplot(1:step+1);
             end
-
-            this.plotCurves();
+            
             mdl.U = U;
 
             disp("*** Analysis completed!");
@@ -418,13 +399,10 @@ classdef Anl_Nonlinear < Anl
             figure;
             hold on, box on, grid on, axis on;
             plot(this.Uplot, this.lbdplot, 'o-k');
-            xlabel('Displacement (mm)', 'Interpreter', 'latex');
-            ylabel('Load factor', 'Interpreter', 'latex');
-            xaxisproperties= get(gca, 'XAxis');
-            xaxisproperties.TickLabelInterpreter = 'latex'; 
-            yaxisproperties= get(gca, 'YAxis');
-            yaxisproperties.TickLabelInterpreter = 'latex';   
-            set(gca,'FontSize', 14);
+            xlabel('Displacement (m)');
+            ylabel('Load factor');
+            set(gca,'FontSize',16);
+            set(gca,'FontName','Times');
         end
     end
 end

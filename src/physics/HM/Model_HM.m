@@ -166,14 +166,6 @@ classdef Model_HM < Model_M
             seg = DiscontinuityElement_H(nodeD,matD);
         end
 
-        % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
-        function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts, axisPlot);
-        end
-
     end
         %% Static methods
     methods (Static)

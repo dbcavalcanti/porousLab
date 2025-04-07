@@ -42,6 +42,13 @@ classdef PorousMedia < handle
         cohesion             = [];              % Cohesion (Pa)
         frictionAngle        = [];              % Friction angle (rad)
         dilationAngle        = [];              % Dilation angle (rad)
+        stressIntAlgorithm   = 'implicit';      % Stress integration algorithm
+        MCmatch              = 'planestrain';   % How the DP surfaces match the MC ones
+        friction             = [];              % Friction coefficient
+        asympt               = [];              % Asymptotic model
+        eref                 = [];              % Reference strain for asymptotic model
+        sy                   = [];              % Isotropic tensile limit (Pa)
+        tauy                 = [];              % Shear yield stress (Pa)
         kappa                = [];              % Ratio between the uniaxial compressive strength and the uniaxial tensile strength
         DamageThreshold      = [];              % Damage threshold
         FractureEnergyMode1  = [];              % Fracture energy associated with mode 1 (N/m)

@@ -165,33 +165,6 @@ classdef RegularElement < handle
                 this.result.setVertices(Nodes);
             end  
         end
-
-        %------------------------------------------------------------------
-        % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to 
-        % be done.
-        function updateResultFaces(this,faces)
-            this.result.setFaces(faces);
-        end
-
-        %------------------------------------------------------------------
-        % Update result's object vertices data property.
-        function updateResultVertexData(this,type)
-            this.result.setDataLabel(type);
-            switch type
-                case 'Ux'
-                    ndResults = this.getNodalDisplacementField(1);
-                case 'Uy'
-                    ndResults = this.getNodalDisplacementField(2);
-                case 'Sxx'
-                    ndResults = this.getNodalStressField(1);
-                case 'Syy'
-                    ndResults = this.getNodalStressField(2);
-                case 'Sxy'
-                    ndResults = this.getNodalStressField(3);
-            end
-            this.result.setVertexData(ndResults);
-        end
     end
 
     %% Static methods

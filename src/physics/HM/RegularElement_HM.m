@@ -29,14 +29,11 @@
 % Version 1.00.
 % 
 %% Class definition
-classdef RegularElement_HM < RegularElement    
+classdef RegularElement_HM < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glu        = [];            % Displacement dofs
         glp        = [];            % Liquid phase pressure dofs
-        nglu       = 0;             % Number of regular u-dof
         nglp       = 0;             % Number of regular p-dof
-        anm        = 'PlaneStrain'; % Analysis model
     end
     %% Constructor method
     methods
@@ -44,24 +41,13 @@ classdef RegularElement_HM < RegularElement
         function this = RegularElement_HM(type, node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(type, node, elem, t, ...
-                mat, intOrder, massLumping, lumpStrategy, ...
-                isAxisSymmetric);
-            this.glu      = glu;
-            this.glp      = glp;
-            this.gle      = [glu, glp];
-            if (length(this.glp) ~= length(this.glp))
-                error('Wrong number of pressure dofs');
-            end
-            this.nglu     = length(this.glu);
-            this.nglp     = length(this.glp);
-            this.ngle     = length(this.gle);
-            if isPlaneStress
-                this.anm = 'PlaneStress';
-            end
-            if isAxisSymmetric
-                this.anm = 'AxisSymmetrical';
-            end
+            this = this@RegularElement_M(type, node, elem, t, ...
+                mat, intOrder, glu, massLumping, lumpStrategy, ...
+                isAxisSymmetric,isPlaneStress);
+            this.glp  = glp;
+            this.gle  = [glu, glp];
+            this.nglp = length(this.glp);
+            this.ngle = length(this.gle);
         end
     end
     

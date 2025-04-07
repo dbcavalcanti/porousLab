@@ -22,29 +22,29 @@ print_header;
 % Create model
 mdl = Model_M();
 
-% Set model options
-mdl.gravityOn = true;
+% Integration quadrature order
+mdl.intOrder = 2;
 
 %% MESH
 
-% Load nodes and elements
-load('NODE_2');
-load('ELEM_2');
-
+% Load the mesh
+load('MeshStripFooting');
+[node, elem] = convertToQuadraticMesh(node, elem);
 % Set mesh to model
-mdl.setMesh(NODE, ELEM);
+mdl.setMesh(node,elem);
+mdl.resequenceNodes();
 
 %% MATERIALS
 
 % Create porous media
 rock = PorousMedia('rock');
 rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
-rock.rho           = 2.0e+3;           % Density (kg/m3)
-rock.Young         = 2.0e+7;           % Young modulus (Pa)
-rock.nu            = 0.49;             % Poisson ratio
-rock.cohesion      = 5.0e+4;           % Cohesion (Pa)
+rock.Young         = 1.0e+7;           % Young modulus (kPa)
+rock.nu            = 0.48;             % Poisson ratio
+rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
+rock.MCmatch       = 'planestrain';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -58,26 +58,33 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
 
 for i = 1:mdl.nnodes
     if ((mdl.NODE(i,1) <= 0.2) && (mdl.NODE(i,2) == 5.0))
-        mdl.addLoadAtNode(i, [0.0 , -1.0e3])
+        mdl.addLoadAtNode(i, [0.0 , -1.0e2])
     end
 end
 
 %% PROCESS
 
-% Analysis parameters
-adapt_incr = true;    % Increment size adjustment
-increment  = 0.01;     % Initial increment of load ratio
-max_lratio = 10.0;     % Limit value of load ratio
-max_step   = 15;      % Maximum number of steps
-max_iter   = 100;     % Maximum number of iterations in each step
-trg_iter   = 4;       % Desired number of iterations in each step
-tol        = 1.0e-5;  % Numerical tolerance for convergence
+% Configure analysis
+anl = Anl_NonlinearQuasiStatic();
+anl.method        = 'GeneralizedDisplacement';
+anl.adjustStep    = true;
+anl.increment     = 0.01;
+anl.max_increment = 0.1;
+anl.max_lratio    = 10.0;
+anl.max_step      = 60;
+anl.max_iter      = 100;
+anl.trg_iter      = 3;
+
+% Node and DOF used to plot Load Factor vs Displacement
+ndId = mdl.closestNodeToPoint([0.5, 5.0]);
+anl.setPlotDof(ndId, 2);
 
 % Run analysis
-anl = Anl_Nonlinear('LoadControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
 anl.run(mdl);
 
 %% POST-PROCESS
 
+anl.plotCurves();
 % Plot contours
-mdl.plotField('Sxy');
+mdl.plotField('PEMAG',[0.0,0.0001]);
+mdl.plotField('Uy');

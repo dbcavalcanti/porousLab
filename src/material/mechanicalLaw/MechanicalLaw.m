@@ -236,7 +236,17 @@ classdef MechanicalLaw < handle
             ned = sqrt(ned);
         end
 
-        %------------------------------------------------------------------
+        % Gradient of the norm of the deviatoric strain
+        function gradNormEd = gradientNormDeviatoricStrain(this,strain)
+            ned = this.normDeviatoricStrain(strain);
+            if ned > 0.0
+                ed  = this.deviatoricStrain(strain);
+                gradNormEd = ed / ned;
+            else
+                gradNormEd = zeros(4,1);
+            end
+        end
+
         % I2 strain invariant
         function I2 = strainInvariantI2(~,strain)
             exx = strain(1);

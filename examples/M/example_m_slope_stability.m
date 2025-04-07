@@ -25,25 +25,30 @@ mdl = Model_M();
 % Set model options
 mdl.gravityOn = true;
 
+% Integration quadrature order
+mdl.intOrder = 2;
+
 %% MESH
 
 % Load nodes and elements
-load('NODE');
-load('ELEM');
-
+load('MeshSlopeStabilityTransfinite');
+[node, elem] = convertToQuadraticMesh(node, elem);
 % Set mesh to model
-mdl.setMesh(NODE, ELEM);
+mdl.setMesh(node,elem);
+mdl.resequenceNodes();
 
 %% MATERIALS
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical    = 'elasticDruckerPrager';  % Mechanical constitutive law
-rock.rho           = 2.0e+3;           % Density (kg/m3)
-rock.Young         = 2.0e+7;           % Young modulus (Pa)
+rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
+rock.rho           = 2.0;              % Density (g/cm3)
+rock.Young         = 2.0e+4;           % Young modulus (kPa)
 rock.nu            = 0.49;             % Poisson ratio
-rock.cohesion      = 5.0e+4;           % Cohesion (Pa)
-rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
+rock.cohesion      = 50.0;             % Cohesion (kPa)
+rock.frictionAngle = 20.0*pi/180;      % Friction angle (rad)
+rock.dilationAngle = 20.0*pi/180;      % Dilation angle
+rock.MCmatch       = "planestrain";    % How the Drucker-Prager surfaces matches the Mohr-Coulomb
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -55,23 +60,30 @@ mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
-% Analysis parameters
-adapt_incr = true;    % Increment size adjustment
-increment  = 0.1;     % Initial increment of load ratio
-max_lratio = 5.0;     % Limit value of load ratio
-max_step   = 20;      % Maximum number of steps
-max_iter   = 100;     % Maximum number of iterations in each step
-trg_iter   = 4;       % Desired number of iterations in each step
-tol        = 1.0e-5;  % Numerical tolerance for convergence
+%% PROCESS
+
+% Configure analysis
+anl = Anl_NonlinearQuasiStatic();
+anl.method        = 'ArcLengthCylControl';
+anl.adjustStep    = true;
+anl.increment     = 0.1;
+anl.max_increment = 0.5;
+anl.max_lratio    = 10.0;
+anl.max_step      = 20;
+anl.max_iter      = 100;
+anl.trg_iter      = 9;
+
+% Node and DOF used to plot Load Factor vs Displacement
+ndId = mdl.closestNodeToPoint([35.0, 40.0]);
+anl.setPlotDof(ndId, 2);
 
 % Run analysis
-anl = Anl_Nonlinear('ArcLengthCylControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
 anl.run(mdl);
 
 %% POST-PROCESS
 
 % Plot contours
+anl.plotCurves();
+mdl.plotField('E1');
 mdl.plotField('S1');
-mdl.plotField('Ux');
-mdl.plotField('Sx');
-mdl.plotField('Sy');
+mdl.plotField('PEMAG',[0.0,1.0]);

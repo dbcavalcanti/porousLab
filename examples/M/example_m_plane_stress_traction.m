@@ -58,21 +58,21 @@ mdl.addLoadAtBorder('right', 1, 2.0e+6);
 
 %% PROCESS
 
-% Analysis parameters
-adapt_incr = true;    % Increment size adjustment
-increment  = 0.01;    % Initial increment of load ratio
-max_lratio = 200.0;   % Limit value of load ratio
-max_step   = 15;      % Maximum number of steps
-max_iter   = 100;     % Maximum number of iterations in each step
-trg_iter   = 4;       % Desired number of iterations in each step
-tol        = 1.0e-5;  % Numerical tolerance for convergence
+% Configure analysis
+anl = Anl_NonlinearQuasiStatic();
+anl.method     = 'ArcLengthCylControl';
+anl.adjustStep = true;
+anl.increment  = 0.01;
+anl.max_lratio = 200.0;
+anl.max_step   = 15;
+anl.max_iter   = 100;
+anl.trg_iter   = 4;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([Lx, 0.0]);
+anl.setPlotDof(ndId, 1);
 
 % Run analysis
-anl = Anl_Nonlinear('ArcLengthCylControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
-anl.setPlotDof(ndId, 1);
 anl.run(mdl);
 
 %% POST-PROCESS

@@ -45,11 +45,14 @@ mdl.setMesh(node, elem);
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical = 'vonMises';  % Elastoplastic with von Mises criteria 
+rock.mechanical = 'nonlinearAsymptotic';  % Elastoplastic with von Mises criteria 
 rock.Young      = 2.1e+11;     % Young modulus (Pa)
 rock.nu         = 0.3;         % Poisson ratio
 rock.sy0        = 2.4e+8;      % Initial yield stress (Pa)
 rock.Kp         = 0.0;         % Plastic modulus (Pa)
+rock.asympt     = 'vonMises';
+rock.tauy       = 2.4e+8 / sqrt(3.0);
+rock.eref       = 0.0001;
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -83,14 +86,13 @@ mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) 
 
 % Configure analysis
 anl = Anl_NonlinearQuasiStatic();
-anl.method         = 'ArcLengthCylControl';
-anl.adjustStep    = true;
-anl.increment     = 0.1;
-anl.max_increment = 0.1;
-anl.max_lratio    = 2.0;
-anl.max_step      = 100;
-anl.max_iter      = 100;
-anl.trg_iter      = 4;
+anl.method     = 'ArcLengthCylControl';
+anl.adjustStep = true;
+anl.increment  = 0.1;
+anl.max_lratio = 2.0;
+anl.max_step   = 100;
+anl.max_iter   = 100;
+anl.trg_iter   = 20;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([ri, 0.0]);
@@ -102,7 +104,6 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % plot contours
-anl.plotCurves();
 mdl.plotField('S1');
 mdl.plotField('Sr');
 mdl.plotField('Sx');

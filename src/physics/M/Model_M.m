@@ -256,27 +256,15 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
-        % Plot the mesh with the boundary conditions
-        function plotDisplacementAlongSegment(this, dir, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotDisplacementAlongSegment(dir, Xi, Xf, npts,axisPlot);
-        end
-
-        % -----------------------------------------------------------------
         % Plot the deformed mesh
         function plotDeformedMesh(this,amplFactor)
-
             this.updateResultVertices('Deformed',amplFactor);
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
-
+            FEMPlot(this).plotMesh();
         end
 
         %------------------------------------------------------------------
         % Update the result nodes coordinates of each element
         function updateResultVertices(this,configuration,factor)
-            
             for el = 1:this.nelem
                 
                 % Initialize the vertices array

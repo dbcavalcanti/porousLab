@@ -22,7 +22,13 @@
 % Version 1.00.
 %
 %% Function definition
-function [flagInt,pint,t12,t34] = intersectionSegment(p1,p2,p3,p4)
+function [flagInt,pint,t12,t34] = intersectionSegment(segment1,segment2)
+
+    % Extract the points
+    p1 = segment1(1, :);
+    p2 = segment1(2, :);
+    p3 = segment2(1, :);
+    p4 = segment2(2, :);
 
     % Coordinates of the fracture segment
     x12_l = min(p1(1),p2(1));

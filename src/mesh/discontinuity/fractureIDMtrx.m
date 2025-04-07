@@ -75,7 +75,7 @@ for i = 1:nFract
             p4 = [cX(j+1), cY(j+1)];
 
             % Evaluate if the segments p1-p2 and p3-p4 intersect
-            [flagInt,pint] = intersectionSegment(p1,p2,p3,p4);
+            [flagInt,pint] = intersectionSegment([p1; p2],[p3; p4]);
 
             % Update the intersection vector points
             if flagInt == true

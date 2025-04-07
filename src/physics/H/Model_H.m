@@ -192,15 +192,6 @@ classdef Model_H < Model
                 'fluid',this.fluid, ...
                 'initialAperture',this.initialAperture);
         end
-
-        % -----------------------------------------------------------------
-        % Plot the liquid pressure field along a segment
-        function plotPressureAlongSegment(this, Xi, Xf, npts,axisPlot)
-            if nargin < 4, npts = 10; end
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.plotPressureAlongSegment(Xi, Xf, npts,axisPlot);
-        end
-
     end
 
     %% Static methods

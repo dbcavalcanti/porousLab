@@ -34,6 +34,30 @@ Ny = 53;     % Number of elements in the y-direction
 % Set mesh to model
 mdl.setMesh(node, elem);
 
+%% MATERIALS
+
+% Create fluids
+water = Fluid('water');
+water.rho = 1.0e+3;  % Density (kg/m3)
+water.mu  = 1.0e-3;  % Viscosity (Pa*s)
+water.K   = 2.2e+9;  % Compressibility/Bulk modulus (1/Pa)
+
+% Create porous media
+rock = PorousMedia('rock');
+rock.K   = 1.0e-14;  % Intrinsic permeability (m2)
+rock.phi = 0.25;     % Porosity
+
+% Set materials to model
+mdl.setMaterial(rock, water);
+
+%% BOUNDARY CONDITIONS
+
+% Set Dirichlet boundary conditions
+mdl.setPressureDirichletBCAtBorder('bottom', 0.0);
+mdl.setPressureDirichletBCAtBorder('top', 1000000.0);
+
+%% DISCONTINUITIES
+
 % Create discontinuities
 fractures = [];
 fractures = [fractures, Discontinuity([93.0402,  150.0;    59.6560,  99.6233],  true)];
@@ -60,35 +84,11 @@ fractures = [fractures, Discontinuity([85.2698,  200.0000; 23.1479,  129.8266], 
 fractures = [fractures, Discontinuity([25.9630,  115.9241; 0.0000,   81.7746],  true)];
 fractures = [fractures, Discontinuity([84.3391,  197.1414; 144.4823, 133.8286], true)];
 
-%% MATERIALS
-
-% Create fluids
-water = Fluid('water');
-water.rho = 1.0e+3;  % Density (kg/m3)
-water.mu  = 1.0e-3;  % Viscosity (Pa*s)
-water.K   = 2.2e+9;  % Compressibility/Bulk modulus (1/Pa)
-
-% Create porous media
-rock = PorousMedia('rock');
-rock.K   = 1.0e-14;  % Intrinsic permeability (m2)
-rock.phi = 0.25;     % Porosity
-
-% Set materials to model
-mdl.setMaterial(rock, water);
-
 % Set fracture material properties
 for i = 1:length(fractures)
     fractures(i).fluid = water;
     fractures(i).initialAperture = 1.0e-3;
 end
-
-%% BOUNDARY CONDITIONS
-
-% Set Dirichlet boundary conditions
-mdl.setPressureDirichletBCAtBorder('bottom', 0.0);
-mdl.setPressureDirichletBCAtBorder('top', 1000000.0);
-
-%% PRE-PROCESS
 
 % Create discontinuity elements
 for i = 1:length(fractures)
@@ -103,7 +103,7 @@ mdl.addPreExistingDiscontinuities(fractures);
 % Analysis parameters
 ti        = 1.0;    % Initial time
 dt        = 1.0;    % Time step
-tf        = 127.0;  % Final time
+tf        = 1000.0;  % Final time
 dtmax     = 500.0;  % Maximum time step
 dtmin     = 0.001;  % Minimum time step
 adaptStep = true;   % Adaptive step size
