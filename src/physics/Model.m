@@ -512,17 +512,18 @@ classdef Model < handle
             % Initialize auxiliar variables
             counterK = 0;
             counterF = 0;
-
-            % Update the element displacement vector of each element
-            for el = 1:this.nelem
-                this.element(el).type.ue = U(this.element(el).type.gle);
-            end
             
             % Compute and assemble element data
             for el = 1:this.nelem
+                
+                % Get the element object
+                elementType = this.element(el).type;
+
+                % Update the element displacement vector
+                elementType.ue = U(elementType.gle);
 
                 % Get the vector of the element dof  
-                gle_i  = this.element(el).type.gle;
+                gle_i  = elementType.gle;
                 gle_j  = gle_i;
                 nGlei  = length(gle_i);
                 nGlej  = length(gle_j);
@@ -536,7 +537,7 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [K_e,C_e,fi_e,fe_e,dfidx_e] = this.element(el).type.elementData();
+                [K_e,C_e,fi_e,fe_e,dfidx_e] = elementType.elementData();
 
                 % Store in the global vectors
                 K_ij(counterK+1:counterK+nGleij)     = K_e(:);
@@ -583,13 +584,16 @@ classdef Model < handle
 
             % Compute and assemble element data
             for el = 1:this.nelem
+                % Get the element object
+                elementType = this.element(el).type;
+
                 % Update the element displacement vector of each element
-                this.element(el).type.DTime = dt;
-                this.element(el).type.ue    = U(this.element(el).type.gle);
-                this.element(el).type.ueOld = UOld(this.element(el).type.gle);
+                elementType.DTime = dt;
+                elementType.ue    = U(elementType.gle);
+                elementType.ueOld = UOld(elementType.gle);
 
                 % Get the vector of the element dof  
-                gle_i  = this.element(el).type.gle;
+                gle_i  = elementType.gle;
                 gle_j  = gle_i;
                 nGlei  = length(gle_i);
                 nGlej  = length(gle_j);
@@ -603,7 +607,7 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [A_e,b_e] = this.element(el).type.elementLinearSystem(nonlinearScheme);
+                [A_e,b_e] = elementType.elementLinearSystem(nonlinearScheme);
 
                 % Store in the global vectors
                 A_ij(counterK+1:counterK+nGleij) = A_e(:);
@@ -683,6 +687,7 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Adds pre-existing discontinuities to the model
         function addPreExistingDiscontinuities(this,dSet,additionalData)
+            disp("*** Creating the discontinuity elements...");
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
             end
