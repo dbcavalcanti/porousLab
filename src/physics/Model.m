@@ -686,9 +686,25 @@ classdef Model < handle
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
             end
+            % Check if the mesh is already set
+            if (isempty(this.NODE) || isempty(this.ELEM))
+                disp('Warning: empty mesh.');
+                disp('Warning: the discontinuity set cannot be added.');
+                return
+            end
+            % Create the discontinuity elements
+            for i = 1:length(dSet)
+                dSet(i).intersectMesh(this) ;
+            end
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
             this.initializeDiscontinuitySegments();
+        end
+
+        % -----------------------------------------------------------------
+        % Adds some additional discontinuity data
+        % To be implemented in the physics whenever required.
+        function addDiscontinuityData(~,~)
         end
 
         %------------------------------------------------------------------

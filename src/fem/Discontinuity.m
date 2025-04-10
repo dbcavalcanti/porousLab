@@ -77,6 +77,7 @@ classdef Discontinuity < handle
     methods
         %------------------------------------------------------------------
         function this = Discontinuity(X,useRepel)
+            if nargin == 0, X = []; end
             this.X = X;
             if nargin > 1
                 this.useRepel = useRepel;

@@ -68,9 +68,6 @@ mdl.addLoadAtPoint([0.0,2.0], [-0.5,1.5]);
 
 %% PRE-PROCESS
 
-% Create discontinuity elements
-fracture.intersectMesh(mdl);
-
 % Add fractures to model
 discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);

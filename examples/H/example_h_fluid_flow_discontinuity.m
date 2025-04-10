@@ -34,11 +34,6 @@ Ny = 3;    % Number of elements in the y-direction
 % Set mesh to model
 mdl.setMesh(node, elem);
 
-% Create discontinuities
-Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture
-Dy = [1.1; 1.9];  % Y-coordinates of polyline defining the fracture
-fracture = Discontinuity([Dx, Dy], true);
-
 %% MATERIALS
 
 % Create fluids
@@ -55,20 +50,22 @@ rock.phi = 0.25;     % Porosity
 % Set materials to model
 mdl.setMaterial(rock, water);
 
-% Set fracture material properties
-fracture.fluid = water;
-fracture.initialAperture = 1.0e-3;
-
 %% BOUNDARY CONDITIONS
 
 % Set Dirichlet boundary conditions
 mdl.setPressureDirichletBCAtBorder('left', 0.0);
 mdl.setPressureDirichletBCAtBorder('right', 10.0);
 
-%% PRE-PROCESS
+%% DISCONTINUITY
 
-% Create discontinuity elements
-fracture.intersectMesh(mdl);
+% Create discontinuities
+Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture
+Dy = [1.1; 1.9];  % Y-coordinates of polyline defining the fracture
+fracture = Discontinuity([Dx, Dy], true);
+
+% Set fracture material properties
+fracture.fluid = water;
+fracture.initialAperture = 1.0e-3;
 
 % Add fractures to model
 mdl.addPreExistingDiscontinuities(fracture);
