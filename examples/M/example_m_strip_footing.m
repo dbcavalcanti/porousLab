@@ -32,7 +32,6 @@ load('MeshStripFooting');
 [node, elem] = convertToQuadraticMesh(node, elem);
 % Set mesh to model
 mdl.setMesh(node,elem);
-mdl.resequenceNodes();
 
 %% MATERIALS
 

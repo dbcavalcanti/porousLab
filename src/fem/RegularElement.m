@@ -32,7 +32,6 @@
 classdef RegularElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        type            = 'ISOQ4';  % type of element
         shape           = [];       % Object of the Shape class
         node            = [];       % Nodes of the fem mesh
         connect         = [];       % Nodes connectivity
@@ -61,19 +60,20 @@ classdef RegularElement < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = RegularElement(type,node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
+        function this = RegularElement(node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
             if (nargin > 0)
-                if strcmp(type,'ISOQ4')
-                    this.shape = Shape_ISOQ4();
-                elseif strcmp(type,'ISOQ8')
-                    this.shape = Shape_ISOQ8();
-                elseif strcmp(type,'CST')
-                    this.shape = Shape_CST();   
-                elseif strcmp(type,'LST')
-                    this.shape = Shape_LST();
-                end
+                
                 this.node            = node;
                 this.nnd_el          = size(node,1);
+                if this.nnd_el == 4
+                    this.shape = Shape_ISOQ4();
+                elseif this.nnd_el == 8
+                    this.shape = Shape_ISOQ8();
+                elseif this.nnd_el == 3
+                    this.shape = Shape_CST();   
+                elseif this.nnd_el == 6
+                    this.shape = Shape_LST();
+                end
                 this.connect         = elem;
                 this.t               = t;
                 this.mat             = mat;
