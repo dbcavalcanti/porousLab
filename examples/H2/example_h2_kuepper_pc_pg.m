@@ -59,8 +59,8 @@ sand4 = PorousMedia('sand4', 8.19e-12, 0.41, 1.0,  1.0e+25, 0.189, 0.0, 3246.15,
 nelem = Nx * Ny;
 Xc = zeros(nelem, 2);
 for i = 1:nelem
-    xcoord = mdl.NODE(mdl.ELEM(i,:), 1);
-    ycoord = mdl.NODE(mdl.ELEM(i,:), 2);
+    xcoord = mdl.NODE(mdl.ELEM{i}, 1);
+    ycoord = mdl.NODE(mdl.ELEM{i}, 2);
     xcentr = sum(xcoord) / 4;  % Considering linear quad elements
     ycentr = sum(ycoord) / 4;  % Considering linear quad elements
     Xc(i, :) = [xcentr, ycentr];
@@ -113,7 +113,7 @@ mdl.setInitialGasPressureAtDomain(369.73);
 % Analysis parameters
 ti        = 1.0;    % Initial time
 dt        = 1.0;    % Time step
-tf        = 100.0;  % Final time
+tf        = 34.0;  % Final time
 dtmax     = 1.0;    % Maximum time step
 dtmin     = 0.001;  % Minimum time step
 adaptStep = true;   % Adaptive step size
