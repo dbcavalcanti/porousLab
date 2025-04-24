@@ -89,11 +89,9 @@ classdef Model < handle
         INIT                = [];            % Matrix with the initial values of each dof
         t                   = 1.0;           % Thickness
         mat                 = [];            % Struct with material properties
-        type                = 'ISOQ4';       % Type of element used
         intOrder            = 2;             % Order of the numerical integration quadrature
         nnodes              = 1;             % Number of nodes
         nelem               = 1;             % Number of elements
-        nnd_el              = 4;             % Number of nodes per element
         doffree             = [];            % Vector with the free dofs
         doffixed            = [];            % Vector with the fixed dofs
         ndof_nd             = 2;             % Number of dof per node
@@ -154,22 +152,12 @@ classdef Model < handle
         % Initializes the basic variables of the model
         function initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
-            this.nelem         = size(this.ELEM,1);     
-            this.nnd_el        = size(this.ELEM,2);            
+            this.nelem         = size(this.ELEM,1);           
             this.ndof          = this.ndof_nd * this.nnodes; 
             this.DIRICHLET_TAG = zeros(this.nnodes,this.ndof_nd);
             this.DIRICHLET_VAL = zeros(this.nnodes,this.ndof_nd);
             this.LOAD          = zeros(this.nnodes,this.ndof_nd);
             this.INIT          = zeros(this.nnodes,this.ndof_nd);
-            if (this.nnd_el == 3)
-                this.type = 'CST';
-            elseif (this.nnd_el == 4)
-                this.type = 'ISOQ4';
-            elseif (this.nnd_el == 6)
-                this.type = 'LST';
-            elseif (this.nnd_el == 8)
-                this.type = 'ISOQ8';
-            end
         end
 
         %------------------------------------------------------------------
@@ -367,7 +355,8 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Obtain all the element degrees of freedom
         function dof = getElementDofs(this,el,dofId)
-            dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
+            nnd_el = length(this.ELEM{el});
+            dof = reshape(this.ID(this.ELEM{el},dofId)', 1, nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
@@ -446,11 +435,11 @@ classdef Model < handle
         % Get characteristic length of the elements
         function Lce = getElementCharacteristicLength(this,el)
             % Vertices of the element el coordinates
-            vx = this.NODE(this.ELEM(el,:),1); 
-            vy = this.NODE(this.ELEM(el,:),2);
+            vx = this.NODE(this.ELEM{el},1); 
+            vy = this.NODE(this.ELEM{el},2);
         
             % Number of vertices 
-            nv = length(this.ELEM(el,:)); 
+            nv = length(this.ELEM{el}); 
         
             % Shifted vertices
             vxS = vx([2:nv 1]);
@@ -462,7 +451,7 @@ classdef Model < handle
             
             % Characteristic lenght (quadrilateral elements)
             Lce = sqrt(Ae);
-            if strcmp(this.type,'CST')||strcmp(this.type,'LST')
+            if (nv == 3)||(nv == 6)
                 Lce = Lce * sqrt(2.0);
             end
         end
@@ -475,7 +464,7 @@ classdef Model < handle
             Lc = zeros(this.nnodes,1);
             for i = 1:this.nnodes
                 % Get the elements associated with this node
-                idElem = any(this.ELEM == i, 2);
+                idElem = cellfun(@(elem) any(elem == i), this.ELEM);
                 % Compute the mean characteristic lenght of these nodes
                 Lc(i) = mean(Lce(idElem));
             end
@@ -489,8 +478,8 @@ classdef Model < handle
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
             for el = 1:this.nelem
-                this.nDofElemTot = this.nDofElemTot + length(this.element(el).type.gle);
-                this.sqrNDofElemTot = this.sqrNDofElemTot + length(this.element(el).type.gle)*length(this.element(el).type.gle);
+                this.nDofElemTot = this.nDofElemTot + this.element(el).type.ngle;
+                this.sqrNDofElemTot = this.sqrNDofElemTot + this.element(el).type.ngle*this.element(el).type.ngle;
             end
         end
 
@@ -651,18 +640,18 @@ classdef Model < handle
             % Get auxiliar variables
             nNode   = size(this.NODE,1);
             nElem   = size(this.ELEM,1);
-            nNdElem = size(this.ELEM,2);
+            nNdElem = cellfun(@length,this.ELEM);
             % Size of the connectivity matrix
-            nn = nElem*(nNdElem * nNdElem);
+            nn = sum(nNdElem.^2);
             % Get connectivity matrix
             i=zeros(nn,1); j=zeros(nn,1); s=zeros(nn,1); index=0;
             for el = 1:nElem
-              eNode=this.ELEM(el,:);
-              ElemSet=index+1:index+nNdElem^2;
-              i(ElemSet) = kron(eNode,ones(nNdElem,1))';
-              j(ElemSet) = kron(eNode,ones(1,nNdElem))';
+              eNode=this.ELEM{el};
+              ElemSet=index+1:index+nNdElem(el)^2;
+              i(ElemSet) = kron(eNode,ones(nNdElem(el),1))';
+              j(ElemSet) = kron(eNode,ones(1,nNdElem(el)))';
               s(ElemSet) = 1;
-              index = index + nNdElem^2;
+              index = index + nNdElem(el)^2;
             end
             K = sparse(i,j,s,nNode, nNode);
             % Apply a Symmetric reverse Cuthill-McKee permutation
@@ -675,11 +664,12 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Updates the connectivity of nodes and elements
         function rebuildConnectivity(this,cNode)
+            ELEM_Old = this.ELEM;
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
             for el=1:size(this.ELEM,1)
-                for i = 1:size(this.ELEM,2)
-                    this.ELEM(el,i) = jx(this.ELEM(el,i));
+                for i = 1:length(this.ELEM{el})
+                    this.ELEM{el}(i) = jx(ELEM_Old{el}(i));
                 end
             end
         end

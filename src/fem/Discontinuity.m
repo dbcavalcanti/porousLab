@@ -298,7 +298,7 @@ classdef Discontinuity < handle
             % Iterate over each element
             for i = 1:size(ELEM, 1)
                 count = 0;
-                edges = this.extractEdgesElement(ELEM(i,:));
+                edges = this.extractEdgesElement(ELEM{i});
 
                 % Iterate over each edge of the mesh
                 for j = 1:size(edges, 1)
@@ -329,7 +329,7 @@ classdef Discontinuity < handle
             % Iterate over each element
             edges = [];
             for i = 1:size(ELEM,1)
-                elemEdges = this.extractEdgesElement(ELEM(i,:));
+                elemEdges = this.extractEdgesElement(ELEM{i});
                 edges = [edges; elemEdges];
             end
 
@@ -392,7 +392,6 @@ classdef Discontinuity < handle
         function repelNodes(this,model)
             % Get mesh from model
             NODE = model.NODE;
-            ELEM = model.ELEM;
         
             % Get the mean characteristic lengths of the elements associated with each node
             Lc = model.getNodeCharacteristicLength();
@@ -435,7 +434,6 @@ classdef Discontinuity < handle
 
             % Update data in model object
             model.NODE = NODE;
-            model.ELEM = ELEM;
         end
     end
 end

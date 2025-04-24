@@ -70,9 +70,9 @@ Node= [reshape(X,numel(X),1) reshape(Y,numel(Y),1)];
 
 % Initialize the element matrix
 if strcmp(type,'CST')
-    ELEM= zeros(2*Nx*Ny,3);
+    ELEM= cell(2*Nx*Ny,1);
 else
-    ELEM= zeros(Nx*Ny,4);
+    ELEM= cell(Nx*Ny,1);
 end
 
 % Numbering elements first along x and then along y
@@ -81,7 +81,7 @@ if Nx < Ny
     for j=1:Ny
         for i=1:Nx  
             n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
-            ELEM(k,:) = [n1, n1+1, n2+1, n2];
+            ELEM{k} = [n1, n1+1, n2+1, n2];
             k = k+1;
         end
     end
@@ -90,11 +90,11 @@ else
         for i=1:Nx  
             n1 = (i-1)*(Ny+1)+j; n2 = i*(Ny+1)+j;
             if strcmp(type,'CST')
-                ELEM(k,:)   = [n1 n2 n2+1];
-                ELEM(k+1,:) = [n2+1 n1+1 n1];
+                ELEM{k}   = [n1 n2 n2+1];
+                ELEM{k+1} = [n2+1 n1+1 n1];
                 k = k+2;
             else
-                ELEM(k,:) = [n1 n2 n2+1 n1+1];
+                ELEM{k} = [n1 n2 n2+1 n1+1];
                 k = k+1;
             end
         end
