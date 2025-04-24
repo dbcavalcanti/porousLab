@@ -159,7 +159,7 @@ classdef FEMPlot < handle
         function [allFaces, allVertices, allVertexData] = getElementsPatches(this)
             
             % Initialize combined matrices
-            allFaces      = [];      % Combined faces connectivity
+            allFaces      = {};      % Combined faces connectivity
             allVertices   = [];      % Combined vertices coordinates
             allVertexData = [];      % Combined vertex data
             vertexOffset  = 0;       % Offset for face indices due to combined vertices
@@ -172,15 +172,28 @@ classdef FEMPlot < handle
                 
                 % Adjust face indices for combined vertices
                 faces = res.faces + vertexOffset;
+
+                % Store the faces as a cell array to handle different numbers of faces
+                allFaces{end+1} = faces;
                 
                 % Append to combined matrices
-                allFaces      = [allFaces; faces];
                 allVertices   = [allVertices; res.vertices];
                 allVertexData = [allVertexData; res.vertexData];
                 
                 % Update vertex offset for the next element
                 vertexOffset = vertexOffset + size(res.vertices, 1);
             end
+
+            % After processing, you can convert allFaces into a matrix if needed
+            % by padding with NaNs or zeros to ensure uniform row sizes
+            maxFaces = max(cellfun(@numel, allFaces));  % Find the maximum number of faces
+            paddedFaces = NaN(numel(allFaces), maxFaces);  % Pre-allocate matrix with NaNs
+            
+            for i = 1:numel(allFaces)
+                paddedFaces(i, 1:numel(allFaces{i})) = allFaces{i};  % Pad each row
+            end
+            
+            allFaces = paddedFaces;  % Use the padded faces matrix
         end
     end
 end
