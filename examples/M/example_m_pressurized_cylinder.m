@@ -74,7 +74,8 @@ pint = 192.0905814164710e+06;
 F0 = (pint*mdl.t*ri*pi/2.0)/(nInternalNodes-1)/2.0;
 
 % Occurrences of each node
-nodeCount = histcounts(mdl.ELEM(:), 1:(size(mdl.NODE,1)+1))';
+allNodes = cell2mat(mdl.ELEM(:));
+nodeCount = histcounts(allNodes, 1:(size(mdl.NODE,1)+1))';
 
 % Apply internal pressure to internal face nodes
 mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) , sn(internalNodes)];

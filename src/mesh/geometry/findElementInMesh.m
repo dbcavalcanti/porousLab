@@ -32,14 +32,17 @@ function elemId = findElementInMesh(NODE, ELEM, P)
     nelem = size(ELEM, 1);
 
     for i = 1:nelem
-        vertices = NODE(ELEM(i, :), :);
+        vertices = NODE(ELEM{i}, :);
+
+        % Number of vertices
+        nv = length(ELEM{i});
         
         % Define vertices
-        if size(ELEM,2) == 3
+        if nv == 3
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
@@ -48,11 +51,11 @@ function elemId = findElementInMesh(NODE, ELEM, P)
 
         % Calculate the cross product
         % Define vertices
-        if size(ELEM,2) == 3
+        if nv == 3
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv1, 0]);
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv4, 0]);
@@ -61,12 +64,12 @@ function elemId = findElementInMesh(NODE, ELEM, P)
         
         
         % Calculate the area of each triangle
-        if size(ELEM,2) == 3
+        if nv == 3
             A1 = 0.5 * norm(vA1);
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);
             Ai = A1 + A2 + A3;
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             A1 = 0.5 * norm(vA1);
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);
