@@ -711,6 +711,7 @@ classdef Model < handle
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).t = this.t;
                 end
+                this.discontinuitySet(i).initializeDofs();
             end
         end
 

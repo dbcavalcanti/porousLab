@@ -71,6 +71,9 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+
+        % Degrees of freedom
+        condenseDofs = true;
     end
 
     %% Constructor method
@@ -103,6 +106,17 @@ classdef Discontinuity < handle
         % Sets the flag to save the perturbed nodes
         function setSavePerturbNodes(this,flag)
             this.savePerturbNodes = flag;
+        end
+
+        %------------------------------------------------------------------
+        % Initialize dofs if the enrichment dofs are not being condensed
+        function initializeDofs(this)
+            if this.condenseDofs == false
+                return
+            end
+            % Number of nodes that compose the discontinuity segments
+            ndisc_nodes = size(this.Xlin,1);
+            
         end
 
         %------------------------------------------------------------------

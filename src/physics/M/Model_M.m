@@ -248,11 +248,11 @@ classdef Model_M < Model
         %------------------------------------------------------------------
         % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
+            initializeDiscontinuitySegments@Model(this);
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).t = this.t;
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
                 end
