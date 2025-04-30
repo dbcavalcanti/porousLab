@@ -847,7 +847,10 @@ classdef Model < handle
                 npts     = 100;
                 axisPlot = 'x';
             end
-            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
+            if nargin < 6
+                axisPlot = 'x';
+            end
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot, ax);
         end
 
     end
