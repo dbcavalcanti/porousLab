@@ -33,6 +33,7 @@ mdl.intOrder = 2;
 % Load nodes and elements
 load('MeshSlopeStabilityTransfinite');
 [node, elem] = convertToQuadraticMesh(node, elem);
+save('MeshSlopeStabilityTransfiniteQuadratic.mat', 'node', 'elem');
 % Set mesh to model
 mdl.setMesh(node,elem);
 
@@ -68,7 +69,7 @@ anl.adjustStep    = true;
 anl.increment     = 0.1;
 anl.max_increment = 0.5;
 anl.max_lratio    = 10.0;
-anl.max_step      = 20;
+anl.max_step      = 100;
 anl.max_iter      = 100;
 anl.trg_iter      = 9;
 

@@ -124,6 +124,14 @@ classdef RegularElement < handle
             end
         end
 
+        % -----------------------------------------------------------------
+        % Reset state variables.
+        function resetIntegrationPts(this)
+            for i = 1:this.nIntPoints
+                this.intPoint(i).reset();
+            end
+        end
+
         %------------------------------------------------------------------
         % Compute element characteristic length.
         function lc = characteristicLength(this)

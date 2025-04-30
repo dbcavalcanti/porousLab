@@ -80,6 +80,7 @@
 classdef Model < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
+        name                = 'mdl';         % Model name
         physics             = [];            % Physics of the problem
         NODE                = [];            % Nodes of the fem mesh
         ELEM                = [];            % Nodes connectivity
@@ -349,6 +350,19 @@ classdef Model < handle
     
                 % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Reset the model dof vector and state variables
+        function resetModelState(this)
+            if(this.initializeMdl == true)
+                % Reset the displacement vector
+                this.initializeDisplacementVct();
+                % Reset the state variables
+                for el = 1:this.nelem
+                    this.element(el).type.resetIntegrationPts();
+                end
             end
         end
 
@@ -813,21 +827,21 @@ classdef Model < handle
         function plotField(this,field,range,ax)
             if nargin < 3, range = []; end
             if nargin < 4 || isempty(ax)
-                figure;         % Cria nova figura
-                ax = gca;       % Usa o eixo atual
+                figure; 
+                ax = gca;
             else
-                axes(ax);       % Define o eixo alvo
-                cla(ax);        % Limpa o conteúdo
+                axes(ax);
+                cla(ax);
             end
 
             this.updateResultVertexData(field)
             FEMPlot(this).plotMesh(ax);
             if isempty(range)
-                colorbar(ax);  % adiciona colorbar ao eixo específico
+                colorbar(ax);
             else
-                clim(ax, range);  % aplica limites de cor ao eixo
-                c = colorbar(ax); % adiciona colorbar ao eixo
-                c.Limits = range;         % define os limites do colorbar
+                clim(ax, range);
+                c = colorbar(ax);
+                c.Limits = range;
             end
 
         end
