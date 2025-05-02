@@ -35,6 +35,7 @@ classdef DiscontinuityElement < handle
         t          = 1.0;   % Thickness
         mat        = [];    % Material object
         intOrder   = 2;     % Order of the numerical integration
+        dof        = [];    % Degrees of freedom vector
         ndof       = 1;     % Number of dofs
         nIntPoints = 1;     % Number of integration points
         intPoint   = [];    % Vector with integration point objects       
@@ -106,6 +107,15 @@ classdef DiscontinuityElement < handle
             Xr = this.referencePoint();
             DX = X - Xr;
             h  = max(sign(DX*n),0.0);
+        end
+
+        %------------------------------------------------------------------
+        % Initialize degrees of freedom vector
+        % Input:
+        %   - ndofs: number of dofs in the model
+        function initializeDofs(this,ndofs)
+            this.dof = 1:this.ndof;
+            this.dof = this.dof + ndofs;
         end
 
         % -----------------------------------------------------------------

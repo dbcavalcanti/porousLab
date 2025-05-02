@@ -111,6 +111,9 @@ classdef Model < handle
         isAxisSymmetric     = false;         % Flag for axissymetric models
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
+        condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
+        dofenr              = [];            % Vector with the enrichment dofs
+        ndofenr             = 0;             % Number of enrichment dofs
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
@@ -209,6 +212,12 @@ classdef Model < handle
                         countFree = countFree + 1;
                     end
                 end
+            end
+
+            % Add the enrichment dofs to the free dof vector
+            for i = 1:this.ndofenr
+                this.doffree(countFree) = this.dofenr(i);
+                countFree = countFree + 1;
             end
         end
         
@@ -408,6 +417,18 @@ classdef Model < handle
                             k = k + 1;
                         end
                     end
+                end
+                this.updateEnrichedElementDofVector();
+            end
+        end
+        %------------------------------------------------------------------
+        % Add enrichment dofs to the elements dof vector
+        function updateEnrichedElementDofVector(this)
+            if (this.condenseEnrDofs)
+                return
+            else
+                for el = 1:this.nelem
+                    this.element(el).type.addEnrichmentToDofVector();
                 end
             end
         end
@@ -707,11 +728,18 @@ classdef Model < handle
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
+                % Initialize common properties and dofs
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).t = this.t;
+                    if this.condenseEnrDofs == false
+                        this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
+                        this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
+                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof];
+                    end
                 end
             end
+            this.ndofenr = length(this.dofenr);
         end
 
         %------------------------------------------------------------------
