@@ -71,6 +71,7 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        leakoff             = [];
     end
 
     %% Constructor method
@@ -170,7 +171,8 @@ classdef Discontinuity < handle
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
                          'shearStiffness',this.shearStiffness,...
-                         'contactPenalization',this.contactPenalization);
+                         'contactPenalization',this.contactPenalization,...
+                         'leakoff',this.leakoff);
         end
 
         %------------------------------------------------------------------

@@ -23,12 +23,17 @@
 %
 %% Class Definition
 classdef DiscontinuityElement_H < DiscontinuityElement    
+    %% Public properties
+    properties (SetAccess = public, GetAccess = public)
+        ndof_jump = 1;      % Pressure jump dofs
+        ndof_int  = 2;      % Discontinuity internal pressure dofs
+    end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = DiscontinuityElement_H(node, mat)
             this = this@DiscontinuityElement(node, mat)
-            this.ndof = 2;
+            this.ndof = this.ndof_jump;
         end
     end
 
@@ -71,8 +76,8 @@ classdef DiscontinuityElement_H < DiscontinuityElement
             fi = []; fe = []; dfidu = [];
 
             % Initialize the matrices for the numerical integration
-            Ke = zeros(this.ndof,this.ndof);
-            Ce = zeros(this.ndof,this.ndof);
+            Ke = zeros(this.ndof_int,this.ndof_int);
+            Ce = zeros(this.ndof_int,this.ndof_int);
 
             % Initialize output matrices
             for i = 1:this.nIntPoints
