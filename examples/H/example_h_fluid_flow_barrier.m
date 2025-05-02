@@ -25,7 +25,7 @@ mdl = Model_H();
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(1.0, 10.0, 1, 5);
+[node, elem] = regularMesh(10.0, 10.0, 5, 5);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -55,14 +55,14 @@ mdl.setPressureDirichletBCAtBorder('top', 10.0);
 %% DISCONTINUITY
 
 % Create discontinuities
-Dx = [0.0; 1.0];  % X-coordinates of polyline defining the fracture
+Dx = [0.0; 10.0];  % X-coordinates of polyline defining the fracture
 Dy = [5.0; 5.0];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
 % Set fracture material properties
 fracture.fluid = water;
 fracture.initialAperture = 1.0e-3;
-fracture.leakoff = 1.0;
+fracture.leakoff = 1.0e-19;
 
 % Add fractures to model
 mdl.addPreExistingDiscontinuities(fracture);
