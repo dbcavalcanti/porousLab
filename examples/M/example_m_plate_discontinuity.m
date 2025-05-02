@@ -24,6 +24,7 @@ mdl = Model_M();
 
 % Set model options
 mdl.isPlaneStress = true;
+mdl.condenseEnrDofs = true;
 
 %% MESH
 
@@ -67,9 +68,6 @@ fracture.cohesiveLaw     = 'elastic';
 fracture.initialAperture = 0.0;
 fracture.shearStiffness  = 1.0;
 fracture.normalStiffness = 1.0;
-
-% Use global dofs
-fracture.condenseDofs = true;
 
 % Add fractures to model
 discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', true);

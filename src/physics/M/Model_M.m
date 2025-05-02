@@ -107,7 +107,8 @@ classdef Model_M < Model
                                 this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
+                                this.condenseEnrDofs);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -248,7 +249,7 @@ classdef Model_M < Model
         %------------------------------------------------------------------
         % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
-            initializeDiscontinuitySegments@Model(this);
+            % First set the specific properties
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
@@ -257,6 +258,8 @@ classdef Model_M < Model
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
                 end
             end
+            % Call the common initialization
+            initializeDiscontinuitySegments@Model(this);
         end
 
         % -----------------------------------------------------------------

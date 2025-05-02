@@ -67,7 +67,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 this.ndof = this.ndof + 1;
             end
         end
-
+        
         %------------------------------------------------------------------
         % Initializes the integration points for the element obtaining the
         % coordinates and weights
