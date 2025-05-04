@@ -1,9 +1,37 @@
-%% RegularElement class
+%% RegularElement Class
+% This class represents a regular finite element in a finite element mesh.
+% It provides properties and methods to define the element's geometry, 
+% material properties, numerical integration, and other characteristics 
+% required for finite element analysis.
 %
+%% Methods
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *elementLinearSystem*: Assembles the element's linear system matrices 
+%                          and vectors.
+% * *updateStateVar*: Updates the state variables, stress, and strain 
+%                     vectors.
+% * *characteristicLength*: Computes the characteristic length of the 
+%                           element.
+% * *getDomainArea*: Computes the area of the element's domain.
+% * *calculateArea*: Static method to calculate the area of a polygon 
+%                    given its vertices.
+% * *updateResultVertices*: Updates the result object's vertices property 
+%                           based on configuration.
+% * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef RegularElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        type            = 'ISOQ4';  % type of element
         shape           = [];       % Object of the Shape class
         node            = [];       % Nodes of the fem mesh
         connect         = [];       % Nodes connectivity
@@ -32,19 +60,20 @@ classdef RegularElement < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = RegularElement(type,node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
+        function this = RegularElement(node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
             if (nargin > 0)
-                if strcmp(type,'ISOQ4')
-                    this.shape = Shape_ISOQ4();
-                elseif strcmp(type,'ISOQ8')
-                    this.shape = Shape_ISOQ8();
-                elseif strcmp(type,'CST')
-                    this.shape = Shape_CST();   
-                elseif strcmp(type,'LST')
-                    this.shape = Shape_LST();
-                end
+                
                 this.node            = node;
                 this.nnd_el          = size(node,1);
+                if this.nnd_el == 4
+                    this.shape = Shape_ISOQ4();
+                elseif this.nnd_el == 8
+                    this.shape = Shape_ISOQ8();
+                elseif this.nnd_el == 3
+                    this.shape = Shape_CST();   
+                elseif this.nnd_el == 6
+                    this.shape = Shape_LST();
+                end
                 this.connect         = elem;
                 this.t               = t;
                 this.mat             = mat;
@@ -60,8 +89,20 @@ classdef RegularElement < handle
 
     %% Abstract methods
     methods(Abstract)
+        
         %------------------------------------------------------------------
+        % This function assembles the element matrices and vectors 
+        %
+        % Output:
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
+        %
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
+    
     end
 
     %% Public methods
@@ -97,6 +138,9 @@ classdef RegularElement < handle
         function A = getDomainArea(this)
             A = this.calculateArea(this.node);
         end
+
+        % -----------------------------------------------------------------
+        % Calculate the area of the element given its vertices
         function A = calculateArea(~,node)
             % Vertices of the coordinates
             vx = node(:,1); 
@@ -113,38 +157,13 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to be done.
+        % If the 'Undeformed' configuration is selected, nothing needs to 
+        % be done.
         function updateResultVertices(this,configuration)
             if strcmp(configuration,'Deformed')
                 Nodes = this.getDeformedConfiguration();
                 this.result.setVertices(Nodes);
             end  
-        end
-
-        %------------------------------------------------------------------
-        % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to be done.
-        function updateResultFaces(this,faces)
-            this.result.setFaces(faces);
-        end
-
-        %------------------------------------------------------------------
-        % Update result's object vertices data property.
-        function updateResultVertexData(this,type)
-            this.result.setDataLabel(type);
-            switch type
-                case 'Ux'
-                    ndResults = this.getNodalDisplacementField(1);
-                case 'Uy'
-                    ndResults = this.getNodalDisplacementField(2);
-                case 'Sxx'
-                    ndResults = this.getNodalStressField(1);
-                case 'Syy'
-                    ndResults = this.getNodalStressField(2);
-                case 'Sxy'
-                    ndResults = this.getNodalStressField(3);
-            end
-            this.result.setVertexData(ndResults);
         end
     end
 

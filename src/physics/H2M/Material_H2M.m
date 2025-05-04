@@ -1,11 +1,28 @@
-%% Material_H2 class
+%% Material_H2M Class
+% This class extends the `Material_H2` class to include mechanical 
+% constitutive behavior for porous media. It provides methods to evaluate 
+% mechanical laws, retrieve state variables, and compute mechanical 
+% compressibility coefficients.
 %
-%
+%% Methods
+% * *mechanicalLaw*: Evaluates the mechanical constitutive law at a given 
+%                    integration point and returns the stress and the 
+%                    constitutive matrix.
+% * *getNumberStateVar*: Returns the number of state variables associated 
+%                        with the mechanical constitutive law.
+% * *biotCoeff*: Returns the Biot coefficient of the porous media.
+% * *mechanicalCompressibilityCoeffs*: Computes the mechanical 
+%                                      compressibility coefficients for 
+%                                      liquid and gas phases based on the 
+%                                      saturation `Sl`.
+% * *hasPlasticStrain*: Checks if the material exhibits elasto-plastic 
+%                       behavior.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef Material_H2M < Material_H2    
@@ -54,6 +71,7 @@ classdef Material_H2M < Material_H2
         end
 
         % -----------------------------------------------------------------
+        % Checks if the material exhibits elasto-plastic behaviour
         function flag = hasPlasticStrain(this)
             flag = this.mechanical.isElastoPlastic();
         end

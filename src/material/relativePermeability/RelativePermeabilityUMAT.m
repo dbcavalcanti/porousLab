@@ -1,14 +1,22 @@
-%% Material_Elastic class
+%% RelativePermeabilityUMAT Class
+% This class defines a relative permeability model using a user-defined 
+% material (UMAT) approach. It inherits from the _RelativePermeability_ 
+% base class and provides functionality to compute relative permeability 
+% based on saturation curves.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Method
+% * *calculate*: Computes the relative permeability kr for a given 
+%                saturation Sl using linear interpolation. The result is 
+%                clamped between the minimum relative permeability klrmin
+%                defined in the _porousMedia_ object and 1.0.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef RelativePermeabilityUMAT < RelativePermeability  
      %% Public attributes
     properties (SetAccess = public, GetAccess = public)

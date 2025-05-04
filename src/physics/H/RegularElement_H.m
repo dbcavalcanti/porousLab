@@ -1,10 +1,33 @@
-%% RegularElement_H class
+%% RegularElement_H Class
+% This class defines a single-phase fluid flow finite element. It extends
+% the _RegularElement_ class and includes additional properties and 
+% methods specific to handling pore pressure degrees of freedom and 
+% related computations. 
 %
-% This class defines a single-phase fluid flow finite element 
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          element using the shape function and material 
+%                          properties.
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
+%                                  matrices based on the element volume 
+%                                  and compressibility coefficients.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalPressure*: Retrieves the nodal values of the liquid pressure.
+%
+% * *pressureField*: Computes the pressure field at a given position 
+%                    inside the element.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_H < RegularElement    
     %% Public attributes
@@ -15,10 +38,10 @@ classdef RegularElement_H < RegularElement
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = RegularElement_H(type, node, elem, t, ...
+        function this = RegularElement_H(node, elem, t, ...
                 mat, intOrder, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric)
-            this = this@RegularElement(type, node, elem, t, ...
+            this = this@RegularElement(node, elem, t, ...
                 mat, intOrder, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
             this.glp      = glp;
@@ -52,9 +75,12 @@ classdef RegularElement_H < RegularElement
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 

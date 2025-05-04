@@ -1,14 +1,30 @@
-%% Material_Elastic class
+%% MechanicalElastoPlasticVonMises Class
+% This class implements an elasto-plastic constitutive law based on the 
+% Von Mises yield criterion. It extends the _MechanicalElastoPlastic_ 
+% base class and provides methods for defining the yield condition, 
+% flow rule, and hardening behavior.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Methods
+% * *yieldCondition*: Computes the yield condition based on the Von Mises 
+%                     stress and the yield stress.
+% * *yieldStressGradient*: Computes the gradient of the yield function 
+%                          with respect to the stress vector.
+% * *flowVector*: Computes the flow direction vector based on the 
+%                 deviatoric stress.
+% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+%                         respect to the stress vector.
+% * *hardening*: Returns the hardening modulus from the material 
+%                properties.
+% * *hardeningStressGradient*: Returns the gradient of the hardening law 
+%                              with respect to the stress vector.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalElastoPlasticVonMises < MechanicalElastoPlastic  
     %% Constructor method
     methods

@@ -1,9 +1,31 @@
 %% EnrichedElement_H class
+% This class extends the _RegularElement_H_ class to define a finite 
+% element for single-phase fluid flow that incorporates enriched elements 
+% to handle discontinuities. It provides methods to compute element data, 
+% manage discontinuities, and calculate enriched degrees of freedom.
 %
-% This class defines a single-phase fluid flow finite element 
-%
+%% Methods
+% * *elementData*: Computes the element data (stiffness matrix, damping 
+%                  matrix, internal force vector, external force vector, 
+%                  and derivative of internal force vector) based on 
+%                  whether the element has discontinuities.
+% * *getDiscontinuitiesData*: Computes the stiffness matrix and force 
+%                             vector contributions from the 
+%                             discontinuities.
+% * *getNumberEnrichedDofs*: Returns the total number of enriched degrees 
+%                            of freedom.
+% * *getNumberOfDiscontinuities*: Returns the number of discontinuities 
+%                                 associated with the element.
+% * *getNumberOfDofPerDiscontinuity*: Returns the number of degrees of 
+%                                     freedom per discontinuity, 
+%                                     considering the enabled enrichment 
+%                                     modes.
+% * *addDiscontinuitySegment*: Adds a discontinuity segment to the element.
 %% Author
 % Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef EnrichedElement_H < RegularElement_H   
@@ -14,10 +36,10 @@ classdef EnrichedElement_H < RegularElement_H
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = EnrichedElement_H(type, node, elem, t, ...
+        function this = EnrichedElement_H(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric)
-            this = this@RegularElement_H(type, node, elem, t, ...
+            this = this@RegularElement_H(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
         end
@@ -26,6 +48,16 @@ classdef EnrichedElement_H < RegularElement_H
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Computes the element data for the current element based on wether
+        % the element contains a discontinuity or not.
+        % 
+        % Outputs:
+        %   Ke    - Element stiffness matrix.
+        %   Ce    - Element damping matrix.
+        %   fi    - Internal force vector.
+        %   fe    - External force vector.
+        %   dfidu - Derivative of internal force with respect to 
+        %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
            % Get the continuum contribution
@@ -38,6 +70,8 @@ classdef EnrichedElement_H < RegularElement_H
         end
 
         %------------------------------------------------------------------
+        % Computes the stiffness matrix and force vector contributions
+        % from discontinuities in the enriched element
         function [Kd, Sd, Tcd] = getDiscontinuitiesData(this)
 
             nEnrDofs          = this.getNumberEnrichedDofs();
@@ -79,22 +113,27 @@ classdef EnrichedElement_H < RegularElement_H
         end
 
         %------------------------------------------------------------------
+        % Gets the number of enriched degrees of freedom
         function nEnrDof = getNumberEnrichedDofs(this)
             nEnrDof = this.getNumberOfDiscontinuities();
             nEnrDof = nEnrDof * this.getNumberOfDofPerDiscontinuity();
         end
 
         %------------------------------------------------------------------
+        % Obtain the number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = size(this.discontinuity,1);
         end
 
         %------------------------------------------------------------------
+        % Calculates the number of degrees of freedom per discontinuity for
+        % the enriched element
         function n = getNumberOfDofPerDiscontinuity(this)
             n = 2;  
         end
 
         %------------------------------------------------------------------
+        % Adds a discontinuity segment to the element
         function addDiscontinuitySegment(this,dseg)
             this.discontinuity = [this.discontinuity; dseg];
         end

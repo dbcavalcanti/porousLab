@@ -1,7 +1,18 @@
-%% Anl_Linear class
+%% Anl_Linear Class
+% This class implements the solution of a static linear analysis. It 
+% inherits from the base class _Anl_ and provides functionality for 
+% performing linear static analysis on a given model. 
 %
-% This class implements the solution of a static linear analysis. 
+%% Methods
+% * *run*: Executes the linear analysis for the given model object _mdl_
 %
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef Anl_Linear < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)

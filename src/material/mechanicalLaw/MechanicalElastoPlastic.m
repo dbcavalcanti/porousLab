@@ -1,14 +1,30 @@
-%% MechanicalElastoPlastic class
+%% MechanicalElastoPlastic Class
+% This class implements an elasto-plastic constitutive law based on the 
+% Von Mises yield criterion. It inherits from the _MechanicalElastoPlastic_ 
+% base class and provides specific implementations for the yield condition, 
+% flow rule, and hardening law.
 %
-% This class defines a generic elastoplastic constitutive law
+%% Methods
+% * *yieldCondition*: Computes the yield function value based on the Von 
+%                     Mises stress and the material's yield strength.
+% * *yieldStressGradient*: Computes the gradient of the yield function 
+%                          with respect to the stress vector.
+% * *flowVector*: Computes the flow direction vector (plastic strain 
+%                 direction) based on the deviatoric stress.
+% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+%                         respect to the stress vector.
+% * *hardening*: Returns the hardening modulus of the material.
+% * *hardeningStressGradient*: Returns the gradient of the hardening law 
+%                              with respect to the stress vector 
+%                              (constant in this case).
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalElastoPlastic < MechanicalLinearElastic  
     properties (SetAccess = public, GetAccess = public)
         returnMappingMaxIter = 100;
@@ -51,7 +67,7 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
             Dt = De;
 
             % Trial stress vector
-            stress = De * (ip.strain - ip.plasticstrain);
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
             % Evaluate the yield condition
             f = this.yieldCondition(material,ip,stress);
@@ -125,6 +141,8 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
         end
     end
     methods (Static)
+        %------------------------------------------------------------------
+        % Flag to impose if the material is elasto-plastic or not
         function flag = isElastoPlastic()
             flag = true;
         end

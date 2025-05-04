@@ -1,16 +1,48 @@
+%% findElementInMesh function
+% This function determines the element in a 2D mesh that contains a given 
+% point P. It supports both triangular and quadrilateral elements. The 
+% function calculates the area of the element and compares it with the 
+% sum of the areas formed by the point P and the vertices of the element. 
+% If the areas match within a tolerance, the point is considered to be 
+% inside the element.
+% 
+%% Inputs
+% * *NODE*: A matrix containing the coordinates of the nodes. Each row 
+%           represents a node, with the first column as the x-coordinate 
+%           and the second column as the y-coordinate.
+% * *ELEM*: A matrix containing the indices of the nodes that form each 
+%           element. Each row represents an element, and the number of 
+%           columns corresponds to the number of vertices.
+% * *P*: A vector representing the coordinates of the point to locate 
+%        in the mesh.
+% 
+%% Outputs
+% * *elemId*: The index of the element in which the point P is located. If 
+%             the point is not inside any element, elemId is set to 0.
+%
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+%
+%% Function definition
 function elemId = findElementInMesh(NODE, ELEM, P)
 % Define in which convex quadrilateral element a point is inside
     nelem = size(ELEM, 1);
 
     for i = 1:nelem
-        vertices = NODE(ELEM(i, :), :);
+        vertices = NODE(ELEM{i}, :);
+
+        % Number of vertices
+        nv = length(ELEM{i});
         
         % Define vertices
-        if size(ELEM,2) == 3
+        if nv == 3
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             pv1 = P - vertices(1, :);
             pv2 = P - vertices(2, :);
             pv3 = P - vertices(3, :);
@@ -19,11 +51,11 @@ function elemId = findElementInMesh(NODE, ELEM, P)
 
         % Calculate the cross product
         % Define vertices
-        if size(ELEM,2) == 3
+        if nv == 3
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv1, 0]);
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             vA1 = cross([pv1, 0], [pv2, 0]);
             vA2 = cross([pv2, 0], [pv3, 0]);
             vA3 = cross([pv3, 0], [pv4, 0]);
@@ -32,12 +64,12 @@ function elemId = findElementInMesh(NODE, ELEM, P)
         
         
         % Calculate the area of each triangle
-        if size(ELEM,2) == 3
+        if nv == 3
             A1 = 0.5 * norm(vA1);
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);
             Ai = A1 + A2 + A3;
-        elseif size(ELEM,2) == 4
+        elseif nv == 4
             A1 = 0.5 * norm(vA1);
             A2 = 0.5 * norm(vA2);
             A3 = 0.5 * norm(vA3);

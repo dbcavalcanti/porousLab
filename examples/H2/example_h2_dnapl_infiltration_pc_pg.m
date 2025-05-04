@@ -82,8 +82,8 @@ mat2.capillaryPressure  = 'BrooksCorey';  % Saturation degree function
 nelem = Nx * Ny;
 Xc = zeros(nelem, 2);
 for i = 1:nelem
-    xcoord = mdl.NODE(mdl.ELEM(i,:), 1);
-    ycoord = mdl.NODE(mdl.ELEM(i,:), 2);
+    xcoord = mdl.NODE(mdl.ELEM{i}, 1);
+    ycoord = mdl.NODE(mdl.ELEM{i}, 2);
     xcentr = sum(xcoord) / 4;  % Considering linear quad elements
     ycentr = sum(ycoord) / 4;  % Considering linear quad elements
     Xc(i, :) = [xcentr, ycentr];
@@ -150,4 +150,4 @@ mdl.plotField('GasSaturation');
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [Lx, Ly];
-mdl.plotPressureAlongSegment(Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('LiquidPressure', Xi, Xf, 500, 'x');

@@ -1,10 +1,44 @@
-%% RegularElement_M class
+%% RegularElement_M Class
+% This class defines a mechanical finite element. It extends the 
+% _RegularElement_ class and provides additional functionality for 
+% mechanical analysis, including displacement degrees of freedom, stress 
+% and strain computation, and integration point initialization. 
 %
-% This class defines a mechanical finite element 
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          element, including their coordinates, weights, 
+%                          and mechanical analysis models.
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalDisplacement*: Retrieves the nodal displacement values.
+% * *getNodalPressure*: Retrieves the nodal liquid pressure values.
+% * *displacementField*: Computes the displacement field at a given 
+%                        global Cartesian coordinate.
+% * *integrationPointInterpolation*: Computes the interpolation matrix 
+%                                    for integration points.
+% * *stressField*: Evaluates the stress tensor at a given point by 
+%                  extrapolating results from integration points.
+% * *strainField*: Evaluates the strain tensor at a given point by 
+%                  extrapolating results from integration points.
+% * *plasticstrainMagnitude*: Computes the magnitude of the plastic 
+%                             strain tensor at a given point.
+% * *stressCylindrical*: Transforms the stress tensor to cylindrical 
+%                        coordinates.
+% * *principalStress*: Computes the principal stresses from the 
+%                      stress tensor.
+% * *principalStrain*: Computes the principal strains from the 
+%                      strain tensor.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_M < RegularElement    
     %% Public attributes
@@ -16,10 +50,10 @@ classdef RegularElement_M < RegularElement
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = RegularElement_M(type, node, elem, t, ...
+        function this = RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(type, node, elem, t, ...
+            this = this@RegularElement(node, elem, t, ...
                 mat, intOrder, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
             this.glu      = glu;
@@ -63,9 +97,12 @@ classdef RegularElement_M < RegularElement
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
@@ -304,6 +341,7 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Transforms the stress tensor to cylindrical coordinates
         function sn = stressCylindrical(~,stress,X)
 
             % Get the stress tensor components

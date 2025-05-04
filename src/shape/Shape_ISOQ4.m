@@ -1,16 +1,50 @@
-%% Shape_ISOQ4 class
+%% Shape_ISOQ4 Class
+% This class defines the behavior of a linear quadrilateral isoparametric 
+% element. It provides methods for evaluating shape functions, computing 
+% derivatives, Jacobian matrices, strain-displacement matrices, and 
+% performing coordinate transformations between natural and Cartesian 
+% coordinate systems. Additionally, it supports integration point 
+% generation and operations related to stress interpolation and Gram 
+% matrix computation.
 %
-% This is class defines the behavior of a linear quadrilateral
-% isoparametric element.
+%% Methods
+% This class provides the following methods:
+%
+% * *shapeFnc*: Evaluates the shape functions at a given point in natural 
+%               coordinates.
+% * *shapeFncMtrx*: Returns the shape function matrix.
+% * *linearShapeFncMtrx*: Returns the linear shape function matrix.
+% * *NuMtrx*: Constructs the shape function matrix for displacement 
+%             interpolation.
+% * *shapeFncDrv*: Computes the derivatives of the shape functions with 
+%                  respect to natural coordinates.
+% * *JacobianMtrx*: Computes the Jacobian matrix.
+% * *detJacobian*: Computes the determinant of the Jacobian matrix.
+% * *dNdxMatrix*: Computes the derivatives of the shape functions with 
+%                 respect to global Cartesian coordinates and the 
+%                 determinant of the Jacobian matrix.
+% * *BMatrix*: Computes the strain-displacement matrix.
+% * *coordNaturalToCartesian*: Transforms a point from natural to Cartesian 
+%                              coordinates.
+% * *coordCartesianToNatural*: Transforms a point from Cartesian to natural 
+%                              coordinates.
+% * *getIntegrationPoints*: Computes the integration points and weights for 
+%                           a given quadrature order.
+% * *integrandGramMtrx*: Computes the integrand for the Gram matrix.
+% * *integrandStressIntVct*: Computes the integrand for the stress 
+%                            interpolation vector.
+% * *getlineQuadrature*: Computes Gauss integration points for a given 
+%                        order.
+% * *sortCounterClockWise*: Sorts a set of nodes in counterclockwise order 
+%                           using the centroid as a reference.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00: Initial version (January 2023).
 %
-% Initial version:January 2023
-%
+%% Class Definition
 classdef Shape_ISOQ4 < Shape
     %% Constructor method
     methods

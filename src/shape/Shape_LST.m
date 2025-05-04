@@ -1,16 +1,45 @@
-%% Shape_LST class
+%% Shape_LST Class
+% Class defining the behavior of a linear strain triangular (LST)
+% isoparametric element. It provides methods for evaluating shape functions,
+% computing derivatives, Jacobian matrices, strain-displacement matrices, 
+% and other operations related to finite element analysis.
 %
-% This is class defines the behavior of a linear strain triangular
-% isoparametric element.
-%
+%% Methods
+% * *shapeFnc*: Evaluate the shape function at a given point in natural 
+%               coordinates.
+% * *shapeFncMtrx*: Get the shape function matrix.
+% * *NuMtrx*: Get the shape function matrix for displacement interpolation.
+% * *shapeFncDrv*: Compute the derivatives of the shape functions with 
+%                  respect to natural coordinates.
+% * *JacobianMtrx*: Compute the Jacobian matrix.
+% * *detJacobian*: Compute the determinant of the Jacobian matrix.
+% * *dNdxMatrix*: Compute the derivatives of the shape functions with 
+%                 respect to global coordinates.
+% * *BMatrix*: Compute the strain-displacement matrix.
+% * *getIntegrationPoints*: Get the integration points and weights for 
+%                           numerical integration.
+% * *coordNaturalToCartesian*: Transform a point from natural to global 
+%                              Cartesian coordinates.
+% * *coordCartesianToNatural*: Transform a point from global Cartesian to 
+%                              natural coordinates.
+% * *areaTriangle*: Compute the area of a triangle given its vertices.
+% * *getSizeGramMtrx*: Get the size of the Gram matrix.
+% * *integrandGramMtrx*: Compute the integrand for the Gram matrix.
+% * *getSizeStressIntVct*: Get the size of the stress interpolation vector.
+% * *centroid*: Compute the centroid of the element.
+% * *polynomialStress*: Define the polynomial stress interpolation.
+% * *integrandStressIntVct*: Compute the integrand for the stress 
+%                            interpolation vector.
+% * *getTriangleLinearQuadrature*: Get the linear quadrature points and 
+%                                  weights for a triangle.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00: Initial version (March 2023).
 %
-% Initial version:March 2023
-%
+%% Class Definition
 classdef Shape_LST < Shape
     %% Constructor method
     methods

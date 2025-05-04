@@ -1,14 +1,26 @@
-%% MechanicalLinearElastic class
+%% MechanicalNonlinearElasticDruckerPrager class
+% This class implements a nonlinear elastic constitutive model based on the 
+% Drucker-Prager criterion. The model is a surrogate nonlinear elastic 
+% formulation proposed by Zhao et al. (2020) and is implemented following 
+% the Abaqus UMAT provided by the authors.
 %
-% This class defines an linear elastic stress-strain constitutive law
+% Reference:
+% Zhao, T., Lages, E.N., Ramos, A.S. et al.
+% Topology optimization considering the Drucker–Prager criterion with
+% a surrogate nonlinear elastic constitutive model.
+% Struct Multidisc Optim 62, 3205–3227 (2020).
+%
+%% Methods
+% * *eval*: Computes the stress vector and constitutive matrix based on 
+%           material properties and integration point data.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic  
     %% Constructor method
     methods
@@ -23,96 +35,177 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
         % Compute the stress vector and the constitutive matrix
         function [stress,De] = eval(this,material,ip)
 
-            % Compute out-of-plane strain (plane stress problems)
-            this.elasticOutOfPlaneStrain(material,ip)
-
-            % Decompose the strain tensor
-            ev = this.volumetricStrain(ip.strain);
-            ed = this.deviatoricStrain(ip.strain);
-
-            % Norm of the strain tensor
-            normE = this.normTensor(ip.strain);
-
-            % Get material parameters
-            K = this.bulkModulus(material);
-
-            % Compute the stress vector
-            stress(1:3) = K * ev + 2 * mu * ed(1:3);
-
-            % Constitutive matrix
+            % Elastic constitutive matrix
             De = this.elasticConstitutiveMatrix(material,ip);
 
-        end
-        %% Elastic constants
-        function G = shearModulus(~,material)
-            G = material.Young / (2.0 * (1.0 + material.nu));
-        end
+            % Stress vector
+            stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
-        function K = bulkModulus(~,material)
-            K = material.Young / (3.0 * (1.0 - 2.0*material.nu));
-        end 
-    end
+            % Stress invariants
+            Is1 = this.stressInvariantI1(stress);
+            Js2 = this.stressInvariantJ2(stress);
 
-    %% Public methods
-    methods (Static)
-        function flag = isElastoPlastic()
-            flag = false;
-        end
-        %% Elastic tensors
-        % Compute the elastic constitutive matrix
-        function De = elasticConstitutiveMatrix(material,ip)
+            % Get material parameters
+            E      = material.Young;
+            nu     = material.nu;
+            tanPhi = tan(material.frictionAngle);
+            coh    = material.cohesion;
 
-            % Elastic material properties
-            E  = material.Young;
-            nu = material.nu;
+            % Compute DP material parameters
+            nup = (sqrt(3.0)*sqrt(9.0 + 12.0*tanPhi*tanPhi) - 6.0*tanPhi)/(2.0*sqrt(3.0)*sqrt(9.0 + 12.0*tanPhi*tanPhi) + 3.0*tanPhi);
+            sy  = (9.0 * coh)/(sqrt(3.0)*sqrt(9.0 + 12.0*tanPhi*tanPhi) + 3.0*tanPhi);
+            alpha = (1.0 - 2.0 * nup)/2.0/sqrt(3.0)/(1.0 + nup);
+            kappa = (alpha + 1.0/sqrt(3.0))*sy;
 
-            if strcmp(ip.anm,'PlaneStress')
+            % Drucker-Prager yield function
+            fYield = alpha * Is1 + sqrt(Js2) - kappa;
+            
+            % Return if it is in a elastic state
+            if fYield < 0.0, return; end
 
-                c = E/(1.0 - (nu*nu));
-                De = [  c   ,   c*nu , 0.0  ,  0.0;
-                       c*nu ,    c   , 0.0  ,  0.0;
-                       0.0  ,   0.0  , 1.0  ,  0.0;
-                       0.0  ,   0.0  , 0.0  , c*(1-nu)/2.0 ];
-                
+            % Compute the strain invariants
+            Ie1 = this.strainInvariantI1(ip.strain);
+            Je2 = this.strainInvariantJ2(ip.strain);
 
-            elseif strcmp(ip.anm,'PlaneStrain')
+            % Auxiliar scalars
+            a = 3.0 * alpha * (1.0 + nu) * E;
+            b = 3.0 * (1.0 - 2.0 * nu) * E;
+            c = -(3.0 * alpha + sqrt(3.0)) * (1.0 + nu) * (1.0 - 2.0 * nu) * sy;
+            d = - 3.0 * alpha * E * E;
+            e = 18.0 * alpha * alpha * E * E;
+            f = (3.0 * alpha + sqrt(3.0))*(1.0 - 2.0 * nu) * E * sy;
 
-                De = [ 1.0-nu ,   nu   ,   nu   ,    0.0;
-                         nu   , 1.0-nu ,   nu   ,    0.0;
-                         nu   ,  nu    , 1.0-nu ,    0.0;
-                        0.0   ,  0.0   ,   0.0  , (1-2.0*nu)/2.0 ];
+            % Compute phi2
+            phi2 = (a * Ie1 + b * sqrt(Je2) + c)/(d * Ie1 + e * sqrt(Je2) + f);
 
-                De = De * E/(1.0 + nu)/(1.0 - 2.0*nu);
-
-            else
-                De = [];
+            % Apex zone
+            if phi2 < 0.0
+                 stress(1:3) = kappa / (3.0 * alpha);
+                 stress(4) = 0.0;
+                 De = zeros(4,4);
+                 return
             end
+
+            % Get strain components (Plane strain)
+            exx = ip.strain(1);
+            eyy = ip.strain(2);
+            gxy = ip.strain(4);
+
+            % Cone zone: stress vector
+            stress(1) = -10 * (8 / 5 * (1 + nup) * (E * (-1 / 2 + nup) * exx^2 + (-E * (-1 / 2 + nup) * eyy / 4 - 3 / 2 * sy * (nu - 1 / 2)) * exx + E * (-1 / 2 + nup) * eyy^2 / 4 + 3 / 4 * sy * (nu - 1 / 2) * eyy + 3 / 8 * E * (-1 / 2 + nup) * gxy^2) * sqrt(3) + sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) * (E * (nup^2 - 2 / 5 * nup + 2 / 5) * exx - (nup^2 - 4 * nup - 1 / 2) * E * eyy / 5 - 3 / 5 * sy * (-1 / 2 + nup) * (1 + nu))) * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1 / 2) / (36 * nup * nu - 18 * nup^2 + 9 * nu - 9);
+            stress(2) = -4 * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1 / 2) * ((-E * (exx - 5 * eyy) * nup^2 / 2 + ((2 * exx - eyy) * E - 3 / 2 * sy * (1 + nu)) * nup + (exx / 4 + eyy) * E + 3 / 4 * sy * (1 + nu)) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) + sqrt(3) * (1 + nup) * (E * (exx^2 + 4 * eyy^2 + 3 / 2 * gxy^2 - exx * eyy) * nup + (-exx^2 / 2 + exx * eyy / 2 - 2 * eyy^2 - 3 / 4 * gxy^2) * E + 3 * sy * (nu - 1 / 2) * (exx - 2 * eyy))) / (36 * nup * nu - 18 * nup^2 + 9 * nu - 9);
+            stress(3) = 2 * (-2 * sqrt(3) * (1 + nup) * (E * (exx^2 + eyy^2 + 3 / 2 * gxy^2 - 4 * exx * eyy) * nup + (-exx^2 / 2 + 2 * exx * eyy - eyy^2 / 2 - 3 / 4 * gxy^2) * E + 3 * sy * (exx + eyy) * (nu - 1 / 2)) + sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) * (E * (exx + eyy) * nup^2 + ((-4 * exx - 4 * eyy) * E + 3 * sy * (1 + nu)) * nup + (-exx / 2 - eyy / 2) * E - 3 / 2 * sy * (1 + nu))) * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1 / 2) / (36 * nup * nu - 18 * nup^2 + 9 * nu - 9);
+            stress(4) = -4 * (E * (-1 / 2 + nup)^2 * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) + sqrt(3) * (1 + nup) * (E * (exx + eyy) * nup + (-exx / 2 - eyy / 2) * E - 3 * sy * (nu - 1 / 2))) * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1 / 2) * gxy / (24 * nup * nu - 12 * nup^2 + 6 * nu - 6);
+
+            % Cone zone: constitutive matrix
+            De(1,1) = -64 / 9 * ((12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2)) * ...
+                                    (5 / 8 * E * (nup^2 - 2/5 * nup + 2/5) * ...
+                                    (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) + ...
+                                    sqrt(3) * (1 + nup) * ((-1/2 + nup) * ...
+                                    (exx^3 - eyy^3 / 8 - 3/2 * exx^2 * eyy + 15/8 * exx * eyy^2 + 9/8 * exx * gxy^2) * E - ...
+                                    9/8 * sy * (nu - 1/2) * (eyy^2 + gxy^2))) / ...
+                                    (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                    (4 * nup * nu - 2 * nup^2 + nu - 1);
+                             
+             De(1,2) = -16 / 9 * (-E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                    (nup^2 - 4 * nup - 1/2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) / 2 + ...
+                    sqrt(3) * (1 + nup) * ((-1/2 + nup) * ...
+                    (exx - eyy / 2) * (exx - 2 * eyy) * (exx + eyy) * E + ...
+                    9/2 * sy * (nu - 1/2) * (exx * eyy + gxy^2 / 2))) * ...
+                    (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
+                    (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                    (4 * nup * nu - 2 * nup^2 + nu - 1);
+             
+             De(1,3) = 0.0;
+             
+             De(1,4) = 4 * sqrt(3) * (1 + nup) * ...
+                    (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) * ...
+                    (-E * (-1/2 + nup) * eyy^2 + ...
+                    (exx * E * nup - exx * E / 2 + sy * (nu - 1/2)) * eyy - ...
+                    gxy^2 * E * nup / 2 + (-2 * sy * nu + sy) * exx + ...
+                    gxy^2 * E / 4) * gxy / ...
+                    (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                    (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+             De(2,1) = -16 / 9 * (-E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                                   (nup^2 - 4 * nup - 1/2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) / 2 + ...
+                                   sqrt(3) * (1 + nup) * ((-1/2 + nup) * ...
+                                   (exx - eyy / 2) * (exx - 2 * eyy) * (exx + eyy) * E + ...
+                                   9/2 * sy * (nu - 1/2) * (exx * eyy + gxy^2 / 2))) * ...
+                                   (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
+                                   (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                   (4 * nup * nu - 2 * nup^2 + nu - 1);
+                      
+              De(2,2) = 8 / 9 * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) * ...
+                           (-5 * E * (nup^2 - 2/5 * nup + 2/5) * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                           sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) + ...
+                           sqrt(3) * (1 + nup) * ((exx^3 - 15 * exx^2 * eyy + 12 * exx * eyy^2 - 8 * eyy^3 - 9 * eyy * gxy^2) * ...
+                           (-1/2 + nup) * E + 9 * (exx^2 + gxy^2) * sy * (nu - 1/2))) / ...
+                           (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                           (4 * nup * nu - 2 * nup^2 + nu - 1);
+              
+              De(2,3) = 0.0;
+              
+              De(2,4) = -4 * sqrt(3) * (E * (-1/2 + nup) * exx^2 + ...
+                           (-E * (-1/2 + nup) * eyy - sy * (nu - 1/2)) * exx + ...
+                           E * (-1/2 + nup) * gxy^2 / 2 + 2 * sy * (nu - 1/2) * eyy) * ...
+                           (1 + nup) * gxy * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
+                           (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                           (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+              De(3,1) = -16 / 9 * ((12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2)) * ...
+                                      (-E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                                      (nup^2 - 4 * nup - 1/2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) / 2 + ...
+                                      sqrt(3) * (1 + nup) * (-7/2 * E * (-1/2 + nup) * eyy^3 + ...
+                                      (3 * (-1/2 + nup) * exx * E + 9/2 * sy * (nu - 1/2)) * eyy^2 + ...
+                                      (-3/2 * (-1/2 + nup) * (exx^2 + 3/2 * gxy^2) * E - 9/2 * (nu - 1/2) * sy * exx) * eyy + ...
+                                      exx^3 * (-1/2 + nup) * E + 9/4 * (nu - 1/2) * sy * gxy^2)) / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+               De(3,2) = 56 / 9 * ((12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2)) * ...
+                                      (E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                                      (nup^2 - 4 * nup - 1/2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) / 7 + ...
+                                      sqrt(3) * (1 + nup) * (exx^3 * (-1/2 + nup) * E + ...
+                                      (-6/7 * E * (-1/2 + nup) * eyy - 9/7 * sy * (nu - 1/2)) * exx^2 + ...
+                                      (3/7 * (eyy^2 + 3/2 * gxy^2) * (-1/2 + nup) * E + 9/7 * sy * (nu - 1/2) * eyy) * exx - ...
+                                      2/7 * E * (-1/2 + nup) * eyy^3 - 9/14 * (nu - 1/2) * sy * gxy^2)) / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+               De(3,3) = 0.0;
+
+               De(3,4) = -4 * sqrt(3) * (1 + nup) * ((exx^2 + eyy^2 + gxy^2 / 2) * ...
+                                      (-1/2 + nup) * E - (nu - 1/2) * sy * (exx + eyy)) * ...
+                                      gxy * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+               De(4,1) = 4 * sqrt(3) * (1 + nup) * ((12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2)) * ...
+                                      (-E * (-1/2 + nup) * eyy^2 + (exx * E * nup - exx * E / 2 + sy * (nu - 1/2)) * eyy - ...
+                                      gxy^2 * E * nup / 2 + (-2 * sy * nu + sy) * exx + gxy^2 * E / 4) * gxy / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+               De(4,2) = -4 * sqrt(3) * (E * (-1/2 + nup) * exx^2 + ...
+                                      (-E * (-1/2 + nup) * eyy - sy * (nu - 1/2)) * exx + ...
+                                      E * (-1/2 + nup) * gxy^2 / 2 + 2 * sy * (nu - 1/2) * eyy) * ...
+                                      (1 + nup) * gxy * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+               De(4,3) = 0.0;
+
+               De(4,4) = -8 / 3 * ((12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2)) * ...
+                                      ((1 + nup) * (exx^2 - exx * eyy + eyy^2) * ...
+                                      ((-1/2 + nup) * exx * E + E * (-1/2 + nup) * eyy - ...
+                                      3 * sy * (nu - 1/2)) * sqrt(3) + ...
+                                      E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
+                                      (-1/2 + nup)^2 * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)) / ...
+                                      (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
+                                      (4 * nup * nu - 2 * nup^2 + nu - 1);
+
+
         end
-
-        %------------------------------------------------------------------
-        % Compute the elastic flexibility matrix
-        function Ce = elasticFlexibilityMatrix(material,ip)
-
-            % Elastic material properties
-            E  = material.Young;
-            nu = material.nu;
-
-            if strcmp(ip.anm,'PlaneStress')
-
-                Ce = [  1.0/E ,  -nu/E  ,  0.0  ,  0.0;
-                        -nu/E ,  1.0/E  ,  0.0  ,  0.0;
-                         0.0  ,  0.0    ,  1.0  ,  0.0;
-                         0.0  ,  0.0    ,  0.0  , 2.0*(1+nu)/E ];
-
-            elseif strcmp(ip.anm,'PlaneStrain')
-
-                Ce = [  1.0/E ,  -nu/E  ,  -nu/E ,  0.0;
-                        -nu/E ,  1.0/E  ,  -nu/E ,  0.0;
-                        -nu/E ,  -nu/E  ,  1.0/E ,  0.0;
-                         0.0  ,  0.0    ,  0.0   , 2.0*(1+nu)/E ];
-            else
-                Ce = [];
-            end
-        end   
     end
 end

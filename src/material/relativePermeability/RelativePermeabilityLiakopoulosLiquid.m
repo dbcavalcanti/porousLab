@@ -1,14 +1,21 @@
-%% Material_Elastic class
+%% RelativePermeabilityLiakopoulosLiquid Class
+% This class defines the liquid phase relative permeability model based on
+% the Liakopoulos formulation. It inherits from the _RelativePermeability_
+% base class and provides a specific implementation for calculating the
+% relative permeability of the liquid phase.
 %
-% This class defines an linear elastic stress-strain constitutive law
+%% Method
+% * *calculate*: Computes the liquid phase relative permeability klr based 
+%                on the liquid saturation Sl and the porous media 
+%                properties.
 %
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
-%% Class definition
+%% Class Definition
 classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability  
     %% Properties
     % Parameters taken from OGS-6. 

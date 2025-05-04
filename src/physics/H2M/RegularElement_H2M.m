@@ -1,12 +1,50 @@
-%% RegularElement_H2 class
+%% RegularElement_H2M Class
+% This class defines a finite element for a two-phase flow formulation 
+% using displacements (ux, uy), liquid pressure (Pl) and gas pressure (Pg) 
+% as primary variables. It extends the _RegularElement_ class and 
+% incorporates additional attributes and methods specific to 
+% hydromechanical coupling in porous media.
 %
-% This class defines a finite element of a two-phase flow formulation using
-% the liquid pressure (Pl) and the gas pressure (Pg) as primary
-% variables.
+% 
+%% Methods
+% * *initializeIntPoints*: Initializes the integration points for the 
+%                          element using the shape function and material 
+%                          properties.
+% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
+%                  internal force vector, external force vector, and 
+%                  derivative of internal force with respect to 
+%                  displacement.
+% * *permeabilityTensors*: Computes the permeability tensors for the 
+%                          element.
+% * *compressibilityCoeffs*: Computes the compressibility coefficients 
+%                            for the element.
+% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
+%                                  matrices based on the element volume 
+%                                  and compressibility coefficients.
+% * *addGravityForces*: Adds the contribution of gravity forces to the 
+%                       external force vector.
+% * *getNodalDisplacement*: Retrieves the nodal displacement values.
+% * *getNodalLiquidPressure*: Retrieves the nodal liquid pressure values.
+% * *getNodalGasPressure*: Retrieves the nodal gas pressure values.
+% * *getNodalCapillaryPressure*: Retrieves the nodal capillary pressure 
+%                                values.
+% * *pressureField*: Computes the pressure field at a given position 
+%                    inside the element.
+% * *gasPressureField*: Computes the gas pressure field at a given 
+%                       position inside the element.
+% * *capillaryPressureField*: Computes the capillary pressure field at a 
+%                             given position inside the element.
+% * *liquidSaturationField*: Computes the liquid saturation field at a 
+%                            given position inside the element.
+% * *gasSaturationField*: Computes the gas saturation field at a given 
+%                         position inside the element.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00.
+% 
 %% Class definition
 classdef RegularElement_H2M < RegularElement    
     %% Public attributes
@@ -21,10 +59,10 @@ classdef RegularElement_H2M < RegularElement
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = RegularElement_H2M(type, node, elem, t, ...
+        function this = RegularElement_H2M(node, elem, t, ...
                 mat, intOrder, glu, glp, glpg, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(type, node, elem, t, ...
+            this = this@RegularElement(node, elem, t, ...
                 mat, intOrder, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
             this.glu      = glu;
@@ -71,9 +109,12 @@ classdef RegularElement_H2M < RegularElement
         % This function assembles the element matrices and vectors 
         %
         % Output:
-        %   Ke : element "stiffness" matrix
-        %   Ce : element "damping" matrix
-        %   fe : element "internal force" vector
+        %    Ke : element "stiffness" matrix
+        %    Ce : element "damping" matrix
+        %    fe : element "external force" vector
+        %    fi : element "internal force" vector
+        % dfidu : element matrix of derivative of the internal force with 
+        %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 

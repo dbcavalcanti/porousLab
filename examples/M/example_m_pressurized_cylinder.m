@@ -74,33 +74,36 @@ pint = 192.0905814164710e+06;
 F0 = (pint*mdl.t*ri*pi/2.0)/(nInternalNodes-1)/2.0;
 
 % Occurrences of each node
-nodeCount = histcounts(mdl.ELEM(:), 1:(size(mdl.NODE,1)+1))';
+allNodes = cell2mat(mdl.ELEM(:));
+nodeCount = histcounts(allNodes, 1:(size(mdl.NODE,1)+1))';
 
 % Apply internal pressure to internal face nodes
 mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) , sn(internalNodes)];
 
 %% PROCESS
 
-% Analysis parameters
-adapt_incr = true;    % Increment size adjustment
-increment  = 0.01;    % Initial increment of load ratio
-max_lratio = 2.0;     % Limit value of load ratio
-max_step   = 100;     % Maximum number of steps
-max_iter   = 100;     % Maximum number of iterations in each step
-trg_iter   = 4;       % Desired number of iterations in each step
-tol        = 1.0e-5;  % Numerical tolerance for convergence
+% Configure analysis
+anl = Anl_NonlinearQuasiStatic();
+anl.method         = 'ArcLengthCylControl';
+anl.adjustStep    = true;
+anl.increment     = 0.1;
+anl.max_increment = 0.1;
+anl.max_lratio    = 2.0;
+anl.max_step      = 100;
+anl.max_iter      = 100;
+anl.trg_iter      = 4;
 
 % Node and DOF used to plot Load Factor vs Displacement
 ndId = mdl.closestNodeToPoint([ri, 0.0]);
+anl.setPlotDof(ndId, 1);
 
 % Run analysis
-anl = Anl_Nonlinear('ArcLengthCylControl', adapt_incr, increment, max_lratio, max_step, max_iter, trg_iter, tol);
-anl.setPlotDof(ndId, 1);
 anl.run(mdl);
 
 %% POST-PROCESS
 
 % plot contours
+anl.plotCurves();
 mdl.plotField('S1');
 mdl.plotField('Sr');
 mdl.plotField('Sx');

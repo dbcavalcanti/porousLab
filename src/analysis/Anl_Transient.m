@@ -1,5 +1,35 @@
-%% Anl_Transient class
+%% Anl_Transient Class
+% The _Anl_Transient_ class is a subclass of `Anl` that implements a 
+% transient nonlinear analysis framework. It provides methods and 
+% properties to perform time-dependent simulations with implicit time 
+% integration schemes.
+% 
+%% Methods
+% * *run*: Executes the transient nonlinear analysis on the provided model 
+%          object _mdl_. 
+%   Handles time-stepping, convergence checks, and updates the model state.
+% * *setPicardRelaxation*: Enables or disables relaxation for the Picard 
+%                          nonlinear solution scheme.
+% * *setRelativeConvergenceCriteria*: Enables or disables normalization of 
+%                                     the error for relative convergence 
+%                                     criteria.
+% * *printStep*: Prints the solution vector _X_ for each node in the model 
+%                _mdl_.
+% * *decomposeResidualVct*: Decomposes the residual vector into pressure 
+%                           and pressure gradient components. Returns 
+%                           their normalized values.
+% * *setUpTransientSolver*: Configures the transient solver with the 
+%                           specified initial time, time step, final time, 
+%                           maximum time step, minimum time step, and 
+%                           adaptive step flag.
 %
+%% Author
+% Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00.
+% 
+%% Class definition
 classdef Anl_Transient < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
@@ -39,6 +69,8 @@ classdef Anl_Transient < Anl
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Executes the transient nonlinear analysis on the provided model 
+        % object
         function run(this,mdl)
             % Initialize analysis parameters
             t    = this.ti;
@@ -145,16 +177,22 @@ classdef Anl_Transient < Anl
         end
 
         %------------------------------------------------------------------
+        % Enables or disables relaxation for the Picard nonlinear 
+        % solution scheme
         function setPicardRelaxation(this,flag)
             this.nlscheme.applyRelaxation = flag;
         end
 
         %------------------------------------------------------------------
+        % Enables or disables normalization of the error for relative 
+        % convergence criteria.
         function setRelativeConvergenceCriteria(this,flag)
             this.nlscheme.normalizeError = flag;
         end
 
         %------------------------------------------------------------------
+        % Prints the solution vector _X_ for each node in the model 
+        % _mdl_.
         function printStep(~,X,mdl)
             for i = 1:mdl.nnodes
                 fprintf("  %4d: \t", i);
@@ -166,6 +204,8 @@ classdef Anl_Transient < Anl
         end
 
         %------------------------------------------------------------------
+        % Decomposes the residual vector into pressure and pressure 
+        % gradient components. Returns their normalized values
         function [normRp,normRpg] = decomposeResidualVct(~,r,Fext,mdl)
             rp = r(mdl.pFreeDof);
             rpg = r(mdl.pgFreeDof);
@@ -185,6 +225,9 @@ classdef Anl_Transient < Anl
         end
 
         %------------------------------------------------------------------
+        % Configures the transient solver with the specified initial time, 
+        % time step, final time, maximum time step, minimum time step, and 
+        % adaptive step flag.
         function setUpTransientSolver(this,ti,dt,tf,dtMax,dtMin,adaptStep)
             if nargin == 4
                 dtMax = dt;

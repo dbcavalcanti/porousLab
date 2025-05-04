@@ -1,36 +1,82 @@
-%% EnrichedElement_M class
+%% EnrichedElement_M Class
+% This class defines an enriched mechanical finite element that extends 
+% the functionality of the _RegularElement_M_ class. It incorporates 
+% additional degrees of freedom to handle discontinuities and enrichment 
+% modes such as stretching and relative rotation. 
 %
-% This class defines a mechanical finite element 
-%
+%% Methods
+% * *elementData*: Computes the element data (stiffness matrix, damping 
+%                  matrix, internal force vector, external force vector, 
+%                  and derivative of internal force vector) based on 
+%                  whether the element has discontinuities.
+% * *enrichedElementData*: Computes the enriched element data using static 
+%                          condensation of the enrichment degrees of 
+%                          freedom.
+% * *solveLocalEq*: Solves the local equilibrium equation iteratively 
+%                   using the Newton-Raphson method.
+% * *fillElementSubData*: Fills the sub-matrices and vectors for the 
+%                         enriched element based on the current enriched 
+%                         degrees of freedom.
+% * *getDiscontinuitiesData*: Computes the stiffness matrix and force 
+%                             vector contributions from the 
+%                             discontinuities.
+% * *getNumberEnrichedDofs*: Returns the total number of enriched degrees 
+%                            of freedom.
+% * *getNumberOfDiscontinuities*: Returns the number of discontinuities 
+%                                 associated with the element.
+% * *getNumberOfDofPerDiscontinuity*: Returns the number of degrees of 
+%                                     freedom per discontinuity, 
+%                                     considering the enabled enrichment 
+%                                     modes.
+% * *addDiscontinuitySegment*: Adds a discontinuity segment to the element.
+% * *kinematicEnrichment*: Computes the kinematic enrichment matrix for 
+%                          the element based on the discontinuities and 
+%                          enrichment modes.
+% 
 %% Author
 % Danilo Cavalcanti
+%
+%% Version History
+% Version 1.00: Initial version (January 2024).
 %
 %% Class definition
 classdef EnrichedElement_M < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
-        addStretchingMode = false;
+        addStretchingMode  = false;
         addRelRotationMode = false;
+        condenseEnrDofs    = true;
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = EnrichedElement_M(type, node, elem, t, ...
+        function this = EnrichedElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
-                addRelRotationMode,addStretchingMode)
-            this = this@RegularElement_M(type, node, elem, t, ...
+                addRelRotationMode,addStretchingMode, condenseEnrDofs)
+            this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
             this.addStretchingMode  = addStretchingMode;
             this.addRelRotationMode = addRelRotationMode;
+            this.condenseEnrDofs    = condenseEnrDofs;
         end
     end
     
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Computes the element data for the current element based on wether
+        % the element contains a discontinuity or not.
+        % 
+        % Outputs:
+        %   Ke    - Element stiffness matrix.
+        %   Ce    - Element damping matrix.
+        %   fi    - Internal force vector.
+        %   fe    - External force vector.
+        %   dfidu - Derivative of internal force with respect to 
+        %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
            if isempty(this.discontinuity)
@@ -42,23 +88,49 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Computes the enriched element data for the finite element.
+        % 
+        % Outputs:
+        %   Ke    - Element stiffness matrix.
+        %   Ce    - Element damping matrix.
+        %   fi    - Internal force vector.
+        %   fe    - External force vector.
+        %   dfidu - Derivative of internal force with respect to 
+        %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this)
 
             % Initialize the matrices and vectors that will be returned
-            Ce    = zeros(this.nglu, this.nglu);
-            dfidu = zeros(this.nglu, this.nglu);
+            Ce    = zeros(this.ngle, this.ngle);
+            dfidu = zeros(this.ngle, this.ngle);
 
-            % Compute the sub-matrices
-            [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.solveLocalEq();
+            if this.condenseEnrDofs
+                % Compute the sub-matrices
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu] = this.solveLocalEq();
+    
+                % Static condensation of the enrichment dofs
+                Ke = Kuu - Kua * (Kaa\Kau);
+                fi = fiu - Kua * (Kaa\fia);
+                fe = feu;
+            else
+                % Get enrichment dofs
+                ae = this.ue(this.nglu+1:end);
 
-            % Static condensation of the enrichment dofs
-            Ke = Kuu - Kua * (Kaa\Kau);
-            fi = fiu - Kua * (Kaa\fia);
+                % Compute sub-matrices
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
+
+                % Assemble element matrices
+                Ke = [ Kuu , Kua;
+                       Kau , Kaa];
+                fi = [ fiu; fia];
+                fe = [ feu; fea];
+
+            end
 
         end
 
         %------------------------------------------------------------------
-        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = solveLocalEq(this)
+        %  Solves the local equilibrium equation for an enriched element
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = solveLocalEq(this)
 
             % Initialize the enrichment dofs vector
             nEnrDofs = this.getNumberEnrichedDofs();
@@ -73,7 +145,7 @@ classdef EnrichedElement_M < RegularElement_M
             for i = 1:maxIter
 
                 % Compute sub-matrices
-                [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.fillElementSubData(ae);
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
 
                 % Check convergence
                 if (norm(fia) < tol)
@@ -98,7 +170,9 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
-        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = fillElementSubData(this,ae)
+        % Computes and assembles the sub-matrices and sub-vectors for an
+        % enriched finite element
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = fillElementSubData(this,ae)
 
             % Get the number of dofs of each type
             nEnrDofs = this.getNumberEnrichedDofs();
@@ -115,7 +189,8 @@ classdef EnrichedElement_M < RegularElement_M
             fia = zeros(nEnrDofs,1);
 
             % Initialize external force vector
-            fe = zeros(this.nglu, 1);
+            feu = zeros(nRegDofs, 1);
+            fea = zeros(nEnrDofs, 1);
 
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
@@ -159,7 +234,7 @@ classdef EnrichedElement_M < RegularElement_M
                 
                 % Compute the gravity forces
                 if (this.gravityOn)
-                    fe = this.addGravityForces(fe,this.intPoint(i).X,c);
+                    feu = this.addGravityForces(feu,this.intPoint(i).X,c);
                 end
             end
 
@@ -170,6 +245,8 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Computes the stiffness matrix and force vector contributions
+        % from discontinuities in the enriched element
         function [Kd,fd] = getDiscontinuitiesData(this,ae)
 
             nEnrDofs          = this.getNumberEnrichedDofs();
@@ -197,17 +274,21 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Gets the number of enriched degrees of freedom
         function nEnrDof = getNumberEnrichedDofs(this)
             nEnrDof = this.getNumberOfDiscontinuities();
             nEnrDof = nEnrDof * this.getNumberOfDofPerDiscontinuity();
         end
 
         %------------------------------------------------------------------
+        % Obtain the number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = size(this.discontinuity,1);
         end
 
         %------------------------------------------------------------------
+        % Calculates the number of degrees of freedom per discontinuity for
+        % the enriched element
         function n = getNumberOfDofPerDiscontinuity(this)
             n = 2;  
             if this.addStretchingMode
@@ -219,11 +300,28 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Adds a discontinuity segment to the element
         function addDiscontinuitySegment(this,dseg)
             this.discontinuity = [this.discontinuity; dseg];
         end
 
         %------------------------------------------------------------------
+        % Adds the discontinuities dofs to the element dof vector
+        function addEnrichmentToDofVector(this)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                this.gle = [this.gle, this.discontinuity(i).dof];
+            end
+            this.ngle = length(this.gle);
+        end
+
+        %------------------------------------------------------------------
+        % Computed the kinematic enrichment matrix for an enriched finite
+        % element.
+        % It calculated the enrichment matrix by considering the
+        % contributions of discontinuities in the element. The enrichment
+        % includes translation, stretching and relative rotation modes
+        % depending on the configuration
         function Gc = kinematicEnrichment(this, Bu) 
             nDiscontinuities  = this.getNumberOfDiscontinuities();
             nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();

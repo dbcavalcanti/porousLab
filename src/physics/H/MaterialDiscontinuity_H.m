@@ -1,11 +1,21 @@
-%% Material_M class
+%% MaterialDiscontinuity_H class
+% This class represents a material discontinuity in a porous medium, 
+% characterized by its initial aperture and the fluid properties. 
+% It provides methods to compute the longitudinal permeability 
+% coefficient and compressibility based on the material's properties.
 %
-%
+%% Methods
+% * *longitudinalPermeability*: Computes the longitudinal permeability 
+%                               coefficient based on the cubic law.
+% * *compressibility*: Computes  the compressibility of the material 
+%                      discontinuity based on its aperture and fluid 
+%                      properties.
+% 
 %% Author
 % Danilo Cavalcanti
 %
-%% History
-% @version 1.00
+%% Version History
+% Version 1.00.
 %
 %% Class definition
 classdef MaterialDiscontinuity_H < handle
@@ -34,6 +44,8 @@ classdef MaterialDiscontinuity_H < handle
         end
 
         %------------------------------------------------------------------
+        % Computes  the compressibility of the material discontinuity 
+        % based on its aperture and fluid properties.
         function c = compressibility(this)
             w = this.initialAperture();
             c = w / this.fluid.K;

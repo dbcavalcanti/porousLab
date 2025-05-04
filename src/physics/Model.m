@@ -1,10 +1,81 @@
-%% Model class
+%% Model Class
+% Abstract class to create and manage a Finite Element model. It provides 
+% methods and properties to define the mesh, boundary conditions, material 
+% properties, and other essential components of a FEM simulation. 
+% The class also includes methods for pre-processing, assembling global 
+% matrices, applying boundary conditions, and updating state variables.
 %
-% Abstract class to create a Finite Element model.
+%% Methods
+% * *setMaterial*: Sets the material object.
+% * *initializeElements*: Initializes the element objects.
+% * *printResultsHeader*: Configures the header for printing results.
+% * *setMesh*: Sets the mesh nodes and connectivity.
+% * *initializeBasicVariables*: Initializes basic variables like number of 
+%                               nodes, elements, and DOFs.
+% * *checkMaterialId*: Ensures the material ID vector is initialized.
+% * *createNodeDofIdMtrx*: Creates the ID matrix and determines free and 
+%                          fixed DOFs.
+% * *setDirichletBCAtNode*: Sets Dirichlet boundary conditions at a 
+%                           specific node.
+% * *setDirichletBCAtPoint*: Sets Dirichlet boundary conditions at a 
+%                            specific point.
+% * *setDirichletBCAtBorder*: Sets Dirichlet boundary conditions along a 
+%                             border.
+% * *setNeumannBCAtNode*: Sets Neumann boundary conditions at a specific 
+%                         node.
+% * *setNeumannBCAtPoint*: Sets Neumann boundary conditions at a specific 
+%                          point.
+% * *setNeumannBCAtBorder*: Sets Neumann boundary conditions along a 
+%                           border.
+% * *setInitialDofAtDomain*: Sets initial DOF values for the entire domain.
+% * *setInitialDofAtNode*: Sets initial DOF values at a specific node.
+% * *getNodesAtBorder*: Retrieves nodes along a specified border.
+% * *closestNodeToPoint*: Finds the closest node to a given point.
+% * *preComputations*: Performs pre-processing tasks like initializing 
+%                      elements and assembling matrices.
+% * *getElementDofs*: Retrieves DOFs for a specific element.
+% * *initializeDisplacementVct*: Initializes the global displacement 
+%                                vector.
+% * *assembleDiscontinuitySegments*: Assembles discontinuity segments into 
+%                                    elements.
+% * *addNodalLoad*: Adds nodal loads to the reference load vector.
+% * *getElementsCharacteristicLength*: Obtain the characteristic length of
+%                                      the finite element.
+% * *getElementCharacteristicLength*: Computes the characteristic length 
+%                                     for a specific element.
+% * *getNodeCharacteristicLength*: Compute the mean characteristic length
+%                                  of the elements associated with each
+%                                  node.
+% * *initializeSparseMtrxAssemblageVariables*: Initializes variables for 
+%                                              sparse matrix assembly.
+% * *globalMatrices*: Assembles global system matrices and vectors.
+% * *getLinearSystem*: Assembles the linear system for solving.
+% * *applyDirichletBC*: Applies Dirichlet boundary conditions to the 
+%                       system.
+% * *updateStateVar*: Updates state variables at integration points.
+% * *resequenceNodes*: Resequences nodes using the reverse Cuthill-McKee 
+%                      algorithm.
+% * *rebuildConnectivity*: Rebuilds connectivity matrices after 
+%                          resequencing.
+% * *addPreExistingDiscontinuities*: Adds pre-existing discontinuities to 
+%                                    the model.
+% * *initializeDiscontinuitySegments*: Initializes discontinuity segments.
+% * *getNumberOfDiscontinuities*: Returns the number of discontinuities.
+% * *useEnrichedFormulation*: Enables or disables enriched formulation.
+% * *printResults*: Prints nodal results.
+% * *evaluateField*: Evaluate a field at in a point inside an element. It
+%                    assumes that the point is in the element domain.
+% * *updateResultVertexData*: Updates result data for each element's 
+%                             vertices.
+% * *plotField*: Plots a specified field over the mesh.
+% * *plotFieldAlongSegment*: Plot a given field along a given segment.
 %
 %% Author
 % Danilo Cavalcanti
 %
+%% Version History
+% Version 1.00: Initial version (April 2023).
+% 
 %% Class definition
 classdef Model < handle    
     %% Public attributes
@@ -18,11 +89,9 @@ classdef Model < handle
         INIT                = [];            % Matrix with the initial values of each dof
         t                   = 1.0;           % Thickness
         mat                 = [];            % Struct with material properties
-        type                = 'ISOQ4';       % Type of element used
         intOrder            = 2;             % Order of the numerical integration quadrature
         nnodes              = 1;             % Number of nodes
         nelem               = 1;             % Number of elements
-        nnd_el              = 4;             % Number of nodes per element
         doffree             = [];            % Vector with the free dofs
         doffixed            = [];            % Vector with the fixed dofs
         ndof_nd             = 2;             % Number of dof per node
@@ -42,6 +111,9 @@ classdef Model < handle
         isAxisSymmetric     = false;         % Flag for axissymetric models
         enriched            = false;         % Flag to use embedded formulation
         discontinuitySet    = [];            % Array with the discontinuity objects
+        condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
+        dofenr              = [];            % Vector with the enrichment dofs
+        ndofenr             = 0;             % Number of enrichment dofs
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
@@ -80,27 +152,19 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes the basic variables of the model
         function initializeBasicVariables(this)
             this.nnodes        = size(this.NODE,1);
-            this.nelem         = size(this.ELEM,1);     
-            this.nnd_el        = size(this.ELEM,2);            
+            this.nelem         = size(this.ELEM,1);           
             this.ndof          = this.ndof_nd * this.nnodes; 
             this.DIRICHLET_TAG = zeros(this.nnodes,this.ndof_nd);
             this.DIRICHLET_VAL = zeros(this.nnodes,this.ndof_nd);
             this.LOAD          = zeros(this.nnodes,this.ndof_nd);
             this.INIT          = zeros(this.nnodes,this.ndof_nd);
-            if (this.nnd_el == 3)
-                this.type = 'CST';
-            elseif (this.nnd_el == 4)
-                this.type = 'ISOQ4';
-            elseif (this.nnd_el == 6)
-                this.type = 'LST';
-            elseif (this.nnd_el == 8)
-                this.type = 'ISOQ8';
-            end
         end
 
         %------------------------------------------------------------------
+        % Check is the material is well defined or not
         function checkMaterialId(this)
             if isempty(this.matID)
                 this.matID  = ones(this.nelem,1);
@@ -108,6 +172,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Creates and assembles the matrix containing all the degrees of
+        % freedom
         function createNodeDofIdMtrx(this)
             % Initialize the ID matrix and the number of fixed dof
             this.ID = zeros(this.nnodes,this.ndof_nd);
@@ -147,9 +213,16 @@ classdef Model < handle
                     end
                 end
             end
+
+            % Add the enrichment dofs to the free dof vector
+            for i = 1:this.ndofenr
+                this.doffree(countFree) = this.dofenr(i);
+                countFree = countFree + 1;
+            end
         end
         
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node
         function setDirichletBCAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error prescribing Dirichlet BC at a node');
@@ -170,12 +243,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a border
         function setDirichletBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -184,17 +259,20 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtNode(this, nodeId, dofId, value)
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a point
         function setNeumannBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.LOAD(nodeId,dofId) = value;
         end
 
         %------------------------------------------------------------------
+        % Prescribe a Neumann boundary condition at a node
         function setNeumannBCAtBorder(this, border, dofId, value)
             nodeIds = this.getNodesAtBorder(border);
             for i = 1:length(nodeIds)
@@ -203,6 +281,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at the whole
+        % domain
         function setInitialDofAtDomain(this, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -213,6 +293,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Prescribe an initial boundary condition at a node
         function setInitialDofAtNode(this, nodeId, dofId, value)
             if (length(dofId) ~= length(value))
                 disp('Error setting initial dof value at the domain');
@@ -223,6 +304,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Identify the nodes contained in any of the borders
         function nodeIds = getNodesAtBorder(this,border)
             % Get the nodes at the given border
             if strcmp(border,'left')
@@ -241,6 +323,7 @@ classdef Model < handle
         end
         
         %------------------------------------------------------------------
+        % Find the closest node to a given point
         function nd = closestNodeToPoint(this,X)
             if size(X,1) == 2, X = X'; end
             d = vecnorm((this.NODE - X)');
@@ -249,6 +332,8 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Perform all the necessary pre-computations to initialize the 
+        % model
         function preComputations(this)
             if(this.initializeMdl == false)
                 disp("*** Pre-processing...");
@@ -277,11 +362,15 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Obtain all the element degrees of freedom
         function dof = getElementDofs(this,el,dofId)
-            dof = reshape(this.ID(this.ELEM(el,:),dofId)', 1, this.nnd_el*length(dofId));
+            nnd_el = length(this.ELEM{el});
+            dof = reshape(this.ID(this.ELEM{el},dofId)', 1, nnd_el*length(dofId));
         end
 
         %------------------------------------------------------------------
+        % Initialize the vector containing all the displacement
+        % values
         function initializeDisplacementVct(this)
             % Initialize the displacement vector 
             this.U = zeros(this.ndof,1);
@@ -309,6 +398,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Assembly discontinuity segments for enriched elements
         function assembleDiscontinuitySegments(this)
             if (this.enriched == false)
                 return
@@ -328,6 +418,18 @@ classdef Model < handle
                         end
                     end
                 end
+                this.updateEnrichedElementDofVector();
+            end
+        end
+        %------------------------------------------------------------------
+        % Add enrichment dofs to the elements dof vector
+        function updateEnrichedElementDofVector(this)
+            if (this.condenseEnrDofs)
+                return
+            else
+                for el = 1:this.nelem
+                    this.element(el).type.addEnrichmentToDofVector();
+                end
             end
         end
 
@@ -342,93 +444,23 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
-        % Update the result nodes data of each element
-        function updateResultVertexData(this,type)
-            for el = 1:this.nelem
-                % Update the nodal displacement vector associated to the
-                % element. This displacement can contain the enhancement
-                % degrees of freedom.
-                this.element(el).type.ue = this.U(this.element(el).type.gle); 
-                vertexData = zeros(length(this.element(el).type.result.faces),1);
-                for i = 1:length(this.element(el).type.result.faces)
-                    X = this.element(el).type.result.vertices(i,:);
-                    if strcmp(type,'Model')
-                        vertexData(i) = this.matID(el);
-                    elseif strcmp(type,'Pressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'Ux')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(1);
-                    elseif strcmp(type,'Uy')
-                        u = this.element(el).type.displacementField(X);
-                        vertexData(i) = u(2);
-                    elseif strcmp(type,'E1')
-                        s = this.element(el).type.strainField(X);
-                        sp = this.element(el).type.principalStrain(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'PEMAG')
-                        pe = this.element(el).type.plasticstrainMagnitude(X);
-                        vertexData(i) = pe;
-                    elseif strcmp(type,'Sx')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(1);
-                    elseif strcmp(type,'Sy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(2);
-                    elseif strcmp(type,'Sxy')
-                        s = this.element(el).type.stressField(X);
-                        vertexData(i) = s(3);
-                    elseif strcmp(type,'S1')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'S2')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.principalStress(s);
-                        vertexData(i) = sp(2);
-                    elseif strcmp(type,'Sr')
-                        s = this.element(el).type.stressField(X);
-                        sp = this.element(el).type.stressCylindrical(s,X);
-                        vertexData(i) = sp(1);
-                    elseif strcmp(type,'LiquidPressure')
-                        p = this.element(el).type.pressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'CapillaryPressure')
-                        p = this.element(el).type.capillaryPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'GasPressure')
-                        p = this.element(el).type.gasPressureField(X);
-                        vertexData(i) = p;
-                    elseif strcmp(type,'LiquidSaturation')
-                        Sl = this.element(el).type.liquidSaturationField(X);
-                        vertexData(i) = Sl;
-                    elseif strcmp(type,'GasSaturation')
-                        Sg = this.element(el).type.gasSaturationField(X);
-                        vertexData(i) = Sg;
-                    end
-                end
-                this.element(el).type.result.setVertexData(vertexData);
-            end
-        end
-
-        %------------------------------------------------------------------
+        % Obtain the characteristic length of the finite element
         function Lce = getElementsCharacteristicLength(this)
             Lce=zeros(this.nelem,1);
             for el = 1:this.nelem
-                % Characteristic lenght (quadrilateral elements)
                 Lce(el) = this.getElementCharacteristicLength(el);
             end
         end
 
         %------------------------------------------------------------------
+        % Get characteristic length of the elements
         function Lce = getElementCharacteristicLength(this,el)
             % Vertices of the element el coordinates
-            vx = this.NODE(this.ELEM(el,:),1); 
-            vy = this.NODE(this.ELEM(el,:),2);
+            vx = this.NODE(this.ELEM{el},1); 
+            vy = this.NODE(this.ELEM{el},2);
         
             % Number of vertices 
-            nv = length(this.ELEM(el,:)); 
+            nv = length(this.ELEM{el}); 
         
             % Shifted vertices
             vxS = vx([2:nv 1]);
@@ -440,7 +472,7 @@ classdef Model < handle
             
             % Characteristic lenght (quadrilateral elements)
             Lce = sqrt(Ae);
-            if strcmp(this.type,'CST')||strcmp(this.type,'LST')
+            if (nv == 3)||(nv == 6)
                 Lce = Lce * sqrt(2.0);
             end
         end
@@ -453,7 +485,7 @@ classdef Model < handle
             Lc = zeros(this.nnodes,1);
             for i = 1:this.nnodes
                 % Get the elements associated with this node
-                idElem = any(this.ELEM == i, 2);
+                idElem = cellfun(@(elem) any(elem == i), this.ELEM);
                 % Compute the mean characteristic lenght of these nodes
                 Lc(i) = mean(Lce(idElem));
             end
@@ -461,12 +493,14 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Initializes variables related to the assembly of sparse matrices 
+        % in the model.
         function initializeSparseMtrxAssemblageVariables(this)
             this.nDofElemTot = 0;
             this.sqrNDofElemTot = 0;
             for el = 1:this.nelem
-                this.nDofElemTot = this.nDofElemTot + length(this.element(el).type.gle);
-                this.sqrNDofElemTot = this.sqrNDofElemTot + length(this.element(el).type.gle)*length(this.element(el).type.gle);
+                this.nDofElemTot = this.nDofElemTot + this.element(el).type.ngle;
+                this.sqrNDofElemTot = this.sqrNDofElemTot + this.element(el).type.ngle*this.element(el).type.ngle;
             end
         end
 
@@ -488,17 +522,18 @@ classdef Model < handle
             % Initialize auxiliar variables
             counterK = 0;
             counterF = 0;
-
-            % Update the element displacement vector of each element
-            for el = 1:this.nelem
-                this.element(el).type.ue = U(this.element(el).type.gle);
-            end
             
             % Compute and assemble element data
             for el = 1:this.nelem
+                
+                % Get the element object
+                elementType = this.element(el).type;
+
+                % Update the element displacement vector
+                elementType.ue = U(elementType.gle);
 
                 % Get the vector of the element dof  
-                gle_i  = this.element(el).type.gle;
+                gle_i  = elementType.gle;
                 gle_j  = gle_i;
                 nGlei  = length(gle_i);
                 nGlej  = length(gle_j);
@@ -512,7 +547,7 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [K_e,C_e,fi_e,fe_e,dfidx_e] = this.element(el).type.elementData();
+                [K_e,C_e,fi_e,fe_e,dfidx_e] = elementType.elementData();
 
                 % Store in the global vectors
                 K_ij(counterK+1:counterK+nGleij)     = K_e(:);
@@ -559,13 +594,16 @@ classdef Model < handle
 
             % Compute and assemble element data
             for el = 1:this.nelem
+                % Get the element object
+                elementType = this.element(el).type;
+
                 % Update the element displacement vector of each element
-                this.element(el).type.DTime = dt;
-                this.element(el).type.ue    = U(this.element(el).type.gle);
-                this.element(el).type.ueOld = UOld(this.element(el).type.gle);
+                elementType.DTime = dt;
+                elementType.ue    = U(elementType.gle);
+                elementType.ueOld = UOld(elementType.gle);
 
                 % Get the vector of the element dof  
-                gle_i  = this.element(el).type.gle;
+                gle_i  = elementType.gle;
                 gle_j  = gle_i;
                 nGlei  = length(gle_i);
                 nGlej  = length(gle_j);
@@ -579,7 +617,7 @@ classdef Model < handle
                 eDof(counterF+1:counterF+nGlei)  = gle_i';
             
                 % Get local matrices and vector
-                [A_e,b_e] = this.element(el).type.elementLinearSystem(nonlinearScheme);
+                [A_e,b_e] = elementType.elementLinearSystem(nonlinearScheme);
 
                 % Store in the global vectors
                 A_ij(counterK+1:counterK+nGleij) = A_e(:);
@@ -603,6 +641,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Appply the Dirichlet boundary conditions
         function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
@@ -617,22 +656,23 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Reorder the nodes to improve computational efficiency
         function resequenceNodes(this)
             % Get auxiliar variables
             nNode   = size(this.NODE,1);
             nElem   = size(this.ELEM,1);
-            nNdElem = size(this.ELEM,2);
+            nNdElem = cellfun(@length,this.ELEM);
             % Size of the connectivity matrix
-            nn = nElem*(nNdElem * nNdElem);
+            nn = sum(nNdElem.^2);
             % Get connectivity matrix
             i=zeros(nn,1); j=zeros(nn,1); s=zeros(nn,1); index=0;
             for el = 1:nElem
-              eNode=this.ELEM(el,:);
-              ElemSet=index+1:index+nNdElem^2;
-              i(ElemSet) = kron(eNode,ones(nNdElem,1))';
-              j(ElemSet) = kron(eNode,ones(1,nNdElem))';
+              eNode=this.ELEM{el};
+              ElemSet=index+1:index+nNdElem(el)^2;
+              i(ElemSet) = kron(eNode,ones(nNdElem(el),1))';
+              j(ElemSet) = kron(eNode,ones(1,nNdElem(el)))';
               s(ElemSet) = 1;
-              index = index + nNdElem^2;
+              index = index + nNdElem(el)^2;
             end
             K = sparse(i,j,s,nNode, nNode);
             % Apply a Symmetric reverse Cuthill-McKee permutation
@@ -643,43 +683,73 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
+        % Updates the connectivity of nodes and elements
         function rebuildConnectivity(this,cNode)
+            ELEM_Old = this.ELEM;
             [~,ix,jx] = unique(cNode);
             this.NODE = this.NODE(ix,:);
             for el=1:size(this.ELEM,1)
-                for i = 1:size(this.ELEM,2)
-                    this.ELEM(el,i) = jx(this.ELEM(el,i));
+                for i = 1:length(this.ELEM{el})
+                    this.ELEM{el}(i) = jx(ELEM_Old{el}(i));
                 end
             end
         end
 
         %------------------------------------------------------------------
+        % Adds pre-existing discontinuities to the model
         function addPreExistingDiscontinuities(this,dSet,additionalData)
+            disp("*** Creating the discontinuity elements...");
             if nargin > 2
                 this.addDiscontinuityData(additionalData);
+            end
+            % Check if the mesh is already set
+            if (isempty(this.NODE) || isempty(this.ELEM))
+                disp('Warning: empty mesh.');
+                disp('Warning: the discontinuity set cannot be added.');
+                return
+            end
+            % Create the discontinuity elements
+            for i = 1:length(dSet)
+                dSet(i).intersectMesh(this) ;
             end
             this.discontinuitySet = dSet;
             this.useEnrichedFormulation(true);
             this.initializeDiscontinuitySegments();
         end
 
-        %------------------------------------------------------------------
-        function initializeDiscontinuitySegments(this)
-            nDiscontinuities = this.getNumberOfDiscontinuities();
-            for i = 1:nDiscontinuities
-                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
-                for j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).t = this.t;
-                end
-            end
+        % -----------------------------------------------------------------
+        % Adds some additional discontinuity data
+        % To be implemented in the physics whenever required.
+        function addDiscontinuityData(~,~)
         end
 
         %------------------------------------------------------------------
+        % Initializer the discontinuity segments
+        function initializeDiscontinuitySegments(this)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                % Initialize common properties and dofs
+                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
+                for j = 1:nDiscontinuitySeg
+                    this.discontinuitySet(i).segment(j).t = this.t;
+                    if this.condenseEnrDofs == false
+                        this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
+                        this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
+                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof];
+                    end
+                end
+            end
+            this.ndofenr = length(this.dofenr);
+        end
+
+        %------------------------------------------------------------------
+        % Get the total number of discontinuities
         function n = getNumberOfDiscontinuities(this)
             n = length(this.discontinuitySet);
         end
 
         %------------------------------------------------------------------
+        % Flag to use the enriched formulation
         function useEnrichedFormulation(this,flag)
             this.enriched = flag;
         end
@@ -698,14 +768,81 @@ classdef Model < handle
             end
         end
 
+        %------------------------------------------------------------------
+        % Evaluate a field at in a point inside an element
+        % Assumes that the point is in the element domain
+        function fieldValue = evaluateField(this, field, el, X)
+            if strcmp(field,'Model')
+                fieldValue = this.matID(el);
+            elseif strcmp(field,'Pressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'Ux')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(1);
+            elseif strcmp(field,'Uy')
+                u = this.element(el).type.displacementField(X);
+                fieldValue = u(2);
+            elseif strcmp(field,'E1')
+                s = this.element(el).type.strainField(X);
+                sp = this.element(el).type.principalStrain(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'PEMAG')
+                fieldValue = this.element(el).type.plasticstrainMagnitude(X);
+            elseif strcmp(field,'Sx')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(1);
+            elseif strcmp(field,'Sy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(2);
+            elseif strcmp(field,'Sxy')
+                s = this.element(el).type.stressField(X);
+                fieldValue = s(4);
+            elseif strcmp(field,'S1')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(1);
+            elseif strcmp(field,'S2')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.principalStress(s);
+                fieldValue = sp(2);
+            elseif strcmp(field,'Sr')
+                s = this.element(el).type.stressField(X);
+                sp = this.element(el).type.stressCylindrical(s,X);
+                fieldValue = sp(1);
+            elseif strcmp(field,'LiquidPressure')
+                fieldValue = this.element(el).type.pressureField(X);
+            elseif strcmp(field,'CapillaryPressure')
+                fieldValue = this.element(el).type.capillaryPressureField(X);
+            elseif strcmp(field,'GasPressure')
+                fieldValue = this.element(el).type.gasPressureField(X);
+            elseif strcmp(field,'LiquidSaturation')
+                fieldValue = this.element(el).type.liquidSaturationField(X);
+            elseif strcmp(field,'GasSaturation')
+                fieldValue = this.element(el).type.gasSaturationField(X);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Update the result nodes data of each element
+        function updateResultVertexData(this,field)
+            for el = 1:this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle); 
+                vertexData = zeros(length(this.element(el).type.result.faces),1);
+                for i = 1:length(this.element(el).type.result.faces)
+                    X = this.element(el).type.result.vertices(i,:);
+                    vertexData(i) = this.evaluateField(field, el, X);
+                end
+                this.element(el).type.result.setVertexData(vertexData);
+            end
+        end
+
         % -----------------------------------------------------------------
         % Plot given field over the mesh
-        function plotField(this,fieldPlot,range)
+        function plotField(this,field,range)
             if nargin < 3, range = []; end
 
-            this.updateResultVertexData(fieldPlot)
-            EFEMdraw = EFEMDraw(this);
-            EFEMdraw.mesh();
+            this.updateResultVertexData(field)
+            FEMPlot(this).plotMesh();
             if isempty(range)
                 colorbar;
             else
@@ -714,6 +851,19 @@ classdef Model < handle
                 set(c,'Limits',range)
             end
 
+        end
+
+        % -----------------------------------------------------------------
+        % Plot given field along a given segment
+        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot)
+            if nargin < 5
+                npts     = 100;
+                axisPlot = 'x';
+            end
+            if nargin < 6
+                axisPlot = 'x';
+            end
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
         end
 
     end
