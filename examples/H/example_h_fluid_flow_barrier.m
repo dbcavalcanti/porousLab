@@ -25,7 +25,7 @@ mdl = Model_H();
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(10.0, 10.0, 5, 5);
+[node, elem] = regularMesh(10.0, 10.0, 20, 20);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -56,7 +56,7 @@ mdl.setPressureDirichletBCAtBorder('top', 10.0);
 
 % Create discontinuities
 Dx = [0.0; 10.0];  % X-coordinates of polyline defining the fracture
-Dy = [5.0; 5.0];  % Y-coordinates of polyline defining the fracture
+Dy = [8.0; 3.0];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
 % Set fracture material properties
@@ -69,8 +69,17 @@ mdl.addPreExistingDiscontinuities(fracture);
 
 %% PROCESS
 
-% Run analysis
-anl = Anl_Linear();
+% Analysis parameters
+ti        = 1.0;     % Initial time
+dt        = 1.0;     % Time step
+tf        = 8000.0;  % Final time
+dtmax     = 500.0;   % Maximum time step
+dtmin     = 0.001;   % Minimum time step
+adaptStep = true;    % Adaptive step size
+
+% Initialize
+anl = Anl_Transient("Newton");
+anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.run(mdl);
 
 %% POST-PROCESS
