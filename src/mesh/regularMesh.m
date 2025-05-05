@@ -1,7 +1,7 @@
 %% regularMesh Function
 % This function generates a regular finite element mesh with quadrilateral
 % elements. It allows for optional quadratic distribution of nodes in the
-% x and y directions and supports both linear quadrilateral (Q4) and
+% x and y directions and supports both linear quadrilateral (ISOQ4) and
 % constant strain triangle (CST) element types.
 % 
 %% Inputs
@@ -11,8 +11,8 @@
 % * *Ny*: Number of elements in the y-direction (integer)
 % * *xo*: Fixed x-coordinates (optional, default: [])
 % * *yo*: Fixed y-coordinates (optional, default: [])
-% * *type*: Type of finite element ('Q4' for quadrilateral or 'CST' for 
-%           constant strain triangle, default: 'Q4')
+% * *type*: Type of finite element ('ISOQ4' for quadrilateral or 'CST' for 
+%           constant strain triangle, default: 'ISOQ4')
 % * *quadDistrX*: Flag for quadratic distribution in x-direction 
 %                 (optional, default: false)
 % * *quadDistrY*: Flag for quadratic distribution in y-direction 
@@ -21,9 +21,9 @@
 %% Outputs
 % * *Node*: Matrix of node coordinates (Nx*Ny x 2), where each row 
 %           contains the x and y coordinates of a node.
-% * *ELEM*: Matrix of element connectivity. Each row defines the nodes
-%           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
-%           each row has 3 nodes.
+% * *ELEM*: Cell of element connectivity. Each row defines the nodes
+%           forming an element. For 'ISOQ4', each row has 4 nodes; 
+%           for 'CST', each row has 3 nodes.
 %
 %% Author
 % Danilo Cavalcanti
@@ -35,7 +35,7 @@
 function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 
 if nargin < 5, xo = []; yo = []; end
-if nargin < 7, type = 'Q4'; end
+if nargin < 7, type = 'ISOQ4'; end
 if nargin < 9, quadDistrX = false; quadDistrY = false; end
 
 % Get the x and y coordinates of the nodes
