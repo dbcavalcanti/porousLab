@@ -44,8 +44,9 @@ classdef EnrichedElement_M < RegularElement_M
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
-        addStretchingMode = false;
+        addStretchingMode  = false;
         addRelRotationMode = false;
+        condenseEnrDofs    = true;
     end
     %% Constructor method
     methods
@@ -53,12 +54,13 @@ classdef EnrichedElement_M < RegularElement_M
         function this = EnrichedElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
-                addRelRotationMode,addStretchingMode)
+                addRelRotationMode,addStretchingMode, condenseEnrDofs)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
             this.addStretchingMode  = addStretchingMode;
             this.addRelRotationMode = addRelRotationMode;
+            this.condenseEnrDofs    = condenseEnrDofs;
         end
     end
     
@@ -98,21 +100,37 @@ classdef EnrichedElement_M < RegularElement_M
         function [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this)
 
             % Initialize the matrices and vectors that will be returned
-            Ce    = zeros(this.nglu, this.nglu);
-            dfidu = zeros(this.nglu, this.nglu);
+            Ce    = zeros(this.ngle, this.ngle);
+            dfidu = zeros(this.ngle, this.ngle);
 
-            % Compute the sub-matrices
-            [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.solveLocalEq();
+            if this.condenseEnrDofs
+                % Compute the sub-matrices
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu] = this.solveLocalEq();
+    
+                % Static condensation of the enrichment dofs
+                Ke = Kuu - Kua * (Kaa\Kau);
+                fi = fiu - Kua * (Kaa\fia);
+                fe = feu;
+            else
+                % Get enrichment dofs
+                ae = this.ue(this.nglu+1:end);
 
-            % Static condensation of the enrichment dofs
-            Ke = Kuu - Kua * (Kaa\Kau);
-            fi = fiu - Kua * (Kaa\fia);
+                % Compute sub-matrices
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
+
+                % Assemble element matrices
+                Ke = [ Kuu , Kua;
+                       Kau , Kaa];
+                fi = [ fiu; fia];
+                fe = [ feu; fea];
+
+            end
 
         end
 
         %------------------------------------------------------------------
         %  Solves the local equilibrium equation for an enriched element
-        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = solveLocalEq(this)
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = solveLocalEq(this)
 
             % Initialize the enrichment dofs vector
             nEnrDofs = this.getNumberEnrichedDofs();
@@ -127,7 +145,7 @@ classdef EnrichedElement_M < RegularElement_M
             for i = 1:maxIter
 
                 % Compute sub-matrices
-                [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = this.fillElementSubData(ae);
+                [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
 
                 % Check convergence
                 if (norm(fia) < tol)
@@ -154,7 +172,7 @@ classdef EnrichedElement_M < RegularElement_M
         %------------------------------------------------------------------
         % Computes and assembles the sub-matrices and sub-vectors for an
         % enriched finite element
-        function [Kuu, Kua, Kau, Kaa, fiu, fia, fe] = fillElementSubData(this,ae)
+        function [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = fillElementSubData(this,ae)
 
             % Get the number of dofs of each type
             nEnrDofs = this.getNumberEnrichedDofs();
@@ -171,7 +189,8 @@ classdef EnrichedElement_M < RegularElement_M
             fia = zeros(nEnrDofs,1);
 
             % Initialize external force vector
-            fe = zeros(this.nglu, 1);
+            feu = zeros(nRegDofs, 1);
+            fea = zeros(nEnrDofs, 1);
 
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
@@ -215,7 +234,7 @@ classdef EnrichedElement_M < RegularElement_M
                 
                 % Compute the gravity forces
                 if (this.gravityOn)
-                    fe = this.addGravityForces(fe,this.intPoint(i).X,c);
+                    feu = this.addGravityForces(feu,this.intPoint(i).X,c);
                 end
             end
 
@@ -284,6 +303,16 @@ classdef EnrichedElement_M < RegularElement_M
         % Adds a discontinuity segment to the element
         function addDiscontinuitySegment(this,dseg)
             this.discontinuity = [this.discontinuity; dseg];
+        end
+
+        %------------------------------------------------------------------
+        % Adds the discontinuities dofs to the element dof vector
+        function addEnrichmentToDofVector(this)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                this.gle = [this.gle, this.discontinuity(i).dof];
+            end
+            this.ngle = length(this.gle);
         end
 
         %------------------------------------------------------------------
