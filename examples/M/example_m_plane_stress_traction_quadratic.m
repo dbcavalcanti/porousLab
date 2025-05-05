@@ -40,9 +40,9 @@ mdl.resequenceNodes();
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical = 'elastic';  % Elastoplastic with von Mises criteria 
-rock.Young      = 2.0e+10;      % Young modulus (Pa)
-rock.nu         = 0.0;          % Poisson ratio
+rock.mechanical = 'elastic';  % Constitutive law
+rock.Young      = 2.0e+10;    % Young modulus (Pa)
+rock.nu         = 0.0;        % Poisson ratio
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -57,6 +57,7 @@ mdl.addLoadAtBorder('right', 1, 2.0e+6);
 
 %% PROCESS
 
+% Run analysis
 anl = Anl_Linear();
 anl.run(mdl);
 

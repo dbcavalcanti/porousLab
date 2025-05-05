@@ -2,7 +2,7 @@
 %
 % McWhorter and Sunada problem using the Pl-Pg two-phase flow formulation
 %
-% Reference:
+% References:
 % * McWhorter and Sunada (1990). Exact integral solutions for two-phase flow. Water Resour Res, 26(3):399–413.
 %
 % Physics:
