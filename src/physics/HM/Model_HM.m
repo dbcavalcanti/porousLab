@@ -50,6 +50,7 @@ classdef Model_HM < Model_M
             this = this@Model_M(false);
             this.ndof_nd = 3;       % Number of dofs per node
             this.physics = 'HM';    % Tag with the physics name
+            this.condenseEnrDofs = false; % Enrichment dofs are global
             disp("*** Physics: Single-phase flow hydro-mechanical (HM)");
         end
     end
@@ -91,11 +92,19 @@ classdef Model_HM < Model_M
                         'fluid',this.mat.fluid);
                 udofs = this.getElementDofs(el,[1,2]);
                 pdofs = this.getElementDofs(el,3);
-                elements(el) = RegularElement_HM(...
+                if (this.enriched == false)
+                    elements(el) = RegularElement_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress);
+                else
+                    elements(el) = EnrichedElement_HM(...
                             this.NODE(this.ELEM{el},:), this.ELEM{el},...
                             this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
+                end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
@@ -155,13 +164,13 @@ classdef Model_HM < Model_M
         % -----------------------------------------------------------------
         % Initializes an array of discontinuity segments
         function seg = initializeDiscontinuitySegArray(~,n)
-            seg(n,1) = DiscontinuityElement_H([],[]);
+            seg(n,1) = DiscontinuityElement_HM([],[]);
         end
 
         % -----------------------------------------------------------------
         % Initializes a single discontinuity segment
         function seg = initializeDiscontinuitySegment(~,nodeD,matD)
-            seg = DiscontinuityElement_H(nodeD,matD);
+            seg = DiscontinuityElement_HM(nodeD,matD);
         end
 
     end
