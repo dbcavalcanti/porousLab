@@ -80,6 +80,7 @@
 classdef Model < handle    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
+        name                = 'mdl';         % Model name
         physics             = [];            % Physics of the problem
         NODE                = [];            % Nodes of the fem mesh
         ELEM                = [];            % Nodes connectivity
@@ -358,6 +359,19 @@ classdef Model < handle
     
                 % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Reset the model dof vector and state variables
+        function resetModelState(this)
+            if(this.initializeMdl == true)
+                % Reset the displacement vector
+                this.initializeDisplacementVct();
+                % Reset the state variables
+                for el = 1:this.nelem
+                    this.element(el).type.resetIntegrationPts();
+                end
             end
         end
 
@@ -838,24 +852,39 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot given field over the mesh
-        function plotField(this,field,range)
+        function plotField(this,field,range,ax)
             if nargin < 3, range = []; end
+            if nargin < 4 || isempty(ax)
+                figure; 
+                ax = gca;
+            else
+                axes(ax);
+                cla(ax);
+            end
 
             this.updateResultVertexData(field)
-            FEMPlot(this).plotMesh();
+            FEMPlot(this).plotMesh(ax);
             if isempty(range)
-                colorbar;
+                colorbar(ax);
             else
-                clim(range);
-                c = colorbar;
-                set(c,'Limits',range)
+                clim(ax, range);
+                c = colorbar(ax);
+                c.Limits = range;
             end
 
         end
 
         % -----------------------------------------------------------------
         % Plot given field along a given segment
-        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot)
+        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot,ax)
+            if nargin < 7 || isempty(ax)
+                figure;         % Cria nova figura
+                ax = gca;       % Usa o eixo atual
+            else
+                axes(ax);       % Define o eixo alvo
+                cla(ax);        % Limpa o conteúdo
+            end
+            
             if nargin < 5
                 npts     = 100;
                 axisPlot = 'x';
@@ -863,7 +892,7 @@ classdef Model < handle
             if nargin < 6
                 axisPlot = 'x';
             end
-            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot);
+            FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot, ax);
         end
 
     end

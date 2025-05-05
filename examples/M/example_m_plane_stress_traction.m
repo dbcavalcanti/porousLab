@@ -78,7 +78,7 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % Plot contours
-mdl.plotField('Ux');
-mdl.plotField('Sx');
+x');
+mdl.plotField('Umdl.plotField('Sx');
 mdl.plotField('Sy');
 mdl.plotField('Sxy');

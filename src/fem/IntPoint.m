@@ -112,6 +112,22 @@ classdef IntPoint < handle
         end
 
         %------------------------------------------------------------------
+        % Update the integration point
+        function reset(this)
+            nStvar = this.constitutiveMdl.getNumberStateVar();
+            this.strain      = zeros(this.nVar, 1);
+            this.stress      = zeros(this.nVar, 1);
+            this.statevar    = zeros(nStvar,    1);
+            this.strainOld   = zeros(this.nVar, 1);
+            this.stressOld   = zeros(this.nVar, 1);
+            this.statevarOld = zeros(nStvar,    1);
+            if this.constitutiveMdl.hasPlasticStrain()
+                this.plasticstrain    = zeros(this.nVar,1);
+                this.plasticstrainOld = zeros(this.nVar,1);
+            end
+        end
+
+        %------------------------------------------------------------------
         % Get current constitutive matrix
         function D = getConstitutiveMtrx(this,dStrain)
             D = this.constitutiveMdl.constitutiveMtrx(dStrain,this);
