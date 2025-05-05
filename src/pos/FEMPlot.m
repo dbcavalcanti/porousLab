@@ -77,42 +77,49 @@ classdef FEMPlot < handle
 
         %------------------------------------------------------------------
         % Plots the continuum elements of the mesh
-        function plotMesh(this)
-            
-            % Initialize the figure
-            figure
-            hold on, 
-
+        function plotMesh(this, ax)
+            % Verifica se o eixo foi passado
+            if nargin < 2 || isempty(ax)
+                figure;         % Cria nova figura
+                ax = gca;       % Usa o eixo atual
+            else
+                axes(ax);       % Define o eixo alvo
+                cla(ax);        % Limpa o conteúdo
+            end
+        
+            hold(ax, 'on');
+        
             % Get patches
             [Faces, Vertices, VertexData] = this.getElementsPatches();
-            
+        
             % Plot the continuum elements
-            patch('Faces', Faces, ...
-                  'Vertices', Vertices, ...
-                  'FaceVertexCData', VertexData, ...
-                  'FaceColor', this.DEFAULT_FACE_COLOR, ...  
-                  'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
-                  'LineStyle', '-', ...
-                  'Marker', this.DEFAULT_MARKER_TYPE);
-            
+            patch(ax, 'Faces', Faces, ...
+                      'Vertices', Vertices, ...
+                      'FaceVertexCData', VertexData, ...
+                      'FaceColor', this.DEFAULT_FACE_COLOR, ...  
+                      'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
+                      'LineStyle', '-', ...
+                      'Marker', this.DEFAULT_MARKER_TYPE);
+        
             % Set the colormap
-            colormap(this.DEFAULT_COLORMAP_TYPE);
-            
+            colormap(ax, this.DEFAULT_COLORMAP_TYPE);
+        
             % Get the bounding box
             bbox = this.getBoundingBox();
-            xlim([bbox(1) bbox(3)]);
-            ylim([bbox(2) bbox(4)]);
-            
+            xlim(ax, [bbox(1) bbox(3)]);
+            ylim(ax, [bbox(2) bbox(4)]);
+        
             % Formatting the figure
-            box on, grid on, axis equal;
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
-            
+            box(ax, 'on');
+            grid(ax, 'on');
+            axis(ax, 'equal');
+            set(ax, 'FontName', this.DEFAULT_FONT_NAME);
+            set(ax, 'FontSize', this.DEFAULT_FONT_SIZE);
         end
 
         %------------------------------------------------------------------
         % Plots the field along a segment defined by two points Xi and Xf
-        function plotFieldAlongSegment(this, field, Xi, Xf, npts, axisPlot)
+        function plotFieldAlongSegment(this, field, Xi, Xf, npts, axisPlot, ax)
 
             % Coordinates of the points where the given field is going
             % to be evaluated
@@ -138,19 +145,25 @@ classdef FEMPlot < handle
             end
 
             % Initialize, plot and configure the figure
-            figure
-            hold on, box on, grid on
-            if strcmp(axisPlot,'y')
-                plot(F,S,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                xlabel(field);
-                ylabel('Longitudinal distance (m)');
-            elseif strcmp(axisPlot,'x')
-                plot(S,F,this.DEFAULT_COLOR,'LineWidth',this.DEFAULT_LINE_WIDTH);
-                ylabel(field);
-                xlabel('Longitudinal distance (m)');
+            cla(ax);
+            hold(ax, 'on');
+            box(ax, 'on');
+            grid(ax, 'on');
+            
+            % Plota conforme o eixo escolhido
+            if strcmp(axisPlot, 'y')
+                plot(ax, F, S, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                xlabel(ax, field);
+                ylabel(ax, 'Longitudinal distance (m)');
+            elseif strcmp(axisPlot, 'x')
+                plot(ax, S, F, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                ylabel(ax, field);
+                xlabel(ax, 'Longitudinal distance (m)');
             end
-            set(gca,'FontName',this.DEFAULT_FONT_NAME);
-            set(gca,'FontSize',this.DEFAULT_FONT_SIZE);
+            
+            % Aplica formatação
+            set(ax, 'FontName', this.DEFAULT_FONT_NAME);
+            set(ax, 'FontSize', this.DEFAULT_FONT_SIZE);
 
         end
 

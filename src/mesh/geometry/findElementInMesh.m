@@ -32,10 +32,17 @@ function elemId = findElementInMesh(NODE, ELEM, P)
     nelem = size(ELEM, 1);
 
     for i = 1:nelem
-        vertices = NODE(ELEM{i}, :);
 
         % Number of vertices
         nv = length(ELEM{i});
+
+        % Get the corner nodes
+        if (nv == 6) || (nv ==8)
+            nv = nv / 2;
+        end
+        
+        % Get the coordinates of the corner nodes
+        vertices = NODE(ELEM{i}(1:nv), :); 
         
         % Define vertices
         if nv == 3
