@@ -435,6 +435,7 @@ classdef Model < handle
                 this.updateEnrichedElementDofVector();
             end
         end
+        
         %------------------------------------------------------------------
         % Add enrichment dofs to the elements dof vector
         function updateEnrichedElementDofVector(this)
@@ -738,7 +739,7 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
-        % Initializer the discontinuity segments
+        % Initialize the discontinuity segments
         function initializeDiscontinuitySegments(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities

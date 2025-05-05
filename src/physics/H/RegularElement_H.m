@@ -182,7 +182,7 @@ classdef RegularElement_H < RegularElement
         %------------------------------------------------------------------
         % Function to get the nodal values of the liquid pressure
         function pl = getNodalPressure(this)
-            pl = this.ue;
+            pl = this.ue(1:this.nglp);
         end
 
         %------------------------------------------------------------------
