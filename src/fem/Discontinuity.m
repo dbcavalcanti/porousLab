@@ -71,7 +71,7 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
-        leakoff             = [];
+        leakoff             = 1.0;
     end
 
     %% Constructor method
