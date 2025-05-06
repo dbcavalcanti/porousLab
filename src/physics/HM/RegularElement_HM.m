@@ -154,7 +154,7 @@ classdef RegularElement_HM < RegularElement_M
                 K = K + Bu' * Duu * Bu * c;
 
                 % Internal force vector
-                fiu = fiu + Bu' * (stress - biot * pIP * m) * c;
+                fiu = fiu + Bu' * stress * c;
 
                 % Compute the hydromechanical coupling matrices
                 Q = Q + Np' * biot * m' * Bu * c;
@@ -184,10 +184,10 @@ classdef RegularElement_HM < RegularElement_M
             end
 
             % Assemble the element permeability
-            Ke = [ Ouu , Opu';
+            Ke = [ Ouu , -Q';
                    Opu,  H ];
 
-            dfidu = [ K , -Q';
+            dfidu = [ K , Opu';
                      Opu, Opp ];
             
             % Assemble the element compressibility matrix
