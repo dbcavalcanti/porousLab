@@ -25,7 +25,7 @@ mdl = Model_HM();
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(0.1, 1.0, 5, 50);
+[node, elem] = regularMesh(10.0, 16.0, 31, 41);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -53,7 +53,7 @@ mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 
 % Loads
-mdl.addLoadAtBorder('top', 2, -1.0e4);
+mdl.addLoadAtBorder('top', 2, -10.0e3);
 
 % Pressure
 mdl.setPressureDirichletBCAtBorder('top', 0.0);
@@ -62,16 +62,16 @@ mdl.setPressureDirichletBCAtBorder('top', 0.0);
 
 % Polyline that defines the discontinuity
 %                  x     y
-fracture_geom = [ 0.05 , 0.0;
-                  0.05 , 1.0];
+fracture_geom = [ 0.0  , 5.0;
+                  10.0 , 5.0];
 
 fracture = Discontinuity(fracture_geom, true);
 
 % Set fracture material properties
 fracture.cohesiveLaw     = 'elastic';
-fracture.shearStiffness  = 1.0e6;
-fracture.normalStiffness = 1.0e6;
-fracture.initialAperture = 1.0e-3;
+fracture.shearStiffness  = 5.0e6;
+fracture.normalStiffness = 5.0e6;
+fracture.initialAperture = 0.000106265856;
 fracture.fluid           = water;
 fracture.leakoff         = 0.0;
 
@@ -81,10 +81,12 @@ mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS
 
+day = 24*60*60;
+
 % Analysis parameters
-ti = 1.0;    % Initial time
-dt = 1.0;    % Time step
-tf = 100.0;  % Final time
+ti = day;        % Initial time
+dt = day;        % Time step
+tf = 10.0*day;  % Final time
 
 % Run analysis
 anl = Anl_Transient("Newton");
@@ -95,7 +97,5 @@ anl.run(mdl);
 
 % Plot contours
 mdl.plotField('Pressure');
-
-% Plot graphs
-Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
-mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'y');
+hold on;
+fracture.plotIntersectedGeometry();

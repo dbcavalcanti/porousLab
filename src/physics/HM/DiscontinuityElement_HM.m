@@ -21,7 +21,7 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
         %------------------------------------------------------------------
         function this = DiscontinuityElement_HM(node, mat)
             this = this@DiscontinuityElement_M(node, mat)
-            this.ndof = this.ndof_u + this.ndof_jump;
+            this.ndof = this.ndof_u + this.ndof_jump + this.ndof_int;
         end
     end
 
