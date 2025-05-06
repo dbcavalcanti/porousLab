@@ -1,8 +1,8 @@
-%% obtainHTML function
-% This script generates HTML documentation for all MATLAB scripts 
-% (.m files) within the porousLab repository, excluding specific folders 
-% and files. The generated HTML files are saved in the _docs/html_ 
-% directory of the repository. If _docs/html_ doesn't exist, it is created.
+%% obtainHTML Function
+% This script generates HTML documentation for all MATLAB scripts (.m files)
+% within the porousLab repository, excluding specific folders and files.
+% The generated HTML files are saved in the _docs/html_ directory of the repository.
+% If _docs/html_ doesn't exist, it is created.
 % 
 %% Functionalities
 % 1. Identifies the current script's path and repository structure.
@@ -15,14 +15,7 @@
 % 
 %% Usage
 % Run this script from within the porousLab repository to generate HTML 
-% documentation % for all MATLAB scripts, excluding specified folders and 
-% files.
-% 
-%% Exclusions and error handling
-% * If a script fails to publish, the error is caught, and the script name 
-%   is logged in the _failedScripts_ list.
-% * The script identifies and filters out duplicate file names to ensure 
-%   that each file is processed only once.
+% documentation for all MATLAB scripts, excluding specified folders and files.
 % 
 %% Specify input and output paths
 clear; clc; close all;

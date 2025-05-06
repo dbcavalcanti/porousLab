@@ -19,7 +19,7 @@
 %
 %% Class Definition
 classdef CapillaryPressure < handle    
-    %% Public attributes
+    %% Public properties
     properties (SetAccess = public, GetAccess = public)
         id = 'name1';   
     end

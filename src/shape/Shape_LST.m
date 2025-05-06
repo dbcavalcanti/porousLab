@@ -1,43 +1,8 @@
 %% Shape_LST Class
-% Class defining the behavior of a linear strain triangular (LST)
-% isoparametric element. It provides methods for evaluating shape functions,
-% computing derivatives, Jacobian matrices, strain-displacement matrices, 
-% and other operations related to finite element analysis.
-%
-%% Methods
-% * *shapeFnc*: Evaluate the shape function at a given point in natural 
-%               coordinates.
-% * *shapeFncMtrx*: Get the shape function matrix.
-% * *NuMtrx*: Get the shape function matrix for displacement interpolation.
-% * *shapeFncDrv*: Compute the derivatives of the shape functions with 
-%                  respect to natural coordinates.
-% * *JacobianMtrx*: Compute the Jacobian matrix.
-% * *detJacobian*: Compute the determinant of the Jacobian matrix.
-% * *dNdxMatrix*: Compute the derivatives of the shape functions with 
-%                 respect to global coordinates.
-% * *BMatrix*: Compute the strain-displacement matrix.
-% * *getIntegrationPoints*: Get the integration points and weights for 
-%                           numerical integration.
-% * *coordNaturalToCartesian*: Transform a point from natural to global 
-%                              Cartesian coordinates.
-% * *coordCartesianToNatural*: Transform a point from global Cartesian to 
-%                              natural coordinates.
-% * *areaTriangle*: Compute the area of a triangle given its vertices.
-% * *getSizeGramMtrx*: Get the size of the Gram matrix.
-% * *integrandGramMtrx*: Compute the integrand for the Gram matrix.
-% * *getSizeStressIntVct*: Get the size of the stress interpolation vector.
-% * *centroid*: Compute the centroid of the element.
-% * *polynomialStress*: Define the polynomial stress interpolation.
-% * *integrandStressIntVct*: Compute the integrand for the stress 
-%                            interpolation vector.
-% * *getTriangleLinearQuadrature*: Get the linear quadrature points and 
-%                                  weights for a triangle.
+% This class inherits from the base class 'Shape' to implement the behavior of a linear strain triangular (LST) isoparametric element.
 % 
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00: Initial version (March 2023).
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class Definition
 classdef Shape_LST < Shape
@@ -48,9 +13,9 @@ classdef Shape_LST < Shape
         end
     end
 
-    %% Public methods: methods defined in the abstract superclass
+    %% Public methods
     methods
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % triangular isoparametric element.
          function N = shapeFnc(~,Xn)
@@ -64,17 +29,17 @@ classdef Shape_LST < Shape
             N4 = 4*r - 4*r*r - 4*r*s;
             N5 = 4*r*s;
             N6 = 4*s - 4*r*s - 4*s*s;
-            N   = [ N1  N2  N3  N4  N5  N6 ];
+            N  = [ N1  N2  N3  N4  N5  N6 ];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the shape function matrix
          function N = shapeFncMtrx(this,Xn)
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,N)
              % Vector with the shape functions
@@ -82,7 +47,7 @@ classdef Shape_LST < Shape
                    0.0   N(1)  0.0   N(2)  0.0   N(3)  0.0   N(4)  0.0   N(5)  0.0   N(6)];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = shapeFncDrv(~,Xn)
@@ -107,7 +72,7 @@ classdef Shape_LST < Shape
                         dN1_ds  dN2_ds  dN3_ds  dN4_ds  dN5_ds  dN6_ds];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
             % Compute the shape function derivatives wrt to the natural
@@ -118,7 +83,7 @@ classdef Shape_LST < Shape
             J = dNdxn*X;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
             % Jacobian matrix
@@ -126,7 +91,7 @@ classdef Shape_LST < Shape
             detJ = det(J);
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
             % Jacobian matrix
@@ -144,7 +109,7 @@ classdef Shape_LST < Shape
             dNdx = J\dNdxn;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
             B = zeros(4,6*2);
@@ -155,7 +120,7 @@ classdef Shape_LST < Shape
             end
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the integration points:
          % Output:
          %      X: Coordinates of the integration points in the natural
@@ -178,7 +143,7 @@ classdef Shape_LST < Shape
 
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -229,7 +194,7 @@ classdef Shape_LST < Shape
             Xn = [xi2, xi3];
          end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Compute the area of a triangle given the three point in
         % counterclock-wise order
         function A = areaTriangle(~, P1, P2, P3)
@@ -238,14 +203,14 @@ classdef Shape_LST < Shape
             A = (P1P2(1)*P1P3(2) - P1P2(2)*P1P3(1))*0.5;
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Size of the Gram matrix
         % The stress field in a LST element is linear
         function n = getSizeGramMtrx(~)
             n = 3;
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Integrand to compute the Gram Matrix
         % The definition of this matrix is associated to the order of the
         % stress field inside the element domain. For a linear
@@ -264,25 +229,25 @@ classdef Shape_LST < Shape
                    Xrel(2)    Xrel(1)*Xrel(2)   Xrel(2)*Xrel(2)];  
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Size of the stress interpolation vector
         function n = getSizeStressIntVct(~)
             n = 3;
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Size of the stress interpolation vector
         function X = centroid(this,NODE)
             X = coordNaturalToCartesian(this,NODE,[1/3, 1/3]);
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Polynomial stress interpolation
         function p = polynomialStress(~,X)
             p = [1.0; X(1); X(2)];
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Integrand to compute the stress interpolation vector
         function dS = integrandStressIntVct(~,s,Xrel,jumpOrder)
             if jumpOrder == 0

@@ -1,38 +1,10 @@
 %% Anl_NonlinearQuasiStatic Class
-% This MATLAB class implements the solution of a nonlinear incremental-
-% iterative analysis. It is designed to handle nonlinear structural 
-% analysis using various solution methods, including load control, 
-% displacement control, and arc-length methods.
+% This class inherits from the base class 'Anl' to implement the solution of
+% a quasi-static nonlinear incremental-iterative analysis using different control methods.
 %
-% The code was adapted from the Anl_Nonlinear class from NUMA-TF 
-% (https://gitlab.com/rafaelrangel/numa-tf, Accessed on February 1st, 2023)
-% In the reference code, the stiffness matrix and the internal force vector
-% are computed through different methods. Here both are computed using the
-% same function. Another change that was done was related to the input
-% variable to those methods, now the increment of the displacement vector
-% associated to the iteration is used as an input. To consider the 
-% possibility of material nonlinearity, it was added a method to update 
-% the state variables after the convergence of the iterative process. It 
-% was also added the displacement control method.
-%
-%% Methods
-% * *run*: Executes the nonlinear analysis process, handles iterative
-%          steps, convergence checks, and state variables updates. It also
-%          plots the load-displacement curve upon completion.
-% * *solveSystem*: Solves the partitioned linear system of equations for 
-%                  free degrees of freedom.
-% * *predictedIncrement*: Computes the predicted increment of load ratio 
-%                         for the first iteration.
-% * *correctedIncrement*: Computes the corrected increment of load ratio 
-%                         for subsequent iterations.
-% * *setPlotDof*: Sets the node and degree of freedom to be plotted.
-% * *plotCurves*: Plots the load-displacement curve for the analysis.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
+% * Rafael Rangel (rrangel@cimne.upc.edu)
 % 
 %% Class definition
 classdef Anl_NonlinearQuasiStatic < Anl
@@ -47,9 +19,9 @@ classdef Anl_NonlinearQuasiStatic < Anl
         max_iter      = 10;              % Maximum number of iterations in each step
         trg_iter      = 3;               % Desired number of iterations in each step
         tol           = 1.0e-5;          % Numerical tolerance for convergence
-        ctrlDof       = 1;               % Control dof (for displacement control method)
-        plotNd        = 1;               % Node that will be plotted the dof
-        plotDof       = 1;               % DOF (ux,uy) that will plotted
+        ctrlDof       = 1;               % Control DOF (for displacement control method)
+        plotNd        = 1;               % Node whose DOF will be plotted
+        plotDof       = 1;               % Node's DOF (ux,uy) that will plotted
         Uplot         = [];              % Matrix of nodal displacement vectors of all steps/modes
         lbdplot       = [];              % Vector of load ratios of all steps
     end
@@ -61,18 +33,17 @@ classdef Anl_NonlinearQuasiStatic < Anl
             anl = anl@Anl('NonlinearQuasiStatic');
         end
     end
-    
+
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % Executes the nonlinear analysis process, handles iterative
-        % steps, convergence checks, and state variables updates. It also
-        % plots the load-displacement curve upon completion.
+        % Execute the nonlinear analysis process, handle iterative
+        % steps, convergence checks, and state variables updates.
         function run(this,mdl)
+            disp("*** Performing quasi-static nonlinear analysis...")
+
             % Initialize model object
             mdl.preComputations();
-            
-            disp("*** Performing quasi-static nonlinear analysis...")
 
             % Initialize results
             this.lbdplot = zeros(this.max_step+1,1);
@@ -92,7 +63,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
             % Start incremental process
             while (step < this.max_step)
                 step = step + 1;
-                 fprintf("\n Step: %-4d \n", step);
+                fprintf("\n Step: %-4d \n", step);
 
                 % Tangent stiffness matrix
                 [K,~,~,Fref] = mdl.globalMatrices(U);
@@ -158,7 +129,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
                 % Start iterative process
                 iter = 1;
                 conv = 0;
-                
+
                 while (conv == 0 && iter <= this.max_iter)
                     % Vector of external and internal forces
                     Fext = lbd * Fref;
@@ -238,16 +209,17 @@ classdef Anl_NonlinearQuasiStatic < Anl
                 this.lbdplot = this.lbdplot(1:step+1);
                 this.Uplot = this.Uplot(1:step+1);
             end
-            
+
+            % Save final result
             mdl.U = U;
 
             disp("*** Analysis completed!");
         end
 
         %------------------------------------------------------------------
-        % Partition and solve a linear system of equations.
-        %  f --> free d.o.f. (natural B.C. - unknown) 
-        %  c --> constrained d.o.f. (essential B.C. - known) 
+        % Partition and solve a linear system of equations for free DOFs:
+        %  f --> free DOF (natural B.C. - unknown) 
+        %  c --> constrained DOF (essential B.C. - known) 
         %
         % [ Kff Kfs ] * [ Uf ] = [ Fext ]
         % [ Ksf Kss ]   [ Us ] = [   R  ]
@@ -269,65 +241,54 @@ classdef Anl_NonlinearQuasiStatic < Anl
         end
 
         %------------------------------------------------------------------
-        % Compute inrement of load ratio for the predicted solution
-        % (first iteration)
+        % Compute inrement of load ratio for the predicted solution (first iteration).
         function d_lbd0 = predictedIncrement(this,mdl,sign,J,GSP,D_lbd,d_lbd0,D_U,d_Up0,Pref)
-            % Extract free d.o.f. components
+            % Extract free DOF components
             Pref  = Pref(mdl.doffree);
             D_U   = D_U(mdl.doffree);
             d_Up0 = d_Up0(mdl.doffree);
-                
-            % LCM: Load Increment
+
+            % Compute increment according to incremental-iterative control method
             if strcmp(this.method,'LoadControl')
                 d_lbd0 = J * abs(d_lbd0);
 
-            % DCM: Displacement Increment
             elseif strcmp(this.method,'DisplacementControl')
                 d_lbd0 = J * sign * this.increment / d_Up0(this.ctrlDof);
                 return  % Sign change must not be applied
-                
-            % WCM: Work Increment
+
             elseif strcmp(this.method,'WorkControl')
                 d_lbd0 = J * sqrt(abs((D_lbd*Pref'*D_U)/(Pref'*d_Up0)));
-                
-            % ALCM_FNP: Cylindrical Arc-Length Increment
+
             elseif strcmp(this.method,'ArcLengthFNPControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
-                
-            % ALCM_UNP: Cylindrical Arc-Length Increment
+
             elseif strcmp(this.method,'ArcLengthUNPControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
-                
-            % ALCM_CYL: Cylindrical Arc-Length Increment
+
             elseif strcmp(this.method,'ArcLengthCylControl')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
-                
-            % ALCM_SPH: Spherical Arc-Length Increment
+
             elseif strcmp(this.method,'ArcLengthSPHControl')
                 d_lbd0 = J * sqrt((D_U'*D_U + D_lbd^2*(Pref'*Pref)) / (d_Up0'*d_Up0 + Pref'*Pref));
-                
-            % MNCM: Cylindrical Arc-Length Increment
+
             elseif strcmp(this.method,'MinimumNorm')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
-                
-            % ORCM: Cylindrical Arc-Length Increment
+
             elseif strcmp(this.method,'OrthogonalResidual')
                 d_lbd0 = J * sqrt((D_U'*D_U)/(d_Up0'*d_Up0));
-                
-            % GDCM: GSP criteria
+
             elseif strcmp(this.method,'GeneralizedDisplacement')
                 d_lbd0 = J * sqrt(abs(GSP)) * this.increment;
             end
-            
+
             % Apply increment sign
             d_lbd0 = sign * d_lbd0;
         end
-        
-        %--------------------------------------------------------------------------
-        % Compute inrement of load ratio for the corrected solutions
-        % (iterations to correct predicted solution).
+
+        %------------------------------------------------------------------
+        % Compute inrement of load ratio for the corrected solutions (iterations to correct predicted solution).
         function d_lbd = correctedIncrement(this,mdl,d_lbd0,D_lbd,d_Up0,d_U0,d_Up,d_Ur,D_U,Pref,R)
-            % Extract free d.o.f. components
+            % Extract free DOF components
             d_Up0 = d_Up0(mdl.doffree);
             d_U0  = d_U0(mdl.doffree);
             d_Up  = d_Up(mdl.doffree);
@@ -336,65 +297,56 @@ classdef Anl_NonlinearQuasiStatic < Anl
             Pref  = Pref(mdl.doffree);
             R     = R(mdl.doffree);
             
-            % LCM
+            % Compute increment according to incremental-iterative control method
             if strcmp(this.method,'LoadControl')
                 d_lbd = 0;
-            
-            % DCM
+
             elseif strcmp(this.method,'DisplacementControl')
                 d_lbd = -d_Ur(this.ctrlDof)/d_Up(this.ctrlDof);
-                
-            % WCM
+
             elseif strcmp(this.method,'WorkControl')
                 d_lbd = -(Pref'*d_Ur)/(Pref'*d_Up);
-                
-            % ALCM_FNP
+
             elseif strcmp(this.method,'ArcLengthFNPControl')
                 d_lbd = -(d_Ur'*d_U0)/(d_Up'*d_U0 + d_lbd0*(Pref'*Pref));
-                
-            % ALCM_UNP
+
             elseif strcmp(this.method,'ArcLengthUNPControl')
                 d_lbd = -(d_Ur'*D_U)/(d_Up'*D_U + D_lbd*(Pref'*Pref));
-                
-            % ALCM_CYL
+
             elseif strcmp(this.method,'ArcLengthCylControl')
                 a = d_Up'*d_Up;
                 b = d_Up'*(d_Ur + D_U);
                 c = d_Ur'*(d_Ur + 2*D_U);
                 s = sign(D_U'*d_Up);
                 d_lbd = -b/a + s*sqrt((b/a)^2 - c/a);
-                
-            % ALCM_SPH
+
             elseif strcmp(this.method,'ArcLengthSPHControl')
                 a = d_Up'*d_Up + Pref'*Pref;
                 b = d_Up'*(d_Ur + D_U) + D_lbd*(Pref'*Pref);
                 c = d_Ur'*(d_Ur + 2*D_U);
                 s = sign(D_U'*d_Up);
                 d_lbd = -b/a + s*sqrt((b/a)^2 - c/a);
-                
-            % MNCM
+
             elseif strcmp(this.method,'MinimumNorm')
                 d_lbd = -(d_Up'*d_Ur)/(d_Up'*d_Up);
-                
-            % ORCM
+
             elseif strcmp(this.method,'OrthogonalResidual')
                 d_lbd = -(R'*D_U)/(Pref'*D_U);
-                
-            % GDCM
+
             elseif strcmp(this.method,'GeneralizedDisplacement')
                 d_lbd = -(d_Up0'*d_Ur)/(d_Up0'*d_Up);
             end
         end
 
         %------------------------------------------------------------------
-        % Sets the node and degree of freedom to be plotted
+        % Set the node and degree of freedom to be plotted.
         function setPlotDof(this,nd,dof)
             this.plotNd  = nd;
             this.plotDof = dof;
         end
 
         %------------------------------------------------------------------
-        % Plots the load-displacement curve for the analysis
+        % Plot the load-displacement curve for the analysis.
         function plotCurves(this)
             figure;
             hold on, box on, grid on, axis on;

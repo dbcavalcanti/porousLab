@@ -1,38 +1,15 @@
 %% Anl_Transient Class
-% The _Anl_Transient_ class is a subclass of `Anl` that implements a 
-% transient nonlinear analysis framework. It provides methods and 
-% properties to perform time-dependent simulations with implicit time 
-% integration schemes.
-% 
-%% Methods
-% * *run*: Executes the transient nonlinear analysis on the provided model 
-%          object _mdl_. 
-%   Handles time-stepping, convergence checks, and updates the model state.
-% * *setPicardRelaxation*: Enables or disables relaxation for the Picard 
-%                          nonlinear solution scheme.
-% * *setRelativeConvergenceCriteria*: Enables or disables normalization of 
-%                                     the error for relative convergence 
-%                                     criteria.
-% * *printStep*: Prints the solution vector _X_ for each node in the model 
-%                _mdl_.
-% * *decomposeResidualVct*: Decomposes the residual vector into pressure 
-%                           and pressure gradient components. Returns 
-%                           their normalized values.
-% * *setUpTransientSolver*: Configures the transient solver with the 
-%                           specified initial time, time step, final time, 
-%                           maximum time step, minimum time step, and 
-%                           adaptive step flag.
+% This class inherits from the base class 'Anl' to implement the solution of
+% a transient nonlinear analysis with implicit time integration schemes.
 %
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef Anl_Transient < Anl
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
+        nlscheme    = [];     % Nonlinear solution scheme
         theta       = 1.0;    % Implicit time integration scheme parameter
         ti          = 0.01;   % Initial time
         tf          = 1.0;    % Final time
@@ -42,7 +19,6 @@ classdef Anl_Transient < Anl
         adaptStep   = false;  % Adaptive step size
         maxIter     = 250;    % Maximum number of iterations
         maxAttempts = 10;     % Maximum attempts to converge
-        nlscheme    = [];     % Nonlinear solution scheme
     end
 
     %% Constructor method
@@ -69,18 +45,18 @@ classdef Anl_Transient < Anl
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % Executes the transient nonlinear analysis on the provided model 
-        % object
+        % Execute the transient nonlinear analysis, handle time-stepping,
+        % convergence checks, and update the model state.
         function run(this,mdl)
+            disp("*** Performing transient nonlinear analysis...")
+
+            % Initialize model object
+            mdl.preComputations();
+
             % Initialize analysis parameters
             t    = this.ti;
             t0   = this.ti;
             step = 1;
-
-            % Initialize model object
-            mdl.preComputations();
-            
-            disp("*** Performing transient nonlinear analysis...")
 
             % Initialize solution vector
             X  = mdl.U;
@@ -102,7 +78,7 @@ classdef Anl_Transient < Anl
 
                 while attempt < this.maxAttempts
                     iter = 1;
-                    
+
                     while true
                         % Compute model global matrices
                         [A,b] = mdl.getLinearSystem(X,XOld,this.nlscheme,this.dt);
@@ -153,7 +129,7 @@ classdef Anl_Transient < Anl
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
                     this.dt = min(2 * this.dt, this.dtMax);
                 end
-                
+
                 % Update time
                 t0 = t;
                 if (t + this.dt) > this.tf
@@ -177,57 +153,7 @@ classdef Anl_Transient < Anl
         end
 
         %------------------------------------------------------------------
-        % Enables or disables relaxation for the Picard nonlinear 
-        % solution scheme
-        function setPicardRelaxation(this,flag)
-            this.nlscheme.applyRelaxation = flag;
-        end
-
-        %------------------------------------------------------------------
-        % Enables or disables normalization of the error for relative 
-        % convergence criteria.
-        function setRelativeConvergenceCriteria(this,flag)
-            this.nlscheme.normalizeError = flag;
-        end
-
-        %------------------------------------------------------------------
-        % Prints the solution vector _X_ for each node in the model 
-        % _mdl_.
-        function printStep(~,X,mdl)
-            for i = 1:mdl.nnodes
-                fprintf("  %4d: \t", i);
-                for j = 1:mdl.ndof_nd
-                    fprintf("  %8.4f ", X(mdl.ID(i,j)));
-                end
-                fprintf("\n");
-            end
-        end
-
-        %------------------------------------------------------------------
-        % Decomposes the residual vector into pressure and pressure 
-        % gradient components. Returns their normalized values
-        function [normRp,normRpg] = decomposeResidualVct(~,r,Fext,mdl)
-            rp = r(mdl.pFreeDof);
-            rpg = r(mdl.pgFreeDof);
-
-            nfep = norm(Fext(mdl.pFreeDof));
-            nfepg = norm(Fext(mdl.pgFreeDof));
-
-            if nfep < 1.0e-15
-                nfep = 1.0;
-            end
-            if nfepg < 1.0e-15
-                nfep = 1.0;
-            end
-
-            normRp = norm(rp)/nfep;
-            normRpg = norm(rpg)/nfepg; 
-        end
-
-        %------------------------------------------------------------------
-        % Configures the transient solver with the specified initial time, 
-        % time step, final time, maximum time step, minimum time step, and 
-        % adaptive step flag.
+        % Configure the transient solver with specified parameters.
         function setUpTransientSolver(this,ti,dt,tf,dtMax,dtMin,adaptStep)
             if nargin == 4
                 dtMax = dt;
@@ -240,6 +166,30 @@ classdef Anl_Transient < Anl
             this.adaptStep = adaptStep;
             this.dtMax = dtMax;
             this.dtMin = dtMin;
+        end
+
+        %------------------------------------------------------------------
+        % Enable or disable relaxation for the Picard nonlinear solution scheme.
+        function setPicardRelaxation(this,flag)
+            this.nlscheme.applyRelaxation = flag;
+        end
+
+        %------------------------------------------------------------------
+        % Enable or disable normalization of the error for relative convergence criteria.
+        function setRelativeConvergenceCriteria(this,flag)
+            this.nlscheme.normalizeError = flag;
+        end
+
+        %------------------------------------------------------------------
+        % Prints the solution vector 'X' for each node in the model.
+        function printStep(~,X,mdl)
+            for i = 1:mdl.nnodes
+                fprintf("  %4d: \t", i);
+                for j = 1:mdl.ndof_nd
+                    fprintf("  %8.4f ", X(mdl.ID(i,j)));
+                end
+                fprintf("\n");
+            end
         end
     end
 end
