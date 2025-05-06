@@ -76,7 +76,7 @@ fracture.fluid           = water;
 fracture.leakoff         = 1.0e-19;
 
 % Add fractures to model
-discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', true);
+discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', false);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS

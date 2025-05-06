@@ -32,16 +32,21 @@ classdef EnrichedElement_HM < RegularElement_HM
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
+        addStretchingMode  = false;
+        addRelRotationMode = false
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = EnrichedElement_HM(node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
-                isAxisSymmetric,isPlaneStress)
+                isAxisSymmetric,isPlaneStress, ...
+                addRelRotationMode,addStretchingMode)
             this = this@RegularElement_HM(node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
+            this.addStretchingMode  = addStretchingMode;
+            this.addRelRotationMode = addRelRotationMode;
         end
     end
     
