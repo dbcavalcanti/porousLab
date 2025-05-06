@@ -438,9 +438,14 @@ classdef EnrichedElement_HM < RegularElement_HM
         % Adds the discontinuities dofs to the element dof vector
         function addEnrichmentToDofVector(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
+            ndofa_discontinuity = this.getNumberOfDisplacementDofPerDiscontinuity();
+            dof_a = [];
+            dof_j = [];
             for i = 1:nDiscontinuities
-                this.gle = [this.gle, this.discontinuity(i).dof];
+                dof_a = [dof_a, this.discontinuity(i).dof(1:ndofa_discontinuity)];
+                dof_j = [dof_j, this.discontinuity(i).dof(1+ndofa_discontinuity:end)];
             end
+            this.gle = [this.gle, dof_a, dof_j];
             this.ngle = length(this.gle);
         end
 
