@@ -85,9 +85,9 @@ classdef EnrichedElement_H < RegularElement_H
                Hdd = Hdd + Ldd;
 
                % Assemble matrices
-               Ke = [ Hcc, Hcj, Lcd;
-                      Hjc, Hjj, Ljd;
-                      Ldc, Ldj, Hdd];
+               Ke = [  Hcc,  Hcj, -Lcd;
+                       Hjc,  Hjj, -Ljd;
+                      -Ldc, -Ldj,  Hdd];
 
                Ce = [ Scc,  Scj,  Ocd;
                       Sjc,  Sjj,  Ojd;
