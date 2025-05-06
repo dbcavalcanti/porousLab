@@ -22,6 +22,7 @@ classdef MaterialDiscontinuity_H < handle
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         initialAperture = 0.0;
+        leakoff         = 1.0;
         fluid           = Fluid();
     end  
     %% Constructor method
@@ -30,6 +31,7 @@ classdef MaterialDiscontinuity_H < handle
         function this = MaterialDiscontinuity_H(matData)
             this.initialAperture = matData.initialAperture;
             this.fluid = matData.fluid;
+            this.leakoff = matData.leakoff;
         end
     end
     %% Public methods
@@ -50,7 +52,6 @@ classdef MaterialDiscontinuity_H < handle
             w = this.initialAperture();
             c = w / this.fluid.K;
         end
-
 
     end
 end

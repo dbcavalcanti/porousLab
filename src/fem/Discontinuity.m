@@ -31,6 +31,7 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        leakoff             = 1.0;
     end
 
     %% Constructor method
@@ -107,7 +108,6 @@ classdef Discontinuity < handle
             mat = this.createMaterialDataStructure();
 
             % Initialize discontinuity segments according to the physics
-            % seg = model.initializeDiscontinuitySegArray(n);
             k = 1;
             for i = 1:size(this.Xlin, 1)-1
                 nodes  = [this.Xlin(i,:); this.Xlin(i+1,:)];
@@ -130,7 +130,8 @@ classdef Discontinuity < handle
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
                          'shearStiffness',this.shearStiffness,...
-                         'contactPenalization',this.contactPenalization);
+                         'contactPenalization',this.contactPenalization,...
+                         'leakoff',this.leakoff);
         end
 
         %------------------------------------------------------------------
@@ -149,7 +150,7 @@ classdef Discontinuity < handle
         % Plot intersected polyline (Xlin).
         function plotIntersectedGeometry(this)
             for i = 1:size(this.Xlin, 1)-1
-                if (this.elemID > 0)
+                if (this.elemID(i) > 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
                     plot(seg(:,1), seg(:,2), '-.r', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
                 end
@@ -271,7 +272,7 @@ classdef Discontinuity < handle
                         count = count + 1;
                     end
                 end
-                if count == 2
+                if count > 1
                     eID = i;
                     return
                 end
@@ -345,7 +346,9 @@ classdef Discontinuity < handle
 
         %------------------------------------------------------------------
         % Repel nodes in the mesh that are too close to the discontinuity.
-        % Skip repulsion for nodes close to the first and last nodes of the discontinuity.
+        % Skip repulsion for nodes close to the corners
+        % It can be used for non-rectangular domains, but the borders
+        % identification will not be done properly.
         function repelNodes(this,model)
             % Get mesh from model
             NODE = model.NODE;
@@ -353,9 +356,17 @@ classdef Discontinuity < handle
             % Get the mean characteristic lengths of the elements associated with each node
             Lc = model.getNodeCharacteristicLength();
 
-            % Get the first and last nodes of the discontinuity
-            firstNode = this.X(1,:);
-            lastNode  = this.X(end,:);
+            % Bounding box of the domain
+            xmin = min(NODE(:,1));
+            xmax = max(NODE(:,1));
+            ymin = min(NODE(:,2));
+            ymax = max(NODE(:,2));
+
+            % Corner points
+            corner1 = [xmin , ymin];
+            corner2 = [xmin , ymax];
+            corner3 = [xmax , ymin];
+            corner4 = [xmax , ymax];
 
             % Iterate over each node in the mesh
             for i = 1:size(NODE, 1)
@@ -369,18 +380,30 @@ classdef Discontinuity < handle
                     xlinNode = this.Xlin(j,:);      % Current Xlin node
                     distance = norm(node-xlinNode); % Euclidean distance
 
-                    % Skip repulsion if the Xlin node is the first or last node of the discontinuity
-                    if isequal(xlinNode, firstNode) || isequal(xlinNode, lastNode)
+                    % Skip repulsion if the Xlin node is one of the corners
+                    if isequal(xlinNode, corner1) || isequal(xlinNode, corner2) || isequal(xlinNode, corner3) || isequal(xlinNode, corner4)
                         continue;
                     end
 
                     % If the node is too close, repel it
                     if distance < repelDistance
-                        % Compute normal direction to the discontinuity at this point
-                        normal = this.computeNormal(j);
+
+                        % Get the pertubation direction
+                        if abs(node(1) - xmin) < 1.0e-12
+                            pert_dir = [0.0 , 1.0];
+                        elseif abs(node(1) - xmax) < 1.0e-12
+                            pert_dir = [0.0 , 1.0];
+                        elseif abs(node(2) - ymin) < 1.0e-12
+                            pert_dir = [1.0 , 0.0];
+                        elseif abs(node(2) - ymax) < 1.0e-12
+                            pert_dir = [1.0 , 0.0];
+                        else
+                            % Compute normal direction to the discontinuity at this point
+                            pert_dir = this.computeNormal(j);
+                        end
 
                         % Repel node in the normal direction
-                        NODE(i,:) = node + repelDistance * normal;
+                        NODE(i,:) = node + repelDistance * pert_dir;
                         if this.savePerturbNodes
                             this.PERT = [this.PERT;NODE(i,:)];
                         end
