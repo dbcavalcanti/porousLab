@@ -32,6 +32,7 @@ classdef EnrichedElement_H < RegularElement_H
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
+        condenseInternalPressure = false;
     end
     %% Constructor method
     methods
@@ -70,39 +71,42 @@ classdef EnrichedElement_H < RegularElement_H
                
                % Compute contribution of the discontinuity
                [Hdd, Sdd, Lcc, Lcj, Lcd, Ljc, Ljj, Ljd, Ldc, Ldj, Ldd, Tdc, Tdj] = getDiscontinuitiesData(this);
-               
-               % Condense the internal pressure dofs
-               Hcc = Hcc + Tdc' * Hdd * Tdc;
-               Hcj = Hcj + Tdc' * Hdd * Tdj;
-               Hjc = Hjc + Tdj' * Hdd * Tdc;
-               Hjj = Hjj + Tdj' * Hdd * Tdj;
-               
-               Scc = Scc + Tdc' * Sdd * Tdc;
-               Scj = Scj + Tdc' * Sdd * Tdj;
-               Sjc = Sjc + Tdj' * Sdd * Tdc;
-               Sjj = Sjj + Tdj' * Sdd * Tdj;
 
-               Lcc = Lcc + Tdc' * Ldd * Tdc - Lcd * Tdc - Tdc' * Ldc;
-               Lcj = Lcj + Tdc' * Ldd * Tdj - Lcd * Tdj - Tdc' * Ldj;
-               Ljc = Ljc + Tdj' * Ldd * Tdc - Ljd * Tdc - Tdj' * Ldc;
-               Ljj = Ljj + Tdj' * Ldd * Tdj - Ljd * Tdj - Tdj' * Ldj;
+               % Zero auxiliary matrices
+               Ocd = zeros(this.nglp, size(Hdd,1));
+               Ojd = zeros(size(Hjj,1), size(Hdd,1));
+               od  = zeros(size(Hdd,1),1);
 
                % Add contribution of the coupling matrices
                Hcc = Hcc + Lcc;
                Hcj = Hcj + Lcj;
                Hjc = Hjc + Ljc;
                Hjj = Hjj + Ljj;
+               Hdd = Hdd + Ldd;
+
+               % Assemble matrices
+               Ke = [ Hcc, Hcj, Lcd;
+                      Hjc, Hjj, Ljd;
+                      Ldc, Ldj, Hdd];
+
+               Ce = [ Scc,  Scj,  Ocd;
+                      Sjc,  Sjj,  Ojd;
+                      Ocd', Ojd', Sdd];
+
+               fi = [fic; fij; od];
                
-               % Assemble the element matrices
-               Ke = [ Hcc, Hcj;
-                      Hjc, Hjj];
+               fe = [fec; fej; od];
                
-               Ce = [ Scc, Scj;
-                      Sjc, Sjj];
+               % Condense the internal pressure dofs
+               if this.condenseInternalPressure
+                   T = this.condensationMatrix(Tdc, Tdj);
+                   Ke = T' * Ke * T;
+                   Ce = T' * Ce * T;
+                   fi = T' * fi;
+                   fe = T' * fe;
+               end
                
-               fi = [fic; fij];
                
-               fe = [fec; fej];
            end
         end
 
@@ -188,6 +192,22 @@ classdef EnrichedElement_H < RegularElement_H
                 end
             end
 
+        end
+
+        %------------------------------------------------------------------
+        % Internal pressure dof condensation matrix
+        function T = condensationMatrix(this, Tdc, Tdj)
+            % Number of dofs of each type
+            ndof_c = this.nglp;
+            ndof_j = size(Tdc, 2);
+            % Auxiliary matrices
+            Icc = eye(ndof_c);
+            Ijj = eye(ndof_j);
+            Ocj = zeros(ndof_c, ndof_j);
+            % Condensation matrix
+            T = [ Icc , Ocj;
+                  Ocj', Ijj;
+                  Tdc, Tdj];
         end
 
         %------------------------------------------------------------------
@@ -285,9 +305,15 @@ classdef EnrichedElement_H < RegularElement_H
         % Adds the discontinuities dofs to the element dof vector
         function addEnrichmentToDofVector(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
+            dof_j = []; dof_d = [];
             for i = 1:nDiscontinuities
-                this.gle = [this.gle, this.discontinuity(i).dof];
+                dof_j = [dof_j, this.discontinuity(i).dof(1)];
+                dof_d = [dof_d, this.discontinuity(i).dof(2:end)];
             end
+            if isempty(dof_j)||isempty(dof_d)
+                return
+            end
+            this.gle = [this.gle, dof_j, dof_d];
             this.ngle = length(this.gle);
         end
 

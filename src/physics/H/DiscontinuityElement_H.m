@@ -33,7 +33,7 @@ classdef DiscontinuityElement_H < DiscontinuityElement
         %------------------------------------------------------------------
         function this = DiscontinuityElement_H(node, mat)
             this = this@DiscontinuityElement(node, mat)
-            this.ndof = this.ndof_jump;
+            this.ndof = this.ndof_jump + this.ndof_int;
         end
     end
 
