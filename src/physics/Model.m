@@ -750,7 +750,7 @@ classdef Model < handle
                     if this.condenseEnrDofs == false
                         this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
                         this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
-                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof];
+                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof'];
                     end
                 end
             end

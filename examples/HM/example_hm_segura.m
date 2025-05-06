@@ -25,7 +25,7 @@ mdl = Model_HM();
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(1.0, 1.0, 1, 1);
+[node, elem] = regularMesh(1.0, 1.0, 11, 11);
 
 % Set mesh to model
 mdl.setMesh(node, elem);

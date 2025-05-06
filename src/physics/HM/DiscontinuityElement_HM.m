@@ -12,6 +12,7 @@
 classdef DiscontinuityElement_HM < DiscontinuityElement_M    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
+        ndof_u    = 2;      % Displacement jump dofs
         ndof_jump = 1;      % Pressure jump dofs
         ndof_int  = 2;      % Discontinuity internal pressure dofs
     end
@@ -20,12 +21,32 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
         %------------------------------------------------------------------
         function this = DiscontinuityElement_HM(node, mat)
             this = this@DiscontinuityElement_M(node, mat)
-            this.ndof = 2 + this.ndof_jump;
+            this.ndof = this.ndof_u + this.ndof_jump;
         end
     end
 
     %% Public methods
     methods
+
+        %------------------------------------------------------------------
+        % Enables the stretching mode. If enables, the number of degrees of
+        % freedom increases by 1
+        function addStretchingMode(this,flag)
+            addStretchingMode@DiscontinuityElement_M(this,flag);
+            if flag == true
+                this.ndof_u = this.ndof_u + 1;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Enables the rotation mode. If enables, the number of degrees of
+        % freedom increases by 1
+        function addRelRotationMode(this,flag)
+            addRelRotationMode@DiscontinuityElement_M(this,flag);
+            if flag == true
+                this.ndof_u = this.ndof_u + 1;
+            end
+        end
 
         %------------------------------------------------------------------
         % Initializes the integration points for the element obtaining the
@@ -58,12 +79,15 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
         %   fe    - External force vector.
         %   dfidu - Derivative of internal force with respect to 
         %           displacement.
-        function [Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi, fi, fe, dfidu] = elementData(this, celem, id)
+        function [fidi, Kddi, Qadi, Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi, fi, fe, dfidu] = elementData(this, ae, celem, id)
             
             % Declare output matrices that won't be used
             fi = []; fe = []; dfidu = [];
 
             % Initialize the matrices for the numerical integration
+            fidi = zeros(this.ndof_u, 1);
+            Kddi = zeros(this.ndof_u, this.ndof_u);
+            Qadi = zeros(this.ndof_u, this.ndof_int);
             Hddi = zeros(this.ndof_int,this.ndof_int);
             Sddi = zeros(this.ndof_int,this.ndof_int);
             Lcci = zeros(celem.nglp,celem.nglp);
@@ -73,6 +97,15 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
             Ljdi = zeros(this.ndof_jump,this.ndof_int);
             Lddi = zeros(this.ndof_int,this.ndof_int);
 
+            % Get the discontinuity reference point
+            Xr = this.referencePoint();
+
+            % Get the discontinuity tangential vector
+            m = this.tangentialVector();
+
+            % Get the normal vector
+            nd = this.normalVector();
+
             % Initialize output matrices
             for i = 1:this.nIntPoints
 
@@ -81,6 +114,15 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
 
                 % Cartesian coordinates of the integration point
                 Xcar = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Get the shape function matrix
+                Na = this.displacementJumpInterpolation(Xcar,Xr,m);
+
+                % Compute the strain vector
+                this.intPoint(i).strain = Na * ae;
+
+                % Compute the stress vector and the constitutive matrix
+                [td,Td] = this.intPoint(i).mechanicalLaw();
 
                 % Natural coordinates of the integration in the continuum
                 % element
@@ -110,6 +152,15 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
                 % Numerical integration term. The determinant is ld/2.
                 c = detJ * this.intPoint(i).w * this.t;
 
+                % Compute the stiffness sub-matrix
+                Kddi = Kddi + Na' * Td * Na * c;
+
+                % Compute the internal force vector
+                fidi = fidi + Na' * td * c;
+
+                % Compute the hydromechanical coupling
+                Qadi = Qadi + Na' * nd * N * c;
+
                 % Compute the permeability matrix
                 Hddi = Hddi + dN' * kh * dN * c;
 
@@ -127,6 +178,27 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
             Ljci = Lcji';
             Ldci = Lcdi';
             Ldji = Ljdi';
+        end
+
+        %------------------------------------------------------------------
+        % Computes the enrichment interpolation matrix for the given
+        % integration point coordinates, reference point and tangential
+        % vector
+        function Na = displacementJumpInterpolation(this,X,Xr,m)
+            Na = zeros(2,this.ndof_u);
+            Na(1,1) = 1.0;
+            Na(2,2) = 1.0;
+            if this.ndof_u > 2
+                s = m' * (X' - Xr');
+                c = 3;
+                if this.stretchingMode
+                    Na(1,c) = s;
+                    c = c + 1;
+                end
+                if this.relRotationMode
+                    Na(2,c) = s;
+                end
+            end
         end
     end
 end
