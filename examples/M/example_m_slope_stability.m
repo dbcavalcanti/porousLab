@@ -24,31 +24,30 @@ mdl = Model_M();
 
 % Set model options
 mdl.gravityOn = true;
-
-% Integration quadrature order
-mdl.intOrder = 2;
+mdl.intOrder  = 2; % Integration quadrature order
 
 %% MESH
 
-% Load nodes and elements
+% Load mesh
 load('MeshSlopeStabilityTransfinite');
 [node, elem] = convertToQuadraticMesh(node, elem);
 save('MeshSlopeStabilityTransfiniteQuadratic.mat', 'node', 'elem');
+
 % Set mesh to model
-mdl.setMesh(node,elem);
+mdl.setMesh(node, elem);
 
 %% MATERIALS
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
+rock.mechanical    = 'druckerPrager';  % Constitutive law
+rock.MCmatch       = "planestrain";    % How Drucker-Prager surfaces matches Mohr-Coulomb
 rock.rho           = 2.0;              % Density (g/cm3)
 rock.Young         = 2.0e+4;           % Young modulus (kPa)
 rock.nu            = 0.49;             % Poisson ratio
 rock.cohesion      = 50.0;             % Cohesion (kPa)
 rock.frictionAngle = 20.0*pi/180;      % Friction angle (rad)
 rock.dilationAngle = 20.0*pi/180;      % Dilation angle
-rock.MCmatch       = "planestrain";    % How the Drucker-Prager surfaces matches the Mohr-Coulomb
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -62,7 +61,7 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
 %% PROCESS
 
-% Configure analysis
+% Setup analysis
 anl = Anl_NonlinearQuasiStatic();
 anl.method        = 'ArcLengthCylControl';
 anl.adjustStep    = true;
@@ -82,8 +81,10 @@ anl.run(mdl);
 
 %% POST-PROCESS
 
-% Plot contours
+% Plot Load Factor vs Displacement
 anl.plotCurves();
+
+% Plot contours
 mdl.plotField('E1');
 mdl.plotField('S1');
 mdl.plotField('PEMAG',[0.0,1.0]);

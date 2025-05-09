@@ -56,7 +56,7 @@ mdl.setMaterial(rock, water);
 mdl.setPressureDirichletBCAtBorder('left', 0.0);
 mdl.setPressureDirichletBCAtBorder('right', 10.0);
 
-%% DISCONTINUITY
+%% DISCONTINUITIES
 
 % Create discontinuities
 Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture

@@ -1,24 +1,17 @@
 %% isInsideRectangle Function
-% This function checks whether a set of points lies inside a rectangle
-% defined by two opposite corners, X1 and X2. The rectangle is assumed to 
-% be axis-aligned.
+% This function checks whether a set of points lies inside a rectangle defined by two opposite corners, X1 and X2.
+% The rectangle is assumed to be axis-aligned.
 % 
 %% Inputs
-% * *P*: A matrix of size Nx2, where each row represents a point (x, y)..
-% * *X1*: A 1x2 vector representing the coordinates of one corner of the 
-%         rectangle.
-% * *X2*: A 1x2 vector representing the coordinates of opposite corner of 
-%         the rectangle.
+% * P* A matrix of size Nx2, where each row represents a point (x, y)..
+% * X1: A 1x2 vector representing the coordinates of one corner of the rectangle.
+% * X2: A 1x2 vector representing the coordinates of opposite corner of the rectangle.
 % 
 %% Outputs
-% * *d*: A column vector of size Nx1, where each element is 1 if the 
-%        corresponding point in P is inside the rectangle, and 0 otherwise.
+% * d: A column vector of size Nx1, where each element is 1 if the corresponding point in P is inside the rectangle, and 0 otherwise.
 %
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Function definition
 function d = isInsideRectangle(P,X1,X2)

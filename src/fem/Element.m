@@ -1,16 +1,8 @@
 %% Element Class
-% This class represents a finite element in a finite element method (FEM) 
-% simulation. It is a handle class, meaning that instances of this class 
-% are passed by reference.
+% This in an abstract class that defines a finite element.
 %
-%% Methods
-% * *Element*: Initializes an instance of the _Element_ class.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef Element < handle
@@ -22,7 +14,6 @@ classdef Element < handle
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        % Constructor method to initialize the _Element_
         function this = Element(type)
             if nargin > 0
                 this.type = type;

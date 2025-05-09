@@ -38,7 +38,7 @@ mdl.setMesh(node, elem);
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical          = 'isoDamage';  % Elastoplastic with von Mises criteria 
+rock.mechanical          = 'isoDamage';  % Constitutive law
 rock.Young               = 2.0e+10;      % Young modulus (Pa)
 rock.nu                  = 0.0;          % Poisson ratio
 rock.kappa               = 10.0;         % Ratio of tensile and compressive strength
@@ -58,7 +58,7 @@ mdl.addLoadAtBorder('right', 1, 2.0e+6);
 
 %% PROCESS
 
-% Configure analysis
+% Setup analysis
 anl = Anl_NonlinearQuasiStatic();
 anl.method     = 'ArcLengthCylControl';
 anl.adjustStep = true;
@@ -77,8 +77,11 @@ anl.run(mdl);
 
 %% POST-PROCESS
 
+% Plot Load Factor vs Displacement
+anl.plotCurves();
+
 % Plot contours
-x');
-mdl.plotField('Umdl.plotField('Sx');
+mdl.plotField('Ux');
+mdl.plotField('Sx');
 mdl.plotField('Sy');
 mdl.plotField('Sxy');

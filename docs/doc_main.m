@@ -23,10 +23,3 @@
 % * <doc_physics_mechanical.html Two-phase fluid flow>.
 % * <doc_physics_mechanical.html Hydro-mechanical with single-phase flow>.
 % * <doc_physics_mechanical.html Hydro-mechanical with two-phase flow>.
-
-
-
-
-
-
-
