@@ -10,4 +10,3 @@ print_header;
 if isequal(file_name, 0), return; end
 addpath(file_path);
 run(file_name);
-rmpath(filepath);
