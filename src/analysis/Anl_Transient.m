@@ -19,6 +19,7 @@ classdef Anl_Transient < Anl
         adaptStep   = false;  % Adaptive step size
         maxIter     = 250;    % Maximum number of iterations
         maxAttempts = 10;     % Maximum attempts to converge
+        echo        = true;   % Flag to print in the command window
     end
 
     %% Constructor method
@@ -66,7 +67,9 @@ classdef Anl_Transient < Anl
             attempt = 1;
             brokenStep = false;
             while (t0 < this.tf)
-                fprintf("\t Time: %12.5f s \n", t);
+                if this.echo
+                    fprintf("\t Time: %12.5f s \n", t);
+                end
 
                 % Update transient solution
                 XOld = X;
@@ -90,7 +93,7 @@ classdef Anl_Transient < Anl
                         [X,dx] = this.nlscheme.eval(A,b,X,dx,mdl.doffree,iter);
 
                         % Check convergence
-                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter);
+                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter,this.echo);
                         if convFlg == true
                             break;
                         end
