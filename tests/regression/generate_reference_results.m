@@ -1,6 +1,7 @@
 %% PorousLab - FEM framework for multiphysics problems in porous media
 %
-% .
+% This is the reference generation file for regression tests in PorousLab.
+% Execute this file to generate or overwrite the reference results of each test case.
 %
 clc; clearvars; close all;
 
@@ -18,7 +19,7 @@ for i = 1:length(test_files)
         run(fullfile(files_dir, test_name));
 
         if ~exist('mdl', 'var') || ~isprop(mdl, 'U') || isempty(mdl.U)
-            warning('⚠️ Skipped: mdl.U not found.\n\n');
+            warning('⚠️ Skipped: mdl.U not found\n\n');
             continue;
         end
 
@@ -28,6 +29,7 @@ for i = 1:length(test_files)
         fprintf('✅ Saved reference results in %s\n\n', ref_name);
 
     catch ME
-        warning('⚠️ Failed to run %s: %s\n\n', test_name, ME.message);
+        warning('⚠️ Skipped: Failed to run\n\n');
+        continue;
     end
 end
