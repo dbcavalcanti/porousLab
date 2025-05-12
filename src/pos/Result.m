@@ -73,5 +73,11 @@ classdef Result < handle
             this.vertexData = vertexData;
         end
 
+        % -----------------------------------------------------------------
+        % Set the vertices of the patches
+        function setInitialVertices(this, vertices)
+            this.vertices0 = vertices;
+        end
+
     end
 end

@@ -183,7 +183,7 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         % Plot original polyline
         function plotOriginalGeometry(this)
-            plot(this.X(:,1), this.X(:,2), '-.xk');
+            plot(this.X(:,1), this.X(:,2), '-.k');
         end
 
         %------------------------------------------------------------------

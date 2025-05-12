@@ -865,12 +865,14 @@ classdef Model < handle
 
             this.updateResultVertexData(field)
             FEMPlot(this).plotMesh(ax);
-            if isempty(range)
-                colorbar(ax);
-            else
-                clim(ax, range);
-                c = colorbar(ax);
-                c.Limits = range;
+            if strcmp(field,"Model") == false
+                if isempty(range)
+                    colorbar(ax);
+                else
+                    clim(ax, range);
+                    c = colorbar(ax);
+                    c.Limits = range;
+                end
             end
 
         end
