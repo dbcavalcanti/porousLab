@@ -27,7 +27,7 @@ for i = 1:length(test_files)
 
     ref_file = fullfile(files_dir, [test_name,'_ref.mat']);
     if ~exist(ref_file, 'file')
-        warning('⚠️ Reference file missing: %s\n', ref_file);
+        warning('⚠️ Reference file missing: %s\n\n', ref_file);
         skipped = skipped + 1;
         continue;
     end
