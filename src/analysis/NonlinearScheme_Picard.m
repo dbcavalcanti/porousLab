@@ -69,14 +69,11 @@ classdef NonlinearScheme_Picard < NonlinearScheme
 
         %------------------------------------------------------------------
         % Check for convergence of the nonlinear scheme.
-        function convFlg = convergence(this,X,~,dX,~, doffree,iter)
+        function convFlg = convergence(this,X,~,dX,~, doffree,iter,echo)
             % Evaluate error
             normError = norm(dX(doffree));
             if this.normalizeError
                 normError = normError / norm(X(doffree));
-                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
-            else
-                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
             end
 
             % Check convergence
@@ -84,6 +81,10 @@ classdef NonlinearScheme_Picard < NonlinearScheme
                 convFlg = true;
             else
                 convFlg = false;
+            end
+
+            if echo
+                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
             end
         end
 

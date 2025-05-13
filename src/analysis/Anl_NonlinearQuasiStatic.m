@@ -24,6 +24,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
         plotDof       = 1;               % Node's DOF (ux,uy) that will plotted
         Uplot         = [];              % Matrix of nodal displacement vectors of all steps/modes
         lbdplot       = [];              % Vector of load ratios of all steps
+        echo          = true;            % Flag to print in the command window
     end
 
     %% Constructor method
@@ -63,7 +64,9 @@ classdef Anl_NonlinearQuasiStatic < Anl
             % Start incremental process
             while (step < this.max_step)
                 step = step + 1;
-                fprintf("\n Step: %-4d \n", step);
+                if this.echo
+                    fprintf("\n Step: %-4d \n", step);
+                end
 
                 % Tangent stiffness matrix
                 [K,~,~,Fref] = mdl.globalMatrices(U);
@@ -142,7 +145,9 @@ classdef Anl_NonlinearQuasiStatic < Anl
                     unbNorm = norm(R(mdl.doffree));
                     forNorm = norm(Fref(mdl.doffree));
                     conv = (unbNorm == 0 || forNorm == 0 || unbNorm/forNorm < this.tol);
-                    fprintf(" iter.: %3d , ||R||/||F|| = %7.3e \n",iter,unbNorm/forNorm);
+                    if this.echo
+                        fprintf(" iter.: %3d , ||R||/||F|| = %7.3e \n",iter,unbNorm/forNorm);
+                    end
                     if conv == 1
                         break;
                     end
@@ -175,15 +180,20 @@ classdef Anl_NonlinearQuasiStatic < Anl
 
                 % Check for convergence fail or complex value of increment
                 if (conv == 0)
-                    disp('Convergence not achieved!');
-                    this.plotCurves();
+                    if this.echo
+                        disp('Convergence not achieved!');
+                    end
                     return;
                 elseif (conv == -1)
-                    disp('Unable to compute load increment!');
+                    if this.echo
+                        disp('Unable to compute load increment!');
+                    end
                     return;
                 end
-                fprintf(' Step %d converged in iteration %-3d\n',step,iter);
-                fprintf(' Load factor: %f\n',lbd);
+                if this.echo
+                    fprintf(' Step %d converged in iteration %-3d\n',step,iter);
+                    fprintf(' Load factor: %f\n',lbd);
+                end
 
                 % Update state variables
                 mdl.updateStateVar();

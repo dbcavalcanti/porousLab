@@ -51,8 +51,10 @@ classdef NonlinearScheme_Newton < NonlinearScheme
 
         %------------------------------------------------------------------
         % Check for convergence of the nonlinear scheme.
-        function convFlg = convergence(this,~,~,~,r,~,iter)
-            fprintf("\t\t iter.: %3d , ||R|| = %7.3e \n",iter,norm(r));
+        function convFlg = convergence(this,~,~,~,r,~,iter,echo)
+            if echo
+                fprintf("\t\t iter.: %3d , ||R|| = %7.3e \n",iter,norm(r));
+            end
             if (norm(r) < this.tol) && (iter > 1)
                 convFlg = true;
             else
