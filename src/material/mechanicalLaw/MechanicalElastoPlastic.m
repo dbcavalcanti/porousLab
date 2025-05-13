@@ -111,7 +111,7 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
                 lambda = lambda + dlambda;
 
                 % Update the plastic strain
-                ep = ep - Ce * dstress;
+                ep = epOld + lambda * n;
 
                 % Check yield condition
                 f = this.yieldCondition(material,ip,stress);
