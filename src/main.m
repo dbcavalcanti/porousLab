@@ -1,7 +1,8 @@
 %% PorousLab - FEM framework for multiphysics problems in porous media
 %
 % This is the main file of PorousLab.
-% To run a simulation, execute this file and select an appropriate problem script.
+% To run a simulation, execute this file and select an appropriate problem 
+% script.
 %
 clc; clearvars; close all;
 addpath(genpath(pwd));

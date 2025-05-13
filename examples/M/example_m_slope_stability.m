@@ -15,7 +15,6 @@ mdl = Model_M();
 
 % Set model options
 mdl.gravityOn = true;
-mdl.intOrder  = 2; % Integration quadrature order
 
 %% MESH
 
