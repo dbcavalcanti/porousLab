@@ -16,17 +16,14 @@
 %                       faces connectivity, vertices coordinates and
 %                       combined vertex data.
 %
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class Definition
 classdef FEMPlot < handle
     %% Public properties
     properties
-        model = [];                     % Handle to an object of the model class
+        model = []; % Handle to an object of the model class
     end
     %% Constant properties
     properties (Constant, Access = private)

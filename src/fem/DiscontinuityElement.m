@@ -1,30 +1,9 @@
 %% DiscontinuityElement Class
-% This class represents a discontinuity element in a finite element mesh.
-% It provides methods to compute geometric and physical properties of the
-% discontinuity, such as its reference point, length, tangential and normal
-% vectors, and the associated Heaviside function. The class also supports
-% updating state variables for integration points.
+% This in an abstract class that defines a discontinuity element in a finite element mesh.
+% It provides methods to compute geometric and physical properties of the discontinuity.
 % 
-%% Methods
-% * *DiscontinuityElement*: Constructor to initialize the element with 
-%                           given nodes and material.
-% * *elementData*: Abstract method to compute element data such as 
-%                  stiffness matrix, damping matrix, and force vectors.
-% * *referencePoint*: Computes the reference point of the discontinuity.
-% * *ld*: Computes the length of the discontinuity.
-% * *tangentialVector*: Computes the tangential vector of the 
-%                       discontinuity.
-% * *normalVector*: Computes the normal vector of the discontinuity.
-% * *heaviside*: Computes the Heaviside function associated with the 
-%                discontinuity at a given point X.
-% * *updateStateVar*: Updates the state variables, stress vector, and 
-%                     strain vector for all integration points.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef DiscontinuityElement < handle    
@@ -56,28 +35,25 @@ classdef DiscontinuityElement < handle
     %% Abstract methods
     methods(Abstract)
         %------------------------------------------------------------------
-        % This function assembles the element matrices and vectors 
-        %
-        % Output:
+        % Assemble element matrices and vectors.
+        % Outputs:
         %    Ke : element "stiffness" matrix
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force with 
-        %         respect to displacement
-        %
+        % dfidu : element matrix of derivative of the internal force wrt displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     end
 
     %% Public methods
     methods
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Compute discontinuity reference point.
         function Xr = referencePoint(this)
             Xr = 0.5 * (this.node(1,:) + this.node(2,:));
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Compute discontinuity length.
         function l = ld(this)
             dx = this.node(2,1) - this.node(1,1);
@@ -85,23 +61,23 @@ classdef DiscontinuityElement < handle
             l  = sqrt(dx.^2 + dy.^2);
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Compute discontinuity tangential vector.
         function m = tangentialVector(this)
             DX = this.node(2,:) - this.node(1,:);
             m  = DX' / norm(DX);
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Compute discontinuity normal vector.
-        % Defined considering n = ez x m, where ez = [0 0 1].
+        % Defined considering n = ez * m, where ez = [0 0 1].
         function n = normalVector(this)
             m = this.tangentialVector();
             n = [-m(2) ; m(1)];
         end
 
-        % -----------------------------------------------------------------
-        % Compute heaviside function associated with this discontinuity.
+        %------------------------------------------------------------------
+        % Compute heaviside function associated with the discontinuity at a given point.
         function h = heaviside(this,X)
             n  = this.normalVector();
             Xr = this.referencePoint();
@@ -110,15 +86,13 @@ classdef DiscontinuityElement < handle
         end
 
         %------------------------------------------------------------------
-        % Initialize degrees of freedom vector
-        % Input:
-        %   - ndofs: number of dofs in the model
+        % Initialize degrees of freedom vector.
         function initializeDofs(this,ndofs)
             this.dof = 1:this.ndof;
             this.dof = this.dof + ndofs;
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Update state variables.
         function updateStateVar(this)
             for i = 1:this.nIntPoints

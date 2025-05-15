@@ -1,48 +1,8 @@
 %% Discontinuity Class
-% This class represents a discontinuity in a finite element mesh. It 
-% provides methods for defining, intersecting, and manipulating 
-% discontinuities, as well as initializing discontinuity segments for 
-% further analysis.
+% This in an abstract class that defines a discontinuity in a finite element mesh.
 %
-%% Methods
-% * *setNodeRepel*: Sets the flag to enable/disable the repel process.
-% * *setRepelTol*: Sets the node repel tolerance.
-% * *setSavePerturbNodes*: Sets the flag to save the perturbed nodes.
-% * *intersectMesh*: Intersects the discontinuity with the mesh and 
-%                    optionally applies the repel process.
-% * *initializeDiscontinuitySegments*: Initializes discontinuity segments
-%                                      based on the intersected geometry 
-%                                      and material properties.
-% * *mat*: Creates the material data strcture
-% * *createMaterialDataStructure*: Creates a material data structure for 
-%                                  the discontinuity.
-% * *getNumberOfDiscontinuitySegments*: Returns the number of discontinuity
-%                                       segments.
-% * *plotOriginalGeometry*: Plots the original polyline geometry.
-% * *plotIntersectedGeometry*: Plots the intersected polyline geometry 
-%                              (Xlin).
-% * *plotPerturbNodes*: Plots the perturbed nodes.
-% * *computeXlin*: Computes the linearized polyline (Xlin) by intersecting
-%                  the discontinuity with the mesh.
-% * *findElementIDsForXlinSegments*: Finds the element IDs for each segment
-%                                    of the linearized polyline (Xlin).
-% * *findElementContainingSegment*: Finds the element ID that contains the 
-%                                   given segment.
-% * *extractEdgesMesh*: Extracts edges from the element connectivity 
-%                       matrix.
-% * *extractEdgesElement*: Extracts edges from a single element's 
-%                          connectivity.
-% * *computeNormal*: Computes the normal vector to the discontinuity at a
-%                    given point in Xlin.
-% * *repelNodes*: Repels nodes in the mesh that are too close to the 
-%                 discontinuity, skipping nodes near the first and last 
-%                 points of the discontinuity.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef Discontinuity < handle    
@@ -78,7 +38,9 @@ classdef Discontinuity < handle
     methods
         %------------------------------------------------------------------
         function this = Discontinuity(X,useRepel)
-            if nargin == 0, X = []; end
+            if nargin == 0
+                X = [];
+            end
             this.X = X;
             if nargin > 1
                 this.useRepel = useRepel;
@@ -89,19 +51,19 @@ classdef Discontinuity < handle
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % Sets the flag to enable/disable the repel process
+        % Set flag to enable/disable the repel process.
         function setNodeRepel(this,flag)
             this.useRepel = flag;
         end
 
         %------------------------------------------------------------------
-        % Sets the node repel tolerance
+        % Set node repel tolerance.
         function setRepelTol(this,tol)
             this.repelTol = tol;
         end
 
         %------------------------------------------------------------------
-        % Sets the flag to save the perturbed nodes
+        % Set flag to save perturbed nodes.
         function setSavePerturbNodes(this,flag)
             this.savePerturbNodes = flag;
         end
@@ -138,14 +100,13 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Initializes discontinuity segments based on the intersected 
-        % geometry and material properties
+        % Initialize discontinuity segments based on the intersected geometry and material properties.
         function initializeDiscontinuitySegments(this,model)
             n = this.getNumberOfDiscontinuitySegments();
 
             % Create material data structure
             mat = this.createMaterialDataStructure();
-            
+
             % Initialize discontinuity segments according to the physics
             k = 1;
             for i = 1:size(this.Xlin, 1)-1
@@ -162,10 +123,9 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Creates the material data strcture
+        % Create material data strcture.
         function mat = createMaterialDataStructure(this)
-            mat = struct( ...
-                         'fluid',this.fluid,...
+            mat = struct('fluid',this.fluid,...
                          'cohesiveLaw',this.cohesiveLaw, ...
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
@@ -175,19 +135,19 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Gets the number of discontinuities
+        % Get number of discontinuities.
         function n = getNumberOfDiscontinuitySegments(this)
             n = sum(this.elemID > 0);
         end
 
         %------------------------------------------------------------------
-        % Plot original polyline
+        % Plot original polyline.
         function plotOriginalGeometry(this)
             plot(this.X(:,1), this.X(:,2), '-.k');
         end
 
         %------------------------------------------------------------------
-        % Plot intersected polyline (Xlin)
+        % Plot intersected polyline (Xlin).
         function plotIntersectedGeometry(this)
             for i = 1:size(this.Xlin, 1)-1
                 if (this.elemID(i) > 0)
@@ -198,7 +158,7 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Plots perturbed nodes
+        % Plot perturbed nodes.
         function plotPerturbNodes(this)
             if ~isempty(this.PERT)
                 plot(this.PERT(:,1), this.PERT(:,2), 'sr');
@@ -209,8 +169,7 @@ classdef Discontinuity < handle
     %% Private methods
     methods (Access = private)
         %------------------------------------------------------------------
-        % Computes the linearized polyline by intersecting the
-        % discontinuity with the mesh
+        % Compute linearized polyline by intersecting the discontinuity with the mesh.
         function computeXlin(this,model)
             % Get mesh from model
             NODE = model.NODE;
@@ -251,7 +210,7 @@ classdef Discontinuity < handle
                 [s,order] = sort(s);
                 intersectionPointsSegment = intersectionPointsSegment(order,:);
                 [~,order] = uniquetol(s,1e-9);
-                
+
                 % Order the intersection points of the segment
                 intersectionPoints = [intersectionPoints;intersectionPointsSegment(order,:)];
             end
@@ -261,8 +220,7 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Finds the element IDs for each segment of the linearized polyline
-        % (Xlin)
+        % Find element IDs for each segment of the linearized polyline (Xlin).
         function findElementIDsForXlinSegments(this,model)
             % Get mesh from model
             NODE = model.NODE;
@@ -283,17 +241,17 @@ classdef Discontinuity < handle
                 elemIDs = [elemIDs;eID];
             end
 
-            % Store element IDs in elemID
+            % Store element IDs
             this.elemID = elemIDs;
         end
 
         %------------------------------------------------------------------
         % Find the element ID that contains the given segment.
-        % Input:
+        % Inputs:
         %   NODE: nx2 matrix of node coordinates
         %   ELEM: mxk matrix of element connectivity
         %   segment: 2x2 matrix defining the segment (two consecutive points in Xlin)
-        % Output:
+        % Outputs:
         %   elemID: ID of the element containing the segment
         function eID = findElementContainingSegment(this,NODE,ELEM,segment)
             % Iterate over each element
@@ -339,7 +297,6 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Extract edges from element connectivity matrix
         function edges = extractEdgesElement(~,elem)
             edges = []; % List of edges
             numNodes = length(elem); % Number of nodes in the element
@@ -395,9 +352,8 @@ classdef Discontinuity < handle
         function repelNodes(this,model)
             % Get mesh from model
             NODE = model.NODE;
-        
-            % Get the mean characteristic lengths of the elements 
-            % associated with each node
+            
+            % Get the mean characteristic lengths of the elements associated with each node
             Lc = model.getNodeCharacteristicLength();
 
             % Bounding box of the domain

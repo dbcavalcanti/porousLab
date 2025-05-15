@@ -1,16 +1,8 @@
 %% Anl_Linear Class
-% This class implements the solution of a static linear analysis. It 
-% inherits from the base class _Anl_ and provides functionality for 
-% performing linear static analysis on a given model. 
+% This class inherits from the base class 'Anl' to implement the solution a static linear analysis.
 %
-%% Methods
-% * *run*: Executes the linear analysis for the given model object _mdl_
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef Anl_Linear < Anl
@@ -25,15 +17,16 @@ classdef Anl_Linear < Anl
             this = this@Anl('Linear');
         end
     end
-    
+
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Execute the linear analysis for the given model object 'mdl'.
         function run(~,mdl)
+            disp("*** Performing linear analysis...")
+
             % Initialize model object
             mdl.preComputations();
-            
-            disp("*** Performing linear analysis...")
 
             % Compute global stiffness matrix
             [K,~,~,Fext] = mdl.globalMatrices(mdl.U);

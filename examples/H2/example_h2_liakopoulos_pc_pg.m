@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -42,8 +33,8 @@ mdl.setMesh(node, elem);
 %% MATERIALS
 
 % Create fluids
-water = Fluid('water');
-gas   = IdealGas('gas');
+water  = Fluid('water');
+gas    = IdealGas('gas');
 gas.mu = 1.8e-5;  % Viscosity (Pa*s)
 gas.K  = 1.0e25;  % Compressibility/Bulk modulus (1/Pa)
 

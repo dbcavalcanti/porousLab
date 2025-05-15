@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -25,7 +16,11 @@ mdl = Model_H();
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(200.0, 200.0, 53, 53);
+Lx = 200.0;  % Horizontal dimension (m)
+Ly = 200.0;  % Vertical dimension (m)
+Nx = 53;     % Number of elements in the x-direction
+Ny = 53;     % Number of elements in the y-direction
+[node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -60,9 +55,9 @@ load('FractureDataReservoirCell.mat');
 % Number of discontinuities
 nd = length(FractureDataReservoirCell);
 
-% Create the discontinuities
-fractures(1, nd) = Discontinuity();
-for i = 1:length(FractureDataReservoirCell)
+% Create discontinuities
+fractures(1,nd) = Discontinuity();
+for i = 1:nd
     fractures(i) = Discontinuity(FractureDataReservoirCell{i}, true);
 end
 
@@ -85,14 +80,9 @@ dtmax     = 500.0;  % Maximum time step
 dtmin     = 0.001;  % Minimum time step
 adaptStep = true;   % Adaptive step size
 
-% Initialize
+% Run analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
-
-% Clear unnecessary variables
-clearvars -except mdl anl
-
-% Run analysis
 anl.run(mdl);
 
 %% POST-PROCESS

@@ -12,15 +12,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -35,11 +26,14 @@ mdl.gravityOn       = true;
 %% MESH
 
 % Create mesh
-Lx = 200.0;  % Horizontal dimension (m)
-Ly = 6.0;    % Vertical dimension (m)
-Nx = 30;     % Number of elements in the x-direction
-Ny = 60;     % Number of elements in the y-direction
-[node, elem] = regularMesh(Lx, Ly, Nx, Ny, [], [], 'ISOQ4', true, false);
+Lx = 200.0;          % Horizontal dimension (m)
+Ly = 6.0;            % Vertical dimension (m)
+Nx = 30;             % Number of elements in the x-direction
+Ny = 60;             % Number of elements in the y-direction
+type = 'ISOQ4';      % Type of finite element
+quadDistrX = true;   % Flag for quadratic distribution in x-direction 
+quadDistrY = false;  % Flag for quadratic distribution in y-direction 
+[node, elem] = regularMesh(Lx, Ly, Nx, Ny, [], [], type, quadDistrX, quadDistrY);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -51,9 +45,9 @@ brine     = Fluid('brine');
 brine.rho = 1.173e+3;  % Density (kg/m3)
 brine.mu  = 1.252e-3;  % Viscosity (Pa*s)
 
-co2       = Fluid('co2');
-co2.rho   = 0.848e+3;  % Density (kg/m3)
-co2.mu    = 8.100e-5;  % Viscosity (Pa*s)
+co2     = Fluid('co2');
+co2.rho = 0.848e+3;  % Density (kg/m3)
+co2.mu  = 8.100e-5;  % Viscosity (Pa*s)
 
 % Create porous media
 aquifer = PorousMedia('aquifer');

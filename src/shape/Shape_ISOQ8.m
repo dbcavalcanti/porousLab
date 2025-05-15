@@ -1,62 +1,8 @@
 %% Shape_ISOQ8 Class
-% This class defines the behavior of a quadratic quadrilateral isoparametric
-% element (ISOQ8). It provides methods for evaluating shape functions, 
-% computing derivatives, Jacobian matrices, and performing coordinate 
-% transformations between natural and global Cartesian systems. 
-% Additionally, it supports integration point generation and other 
-% utilities for finite element analysis.
+% This class inherits from the base class 'Shape' to implement the behavior of a quadratic quadrilateral isoparametric element (ISOQ8).
 % 
-%% Methods
-% This class provides the following methods:
-%
-% * *shapeFnc*: Evaluates the shape functions at a given point in the 
-%               natural coordinate system.
-% * *shapeFncMtrx*: Returns the shape function matrix for the given 
-%                   natural coordinates.
-% * *linearShapeFncMtrx*: Returns the linear shape function matrix for 
-%                         the given natural coordinates.
-% * *NuMtrx*: Constructs the shape function matrix for displacement 
-%             interpolation.
-% * *shapeFncDrv*: Computes the derivatives of the shape functions with 
-%                  respect to the natural coordinates.
-% * *linearShapeFncDrv*: Computes the derivatives of the linear shape 
-%                        functions with respect to the natural coordinates.
-% * *JacobianMtrx*: Computes the Jacobian matrix for the given nodal 
-%                   coordinates and natural coordinates.
-% * *linearJacobianMtrx*: Computes the Jacobian matrix for linear 
-%                         shape functions.
-% * *detJacobian*: Computes the determinant of the Jacobian matrix.
-% * *dNdxMatrix*: Computes the derivatives of the shape functions with 
-%                 respect to the global Cartesian coordinates and the 
-%                 determinant of the Jacobian matrix.
-% * *lineardNdxMatrix*: Computes the derivatives of the linear shape 
-%                       functions with respect to the global Cartesian 
-%                       coordinates.
-% * *BMatrix*: Constructs the strain-displacement matrix (B-matrix) for 
-%              the given shape function derivatives.
-% * *coordNaturalToCartesian*: Transforms a point from the natural 
-%                              coordinate system to the global Cartesian 
-%                              coordinate system.
-% * *coordCartesianToNatural*: Transforms a point from the global Cartesian 
-%                              coordinate system to the natural coordinate 
-%                              system.
-% * *getIntegrationPoints*: Computes the integration points and weights 
-%                           for numerical integration. Supports optional 
-%                           subdivision of the domain.
-% * *integrandGramMtrx*: Computes the integrand for the Gram matrix at a 
-%                        given point.
-% * *getSizeStressIntVct*: Returns the size of the stress interpolation 
-%                          vector.
-% * *integrandStressIntVct*: Computes the integrand for the stress 
-%                            interpolation vector.
-% * *getlineQuadrature*: Compute the Gauss integration points for a given
-%                        order.
-% 
-%% Author
-% Danilo Cavalcanti
-% 
-%% Version History
-% Version 1.00: Initial version (March 2023).
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class Definition
 classdef Shape_ISOQ8 < Shape
@@ -67,9 +13,9 @@ classdef Shape_ISOQ8 < Shape
         end
     end
 
-    %% Public methods: methods defined in the abstract superclass
+    %% Public methods
     methods
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Evaluate the shape function at a given point X of a linear 
         % quadrilateral isoparametric element.
          function N = shapeFnc(~,Xn)
@@ -88,14 +34,14 @@ classdef Shape_ISOQ8 < Shape
             N  = [ N1  N2  N3  N4  N5  N6  N7  N8 ];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the shape function matrix
          function N = shapeFncMtrx(this,Xn)
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the linear shape function matrix
          function Nm = linearShapeFncMtrx(~,Xn)
             % Natural coordinates of the given point
@@ -109,7 +55,7 @@ classdef Shape_ISOQ8 < Shape
             Nm   = [ N1  N2  N3  N4 ];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Get the shape function matrix
          function Nu = NuMtrx(~,N)
              % Shape function matrix
@@ -117,7 +63,7 @@ classdef Shape_ISOQ8 < Shape
                    0.0   N(1)  0.0   N(2)  0.0   N(3)  0.0   N(4)  0.0   N(5)  0.0   N(6)  0.0   N(7)  0.0   N(8)];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinates
          function dNdxn = shapeFncDrv(~,Xn)
@@ -147,7 +93,7 @@ classdef Shape_ISOQ8 < Shape
                         dN1_deta  dN2_deta  dN3_deta  dN4_deta  dN5_deta  dN6_deta  dN7_deta  dN8_deta ];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions wrt to the
          % natural coordinate s
          function dNdxn = linearShapeFncDrv(~,Xn)
@@ -163,7 +109,7 @@ classdef Shape_ISOQ8 < Shape
                         dN1_deta  dN2_deta  dN3_deta  dN4_deta ];
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the jacobian matrix
          function J = JacobianMtrx(this,X,Xn)
             % Compute the shape function derivatives wrt to the natural
@@ -174,7 +120,7 @@ classdef Shape_ISOQ8 < Shape
             J = dNdxn * X;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the jacobian matrix
          function J = linearJacobianMtrx(this,X,Xn)
             % Compute the shape function derivatives wrt to the natural
@@ -185,7 +131,7 @@ classdef Shape_ISOQ8 < Shape
             J = dNdxn * X;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the determinant of the jacobian
          function detJ = detJacobian(this,X,Xn)
             % Jacobian matrix
@@ -193,7 +139,7 @@ classdef Shape_ISOQ8 < Shape
             detJ = det(J);
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
             % Jacobian matrix
@@ -211,7 +157,7 @@ classdef Shape_ISOQ8 < Shape
             dNdx = J\dNdxn;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix
          function [dNdx] = lineardNdxMatrix(this,X,Xn)
             % Jacobian matrix
@@ -226,7 +172,7 @@ classdef Shape_ISOQ8 < Shape
             dNdx = J\dNdxn;
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Compute the strain-displacement matrix
          function [B] = BMatrix(~,dNdx)
             B = zeros(4,8*2);
@@ -237,7 +183,7 @@ classdef Shape_ISOQ8 < Shape
             end
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -265,7 +211,7 @@ classdef Shape_ISOQ8 < Shape
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2) +  Nv(3)*y(3) +  Nv(4)*y(4) + Nv(5)*y(5) +  Nv(6)*y(6) +  Nv(7)*y(7) +  Nv(8)*y(8);
          end
 
-         % -----------------------------------------------------------------
+         %------------------------------------------------------------------
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -403,7 +349,7 @@ classdef Shape_ISOQ8 < Shape
             end
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Integrand to compute the Gram Matrix
         function dH = integrandGramMtrx(this, node, X)
             X    = this.coordNaturalToCartesian(node,X);
@@ -415,13 +361,13 @@ classdef Shape_ISOQ8 < Shape
                    Xrel(2)    Xrel(1)*Xrel(2)   Xrel(2)*Xrel(2)];
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Integrand to compute the stress interpolation vector
         function n = getSizeStressIntVct(~)
             n = 3;
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Integrand to compute the stress interpolation vector
         function dS = integrandStressIntVct(~,s,Xrel,jumpOrder)
             if jumpOrder == 0

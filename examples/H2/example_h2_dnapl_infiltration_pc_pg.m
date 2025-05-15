@@ -12,15 +12,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -49,7 +40,7 @@ mdl.setMesh(node, elem);
 water     = Fluid('water');
 dnapl     = Fluid('dnapl');
 dnapl.rho = 1.460e+3;  % Density (kg/m3)
-dnapl.mu  = 0.900e-3;    % Viscosity (Pa*s)
+dnapl.mu  = 0.900e-3;  % Viscosity (Pa*s)
 
 % Create porous media
 mat1 = PorousMedia('rock');

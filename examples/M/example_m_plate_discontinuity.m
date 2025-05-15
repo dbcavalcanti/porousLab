@@ -8,22 +8,13 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
 mdl = Model_M();
 
 % Set model options
-mdl.isPlaneStress = true;
+mdl.isPlaneStress   = true;
 mdl.condenseEnrDofs = true;
 
 %% MESH
@@ -56,7 +47,7 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 % Loads
 mdl.addLoadAtPoint([0.0,2.0], [-0.5,1.5]);                            
 
-%% PRE-PROCESS
+%% DISCONTINUITIES
 
 % Create discontinuities 
 Dx = [0.00; 2.00];  % X-coordinates of polyline defining the fracture
@@ -75,6 +66,7 @@ mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS
 
+% Run analysis
 anl = Anl_Linear();
 anl.run(mdl);
 

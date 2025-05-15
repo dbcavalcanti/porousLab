@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -56,7 +47,7 @@ mdl.setMaterial(rock, water);
 mdl.setPressureDirichletBCAtBorder('left', 0.0);
 mdl.setPressureDirichletBCAtBorder('right', 10.0);
 
-%% DISCONTINUITY
+%% DISCONTINUITIES
 
 % Create discontinuities
 Dx = [1.0; 4.0];  % X-coordinates of polyline defining the fracture

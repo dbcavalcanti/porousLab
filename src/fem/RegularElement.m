@@ -1,32 +1,10 @@
 %% RegularElement Class
-% This class represents a regular finite element in a finite element mesh.
-% It provides properties and methods to define the element's geometry, 
-% material properties, numerical integration, and other characteristics 
-% required for finite element analysis.
+% This in an abstract class that defines a regular finite element in a finite element mesh.
+% It provides properties and methods to define the element's geometry, material properties,
+% numerical integration, and other characteristics required for finite element analysis.
 %
-%% Methods
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
-%                  displacement.
-% * *elementLinearSystem*: Assembles the element's linear system matrices 
-%                          and vectors.
-% * *updateStateVar*: Updates the state variables, stress, and strain 
-%                     vectors.
-% * *characteristicLength*: Computes the characteristic length of the 
-%                           element.
-% * *getDomainArea*: Computes the area of the element's domain.
-% * *calculateArea*: Static method to calculate the area of a polygon 
-%                    given its vertices.
-% * *updateResultVertices*: Updates the result object's vertices property 
-%                           based on configuration.
-% * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef RegularElement < handle    
@@ -62,9 +40,18 @@ classdef RegularElement < handle
         %------------------------------------------------------------------
         function this = RegularElement(node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
             if (nargin > 0)
-                
-                this.node            = node;
-                this.nnd_el          = size(node,1);
+                this.node = node;
+                this.nnd_el = size(node,1);
+                this.connect = elem;
+                this.t = t;
+                this.mat = mat;
+                this.intOrder = intOrder;
+                this.massLumping = massLumping;
+                this.lumpStrategy = lumpStrategy;
+                this.isAxisSymmetric = isAxisSymmetric;
+                order = this.sortCounterClockWise(this.node);
+                this.result = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
+
                 if this.nnd_el == 4
                     this.shape = Shape_ISOQ4();
                 elseif this.nnd_el == 8
@@ -74,46 +61,32 @@ classdef RegularElement < handle
                 elseif this.nnd_el == 6
                     this.shape = Shape_LST();
                 end
-                this.connect         = elem;
-                this.t               = t;
-                this.mat             = mat;
-                this.intOrder        = intOrder;
-                this.massLumping     = massLumping;
-                this.lumpStrategy    = lumpStrategy;
-                this.isAxisSymmetric = isAxisSymmetric;
-                order                = this.sortCounterClockWise(this.node);
-                this.result          = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
             end
         end
     end
 
     %% Abstract methods
     methods(Abstract)
-        
         %------------------------------------------------------------------
-        % This function assembles the element matrices and vectors 
-        %
-        % Output:
+        % Assemble element matrices and vectors.
+        % Outputs:
         %    Ke : element "stiffness" matrix
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force with 
-        %         respect to displacement
-        %
+        % dfidu : element matrix of derivative of the internal force wrt displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
-    
     end
 
     %% Public methods
     methods
         %------------------------------------------------------------------
         % Assemble element matrices and vectors.
-        function [Ae, be] = elementLinearSystem(this,nlscheme)
+        function [Ae,be] = elementLinearSystem(this,nlscheme)
             [Ke,Ce,fi,fe,dfidu] = this.elementData();
             [Ae,be] = nlscheme.assembleLinearSystem(Ce,Ke,fi,fe,dfidu,this.ue,this.ueOld,this.DTime);
         end
-
+        
         % -----------------------------------------------------------------
         % Update state variables.
         function updateStateVar(this)
@@ -124,7 +97,7 @@ classdef RegularElement < handle
             end
         end
 
-        % -----------------------------------------------------------------
+        %------------------------------------------------------------------
         % Reset state variables.
         function resetIntegrationPts(this)
             for i = 1:this.nIntPoints
@@ -147,8 +120,8 @@ classdef RegularElement < handle
             A = this.calculateArea(this.node);
         end
 
-        % -----------------------------------------------------------------
-        % Calculate the area of the element given its vertices
+        %------------------------------------------------------------------
+        % Calculate the area of the element from its vertices.
         function A = calculateArea(~,node)
             % Vertices of the coordinates
             vx = node(:,1); 
@@ -165,8 +138,6 @@ classdef RegularElement < handle
 
         %------------------------------------------------------------------
         % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to 
-        % be done.
         function updateResultVertices(this,configuration)
             if strcmp(configuration,'Deformed')
                 Nodes = this.getDeformedConfiguration();
@@ -178,19 +149,17 @@ classdef RegularElement < handle
     %% Static methods
     methods(Static)
         %------------------------------------------------------------------
-        % Sort nodes counterclockwise.
-        % It uses the centroid defined by the nodes as reference point.
+        % Sort nodes counterclockwise using the centroid defined by the nodes as reference point.
         function order = sortCounterClockWise(NODE)
             % Centroid coordinate
             cx = mean(NODE(:,1));
             cy = mean(NODE(:,2));
 
-            % Compute the angle that the relative vector of the vertices 
-            % from the centroid has with the horizontal axis
-            a = atan2(NODE(:,2) - cy, NODE(:,1) - cx);
-            
+            % Compute the angle that the relative vector of the vertices from the centroid has with the horizontal axis
+            a = atan2(NODE(:,2)-cy, NODE(:,1)-cx);
+
             % Sort the angles
-            [~, order] = sort(a);
+            [~,order] = sort(a);
         end
     end
 end

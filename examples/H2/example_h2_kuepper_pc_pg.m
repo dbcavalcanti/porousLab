@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -43,8 +34,8 @@ mdl.setMesh(node, elem);
 %% MATERIALS
 
 % Create fluids
-water = Fluid('water');
-gas   = Fluid('gas');
+water   = Fluid('water');
+gas     = Fluid('gas');
 gas.rho = 1.630e+3;  % Density (kg/m3)
 gas.mu  = 0.900e-3;  % Viscosity (Pa*s)
 
@@ -113,7 +104,7 @@ mdl.setInitialGasPressureAtDomain(369.73);
 % Analysis parameters
 ti        = 1.0;    % Initial time
 dt        = 1.0;    % Time step
-tf        = 34.0;  % Final time
+tf        = 34.0;   % Final time
 dtmax     = 1.0;    % Maximum time step
 dtmin     = 0.001;  % Minimum time step
 adaptStep = true;   % Adaptive step size

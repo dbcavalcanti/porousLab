@@ -8,42 +8,34 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
 mdl = Model_M();
 
-% Integration quadrature order
-mdl.intOrder = 2;
+% Set model options
+mdl.intOrder = 2;  % Integration quadrature order
 
 %% MESH
 
-% Load the mesh
+% Load mesh
 load('MeshStripFooting');
 [node, elem] = convertToQuadraticMesh(node, elem);
+
 % Set mesh to model
-mdl.setMesh(node,elem);
+mdl.setMesh(node, elem);
 
 %% MATERIALS
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
+rock.mechanical    = 'druckerPrager';  % Constitutive law
+rock.MCmatch       = 'planestrain';    % How Drucker-Prager surfaces matches Mohr-Coulomb
 rock.Young         = 1.0e+7;           % Young modulus (kPa)
 rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
-rock.MCmatch       = 'planestrain';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -63,7 +55,7 @@ end
 
 %% PROCESS
 
-% Configure analysis
+% Setup analysis
 anl = Anl_NonlinearQuasiStatic();
 anl.method        = 'GeneralizedDisplacement';
 anl.adjustStep    = true;
@@ -83,7 +75,9 @@ anl.run(mdl);
 
 %% POST-PROCESS
 
+% Plot Load Factor vs Displacement
 anl.plotCurves();
+
 % Plot contours
 mdl.plotField('PEMAG',[0.0,0.0001]);
 mdl.plotField('Uy');

@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -45,12 +36,12 @@ mdl.setMesh(node, elem);
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical = 'nonlinearAsymptotic';  % Elastoplastic with von Mises criteria 
-rock.Young      = 2.1e+11;     % Young modulus (Pa)
-rock.nu         = 0.3;         % Poisson ratio
-rock.sy0        = 2.4e+8;      % Initial yield stress (Pa)
-rock.Kp         = 0.0;         % Plastic modulus (Pa)
-rock.asympt     = 'vonMises';
+rock.mechanical = 'nonlinearAsymptotic';  % Constitutive law
+rock.asympt     = 'vonMises';             % Asymptotic model
+rock.Young      = 2.1e+11;                % Young modulus (Pa)
+rock.nu         = 0.3;                    % Poisson ratio
+rock.sy0        = 2.4e+8;                 % Initial yield stress (Pa)
+rock.Kp         = 0.0;                    % Plastic modulus (Pa)
 rock.tauy       = 2.4e+8 / sqrt(3.0);
 rock.eref       = 0.0001;
 
@@ -85,7 +76,7 @@ mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) 
 
 %% PROCESS
 
-% Configure analysis
+% Setup analysis
 anl = Anl_NonlinearQuasiStatic();
 anl.method     = 'ArcLengthCylControl';
 anl.adjustStep = true;
@@ -103,6 +94,9 @@ anl.setPlotDof(ndId, 1);
 anl.run(mdl);
 
 %% POST-PROCESS
+
+% Plot Load Factor vs Displacement
+anl.plotCurves();
 
 % plot contours
 mdl.plotField('S1');

@@ -8,15 +8,6 @@
 % Authors:
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
-%% INITIALIZATION
-close all; clear; clc;
-
-% Path to source directory
-src_dir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src');
-addpath(genpath(src_dir));
-
-print_header;
-
 %% MODEL
 
 % Create model
@@ -25,30 +16,26 @@ mdl = Model_M();
 % Set model options
 mdl.gravityOn = true;
 
-% Integration quadrature order
-mdl.intOrder = 2;
-
 %% MESH
 
-% Load nodes and elements
-load('MeshSlopeStabilityTransfinite');
-[node, elem] = convertToQuadraticMesh(node, elem);
-save('MeshSlopeStabilityTransfiniteQuadratic.mat', 'node', 'elem');
+% Load mesh
+load('MeshSlopeStabilityTransfiniteQuadratic');
+
 % Set mesh to model
-mdl.setMesh(node,elem);
+mdl.setMesh(node, elem);
 
 %% MATERIALS
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical    = 'druckerPrager';  % Mechanical constitutive law
+rock.mechanical    = 'druckerPrager';  % Constitutive law
+rock.MCmatch       = "planestrain";    % How Drucker-Prager surfaces matches Mohr-Coulomb
 rock.rho           = 2.0;              % Density (g/cm3)
 rock.Young         = 2.0e+4;           % Young modulus (kPa)
 rock.nu            = 0.49;             % Poisson ratio
 rock.cohesion      = 50.0;             % Cohesion (kPa)
 rock.frictionAngle = 20.0*pi/180;      % Friction angle (rad)
 rock.dilationAngle = 20.0*pi/180;      % Dilation angle
-rock.MCmatch       = "planestrain";    % How the Drucker-Prager surfaces matches the Mohr-Coulomb
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -62,14 +49,14 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
 %% PROCESS
 
-% Configure analysis
+% Setup analysis
 anl = Anl_NonlinearQuasiStatic();
 anl.method        = 'ArcLengthCylControl';
 anl.adjustStep    = true;
 anl.increment     = 0.1;
 anl.max_increment = 0.5;
 anl.max_lratio    = 10.0;
-anl.max_step      = 100;
+anl.max_step      = 50;
 anl.max_iter      = 100;
 anl.trg_iter      = 9;
 
@@ -82,8 +69,10 @@ anl.run(mdl);
 
 %% POST-PROCESS
 
-% Plot contours
+% Plot Load Factor vs Displacement
 anl.plotCurves();
+
+% Plot contours
 mdl.plotField('E1');
 mdl.plotField('S1');
 mdl.plotField('PEMAG',[0.0,1.0]);

@@ -11,14 +11,8 @@
 % * *setFaces*: Updates the faces of the patches.
 % * *setVertexData*: Updates the values associated with the vertices.
 % 
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00: Initial version (December 2022).
-% 
-% Initially prepared for the course CIV 2801 - Fundamentos de Computação
-% Gráfica, 2022, second term, Department of Civil Engineering, PUC-Rio.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class Definition
 classdef Result < handle
