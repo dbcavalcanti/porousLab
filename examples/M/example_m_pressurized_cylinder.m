@@ -96,7 +96,7 @@ anl.run(mdl);
 % Plot Load Factor vs Displacement
 anl.plotCurves();
 
-% plot contours
+% Plot contours
 mdl.plotField('S1');
 mdl.plotField('Sr');
 mdl.plotField('Sx');
