@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>Model_M Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="Model_M.m">
-<style type="text/css">
+      --><title>Model_M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Model_M.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,113 +67,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>Model_M Class</h1>
-<!--introduction-->
-<p>This class represents a mechanical finite element model. It extends the <i>Model</i> class and is specifically designed for mechanical physics simulations. Each node in the model has 2 degrees of freedom:</p>
-<div>
-<ul>
-<li>2 displacement components (ux, uy)</li>
-</ul>
-</div>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Public attributes</a>
-</li>
-<li>
-<a href="#6">Model data</a>
-</li>
-<li>
-<a href="#7">Embedded related data</a>
-</li>
-<li>
-<a href="#9">Constructor method</a>
-</li>
-<li>
-<a href="#10">Public methods</a>
-</li>
-<li>
-<a href="#11">Static methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>setMaterial</b>: Sets the material properties using a <i>PorousMedia</i> object.</li>
-<li>
-<b>initializeElements</b>: Initializes the elements of the model with their properties.</li>
-<li>
-<b>setDirichletBCAtNode</b>: Sets displacement Dirichlet boundary conditions at a specific node.</li>
-<li>
-<b>setDirichletBCAtPoint</b>: Sets displacement Dirichlet boundary conditions at a specific point.</li>
-<li>
-<b>setDirichletBCAtBorder</b>: Sets displacement Dirichlet boundary conditions along a border.</li>
-<li>
-<b>addLoadAtNode</b>: Adds a load at a specific node.</li>
-<li>
-<b>addLoadAtPoint</b>: Adds a load at a specific point.</li>
-<li>
-<b>addLoadAtBorder</b>: Adds a load along a specified border in a given direction.</li>
-<li>
-<b>initializeDiscontinuitySegArray</b>: Initializes an array of discontinuity segments.</li>
-<li>
-<b>initializeDiscontinuitySegment</b>: Initializes a single discontinuity segment.</li>
-<li>
-<b>addDiscontinuityData</b>: Adds additional discontinuity data.</li>
-<li>
-<b>initializeDiscontinuitySegments</b>: Initializes discontinuity segments.</li>
-<li>
-<b>plotDisplacementAlongSegment</b>: Plots displacement along a segment.</li>
-<li>
-<b>plotDeformedMesh</b>: Plots the deformed mesh with a specified amplification factor.</li>
-<li>
-<b>updateResultVertices</b>: Updates the result vertices of each element based on the specified configuration and factor.</li>
-<li>
-<b>printResultsHeader</b>: Prints the header for the results table.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> Model_M &lt; Model
-</pre>
-<h2 id="5">Public attributes</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
-</pre>
-<h2 id="6">Model data</h2>
-<pre class="codeinput">        isPlaneStress       = false;
-</pre>
-<h2 id="7">Embedded related data</h2>
-<pre class="codeinput">        addStretchingMode   = false;
+  </style></head><body><div class="content"><h1>Model_M Class</h1><!--introduction--><p>This class represents a mechanical finite element model. It extends the <i>Model</i> class and is specifically designed for mechanical physics simulations. Each node in the model has 2 degrees of freedom:</p><div><ul><li>2 displacement components (ux, uy)</li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Model data</a></li><li><a href="#7">Embedded related data</a></li><li><a href="#9">Constructor method</a></li><li><a href="#10">Public methods</a></li><li><a href="#11">Static methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>setMaterial</b>: Sets the material properties using a <i>PorousMedia</i>                  object.</li><li><b>initializeElements</b>: Initializes the elements of the model with their                         properties.</li><li><b>setDirichletBCAtNode</b>: Sets displacement Dirichlet boundary                           conditions at a specific node.</li><li><b>setDirichletBCAtPoint</b>: Sets displacement Dirichlet boundary                            conditions at a specific point.</li><li><b>setDirichletBCAtBorder</b>: Sets displacement Dirichlet boundary                             conditions along a border.</li><li><b>addLoadAtNode</b>: Adds a load at a specific node.</li><li><b>addLoadAtPoint</b>: Adds a load at a specific point.</li><li><b>addLoadAtBorder</b>: Adds a load along a specified border in a given                      direction.</li><li><b>initializeDiscontinuitySegArray</b>: Initializes an array of                                      discontinuity segments.</li><li><b>initializeDiscontinuitySegment</b>: Initializes a single discontinuity                                     segment.</li><li><b>addDiscontinuityData</b>: Adds additional discontinuity data.</li><li><b>initializeDiscontinuitySegments</b>: Initializes discontinuity segments.</li><li><b>plotDisplacementAlongSegment</b>: Plots displacement along a segment.</li><li><b>plotDeformedMesh</b>: Plots the deformed mesh with a specified                       amplification factor.</li><li><b>updateResultVertices</b>: Updates the result vertices of each element                           based on the specified configuration and                           factor.</li><li><b>printResultsHeader</b>: Prints the header for the results table.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> Model_M &lt; Model
+</pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+</pre><h2 id="6">Model data</h2><pre class="codeinput">        isPlaneStress       = false;
+</pre><h2 id="7">Embedded related data</h2><pre class="codeinput">        addStretchingMode   = false;
         addRelRotationMode  = false;
-</pre>
-<pre class="codeinput">    <span class="keyword">end</span>
-</pre>
-<h2 id="9">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2 id="9">Constructor method</h2><pre class="codeinput">    methods
         <span class="keyword">function</span> this = Model_M(printFlag)
             <span class="keyword">if</span> nargin == 0, printFlag = true; <span class="keyword">end</span>
             this = this@Model();
@@ -189,9 +84,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="10">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="10">Public methods</h2><pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Sets the material properties</span>
@@ -224,16 +117,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 dof_e = this.getElementDofs(el,[1,2]);
                 <span class="keyword">if</span> (this.enriched == false)
                     elements(el) = RegularElement_M(<span class="keyword">...</span>
-                                this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),<span class="keyword">...</span>
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},<span class="keyword">...</span>
                                 this.t, emat, this.intOrder,dof_e, <span class="keyword">...</span>
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, <span class="keyword">...</span>
                                 this.isPlaneStress);
                 <span class="keyword">else</span>
                     elements(el) = EnrichedElement_M(<span class="keyword">...</span>
-                                this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),<span class="keyword">...</span>
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},<span class="keyword">...</span>
                                 this.t, emat, this.intOrder,dof_e, <span class="keyword">...</span>
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, <span class="keyword">...</span>
-                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,<span class="keyword">...</span>
+                                this.condenseEnrDofs);
                 <span class="keyword">end</span>
                 <span class="keyword">if</span> this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -289,24 +183,28 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">else</span>
                 disp(<span class="string">'Warning: non-supported border.'</span>);
                 disp(<span class="string">'Available borders tag: ''left'',''right'', ''top'',''bottom'''</span>);
+                <span class="keyword">return</span>;
             <span class="keyword">end</span>
-            <span class="comment">% Get number of linear interpolation points</span>
-            nLinNodes = this.nnd_el;
-            quadMesh  = false;
-            <span class="keyword">if</span> strcmp(this.type,<span class="string">'LST'</span>) || strcmp(this.type,<span class="string">'ISOQ8'</span>)
-                nLinNodes = nLinNodes / 2;
-                quadMesh  = true;
-            <span class="keyword">end</span>
+
             <span class="keyword">for</span> el = 1:this.nelem
+
+                <span class="comment">% Get number of linear interpolation points</span>
+                nLinNodes = length(this.ELEM{el});
+                quadMesh  = false;
+                <span class="keyword">if</span> (nLinNodes == 6) || (nLinNodes == 8)
+                    nLinNodes = nLinNodes / 2;
+                    quadMesh  = true;
+                <span class="keyword">end</span>
+
                 <span class="comment">% Get the number of edges of the element</span>
                 nEdges = nLinNodes;
 
                 <span class="comment">% Get the coordinates of the element</span>
-                cX = [this.NODE(this.ELEM(el,1:nLinNodes),1); this.NODE(this.ELEM(el,1),1)];
-                cY = [this.NODE(this.ELEM(el,1:nLinNodes),2); this.NODE(this.ELEM(el,1),2)];
+                cX = [this.NODE(this.ELEM{el}(1:nLinNodes),1); this.NODE(this.ELEM{el}(1),1)];
+                cY = [this.NODE(this.ELEM{el}(1:nLinNodes),2); this.NODE(this.ELEM{el}(1),2)];
 
                 <span class="comment">% Get the nodes of the borders</span>
-                NdBorders = [this.ELEM(el,1:nLinNodes), this.ELEM(el,1)];
+                NdBorders = [this.ELEM{el}(1:nLinNodes), this.ELEM{el}(1)];
 
                 <span class="comment">% Loop through the edges of the element</span>
                 <span class="keyword">for</span> j = 1:nEdges
@@ -338,7 +236,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                             feq = [0.5*p*l;0.5*p*l];
                         <span class="keyword">else</span>
                             feq = [p*l;p*l;4.0*p*l]/6.0;
-                            idNds = [idNds; this.ELEM(el,j+nLinNodes)];
+                            idNds = [idNds; this.ELEM{el}(j+nLinNodes)];
                         <span class="keyword">end</span>
 
                         <span class="comment">% Add contribution to the LOAD matrix</span>
@@ -370,15 +268,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Initializes discontinuity segments</span>
         <span class="keyword">function</span> initializeDiscontinuitySegments(this)
+            <span class="comment">% First set the specific properties</span>
             nDiscontinuities = this.getNumberOfDiscontinuities();
             <span class="keyword">for</span> i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 <span class="keyword">for</span> j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).t = this.t;
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
+            <span class="comment">% Call the common initialization</span>
+            initializeDiscontinuitySegments@Model(this);
         <span class="keyword">end</span>
 
         <span class="comment">% -----------------------------------------------------------------</span>
@@ -416,9 +316,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="11">Static methods</h2>
-<pre class="codeinput">    methods (Static)
+</pre><h2 id="11">Static methods</h2><pre class="codeinput">    methods (Static)
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Prints the header for the results table</span>
@@ -427,17 +325,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Model_M Class
 % This class represents a mechanical finite element model. It extends the
@@ -539,16 +428,17 @@ classdef Model_M < Model
                 dof_e = this.getElementDofs(el,[1,2]);
                 if (this.enriched == false)
                     elements(el) = RegularElement_M(...
-                                this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress);
                 else
                     elements(el) = EnrichedElement_M(...
-                                this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
+                                this.condenseEnrDofs);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -604,24 +494,28 @@ classdef Model_M < Model
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
+                return;
             end
-            % Get number of linear interpolation points
-            nLinNodes = this.nnd_el;
-            quadMesh  = false;
-            if strcmp(this.type,'LST') || strcmp(this.type,'ISOQ8')
-                nLinNodes = nLinNodes / 2;
-                quadMesh  = true;
-            end
+            
             for el = 1:this.nelem 
+
+                % Get number of linear interpolation points
+                nLinNodes = length(this.ELEM{el});
+                quadMesh  = false;
+                if (nLinNodes == 6) || (nLinNodes == 8)
+                    nLinNodes = nLinNodes / 2;
+                    quadMesh  = true;
+                end
+
                 % Get the number of edges of the element
                 nEdges = nLinNodes;
             
                 % Get the coordinates of the element
-                cX = [this.NODE(this.ELEM(el,1:nLinNodes),1); this.NODE(this.ELEM(el,1),1)];
-                cY = [this.NODE(this.ELEM(el,1:nLinNodes),2); this.NODE(this.ELEM(el,1),2)];
+                cX = [this.NODE(this.ELEM{el}(1:nLinNodes),1); this.NODE(this.ELEM{el}(1),1)];
+                cY = [this.NODE(this.ELEM{el}(1:nLinNodes),2); this.NODE(this.ELEM{el}(1),2)];
             
                 % Get the nodes of the borders
-                NdBorders = [this.ELEM(el,1:nLinNodes), this.ELEM(el,1)];
+                NdBorders = [this.ELEM{el}(1:nLinNodes), this.ELEM{el}(1)];
             
                 % Loop through the edges of the element
                 for j = 1:nEdges
@@ -653,7 +547,7 @@ classdef Model_M < Model
                             feq = [0.5*p*l;0.5*p*l];
                         else
                             feq = [p*l;p*l;4.0*p*l]/6.0;
-                            idNds = [idNds; this.ELEM(el,j+nLinNodes)];
+                            idNds = [idNds; this.ELEM{el}(j+nLinNodes)];
                         end
             
                         % Add contribution to the LOAD matrix
@@ -685,15 +579,17 @@ classdef Model_M < Model
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
+            % First set the specific properties
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).t = this.t;
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
                 end
             end
+            % Call the common initialization
+            initializeDiscontinuitySegments@Model(this);
         end
 
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
@@ -743,6 +639,4 @@ classdef Model_M < Model
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>fractureNodesAndElements Function</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="fractureNodesAndElements.m">
-<style type="text/css">
+      --><title>fractureNodesAndElements Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="fractureNodesAndElements.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,81 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>fractureNodesAndElements Function</h1>
-<!--introduction-->
-<p>This function identifies the intersection points between fracture segments and the continuum finite element mesh. It divides the fracture segments into smaller segments based on the intersections and assigns properties such as aperture and leakoff to each segment. The function also identifies crack tip nodes and assigns their status based on the input flags.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Inputs</a>
-</li>
-<li>
-<a href="#2">Outputs</a>
-</li>
-<li>
-<a href="#3">Author</a>
-</li>
-<li>
-<a href="#4">Version History</a>
-</li>
-<li>
-<a href="#5">Function definition</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Inputs</h2>
-<div>
-<ul>
-<li>
-<b>NODE</b>: Array of nodal coordinates of the finite element mesh.</li>
-<li>
-<b>ELEM</b>: Array of element connectivity of the finite element mesh.</li>
-<li>
-<b>XD</b>: Array of coordinates of the fracture segment endpoints.</li>
-<li>
-<b>SEGD</b>: Array defining the fracture segments by their endpoint indices.</li>
-<li>
-<b>aperture</b>: Array of aperture values for each fracture segment.</li>
-<li>
-<b>leakoff</b>: Array of leakoff values for each fracture segment.</li>
-<li>
-<b>TIP</b>: Array of indices identifying crack tip nodes.</li>
-<li>
-<b>FixedPressureJump</b>: Boolean flag indicating if a fixed pressure jump is applied.</li>
-<li>
-<b>FixedPf</b>: Boolean flag indicating if a fixed pressure field is applied.</li>
-<li>
-<b>FixedDisplJump</b>: Boolean flag indicating if a fixed displacement jump is applied.</li>
-</ul>
-</div>
-<h2 id="2">Outputs</h2>
-<div>
-<ul>
-<li>
-<b>NODE_D</b>: Array of coordinates of the discontinuity nodes.</li>
-<li>
-<b>FRACT</b>: Array defining the fracture segments by their node indices.</li>
-<li>
-<b>NODE_D_TIPS</b>: Array indicating the crack tip status of the discontinuity nodes.</li>
-<li>
-<b>W</b>: Array of aperture values for each fracture segment.</li>
-<li>
-<b>LEAKOFF</b>: Array of leakoff values for each fracture segment.</li>
-</ul>
-</div>
-<h2 id="3">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="4">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="5">Function definition</h2>
-<pre class="codeinput">
-<span class="keyword">function</span> [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump)
+  </style></head><body><div class="content"><h1>fractureNodesAndElements Function</h1><!--introduction--><p>This function identifies the intersection points between fracture segments and the continuum finite element mesh. It divides the fracture segments into smaller segments based on the intersections and assigns properties such as aperture and leakoff to each segment. The function also identifies crack tip nodes and assigns their status based on the input flags.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Inputs</a></li><li><a href="#2">Outputs</a></li><li><a href="#3">Author</a></li><li><a href="#4">Version History</a></li><li><a href="#5">Function definition</a></li></ul></div><h2 id="1">Inputs</h2><div><ul><li><b>NODE</b>: Array of nodal coordinates of the finite element mesh.</li><li><b>ELEM</b>: Array of element connectivity of the finite element mesh.</li><li><b>XD</b>: Array of coordinates of the fracture segment endpoints.</li><li><b>SEGD</b>: Array defining the fracture segments by their endpoint indices.</li><li><b>aperture</b>: Array of aperture values for each fracture segment.</li><li><b>leakoff</b>: Array of leakoff values for each fracture segment.</li><li><b>TIP</b>: Array of indices identifying crack tip nodes.</li><li><b>FixedPressureJump</b>: Boolean flag indicating if a fixed pressure jump is applied.</li><li><b>FixedPf</b>: Boolean flag indicating if a fixed pressure field is applied.</li><li><b>FixedDisplJump</b>: Boolean flag indicating if a fixed displacement jump is applied.</li></ul></div><h2 id="2">Outputs</h2><div><ul><li><b>NODE_D</b>: Array of coordinates of the discontinuity nodes.</li><li><b>FRACT</b>: Array defining the fracture segments by their node indices.</li><li><b>NODE_D_TIPS</b>: Array indicating the crack tip status of the discontinuity nodes.</li><li><b>W</b>: Array of aperture values for each fracture segment.</li><li><b>LEAKOFF</b>: Array of leakoff values for each fracture segment.</li></ul></div><h2 id="3">Author</h2><p>Danilo Cavalcanti</p><h2 id="4">Version History</h2><p>Version 1.00.</p><h2 id="5">Function definition</h2><pre class="codeinput"><span class="keyword">function</span> [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump)
 
 <span class="comment">% Initialize the output arrays</span>
 NODE_D      = [];
@@ -296,14 +217,7 @@ globalCounter = 1;
 <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% fractureNodesAndElements Function
 % This function identifies the intersection points between fracture
@@ -491,6 +405,4 @@ end
 end
 
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

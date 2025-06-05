@@ -41,8 +41,8 @@ end
 mFiles = dir(fullfile(repoFolder, '**', '*.m')); % Recursively finds all .m files
 
 % Exclude specific directories and files
-excludedFolders = {'examples'}; % Add more folders if needed
-excludedFiles = {}; % Add more filenames if needed
+excludedFolders = {'examples','tests'}; % Add more folders if needed
+excludedFiles = {'print_header'}; % Add more filenames if needed
 
 % Create the filtered files list
 filteredFiles = [];

@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>fractureMesh Function</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="fractureMesh.m">
-<style type="text/css">
+      --><title>fractureMesh Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="fractureMesh.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,85 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>fractureMesh Function</h1>
-<!--introduction-->
-<p>This function creates a fracture mesh by dividing a fracture segment based on the continuum finite element mesh. It does not assume that the continuum mesh is structured. The function also perturbs nodes to avoid coinciding nodes between the fracture and continuum meshes.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Inputs</a>
-</li>
-<li>
-<a href="#2">Outputs</a>
-</li>
-<li>
-<a href="#3">Author</a>
-</li>
-<li>
-<a href="#4">Version History</a>
-</li>
-<li>
-<a href="#5">Function definition</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Inputs</h2>
-<div>
-<ul>
-<li>
-<b>NODE</b>: Nodal coordinates of the continuum mesh (Nx2 array).</li>
-<li>
-<b>ELEM</b>: Element connectivity of the continuum mesh (MxK array).</li>
-<li>
-<b>XD</b>: Coordinates of the fracture segment endpoints (2x2 array).</li>
-<li>
-<b>SEGD</b>: Indices of the fracture segment endpoints in XD (1x2 array).</li>
-<li>
-<b>aperture</b>: Aperture of the fracture.</li>
-<li>
-<b>leakoff</b>: Leakoff coefficient for the fracture.</li>
-<li>
-<b>TIP</b>: Logical flag indicating if the fracture has a tip.</li>
-<li>
-<b>FixedPressureJump</b>: Logical flag to fix pressure jump (default: true).</li>
-<li>
-<b>FixedPf</b>: Logical flag to fix pressure field (default: false).</li>
-<li>
-<b>FixedDisplJump</b>: Logical flag to fix displacement jump (default: true).</li>
-<li>
-<b>ptol</b>: Perturbation tolerance for node adjustments (default: 1.0e-2).</li>
-</ul>
-</div>
-<h2 id="2">Outputs</h2>
-<div>
-<ul>
-<li>
-<b>NODE_D</b>: Nodal coordinates of the fracture mesh.</li>
-<li>
-<b>FRACT</b>: Element connectivity of the fracture mesh.</li>
-<li>
-<b>NODE_D_TIPS</b>: Coordinates of the fracture tip nodes.</li>
-<li>
-<b>NODE</b>: Updated nodal coordinates of the continuum mesh.</li>
-<li>
-<b>W</b>: Fracture aperture values.</li>
-<li>
-<b>LEAKOFF</b>: Leakoff values for the fracture.</li>
-</ul>
-</div>
-<h2 id="3">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="4">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="5">Function definition</h2>
-<pre class="codeinput">
-<span class="keyword">function</span> [NODE_D, FRACT, NODE_D_TIPS, NODE, W, LEAKOFF] = fractureMesh(NODE, ELEM, XD, <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>fractureMesh Function</h1><!--introduction--><p>This function creates a fracture mesh by dividing a fracture segment based on the continuum finite element mesh. It does not assume that the continuum mesh is structured. The function also perturbs nodes to avoid coinciding nodes between the fracture and continuum meshes.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Inputs</a></li><li><a href="#2">Outputs</a></li><li><a href="#3">Author</a></li><li><a href="#4">Version History</a></li><li><a href="#5">Function definition</a></li></ul></div><h2 id="1">Inputs</h2><div><ul><li><b>NODE</b>: Nodal coordinates of the continuum mesh (Nx2 array).</li><li><b>ELEM</b>: Element connectivity of the continuum mesh (MxK array).</li><li><b>XD</b>: Coordinates of the fracture segment endpoints (2x2 array).</li><li><b>SEGD</b>: Indices of the fracture segment endpoints in XD (1x2 array).</li><li><b>aperture</b>: Aperture of the fracture.</li><li><b>leakoff</b>: Leakoff coefficient for the fracture.</li><li><b>TIP</b>: Logical flag indicating if the fracture has a tip.</li><li><b>FixedPressureJump</b>: Logical flag to fix pressure jump (default: true).</li><li><b>FixedPf</b>: Logical flag to fix pressure field (default: false).</li><li><b>FixedDisplJump</b>: Logical flag to fix displacement jump (default: true).</li><li><b>ptol</b>: Perturbation tolerance for node adjustments (default: 1.0e-2).</li></ul></div><h2 id="2">Outputs</h2><div><ul><li><b>NODE_D</b>: Nodal coordinates of the fracture mesh.</li><li><b>FRACT</b>: Element connectivity of the fracture mesh.</li><li><b>NODE_D_TIPS</b>: Coordinates of the fracture tip nodes.</li><li><b>NODE</b>: Updated nodal coordinates of the continuum mesh.</li><li><b>W</b>: Fracture aperture values.</li><li><b>LEAKOFF</b>: Leakoff values for the fracture.</li></ul></div><h2 id="3">Author</h2><p>Danilo Cavalcanti</p><h2 id="4">Version History</h2><p>Version 1.00.</p><h2 id="5">Function definition</h2><pre class="codeinput"><span class="keyword">function</span> [NODE_D, FRACT, NODE_D_TIPS, NODE, W, LEAKOFF] = fractureMesh(NODE, ELEM, XD, <span class="keyword">...</span>
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump, ptol)
 
 <span class="keyword">if</span> nargin &lt; 10
@@ -367,14 +284,7 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
 [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, <span class="keyword">...</span>
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump);
 <span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% fractureMesh Function
 % This function creates a fracture mesh by dividing a fracture segment 
@@ -628,6 +538,4 @@ end
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump);
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

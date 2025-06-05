@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>regularMesh Function</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="regularMesh.m">
-<style type="text/css">
+      --><title>regularMesh Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="regularMesh.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,76 +67,10 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>regularMesh Function</h1>
-<!--introduction-->
-<p>This function generates a regular finite element mesh with quadrilateral elements. It allows for optional quadratic distribution of nodes in the x and y directions and supports both linear quadrilateral (Q4) and constant strain triangle (CST) element types.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Inputs</a>
-</li>
-<li>
-<a href="#2">Outputs</a>
-</li>
-<li>
-<a href="#3">Author</a>
-</li>
-<li>
-<a href="#4">Version History</a>
-</li>
-<li>
-<a href="#5">Function definition</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Inputs</h2>
-<div>
-<ul>
-<li>
-<b>Lx</b>: Length in the x-direction (scalar)</li>
-<li>
-<b>Ly</b>: Length in the y-direction (scalar)</li>
-<li>
-<b>Nx</b>: Number of elements in the x-direction (integer)</li>
-<li>
-<b>Ny</b>: Number of elements in the y-direction (integer)</li>
-<li>
-<b>xo</b>: Fixed x-coordinates (optional, default: [])</li>
-<li>
-<b>yo</b>: Fixed y-coordinates (optional, default: [])</li>
-<li>
-<b>type</b>: Type of finite element ('Q4' for quadrilateral or 'CST' for constant strain triangle, default: 'Q4')</li>
-<li>
-<b>quadDistrX</b>: Flag for quadratic distribution in x-direction (optional, default: false)</li>
-<li>
-<b>quadDistrY</b>: Flag for quadratic distribution in y-direction (optional, default: false)</li>
-</ul>
-</div>
-<h2 id="2">Outputs</h2>
-<div>
-<ul>
-<li>
-<b>Node</b>: Matrix of node coordinates (Nx*Ny x 2), where each row contains the x and y coordinates of a node.</li>
-<li>
-<b>ELEM</b>: Matrix of element connectivity. Each row defines the nodes forming an element. For 'Q4', each row has 4 nodes; for 'CST', each row has 3 nodes.</li>
-</ul>
-</div>
-<h2 id="3">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="4">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="5">Function definition</h2>
-<pre class="codeinput">
-<span class="keyword">function</span> [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
+  </style></head><body><div class="content"><h1>regularMesh Function</h1><!--introduction--><p>This function generates a regular finite element mesh with quadrilateral elements. It allows for optional quadratic distribution of nodes in the x and y directions and supports both linear quadrilateral (ISOQ4) and constant strain triangle (CST) element types.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Inputs</a></li><li><a href="#2">Outputs</a></li><li><a href="#3">Author</a></li><li><a href="#4">Version History</a></li><li><a href="#5">Function definition</a></li></ul></div><h2 id="1">Inputs</h2><div><ul><li><b>Lx</b>: Length in the x-direction (scalar)</li><li><b>Ly</b>: Length in the y-direction (scalar)</li><li><b>Nx</b>: Number of elements in the x-direction (integer)</li><li><b>Ny</b>: Number of elements in the y-direction (integer)</li><li><b>xo</b>: Fixed x-coordinates (optional, default: [])</li><li><b>yo</b>: Fixed y-coordinates (optional, default: [])</li><li><b>type</b>: Type of finite element ('ISOQ4' for quadrilateral or 'CST' for           constant strain triangle, default: 'ISOQ4')</li><li><b>quadDistrX</b>: Flag for quadratic distribution in x-direction                 (optional, default: false)</li><li><b>quadDistrY</b>: Flag for quadratic distribution in y-direction                 (optional, default: false)</li></ul></div><h2 id="2">Outputs</h2><div><ul><li><b>Node</b>: Matrix of node coordinates (Nx*Ny x 2), where each row           contains the x and y coordinates of a node.</li><li><b>ELEM</b>: Cell of element connectivity. Each row defines the nodes           forming an element. For 'ISOQ4', each row has 4 nodes;           for 'CST', each row has 3 nodes.</li></ul></div><h2 id="3">Author</h2><p>Danilo Cavalcanti</p><h2 id="4">Version History</h2><p>Version 1.00.</p><h2 id="5">Function definition</h2><pre class="codeinput"><span class="keyword">function</span> [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 
 <span class="keyword">if</span> nargin &lt; 5, xo = []; yo = []; <span class="keyword">end</span>
-<span class="keyword">if</span> nargin &lt; 7, type = <span class="string">'Q4'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin &lt; 7, type = <span class="string">'ISOQ4'</span>; <span class="keyword">end</span>
 <span class="keyword">if</span> nargin &lt; 9, quadDistrX = false; quadDistrY = false; <span class="keyword">end</span>
 
 <span class="comment">% Get the x and y coordinates of the nodes</span>
@@ -176,9 +105,9 @@ Node= [reshape(X,numel(X),1) reshape(Y,numel(Y),1)];
 
 <span class="comment">% Initialize the element matrix</span>
 <span class="keyword">if</span> strcmp(type,<span class="string">'CST'</span>)
-    ELEM= zeros(2*Nx*Ny,3);
+    ELEM= cell(2*Nx*Ny,1);
 <span class="keyword">else</span>
-    ELEM= zeros(Nx*Ny,4);
+    ELEM= cell(Nx*Ny,1);
 <span class="keyword">end</span>
 
 <span class="comment">% Numbering elements first along x and then along y</span>
@@ -187,7 +116,7 @@ k= 1;
     <span class="keyword">for</span> j=1:Ny
         <span class="keyword">for</span> i=1:Nx
             n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
-            ELEM(k,:) = [n1, n1+1, n2+1, n2];
+            ELEM{k} = [n1, n1+1, n2+1, n2];
             k = k+1;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
@@ -196,11 +125,11 @@ k= 1;
         <span class="keyword">for</span> i=1:Nx
             n1 = (i-1)*(Ny+1)+j; n2 = i*(Ny+1)+j;
             <span class="keyword">if</span> strcmp(type,<span class="string">'CST'</span>)
-                ELEM(k,:)   = [n1 n2 n2+1];
-                ELEM(k+1,:) = [n2+1 n1+1 n1];
+                ELEM{k}   = [n1 n2 n2+1];
+                ELEM{k+1} = [n2+1 n1+1 n1];
                 k = k+2;
             <span class="keyword">else</span>
-                ELEM(k,:) = [n1 n2 n2+1 n1+1];
+                ELEM{k} = [n1 n2 n2+1 n1+1];
                 k = k+1;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -225,19 +154,12 @@ x = xfix;
 <span class="keyword">end</span>
 x = sort(x);
 <span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% regularMesh Function
 % This function generates a regular finite element mesh with quadrilateral
 % elements. It allows for optional quadratic distribution of nodes in the
-% x and y directions and supports both linear quadrilateral (Q4) and
+% x and y directions and supports both linear quadrilateral (ISOQ4) and
 % constant strain triangle (CST) element types.
 % 
 %% Inputs
@@ -247,8 +169,8 @@ x = sort(x);
 % * *Ny*: Number of elements in the y-direction (integer)
 % * *xo*: Fixed x-coordinates (optional, default: [])
 % * *yo*: Fixed y-coordinates (optional, default: [])
-% * *type*: Type of finite element ('Q4' for quadrilateral or 'CST' for 
-%           constant strain triangle, default: 'Q4')
+% * *type*: Type of finite element ('ISOQ4' for quadrilateral or 'CST' for 
+%           constant strain triangle, default: 'ISOQ4')
 % * *quadDistrX*: Flag for quadratic distribution in x-direction 
 %                 (optional, default: false)
 % * *quadDistrY*: Flag for quadratic distribution in y-direction 
@@ -257,9 +179,9 @@ x = sort(x);
 %% Outputs
 % * *Node*: Matrix of node coordinates (Nx*Ny x 2), where each row 
 %           contains the x and y coordinates of a node.
-% * *ELEM*: Matrix of element connectivity. Each row defines the nodes
-%           forming an element. For 'Q4', each row has 4 nodes; for 'CST',
-%           each row has 3 nodes.
+% * *ELEM*: Cell of element connectivity. Each row defines the nodes
+%           forming an element. For 'ISOQ4', each row has 4 nodes; 
+%           for 'CST', each row has 3 nodes.
 %
 %% Author
 % Danilo Cavalcanti
@@ -271,7 +193,7 @@ x = sort(x);
 function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
 
 if nargin < 5, xo = []; yo = []; end
-if nargin < 7, type = 'Q4'; end
+if nargin < 7, type = 'ISOQ4'; end
 if nargin < 9, quadDistrX = false; quadDistrY = false; end
 
 % Get the x and y coordinates of the nodes
@@ -306,9 +228,9 @@ Node= [reshape(X,numel(X),1) reshape(Y,numel(Y),1)];
 
 % Initialize the element matrix
 if strcmp(type,'CST')
-    ELEM= zeros(2*Nx*Ny,3);
+    ELEM= cell(2*Nx*Ny,1);
 else
-    ELEM= zeros(Nx*Ny,4);
+    ELEM= cell(Nx*Ny,1);
 end
 
 % Numbering elements first along x and then along y
@@ -317,7 +239,7 @@ if Nx < Ny
     for j=1:Ny
         for i=1:Nx  
             n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
-            ELEM(k,:) = [n1, n1+1, n2+1, n2];
+            ELEM{k} = [n1, n1+1, n2+1, n2];
             k = k+1;
         end
     end
@@ -326,11 +248,11 @@ else
         for i=1:Nx  
             n1 = (i-1)*(Ny+1)+j; n2 = i*(Ny+1)+j;
             if strcmp(type,'CST')
-                ELEM(k,:)   = [n1 n2 n2+1];
-                ELEM(k+1,:) = [n2+1 n1+1 n1];
+                ELEM{k}   = [n1 n2 n2+1];
+                ELEM{k+1} = [n2+1 n1+1 n1];
                 k = k+2;
             else
-                ELEM(k,:) = [n1 n2 n2+1 n1+1];
+                ELEM{k} = [n1 n2 n2+1 n1+1];
                 k = k+1;
             end
         end
@@ -356,6 +278,4 @@ end
 x = sort(x);
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>IdealGas Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="IdealGas.m">
-<style type="text/css">
+      --><title>IdealGas Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="IdealGas.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,70 +67,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>IdealGas Class</h1>
-<!--introduction-->
-<p>This class is a subclass of the <i>Fluid</i> class that represents an ideal gas. It provides methods to calculate the density of the gas based on the ideal gas law and allows setting key properties such as the universal gas constant, molar mass, and temperature.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class Definition</a>
-</li>
-<li>
-<a href="#5">Public attributes</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>getDensity</b>: Calculates the density of the gas using the ideal gas law considering the gas pressure</li>
-<li>
-<b>setUniversalGasConstant</b>: Sets the value of the universal gas constant.</li>
-<li>
-<b>setMolarMass</b>: Sets the molar mass of the gas.</li>
-<li>
-<b>setTemperature</b>: Sets the temperature of the gas.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class Definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> IdealGas &lt; Fluid
-</pre>
-<h2 id="5">Public attributes</h2>
-<pre class="codeinput">    properties (SetAccess = private, GetAccess = public)
+  </style></head><body><div class="content"><h1>IdealGas Class</h1><!--introduction--><p>This class is a subclass of the <i>Fluid</i> class that represents an ideal gas. It provides methods to calculate the density of the gas based on the ideal gas law and allows setting key properties such as the universal gas constant, molar mass, and temperature.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Constructor method</a></li><li><a href="#7">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>getDensity</b>: Calculates the density of the gas using the ideal gas                 law considering the gas pressure</li><li><b>setUniversalGasConstant</b>: Sets the value of the universal gas                              constant.</li><li><b>setMolarMass</b>: Sets the molar mass of the gas.</li><li><b>setTemperature</b>: Sets the temperature of the gas.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> IdealGas &lt; Fluid
+</pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = private, GetAccess = public)
         R = 8.3144621;      <span class="comment">% Universal gas constant (J/(mol*K)</span>
         T = 293.15;         <span class="comment">% Temperature (K)</span>
         M = 0.02897;        <span class="comment">% Molar mass (kg/mol)</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = IdealGas(id, viscosity, compressibility)
             this = this@Fluid(id);
@@ -146,9 +84,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Get the fluid density based on the ideal Gas law</span>
         <span class="keyword">function</span> rho = getDensity(this,pg)
@@ -170,17 +106,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             this.T = T;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% IdealGas Class
 % This class is a subclass of the _Fluid_ class that represents an ideal 
@@ -248,6 +175,4 @@ classdef IdealGas < Fluid
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

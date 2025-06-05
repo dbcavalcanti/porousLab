@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>Model_H2M Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="Model_H2M.m">
-<style type="text/css">
+      --><title>Model_H2M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Model_H2M.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,100 +67,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>Model_H2M Class</h1>
-<!--introduction-->
-<p>This class represents a hydromechanical finite element model with two-phase fluid flow. It extends the <i>Model_M</i> class and is designed to handle problems involving coupled solid deformation and fluid flow (liquid and gas phases) in porous media. Each node in the model has four degress of freedom:</p>
-<div>
-<ul>
-<li>2 displacement components (ux,uy)</li>
-<li>1 liquid-phase pore pressure (Pl)</li>
-<li>1 gas-phase pore pressure (Pg)</li>
-</ul>
-</div>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Constructor method</a>
-</li>
-<li>
-<a href="#6">Public methods</a>
-</li>
-<li>
-<a href="#7">Static methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>setMaterial</b>: Sets the material properties using a <i>PorousMedia</i> object.</li>
-<li>
-<b>initializeElements</b>: Initializes the elements of the model with their properties.</li>
-<li>
-<b>setPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary conditions at a specific node.</li>
-<li>
-<b>setPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary conditions at a specific point.</li>
-<li>
-<b>setPressureDirichletBCAtBorder</b>: Sets pressure Dirichlet boundary conditions at a specific border.</li>
-<li>
-<b>setPressureNeumannBCAtNode</b>: Sets a Neumann boundary condition for pressure at a specific node.</li>
-<li>
-<b>setPressureNeumannBCAtPoint</b>: Sets a Neumann boundary condition for pressure at a specific point.</li>
-<li>
-<b>setPressureNeumannBCAtBorder</b>: Sets a Neumann boundary condition for pressure along a border.</li>
-<li>
-<b>setInitialPressureAtDomain</b>: Sets the initial pressure value for the entire domain.</li>
-<li>
-<b>setInitialPressureAtNode</b>: Sets the initial pressure value at a specific node.</li>
-<li>
-<b>setGasPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary conditions for gas-phase pore pressure at a specific node.</li>
-<li>
-<b>setGasPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary conditions for gas-phase pore pressure at a specific point.</li>
-<li>
-<b>setGasPressureDirichletBCAtBorder</b>: Sets pressure Dirichlet boundary conditions for gas-phase pore pressure at a specific border.</li>
-<li>
-<b>setGasPressureNuemannBCAtNode</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific node.</li>
-<li>
-<b>setGasPressureNuemannBCAtPoint</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific point.</li>
-<li>
-<b>setGasPressureNuemannBCAtBorder</b>: Sets pressure Nuemann boundary conditions for gas-phase pore pressure at a specific border.</li>
-<li>
-<b>setInitialGasPressureAtDomain</b>: Sets the initial gas-phase pressure value for the entire domain.</li>
-<li>
-<b>setInitialGasPressureAtNode</b>: Sets the initial gas-phase pressure value at a specific node.</li>
-<li>
-<b>printResultsHeader</b>: Prints a header for the results table, showing node ID, displacements (ux, uy), and pressures (Pl, Pg).</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> Model_H2M &lt; Model_M
-</pre>
-<h2 id="5">Constructor method</h2>
-<pre class="codeinput">    methods
+  </style></head><body><div class="content"><h1>Model_H2M Class</h1><!--introduction--><p>This class represents a hydromechanical finite element model with two-phase fluid flow. It extends the <i>Model_M</i> class and is designed to handle problems involving coupled solid deformation and fluid flow (liquid and gas phases) in porous media. Each node in the model has four degress of freedom:</p><div><ul><li>2 displacement components (ux,uy)</li><li>1 liquid-phase pore pressure (Pl)</li><li>1 gas-phase pore pressure (Pg)</li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class definition</a></li><li><a href="#5">Constructor method</a></li><li><a href="#6">Public methods</a></li><li><a href="#7">Static methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>setMaterial</b>: Sets the material properties using a <i>PorousMedia</i>                  object.</li><li><b>initializeElements</b>: Initializes the elements of the model with their                         properties.</li><li><b>setPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary                                   conditions at a specific node.</li><li><b>setPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary                                    conditions at a specific point.</li><li><b>setPressureDirichletBCAtBorder</b>: Sets pressure Dirichlet boundary                                     conditions at a specific border.</li><li><b>setPressureNeumannBCAtNode</b>: Sets a Neumann boundary condition for                                 pressure at a specific node.</li><li><b>setPressureNeumannBCAtPoint</b>: Sets a Neumann boundary condition for                                  pressure at a specific point.</li><li><b>setPressureNeumannBCAtBorder</b>: Sets a Neumann boundary condition for                                   pressure along a border.</li><li><b>setInitialPressureAtDomain</b>: Sets the initial pressure value for the                                 entire domain.</li><li><b>setInitialPressureAtNode</b>: Sets the initial pressure value at a                               specific node.</li><li><b>setGasPressureDirichletBCAtNode</b>: Sets pressure Dirichlet boundary                                      conditions for gas-phase pore                                      pressure at a specific node.</li><li><b>setGasPressureDirichletBCAtPoint</b>: Sets pressure Dirichlet boundary                                      conditions for gas-phase pore                                      pressure at a specific point.</li><li><b>setGasPressureDirichletBCAtBorder</b>: Sets pressure Dirichlet boundary                                      conditions for gas-phase pore                                      pressure at a specific border.</li><li><b>setGasPressureNuemannBCAtNode</b>: Sets pressure Nuemann boundary                                      conditions for gas-phase pore                                      pressure at a specific node.</li><li><b>setGasPressureNuemannBCAtPoint</b>: Sets pressure Nuemann boundary                                      conditions for gas-phase pore                                      pressure at a specific point.</li><li><b>setGasPressureNuemannBCAtBorder</b>: Sets pressure Nuemann boundary                                      conditions for gas-phase pore                                      pressure at a specific border.</li><li><b>setInitialGasPressureAtDomain</b>: Sets the initial gas-phase pressure                                    value for the entire domain.</li><li><b>setInitialGasPressureAtNode</b>: Sets the initial gas-phase pressure                                  value at a specific node.</li><li><b>printResultsHeader</b>: Prints a header for the results table, showing                         node ID, displacements (ux, uy), and pressures                         (Pl, Pg).</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> Model_H2M &lt; Model_M
+</pre><h2 id="5">Constructor method</h2><pre class="codeinput">    methods
         <span class="keyword">function</span> this = Model_H2M()
             this = this@Model_M(false);
             this.ndof_nd = 4;        <span class="comment">% Number of dofs per node</span>
@@ -173,9 +76,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             disp(<span class="string">"*** Physics: Two-phase flow hydro-mechanical (H2M)"</span>);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Public methods</h2><pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Sets de material properties</span>
@@ -218,7 +119,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 pl_dofs = this.getElementDofs(el,3);
                 pg_dofs = this.getElementDofs(el,4);
                 elements(el) = RegularElement_H2M(<span class="keyword">...</span>
-                            this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),<span class="keyword">...</span>
+                            this.NODE(this.ELEM{el},:), this.ELEM{el},<span class="keyword">...</span>
                             this.t, emat, this.intOrder,udofs,pl_dofs,pg_dofs, <span class="keyword">...</span>
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, <span class="keyword">...</span>
                             this.isPlaneStress);
@@ -332,9 +233,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             this.setInitialDofAtNode(nodeId, 4, value);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Static methods</h2>
-<pre class="codeinput">    methods (Static)
+</pre><h2 id="7">Static methods</h2><pre class="codeinput">    methods (Static)
 
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Print header of the results</span>
@@ -343,17 +242,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Model_H2M Class
 % This class represents a hydromechanical finite element model with 
@@ -475,7 +365,7 @@ classdef Model_H2M < Model_M
                 pl_dofs = this.getElementDofs(el,3);
                 pg_dofs = this.getElementDofs(el,4);
                 elements(el) = RegularElement_H2M(...
-                            this.type,this.NODE(this.ELEM(el,:),:), this.ELEM(el,:),...
+                            this.NODE(this.ELEM{el},:), this.ELEM{el},...
                             this.t, emat, this.intOrder,udofs,pl_dofs,pg_dofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                             this.isPlaneStress);
@@ -601,6 +491,4 @@ classdef Model_H2M < Model_M
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

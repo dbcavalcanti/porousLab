@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>RelativePermeabilityUMAT Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="RelativePermeabilityUMAT.m">
-<style type="text/css">
+      --><title>RelativePermeabilityUMAT Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RelativePermeabilityUMAT.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,63 +67,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>RelativePermeabilityUMAT Class</h1>
-<!--introduction-->
-<p>This class defines a relative permeability model using a user-defined material (UMAT) approach. It inherits from the <i>RelativePermeability</i> base class and provides functionality to compute relative permeability based on saturation curves.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Method</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class Definition</a>
-</li>
-<li>
-<a href="#5">Public attributes</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Method</h2>
-<div>
-<ul>
-<li>
-<b>calculate</b>: Computes the relative permeability kr for a given saturation Sl using linear interpolation. The result is clamped between the minimum relative permeability klrmin defined in the <i>porousMedia</i> object and 1.0.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class Definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> RelativePermeabilityUMAT &lt; RelativePermeability
-</pre>
-<h2 id="5">Public attributes</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+  </style></head><body><div class="content"><h1>RelativePermeabilityUMAT Class</h1><!--introduction--><p>This class defines a relative permeability model using a user-defined material (UMAT) approach. It inherits from the <i>RelativePermeability</i> base class and provides functionality to compute relative permeability based on saturation curves.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Method</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Constructor method</a></li><li><a href="#7">Public methods</a></li></ul></div><h2 id="1">Method</h2><div><ul><li><b>calculate</b>: Computes the relative permeability kr for a given                saturation Sl using linear interpolation. The result is                clamped between the minimum relative permeability klrmin                defined in the <i>porousMedia</i> object and 1.0.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> RelativePermeabilityUMAT &lt; RelativePermeability
+</pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         Sl_curve = [];          <span class="comment">% Must be sorted!!</span>
         kr_curve = [];          <span class="comment">% Must be sorted!!</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = RelativePermeabilityUMAT(Sl_curve,kr_curve)
             this = this@RelativePermeability(<span class="string">'umat'</span>);
@@ -136,9 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             this.kr_curve = kr_curve;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Compute the relative permeability</span>
@@ -148,17 +90,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RelativePermeabilityUMAT Class
 % This class defines a relative permeability model using a user-defined 
@@ -208,6 +141,4 @@ classdef RelativePermeabilityUMAT < RelativePermeability
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>
