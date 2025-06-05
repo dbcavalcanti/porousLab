@@ -21,7 +21,7 @@ It includes implementing a new feature, change an existing one, or fix a bug.
 
 To modify the source code or files, create a [new branch][new_branch_link] from the master branch, and work on that branch to make the modifications.
 
-Please check that all [tests][tests_link] are passing after finishing the modifications to the source code.
+Please check that all tests are passing after finishing the modifications to the source code.
 In addition, it is recommended to create new models for testing the implemented features.
 
 Always try to keep the code organized.
@@ -40,5 +40,4 @@ You can also contact the [authors][authors_link] by email to discuss the modific
 [issue_link]:        https://github.com/dbcavalcanti/porousLab/issues
 [authors_link]:      https://github.com/dbcavalcanti/porousLab#authorship
 [new_branch_link]:   https://github.com/dbcavalcanti/porousLab/branches
-[tests_link]:        https://github.com/dbcavalcanti/porousLab#testing
 [pull_request_link]: https://github.com/dbcavalcanti/porousLab/pulls

@@ -1,8 +1,8 @@
 %% PorousLab - FEM framework for multiphysics problems in porous media
 %
-% PorousLab is a MATLAB framework for solving multiphysics problems,
-% mainly in the context of geomechanics and fractured porous media,
-% based on the Finite Element Method (FEM).
+% PorousLab is a MATLAB framework based on the Finite Element Method (FEM)
+% for solving multiphysics problems, mainly in the context of geomechanics
+% and fractured porous media.
 %
 %% Author
 %%%
