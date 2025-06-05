@@ -56,8 +56,7 @@ end
 %% PROCESS
 
 % Setup analysis
-anl = Anl_NonlinearQuasiStatic();
-anl.method        = 'GeneralizedDisplacement';
+anl = Anl_NonlinearQuasiStatic('GeneralizedDisplacement');
 anl.adjustStep    = true;
 anl.increment     = 0.01;
 anl.max_increment = 0.1;
