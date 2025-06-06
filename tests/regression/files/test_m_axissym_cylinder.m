@@ -48,7 +48,6 @@ mdl.setMaterial(rock);
 % Displacements
 mdl.setDisplacementDirichletBCAtBorder('top'  ,  [NaN, 0.0]);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
-% mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 
 % Loads
 pint = 1.0;
@@ -59,15 +58,3 @@ mdl.addLoadAtBorder('left', 1, pint);
 % Run analysis
 anl = Anl_Linear();
 anl.run(mdl);
-
-%% POST-PROCESS
-
-% Plot contours
-mdl.plotField('Sx');
-mdl.plotFieldAlongSegment('Sx',[0.1,0.0],[0.2,0.0]);
-hold on
-
-% Analytical solution for radial stress (external pressure = 0)
-r = linspace(r_i, r_e, 50);
-sigma_r = (pint * r_i^2) ./ (r_e^2 - r_i^2) .* (1 - (r_e^2 ./ r.^2));
-plot(r - r_i, sigma_r, 'o', 'LineWidth', 2);
