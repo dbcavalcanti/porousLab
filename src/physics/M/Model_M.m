@@ -46,6 +46,10 @@ classdef Model_M < Model
     properties (SetAccess = public, GetAccess = public)
         %% Model data
         isPlaneStress       = false;
+        %% Geostatic 
+        addGeostatic        = false;
+        stressfnc           = [];
+        FeG                 = [];
         %% Embedded related data
         addStretchingMode   = false;
         addRelRotationMode  = false;
@@ -117,6 +121,48 @@ classdef Model_M < Model
             end
             this.element = elements;
             
+        end
+
+        %------------------------------------------------------------------
+        % Initialize additional model data associated with the physics
+        function initializePhysicsAdditionalData(this)
+            if this.addGeostatic
+                this.initializeGeostaticStresses();
+                this.initializeGeostaticForceVector();
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the stresses in the elements with the given stress
+        % state function
+        function initializeGeostaticStresses(this)
+            for el = 1 : this.nelem
+                this.element(el).type.initialStress(this.stressfnc);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the vector with the geostatic forces
+        function initializeGeostaticForceVector(this)
+            [K,~,Fi,~] = this.globalMatrices(this.U);
+            %this.FeG = sparse(this.ndof,1);
+            this.FeG = Fi + K * this.U;
+        end
+
+        %------------------------------------------------------------------
+        % Add the geostatic forces to the external force vector
+        function Fe = addGeostaticForces(this, Fe)
+            if ((this.addGeostatic == false) || isempty(this.FeG))
+                return
+            end
+            Fe = Fe + this.FeG;
+        end
+
+        %------------------------------------------------------------------
+        % Add contribution of nodal loads to reference load vector.
+        function Fe = addNodalLoad(this,Fe)
+            Fe = addNodalLoad@Model(this,Fe);
+            Fe = this.addGeostaticForces(Fe);
         end
 
         % -----------------------------------------------------------------
