@@ -265,6 +265,11 @@ classdef Model_M < Model
                             feq = [p*l;p*l;4.0*p*l]/6.0;
                             idNds = [idNds; this.ELEM{el}(j+nLinNodes)];
                         end
+
+                        % For axisymmetric models
+                        if this.isAxisSymmetric
+                            feq = feq * 2 * pi * mean(edgeX);
+                        end
             
                         % Add contribution to the LOAD matrix
                         this.LOAD(idNds,dir) = this.LOAD(idNds,dir) + feq;

@@ -124,7 +124,7 @@ classdef RegularElement_HM < RegularElement_M
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
+                Bu = this.BMatrix(Bp);
 
                 % Pressure values at the integration point
                 pIP = Np * pl;

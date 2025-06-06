@@ -202,7 +202,7 @@ classdef EnrichedElement_M < RegularElement_M
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx);
 
                 % Get kinematic enriched matrix
                 Gr = this.kinematicEnrichment(Bu);

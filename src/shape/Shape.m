@@ -44,10 +44,6 @@ classdef Shape < handle
          detJ = detJacobian(this,X,Xn)
 
          %------------------------------------------------------------------
-         % Compute strain-displacement matrix.
-         [B,detJ] = BMatrix(this,X,Xn)
-
-         %------------------------------------------------------------------
          % Transform point coordinates from natural coordinate system to
          % global cartesian coordinate system.
          X = coordNaturalToCartesian(this,NODE,Xn)

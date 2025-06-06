@@ -122,12 +122,15 @@ classdef RegularElement_M < RegularElement
 
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
+                
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
                
                 % Compute the B matrix at the int. point and the detJ
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx,N);
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u;
@@ -138,7 +141,7 @@ classdef RegularElement_M < RegularElement
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
-                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
                 end
                 
                 % Compute the stiffness sub-matrix
@@ -153,6 +156,22 @@ classdef RegularElement_M < RegularElement
                 end
             end
             
+        end
+
+        %------------------------------------------------------------------
+        % Compute the strain-displacement matrix
+        function [B] = BMatrix(this,dNdx,N)
+            B = zeros(4,this.nnd_el*2);
+            for i = 1:this.nnd_el
+                B(1,2*i-1) = dNdx(1,i); 
+                B(2,2*i)   = dNdx(2,i);
+                B(4,2*i-1) = dNdx(2,i);
+                B(4,2*i)   = dNdx(1,i);
+                if this.isAxisSymmetric
+                    r = N*this.node(:,1);
+                    B(3,2*i-1) = N(i)/r;
+                end
+            end
         end
 
         %------------------------------------------------------------------
@@ -191,14 +210,6 @@ classdef RegularElement_M < RegularElement
         % Function to get the nodal values of the displacement
         function u = getNodalDisplacement(this)
             u = this.ue(1:this.nglu);
-        end
-
-        %------------------------------------------------------------------
-        % Function to get the nodal values of the liquid pressure
-        function pl = getNodalPressure(this)
-            a = this.nglu + 1;
-            b = this.nglu + this.nglp;
-            pl = this.ue(a:b);
         end
 
         %------------------------------------------------------------------
