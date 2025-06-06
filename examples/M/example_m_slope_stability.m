@@ -50,8 +50,7 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 %% PROCESS
 
 % Setup analysis
-anl = Anl_NonlinearQuasiStatic();
-anl.method        = 'ArcLengthCylControl';
+anl = Anl_NonlinearQuasiStatic('ArcLengthCylControl');
 anl.adjustStep    = true;
 anl.increment     = 0.1;
 anl.max_increment = 0.5;

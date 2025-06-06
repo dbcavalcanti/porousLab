@@ -50,8 +50,7 @@ mdl.addLoadAtBorder('right', 1, 2.0e+6);
 %% PROCESS
 
 % Setup analysis
-anl = Anl_NonlinearQuasiStatic();
-anl.method     = 'ArcLengthCylControl';
+anl = Anl_NonlinearQuasiStatic('ArcLengthCylControl');
 anl.adjustStep = true;
 anl.increment  = 0.01;
 anl.max_lratio = 200.0;

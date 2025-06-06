@@ -74,8 +74,7 @@ mdl.LOAD(internalNodes,:) = F0 * nodeCount(internalNodes) .* [cs(internalNodes) 
 %% PROCESS
 
 % Setup analysis
-anl = Anl_NonlinearQuasiStatic();
-anl.method         = 'ArcLengthCylControl';
+anl = Anl_NonlinearQuasiStatic('ArcLengthCylControl');
 anl.adjustStep    = true;
 anl.increment     = 0.1;
 anl.max_increment = 0.1;
