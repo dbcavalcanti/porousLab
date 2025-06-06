@@ -134,9 +134,6 @@ classdef Model < handle
         % Initialize the elements objects
         initializeElements(this);
 
-        % Initialize additional model data associated with the physics
-        initializePhysicsAdditionalData(this);
-
         % Configure the header to printed when printing results
         printResultsHeader();
     end
@@ -359,9 +356,6 @@ classdef Model < handle
     
                 % Initialize the displacement vector
                 this.initializeDisplacementVct();
-
-                % Initialize physics additional data
-                this.initializePhysicsAdditionalData();
     
                 % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
@@ -456,10 +450,10 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Add contribution of nodal loads to reference load vector.
-        function Fe = addNodalLoad(this,Fe)
+        function Fref = addNodalLoad(this,Fref)
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
-                    Fe(this.ID(i,j)) = Fe(this.ID(i,j)) + this.LOAD(i,j);
+                    Fref(this.ID(i,j)) = Fref(this.ID(i,j)) + this.LOAD(i,j);
                 end
             end
         end
@@ -593,7 +587,7 @@ classdef Model < handle
             % Add contribution of the nodal forces to the external force
             % vector
             Fe = this.addNodalLoad(Fe);
-            
+
         end
 
         %------------------------------------------------------------------

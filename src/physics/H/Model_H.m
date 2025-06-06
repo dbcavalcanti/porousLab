@@ -122,11 +122,6 @@ classdef Model_H < Model
             this.element = elements;
         end
 
-        %------------------------------------------------------------------
-        % Initialize additional model data associated with the physics
-        function initializePhysicsAdditionalData(~)
-        end
-
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a node
         function setPressureDirichletBCAtNode(this, nodeId, value)

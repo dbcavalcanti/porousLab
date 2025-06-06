@@ -175,19 +175,6 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Initialize the stresses at the integration point with the given
-        % function
-        function initialStress(this, stressfnc)
-            for i = 1:this.nIntPoints
-                % Cartesian coordinates of the integration point
-                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
-                % Initialize the stresses
-                this.intPoint(i).stress    = stressfnc(X);
-                this.intPoint(i).stressOld = stressfnc(X);
-            end
-        end
-
-        %------------------------------------------------------------------
         % Function to get the nodal values of the displacement
         function u = getNodalDisplacement(this)
             u = this.ue(1:this.nglu);
