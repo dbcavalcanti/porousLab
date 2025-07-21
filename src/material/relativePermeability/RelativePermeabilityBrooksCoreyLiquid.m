@@ -34,6 +34,17 @@ classdef RelativePermeabilityBrooksCoreyLiquid < RelativePermeability
             klr = Se^((2.0 + 3.0 * porousMedia.lambda)/porousMedia.lambda);
             klr = max(klr,porousMedia.klrmin);
         end
+
+        %------------------------------------------------------------------
+        % Compute the derivative of the liq phase relative permeability wrt
+        % the liquid saturation degree
+        function dkrdSl = derivative(~, Sl, porousMedia)
+            lambda = porousMedia.lambda;
+            Se = porousMedia.effectiveSaturationDegree(Sl);
+            dSedSl = porousMedia.derivativeEffectiveSaturationDegree();
+            dkrdSe = (Se^((2*(lambda + 1))/lambda)*(3*lambda + 2))/lambda;
+            dkrdSl = dkrdSe * dSedSl;
+        end
         
     end
 end

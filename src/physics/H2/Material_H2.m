@@ -90,6 +90,27 @@ classdef Material_H2 < handle
         end
 
         %------------------------------------------------------------------
+        % Get the liquid saturation degree derivative wrt the capillary
+        % pressure
+        function dSldpc = derivativeSaturationDegree(this,pc)
+            dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
+        end
+
+        %------------------------------------------------------------------
+        % Compute the relative permeabilities
+        function [klr, kgr] = relativePermeabilities(this,Sl)
+            klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
+            kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
+        end
+
+        %------------------------------------------------------------------
+        % Compute the relative permeabilities
+        function [dklrdSl, dkgrdSl] = derivativeRelPerm(this,Sl)
+            dklrdSl = this.liqRelativePermeability.derivative(Sl, this.porousMedia);
+            dkgrdSl = this.gasRelativePermeability.derivative(Sl, this.porousMedia);
+        end
+
+        %------------------------------------------------------------------
         % Compute the permeability matrices
         function [Kll, Klg, Kgl, Kgg] = permeabilityMtrcs(this,Sl,pl,pg)
             K = this.porousMedia.intrinsicPermeabilityMatrix();

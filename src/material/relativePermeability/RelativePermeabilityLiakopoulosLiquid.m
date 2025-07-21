@@ -51,6 +51,18 @@ classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
                 klr = max(klr,porousMedia.klrmin);
             end
         end
+
+        %------------------------------------------------------------------
+        % Compute the liquid phase relative permeability
+        function dkrdSl = derivative(~, Sl, ~)
+            if (Sl < this.Slmin)
+                dkrdSl = 0.0;
+            elseif (Sl > 1.0)
+                dkrdSl = 0.0;
+            else
+                dkrdSl = this.a * this.b * (1.0 - Sl)^(this.b - 1.0);
+            end
+        end
         
     end
 end

@@ -112,6 +112,13 @@ classdef PorousMedia < handle
         end
 
         % -----------------------------------------------------------------
+        % Compute the derivative of the effective saturation degree wrt the
+        % liquid saturation degree
+        function dSedSl = derivativeEffectiveSaturationDegree(this)
+            dSedSl = 1.0/(1.0 - this.Slr - this.Sgr);
+        end
+
+        % -----------------------------------------------------------------
         % Create the intrinsic permeability matrix
         function Km = intrinsicPermeabilityMatrix(this)
             Km = this.K * eye(2);

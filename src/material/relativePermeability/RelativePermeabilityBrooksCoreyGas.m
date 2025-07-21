@@ -34,6 +34,17 @@ classdef RelativePermeabilityBrooksCoreyGas < RelativePermeability
             kgr = (1.0 - Se)*(1.0 - Se)*(1.0 - Se^((2.0 + porousMedia.lambda)/porousMedia.lambda));
             kgr = max(kgr,porousMedia.kgrmin);
         end
+
+        %------------------------------------------------------------------
+        % Compute the derivative of the gas phase relative permeability wrt
+        % the liquid saturation degree
+        function dkrdSl = derivative(~, Sl, porousMedia)
+            lambda = porousMedia.lambda;
+            Se = porousMedia.effectiveSaturationDegree(Sl);
+            dSedSl = porousMedia.derivativeEffectiveSaturationDegree();
+            dkrdSe = -(2*Se - 2)*(Se*Se^(2/lambda) - 1) - (Se^(2/lambda)*(Se - 1)^2*(lambda + 2))/lambda;
+            dkrdSl = dkrdSe * dSedSl;
+        end
         
     end
 end

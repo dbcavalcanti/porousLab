@@ -34,7 +34,12 @@ classdef RelativePermeability < handle
 
         %------------------------------------------------------------------
         % Compute the relative permeability
-        kr = calculate(this, Sw, porousMedia);
+        kr = calculate(this, Sl, porousMedia);
+
+        %------------------------------------------------------------------
+        % Compute the derivative of the relative permeability wrt the
+        % saturation
+        dkrdSl = derivative(this, Sl, porousMedia);
         
     end
 

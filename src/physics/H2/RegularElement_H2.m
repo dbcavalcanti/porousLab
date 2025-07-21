@@ -105,32 +105,84 @@ classdef RegularElement_H2 < RegularElement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
-            % Initialize the sub-matrices
-            Hll = zeros(this.nglp, this.nglp);
-            Hlg = zeros(this.nglp, this.nglp);
-            Hgl = zeros(this.nglp, this.nglp);
-            Hgg = zeros(this.nglp, this.nglp);  
-            Sll = zeros(this.nglp, this.nglp);
-            Slg = zeros(this.nglp, this.nglp);
-            Sgl = zeros(this.nglp, this.nglp);
-            Sgg = zeros(this.nglp, this.nglp);
-            dfidu = zeros(2*this.nglp, 2*this.nglp);
+            % Get constitutive model
+            constModel = this.intPoint(1).constitutiveMdl;
 
-            % Initialize external force vector
-            fel = zeros(this.nglp, 1);
-            feg = zeros(this.nglp, 1);
+            % Get gravity vector
+            grav = this.g * this.mat.porousMedia.b;
 
-            % Initialize internal force vector
-            fi = zeros(2*this.nglp, 1);
+            % Get the fluid viscosity
+            mul = this.mat.liquidFluid.mu;
+            mug = this.mat.gasFluid.mu;
+
+            % Get porosity
+            phi = constModel.porousMedia.phi;
+
+            % Get the fluids bulk modulus
+            Klb  = constModel.liquidFluid.K;
+            Kgb  = constModel.gasFluid.K;
             
             % Vector of the nodal pore-pressure dofs
             pc = this.getNodalCapillaryPressure();
             pg = this.getNodalGasPressure();
+            pl = pg - pc;
+
+            % Vector with the old nodal dofs
+            pcOld = this.getOldNodalCapillaryPressure(); 
+            pgOld = this.getOldNodalGasPressure();
+            plOld = pgOld - pcOld;
+
+            % Fill nodal state variables
+            Sl      = zeros(this.nnd_el,1);
+            SlOld   = zeros(this.nnd_el,1);
+            dSldpc  = zeros(this.nnd_el,1);
+            rhol    = zeros(this.nnd_el,1);
+            rhog    = zeros(this.nnd_el,1);
+            rholOld = zeros(this.nnd_el,1);
+            rhogOld = zeros(this.nnd_el,1);
+            for i = 1:this.nnd_el
+                % Liquid saturation degree
+                Sl(i)      = constModel.saturationDegree(pc(i));
+                SlOld(i)   = constModel.saturationDegree(pcOld(i));
+                % Liquid saturation derivative wrt pc
+                dSldpc(i)  = constModel.derivativeSaturationDegree(pc(i));
+                % Get fluid densities
+                rhol(i)    = this.mat.liquidFluid.getDensity(pl(i));
+                rholOld(i) = this.mat.liquidFluid.getDensity(plOld(i));
+                rhog(i)    = this.mat.gasFluid.getDensity(pg(i));
+                rhogOld(i) = this.mat.gasFluid.getDensity(pgOld(i));
+            end
+
+            % Derivative of the mean pressure wrt to the nodal pressure
+            dPmdPi = ones(this.nnd_el,1)/this.nnd_el;
+            
+            % Derivative of the mean saturation wrt the nodal saturation
+            dSlmSli = 1.0/this.nnd_el;
+
+            % Gas saturation
+            Sg = 1.0 - Sl;
+            SgOld = 1.0 - SlOld;
+
+            % Nodal mass rate
+            DmlDt = (Sl .* rhol - SlOld .* rholOld) / this.DTime;
+            DmgDt = (Sg .* rhog - SgOld .* rhogOld) / this.DTime;
+
+            % Compute the relative permeability
+            [klr, kgr] = constModel.relativePermeabilities(mean(Sl));
+
+            % Derivative of the relative permeability wrt to the saturation
+            [dklrdSlm, dkgrdSlm] = constModel.derivativeRelPerm(mean(Sl));
+
+            % Derivative of the relative permeability wrt the pressure
+            dklrdPl = -dklrdSlm * dSlmSli * dSldpc;
+            dkgrdPg =  dkgrdSlm * dSlmSli * dSldpc;
 
             % Initialize the volume of the element
             vol = 0.0;
 
-            % Numerical integration of the sub-matrices
+            % Advective terms
+            H = zeros(this.nglp, this.nglp);
+            fgrav = zeros(this.nglp, 1);
             for i = 1:this.nIntPoints
 
                 % Shape function matrix
@@ -139,68 +191,67 @@ classdef RegularElement_H2 < RegularElement
                 % Compute the B matrix at the int. point and the detJ
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
-                % Pressure values at the integration point
-                pcIP = Np * pc;
-                pgIP = Np * pg;
+                % Get porous media and fluid parameters
+                K = this.mat.porousMedia.intrinsicPermeabilityMatrix();
 
-                % Compute the saturation degree at the integration point
-                Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
-        
-                % Compute the permeability matrix
-                [kll, klg, kgl, kgg] = this.permeabilityTensors(this.intPoint(i),pgIP,pcIP,Sl);
-
-                % Get compressibility coefficients
-                [cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(i),pgIP,pcIP,Sl);
-        
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
                     c = c * this.shape.axisSymmetricFactor(Np,this.node);
                 end
-        
-                % Compute permeability sub-matrices
-                Hll = Hll + Bp' * kll * Bp * c;
-                Hlg = Hlg + Bp' * klg * Bp * c;
-                Hgl = Hgl + Bp' * kgl * Bp * c;
-                Hgg = Hgg + Bp' * kgg * Bp * c;
 
-                % Compute compressibility matrices
-                if ((this.massLumping) && (this.lumpStrategy == 1))
-                    Sll = Sll + diag(cll*Np*c);
-                    Sgg = Sgg + diag(cgg*Np*c);
-                    Slg = Slg + diag(clg*Np*c);
-                    Sgl = Sgl + diag(cgl*Np*c);
-                elseif (this.massLumping == false)
-                    Sll = Sll + Np' * cll * Np * c;
-                    Sgg = Sgg + Np' * cgg * Np * c;
-                    Slg = Slg + Np' * clg * Np * c;
-                    Sgl = Sgl + Np' * cgl * Np * c;
-                end
+                % Compute permeability matrix
+                H = H + Bp' * K * Bp * c;
                 
-                % Compute the gravity forces
-                if (this.gravityOn)
-                    [fel,feg] = this.addGravityForces(fel,feg,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
-                end
+                % Gravity force
+                fgrav = fgrav + Bp' * K * grav * c;
 
                 % Compute the element volume
                 vol = vol + c;
             end
 
-            % Compute the lumped mass matrix
-            if ((this.massLumping) && (this.lumpStrategy == 2))
-                [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
+            % Advective forces
+            fil = (klr / mul) * H * pl;
+            fig = (kgr / mug) * H * pg;
+            Hll = (1/mul) * H * (klr + dklrdPl' * pl);
+            Hgg = (1/mug) * H * (kgr + dkgrdPg' * pg);
+
+            % Compute the gravity forces
+            fel = zeros(this.nnd_el,1);
+            feg = zeros(this.nnd_el,1);
+            if (this.gravityOn)
+                fel = (klr / mul) * mean(rhol) * fgrav;
+                feg = (kgr / mug) * mean(rhog) * fgrav;
+                Hll = Hll - (mean(rhol) / mul) * fgrav * (klr/Klb) * dPmdPi';
+                Hll = Hll - (mean(rhol) / mul) * fgrav * dklrdPl';
+                Hgg = Hgg - (mean(rhog) / mug) * fgrav * (kgr/Kgb) * dPmdPi';
+                Hgg = Hgg - (mean(rhog) / mug) * fgrav * dkgrdPg';
             end
 
-            % Assemble the element permeability
-            Ke = [ Hll, Hlg;
-                   Hgl, Hgg ];
+            % Mass distribution factor
+            factor = vol / this.nnd_el;
 
-            % Assemble the element compressibility matrix
-            Ce = [ Sll , Slg;
-                   Sgl , Sgg ];
+            % Storage terms
+            fil = fil + (phi ./ rhol) .* DmlDt * factor;
+            fig = fig + (phi ./ rhog) .* DmgDt * factor;
+            Cll = phi * ((SlOld .* rholOld ./ rhol) / Klb - dSldpc) * factor / this.DTime;
+            Cgg = phi * ((SgOld .* rhogOld ./ rhog) / Kgb - dSldpc) * factor / this.DTime;
+
+            % Jacobian matrix
+            dfidu = blkdiag(Hll, Hgg);
+
+            % Add terms associated with the mass storage
+            dfidu = dfidu + diag([Cll; Cgg]);
+
+            % Assemble element internal force vector
+            fi = [fil; fig];
 
             % Assemble element external force vector
             fe = [fel; feg];
+
+            % Initialize matrices that are not being used
+            Ce = zeros(2*this.nglp, 2*this.nglp);
+            Ke = zeros(2*this.nglp, 2*this.nglp);
             
         end
 
@@ -268,9 +319,21 @@ classdef RegularElement_H2 < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to get the old nodal values of the liquid pressure
+        function plOld = getOldNodalLiquidPressure(this)
+            plOld = this.ueOld(1:this.nglp);
+        end
+
+        %------------------------------------------------------------------
         % Function to get the nodal values of the gas pressure
         function pg = getNodalGasPressure(this)
             pg = this.ue(1+this.nglp:end);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the gas pressure
+        function pgOld = getOldNodalGasPressure(this)
+            pgOld = this.ueOld(1+this.nglp:end);
         end
 
         %------------------------------------------------------------------
@@ -279,6 +342,14 @@ classdef RegularElement_H2 < RegularElement
             pl = this.getNodalLiquidPressure();
             pg = this.getNodalGasPressure();
             pc = pg - pl;
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the capillary pressure
+        function pcOld = getOldNodalCapillaryPressure(this)
+            plOld = this.getOldNodalLiquidPressure();
+            pgOld = this.getOldNodalGasPressure();
+            pcOld = pgOld - plOld;
         end
 
         %------------------------------------------------------------------
