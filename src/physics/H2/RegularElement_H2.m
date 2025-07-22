@@ -163,9 +163,9 @@ classdef RegularElement_H2 < RegularElement
             Sg = 1.0 - Sl;
             SgOld = 1.0 - SlOld;
 
-            % Nodal mass rate
-            DmlDt = (Sl .* rhol - SlOld .* rholOld) / this.DTime;
-            DmgDt = (Sg .* rhog - SgOld .* rhogOld) / this.DTime;
+            % Nodal mass increment
+            Dml = Sl .* rhol - SlOld .* rholOld;
+            Dmg = Sg .* rhog - SgOld .* rhogOld;
 
             % Compute the relative permeability
             [klr, kgr] = constModel.relativePermeabilities(mean(Sl));
@@ -175,6 +175,8 @@ classdef RegularElement_H2 < RegularElement
 
             % Derivative of the relative permeability wrt the pressure
             dklrdPl = -dklrdSlm * dSlmSli * dSldpc;
+            dklrdPg =  dklrdSlm * dSlmSli * dSldpc;
+            dkgrdPl = -dkgrdSlm * dSlmSli * dSldpc;
             dkgrdPg =  dkgrdSlm * dSlmSli * dSldpc;
 
             % Initialize the volume of the element
@@ -213,8 +215,12 @@ classdef RegularElement_H2 < RegularElement
             % Advective forces
             fil = (klr / mul) * H * pl;
             fig = (kgr / mug) * H * pg;
-            Hll = (1/mul) * H * (klr + dklrdPl' * pl);
-            Hgg = (1/mug) * H * (kgr + dkgrdPg' * pg);
+            Hll = (klr / mul) * H;
+            Hgg = (kgr / mug) * H;
+            Hll = Hll + dklrdPl * (H * pl)' /mul;
+            Hlg = dklrdPg * (H * pl)' /mul;
+            Hgl = dkgrdPl * (H * pg)' /mug;
+            Hgg = Hgg + dkgrdPg * (H * pg)' /mug;
 
             % Compute the gravity forces
             fel = zeros(this.nnd_el,1);
@@ -222,26 +228,28 @@ classdef RegularElement_H2 < RegularElement
             if (this.gravityOn)
                 fel = (klr / mul) * mean(rhol) * fgrav;
                 feg = (kgr / mug) * mean(rhog) * fgrav;
-                Hll = Hll - (mean(rhol) / mul) * fgrav * (klr/Klb) * dPmdPi';
-                Hll = Hll - (mean(rhol) / mul) * fgrav * dklrdPl';
-                Hgg = Hgg - (mean(rhog) / mug) * fgrav * (kgr/Kgb) * dPmdPi';
-                Hgg = Hgg - (mean(rhog) / mug) * fgrav * dkgrdPg';
+                % Hll = Hll - (mean(rhol) / mul) * fgrav * (klr/Klb) * dPmdPi';
+                % Hll = Hll - (mean(rhol) / mul) * fgrav * dklrdPl';
+                % Hgg = Hgg - (mean(rhog) / mug) * fgrav * (kgr/Kgb) * dPmdPi';
+                % Hgg = Hgg - (mean(rhog) / mug) * fgrav * dkgrdPg';
             end
 
             % Mass distribution factor
             factor = vol / this.nnd_el;
 
             % Storage terms
-            fil = fil + (phi ./ rhol) .* DmlDt * factor;
-            fig = fig + (phi ./ rhog) .* DmgDt * factor;
-            Cll = phi * ((SlOld .* rholOld ./ rhol) / Klb - dSldpc) * factor / this.DTime;
-            Cgg = phi * ((SgOld .* rhogOld ./ rhog) / Kgb - dSldpc) * factor / this.DTime;
+            masscoeff = phi * factor / this.DTime;
+            fil = fil + (Dml ./ rhol) * masscoeff;
+            fig = fig + (Dmg ./ rhog) * masscoeff;
+            Cll = ((SlOld .* rholOld ./ rhol) / Klb - dSldpc) * masscoeff;
+            Clg = (dSldpc) * masscoeff;
+            Cgg = ((SgOld .* rhogOld ./ rhog) / Kgb - dSldpc) * masscoeff;
 
             % Jacobian matrix
-            dfidu = blkdiag(Hll, Hgg);
+            dfidu = [Hll , Hlg; Hgl , Hgg];
 
             % Add terms associated with the mass storage
-            dfidu = dfidu + diag([Cll; Cgg]);
+            dfidu = dfidu + [diag(Cll), diag(Clg); diag(Clg), diag(Cgg) ];
 
             % Assemble element internal force vector
             fi = [fil; fig];
