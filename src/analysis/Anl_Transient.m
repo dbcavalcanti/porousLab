@@ -130,7 +130,8 @@ classdef Anl_Transient < Anl
 
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
-                    this.dt = min(2 * this.dt, this.dtMax);
+                    fstep = (4/iter)^(0.25);
+                    this.dt = min(fstep * this.dt, this.dtMax);
                 end
 
                 % Update time
