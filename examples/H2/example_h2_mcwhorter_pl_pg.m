@@ -66,8 +66,8 @@ mdl.setInitialPressureAtDomain(-50.0e+3);
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.1;        % Initial time
-dt        = 0.1;        % Time step
+ti        = 0.001;        % Initial time
+dt        = 0.001;        % Time step
 tf        = 1000;       % Final time
 dtmax     = 10.0;       % Maximum time step
 dtmin     = 0.0000001;  % Minimum time step
@@ -76,7 +76,7 @@ adaptStep = true;       % Adaptive step size
 % Run analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
-anl.maxIter = 10;
+anl.maxIter = 20;
 anl.run(mdl);
 
 %% POST-PROCESS

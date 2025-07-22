@@ -78,7 +78,7 @@ dtmin     = 0.1*day;   % Minimum time step
 adaptStep = true;      % Adaptive step size
 
 % Run analysis
-anl = Anl_Transient("Picard");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.run(mdl);
 
