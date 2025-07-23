@@ -19,6 +19,7 @@ classdef Anl_Transient < Anl
         adaptStep   = false;  % Adaptive step size
         maxIter     = 250;    % Maximum number of iterations
         maxAttempts = 10;     % Maximum attempts to converge
+        desiredIter = 5;      % Desired number of iterations
         echo        = true;   % Flag to print in the command window
     end
 
@@ -97,6 +98,11 @@ classdef Anl_Transient < Anl
                         if convFlg == true
                             break;
                         end
+                        
+                        % Check for NaN
+                        if (any(isnan(dx)) || any(isnan(X)))
+                            break;
+                        end
 
                         % Check maximum number of iterations
                         iter = iter + 1;
@@ -130,7 +136,7 @@ classdef Anl_Transient < Anl
 
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
-                    fstep = (4/iter)^(0.25);
+                    fstep = (this.desiredIter/iter)^(0.25);
                     this.dt = min(fstep * this.dt, this.dtMax);
                 end
 
