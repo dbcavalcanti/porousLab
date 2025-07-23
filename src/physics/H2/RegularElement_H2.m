@@ -152,9 +152,6 @@ classdef RegularElement_H2 < RegularElement
                 rhog(i)    = this.mat.gasFluid.getDensity(pg(i));
                 rhogOld(i) = this.mat.gasFluid.getDensity(pgOld(i));
             end
-
-            % Derivative of the mean pressure wrt to the nodal pressure
-            dPmdPi = ones(this.nnd_el,1)/this.nnd_el;
             
             % Derivative of the mean saturation wrt the nodal saturation
             dSlmSli = 1.0/this.nnd_el;
@@ -215,6 +212,8 @@ classdef RegularElement_H2 < RegularElement
             % Advective forces
             fil = (klr / mul) * H * pl;
             fig = (kgr / mug) * H * pg;
+
+            % Derivatives of the advective forces
             Hll = (klr / mul) * H;
             Hgg = (kgr / mug) * H;
             Hll = Hll + dklrdPl * (H * pl)' /mul;
@@ -228,10 +227,10 @@ classdef RegularElement_H2 < RegularElement
             if (this.gravityOn)
                 fel = (klr / mul) * mean(rhol) * fgrav;
                 feg = (kgr / mug) * mean(rhog) * fgrav;
-                % Hll = Hll - (mean(rhol) / mul) * fgrav * (klr/Klb) * dPmdPi';
-                % Hll = Hll - (mean(rhol) / mul) * fgrav * dklrdPl';
-                % Hgg = Hgg - (mean(rhog) / mug) * fgrav * (kgr/Kgb) * dPmdPi';
-                % Hgg = Hgg - (mean(rhog) / mug) * fgrav * dkgrdPg';
+                Hll = Hll - (1.0/mul) * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol) * fgrav';
+                Hlg = Hlg - (1.0/mul) * (mean(rhol) * dklrdPg) * fgrav';
+                Hgl = Hgl - (1.0/mug) * (mean(rhog) * dkgrdPl) * fgrav';
+                Hgg = Hgg - (1.0/mug) * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog) * fgrav';
             end
 
             % Mass distribution factor
