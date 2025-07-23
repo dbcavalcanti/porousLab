@@ -15,11 +15,9 @@
 %% MODEL
 
 % Create model
-mdl = Model_H2_PcPg();
+mdl = Model_H2();
 
 % Set model options
-mdl.massLumping     = true;  % Diagonalize compressibility matrix (mass lumping)
-mdl.lumpStrategy    = 2;
 mdl.isAxisSymmetric = true;
 mdl.gravityOn       = true;
 
@@ -42,11 +40,11 @@ mdl.setMesh(node, elem);
 
 % Create fluids
 brine     = Fluid('brine');
-brine.rho = 1.173e+3;  % Density (kg/m3)
+brine.rho = 1173.0;    % Density (kg/m3)
 brine.mu  = 1.252e-3;  % Viscosity (Pa*s)
 
 co2     = Fluid('co2');
-co2.rho = 0.848e+3;  % Density (kg/m3)
+co2.rho = 848.0;     % Density (kg/m3)
 co2.mu  = 8.100e-5;  % Viscosity (Pa*s)
 
 % Create porous media
@@ -68,24 +66,25 @@ mdl.setMaterial(aquifer, brine, co2);
 
 %% BOUNDARY AND INITIAL CONDITIONS
 
-% Capillary pressure
-mdl.setCapillaryPressureDirichletBCAtBorder('right', 1.0e4);
-mdl.setInitialCapillaryPressureAtDomain(1.0e4);
-
 % Gas pressure (hydrostatic profile)
 depth1 = 1500.0;       % Depth of the aquifer (top border)
 depth0 = depth1 + Ly;  % Depth of the aquifer (bottom border)
 grav = 9.806;          % Gravity acceleration (m/s2)
+pci = 1.0e4;           % Initial capillary pressure (Pa)
 
 for i = 1:mdl.nnodes
     h = depth0 - mdl.NODE(i,2);
     pl = grav * brine.rho * h;
-    pc = 1.0e4;
-    mdl.setInitialGasPressureAtNode(i, pc+pl);
+    pg = pci + pl;
 
-    % Fix gas pressure at right borders
+    % Set initial conditions
+    mdl.setInitialPressureAtNode(i, pl);
+    mdl.setInitialGasPressureAtNode(i, pg);
+
+    % Fix pressures at right borders
     if ((abs(mdl.NODE(i,1) - Lx)) < 1.0e-12)
-        mdl.setGasPressureDirichletBCAtNode(i, pc+pl);
+        mdl.setPressureDirichletBCAtNode(i, pl);
+        mdl.setGasPressureDirichletBCAtNode(i, pg);
     end
 end
 
@@ -97,17 +96,17 @@ mdl.setGasPressureNeumannBCAtBorder('left', qinj);
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.05*day;    % Initial time
-dt        = 0.05*day;    % Time step
-tf        = 1.00*day;    % Final time
-dtmax     = 0.1*day;     % Maximum time step
+ti        = 0.005*day;    % Initial time
+dt        = 0.005*day;    % Time step
+tf        = 50.00*day;    % Final time
+dtmax     = 1.0*day;     % Maximum time step
 dtmin     = 1.0e-3*day;  % Minimum time step
 adaptStep = true;        % Adaptive step size
 
 % Run analysis
-anl = Anl_Transient("Picard");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
-anl.setRelativeConvergenceCriteria(true);
+anl.maxIter = 10;
 anl.run(mdl);
 
 %% POST-PROCESS
