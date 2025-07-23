@@ -1,6 +1,6 @@
 %% DESCRIPTION
 %
-% OGS-5 Liakopoulos problem using the Pc-Pg two-phase flow formulation.
+% OGS-5 Liakopoulos problem using the Pl-Pg two-phase flow formulation.
 %
 % Physics:
 % * Two-phase hydraulic (H2)
@@ -11,11 +11,9 @@
 %% MODEL
 
 % Create model
-mdl = Model_H2_PcPg();
+mdl = Model_H2();
 
 % Set model options
-mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
-mdl.lumpStrategy = 2;
 mdl.gravityOn    = true;
 
 %% MESH
@@ -23,8 +21,8 @@ mdl.gravityOn    = true;
 % Create mesh
 Lx = 0.1;  % Horizontal dimension (m)
 Ly = 1.0;  % Vertical dimension (m)
-Nx = 3;    % Number of elements in the x-direction
-Ny = 24;   % Number of elements in the y-direction
+Nx = 5*3;    % Number of elements in the x-direction
+Ny = 5*24;   % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
@@ -60,12 +58,12 @@ mdl.setMaterial(rock, water, gas);
 %% BOUNDARY AND INITIAL CONDITIONS
 
 % Set Dirichlet boundary conditions
-mdl.setCapillaryPressureDirichletBCAtBorder('bottom', 0.0);
+mdl.setPressureDirichletBCAtBorder('bottom', 101325.0);
 mdl.setGasPressureDirichletBCAtBorder('bottom', 101325.0);
 mdl.setGasPressureDirichletBCAtBorder('top', 101325.0);
 
 % Set initial conditions
-mdl.setInitialCapillaryPressureAtDomain(0.0);
+mdl.setInitialPressureAtDomain(101325.0);
 mdl.setInitialGasPressureAtDomain(101325.0);
 
 %% PROCESS
@@ -75,13 +73,14 @@ min       = 60;         % Conversion from days to seconds
 ti        = 0.001*min;  % Initial time
 dt        = 0.001*min;  % Time step
 tf        = 5.0*min;    % Final time
-dtmax     = 1.0*min;    % Maximum time step
-dtmin     = 0.001*min;  % Minimum time step
+dtmax     = 0.1*min;    % Maximum time step
+dtmin     = 0.00001*min;  % Minimum time step
 adaptStep = true;       % Adaptive step size
 
 % Run analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
+anl.maxIter = 10;
 anl.run(mdl);
 
 %% POST-PROCESS

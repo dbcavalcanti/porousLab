@@ -1,6 +1,6 @@
 %% DESCRIPTION
 %
-% Dense non-liquid phase infiltration problem using the Pc-Pg two-phase flow formulation.
+% Dense non-liquid phase infiltration problem using the Pl-Pg two-phase flow formulation.
 %
 % References:
 % * Benisch et al (2013). The coupled OpenGeoSys-eclipse simulator for simulation of CO2 storage–code comparison for fluid flow and geomechanical processes. Energy Procedia, 37:3663-3671.

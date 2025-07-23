@@ -54,7 +54,7 @@ classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
 
         %------------------------------------------------------------------
         % Compute the liquid phase relative permeability
-        function dkrdSl = derivative(~, Sl, ~)
+        function dkrdSl = derivative(this, Sl, ~)
             if (Sl < this.Slmin)
                 dkrdSl = 0.0;
             elseif (Sl > 1.0)

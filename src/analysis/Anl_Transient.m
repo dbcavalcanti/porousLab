@@ -90,6 +90,14 @@ classdef Anl_Transient < Anl
                         % Apply Dirichlet boundary conditions
                         [A,b] = mdl.applyDirichletBC(A,b,X,this.nlscheme);
 
+                        % Check linear system matrix condition number
+                        if (1.0/condest(A)) < 1.0e-15
+                            if this.echo
+                                fprintf("\t\t  Error: Linear system matrix is close to singular or badly scaled\n");
+                            end
+                            break;
+                        end
+
                         % Update variables
                         [X,dx] = this.nlscheme.eval(A,b,X,dx,mdl.doffree,iter);
 
