@@ -216,10 +216,10 @@ classdef RegularElement_H2 < RegularElement
             % Derivatives of the advective forces
             Hll = (klr / mul) * H;
             Hgg = (kgr / mug) * H;
-            Hll = Hll + dklrdPl * (H * pl)' /mul;
-            Hlg = dklrdPg * (H * pl)' /mul;
-            Hgl = dkgrdPl * (H * pg)' /mug;
-            Hgg = Hgg + dkgrdPg * (H * pg)' /mug;
+            Hll = Hll + (H * pl) * dklrdPl' /mul;
+            Hlg = (H * pl) * dklrdPg' /mul;
+            Hgl = (H * pg) * dkgrdPl' /mug;
+            Hgg = Hgg + (H * pg) * dkgrdPg' /mug;
 
             % Compute the gravity forces
             fel = zeros(this.nnd_el,1);
@@ -227,17 +227,14 @@ classdef RegularElement_H2 < RegularElement
             if (this.gravityOn)
                 fel = (klr / mul) * mean(rhol) * fgrav;
                 feg = (kgr / mug) * mean(rhog) * fgrav;
-                Hll = Hll - (1.0/mul) * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol) * fgrav';
-                Hlg = Hlg - (1.0/mul) * (mean(rhol) * dklrdPg) * fgrav';
-                Hgl = Hgl - (1.0/mug) * (mean(rhog) * dkgrdPl) * fgrav';
-                Hgg = Hgg - (1.0/mug) * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog) * fgrav';
+                Hll = Hll - (1.0/mul) * fgrav * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol)';
+                Hlg = Hlg - (1.0/mul) * fgrav * (mean(rhol) * dklrdPg)';
+                Hgl = Hgl - (1.0/mug) * fgrav * (mean(rhog) * dkgrdPl)';
+                Hgg = Hgg - (1.0/mug) * fgrav * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog)';
             end
 
-            % Mass distribution factor
-            factor = vol / this.nnd_el;
-
             % Storage terms
-            masscoeff = phi * factor / this.DTime;
+            masscoeff = phi * (vol / this.nnd_el) / this.DTime;
             fil = fil + (Dml ./ rhol) * masscoeff;
             fig = fig + (Dmg ./ rhog) * masscoeff;
             Cll = ((SlOld .* rholOld ./ rhol) / Klb - dSldpc) * masscoeff;
