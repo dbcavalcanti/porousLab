@@ -18,8 +18,6 @@
 mdl = Model_H2M();
 
 % Set model options
-mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
-mdl.lumpStrategy = 2;
 mdl.gravityOn    = true;
 
 %% MESH
@@ -40,17 +38,15 @@ mdl.setMesh(node, elem);
 water = Fluid('water');
 water.K = 2.0e+9;  % Compressibility/Bulk modulus (1/Pa)
 
-gas = Fluid('gas');
-gas.rho = 1.20;    % Density (kg/m3)
+gas = IdealGas('gas');
 gas.mu  = 1.8e-5;  % Viscosity (Pa*s)
-gas.K   = 1.0e+5;  % Compressibility/Bulk modulus (1/Pa)
 
 % Create the porous media
 rock = PorousMedia('rock');
 rock.K                  = 4.5e-13;        % Intrinsic permeability (m2)
 rock.phi                = 0.2975;         % Porosity
 rock.Ks                 = 1.0e+12;        % Solid bulk modulus (Pa)
-rock.Sgr                = 0.2;            % Residual gas saturation 
+rock.Slr                = 0.2;            % Residual liquid saturation 
 rock.lambda             = 3.0;            % Curve-fitting parameter
 rock.Young              = 1.3e+6;         % Young modulus (Pa)
 rock.nu                 = 0.4;            % Poisson ratio
@@ -78,8 +74,6 @@ mdl.setInitialPressureAtDomain(101025.0);
 % Gas pressure
 mdl.setGasPressureDirichletBCAtBorder('top',    101325.0);
 mdl.setGasPressureDirichletBCAtBorder('bottom', 101325.0);
-mdl.setGasPressureDirichletBCAtBorder('left',   101325.0);
-mdl.setGasPressureDirichletBCAtBorder('right',  101325.0);
 mdl.setInitialGasPressureAtDomain(101325.0);
 
 %% PRE-PROCESS
@@ -104,7 +98,7 @@ dtmin     = 0.0001;  % Minimum time step
 adaptStep = true;    % Adaptive step size
 
 % Run analysis
-anl = Anl_Transient("Picard");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.setRelativeConvergenceCriteria(true);
 anl.maxIter = 15;
