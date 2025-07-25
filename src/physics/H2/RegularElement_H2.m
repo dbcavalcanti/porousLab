@@ -123,14 +123,14 @@ classdef RegularElement_H2 < RegularElement
             Kgb  = constModel.gasFluid.K;
             
             % Vector of the nodal pore-pressure dofs
-            pc = this.getNodalCapillaryPressure();
+            pl = this.getNodalLiquidPressure();
             pg = this.getNodalGasPressure();
-            pl = pg - pc;
+            pc = pg - pl;
 
             % Vector with the old nodal dofs
-            pcOld = this.getOldNodalCapillaryPressure(); 
+            plOld = this.getOldNodalLiquidPressure(); 
             pgOld = this.getOldNodalGasPressure();
-            plOld = pgOld - pcOld;
+            pcOld = pgOld - plOld;
 
             % Fill nodal state variables
             Sl      = zeros(this.nnd_el,1);
