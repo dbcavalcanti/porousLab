@@ -30,12 +30,12 @@ classdef IdealGas < Fluid
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = IdealGas(id, viscosity, compressibility)
+        function this = IdealGas(id, viscosity)
             this = this@Fluid(id);
             this.rho = 0.0;
             if nargin > 1
                 this.mu = viscosity;
-                this.K  = compressibility;
+                this.K  = this.M / (this.R * this.T);
             end
         end
     end
