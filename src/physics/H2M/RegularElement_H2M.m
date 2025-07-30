@@ -197,10 +197,10 @@ classdef RegularElement_H2M < RegularElement
             [dklrdSlm, dkgrdSlm] = constModel.derivativeRelPerm(mean(Sl));
 
             % Derivative of the relative permeability wrt the pressure
-            dklrdPl =0* dklrdSlm * dSlmdpl;
-            dklrdPg =0* dklrdSlm * dSlmdpg;
-            dkgrdPl = 0*dkgrdSlm * dSlmdpl;
-            dkgrdPg =0* dkgrdSlm * dSlmdpg;
+            dklrdPl = dklrdSlm * dSlmdpl;
+            dklrdPg = dklrdSlm * dSlmdpg;
+            dkgrdPl = dkgrdSlm * dSlmdpl;
+            dkgrdPg = dkgrdSlm * dSlmdpg;
 
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];
