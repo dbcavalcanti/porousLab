@@ -77,7 +77,7 @@ classdef RegularElement_M < RegularElement
         function initializeIntPoints(this)
 
             % Get integration points coordinates and weights
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder, this);
 
             % Get characteristic length
             lc = this.characteristicLength();

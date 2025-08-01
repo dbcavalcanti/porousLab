@@ -32,7 +32,8 @@ classdef RegularElement < handle
         massLumping     = false;    % Flag to apply a diagonalization of the compressibility matrix
         lumpStrategy    = 1;        % Id of the diagonalization strategy
         isAxisSymmetric = false;    % Flag to axissymetric models
-        DTime           = [];       % Time increment          
+        DTime           = [];       % Time increment     
+        subDivInt       = false;    % Flag to apply a sub-division of the element to define the integration points
     end
 
     %% Constructor method
