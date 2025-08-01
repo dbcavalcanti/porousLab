@@ -768,7 +768,7 @@ classdef Model < handle
                     if this.condenseEnrDofs == false
                         this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
                         this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
-                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof];
+                        this.dofenr = [this.dofenr, this.discontinuitySet(i).segment(j).dof];
                     end
                 end
             end
@@ -795,7 +795,7 @@ classdef Model < handle
             for i = 1:this.nnodes
                 fprintf("  %4d: \t",i);
                 for j = 1:this.ndof_nd
-                    fprintf("  %8.4e ",this.U(this.ID(i,j)))
+                    fprintf("  %+8.4e ",this.U(this.ID(i,j)))
                 end
                 fprintf("\n");
             end
