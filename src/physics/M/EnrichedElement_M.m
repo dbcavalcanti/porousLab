@@ -207,10 +207,10 @@ classdef EnrichedElement_M < RegularElement_M
                 Bu = this.BMatrix(dNdx);
 
                 % Get kinematic enriched matrix
-                Gr = this.kinematicEnrichment(Bu);
+                Gr = this.kinematicEnrichment(Bu,this.intPoint(i).X);
 
                 % Get the static enriched matrix (TEMP)
-                Gv = this.kinematicEnrichment(Bu);
+                Gv = this.kinematicEnrichment(Bu,this.intPoint(i).X);
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u + Gr * ae;
@@ -324,7 +324,7 @@ classdef EnrichedElement_M < RegularElement_M
         % contributions of discontinuities in the element. The enrichment
         % includes translation, stretching and relative rotation modes
         % depending on the configuration
-        function Gc = kinematicEnrichment(this, Bu) 
+        function Gc = kinematicEnrichment(this, Bu,Xn) 
             nDiscontinuities  = this.getNumberOfDiscontinuities();
             nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
             Gc = zeros(4,nDofDiscontinuity * nDiscontinuities);
@@ -357,11 +357,37 @@ classdef EnrichedElement_M < RegularElement_M
                         end
                     end
                 end
+                % Add stretching mode
+                if this.addStretchingMode
+                    % Cartesian coordinate of the int. point
+                    X = this.shape.coordNaturalToCartesian(this.node,Xn);
+                    % Shape function matrix
+                    N = this.shape.shapeFncMtrx(Xn);
+                    % Function phi
+                    phi = this.auxiliaryfncPhi(i, N);
+                    % Heaviside function
+                    h = this.discontinuity(i).heaviside(X);
+                    % Linear map operator
+                    M = [m(1),0;0,m(2);0,0;m(2),m(1)];
+                    % Add term
+                    Gci(:,3) = Gci(:,3) + (h - phi) * M * m;
+                end
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
                 Gc(:,cols) = Gci;
             end
         end
         %------------------------------------------------------------------
+        % Compute the enrichment auxiliary function
+        function phi = auxiliaryfncPhi(this, id, N) 
+            phi = 0.0;
+            for j = 1:this.nnd_el
+                Xj = this.node(j,:);
+                hj = this.discontinuity(id).heaviside(Xj);
+                if (hj > 0.0)
+                    phi = phi + N(:, j);
+                end
+            end
+        end
     end
 end
