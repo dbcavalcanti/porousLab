@@ -174,7 +174,7 @@ end
 % Sign of the oriented area
 function signArea = signArea2d(p1,p2,p3)
     det = area2d(p1,p2,p3);
-    if abs(det) < 1e-8
+    if abs(det) < 1e-25
         signArea = 0.0;
     else
         if det > 0.0
