@@ -115,6 +115,7 @@ classdef Model < handle
         condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
         dofenr              = [];            % Vector with the enrichment dofs
         ndofenr             = 0;             % Number of enrichment dofs
+        subDivIntegration   = false;         % Flag to apply a sub-division of the element to define the integration points
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
@@ -353,6 +354,9 @@ classdef Model < handle
     
                 % Assemble discontinuity segments to the elements
                 this.assembleDiscontinuitySegments();
+
+                % Initialize integration points
+                this.initializeIntegrationPoints();
                 
                 % Compute auxiliar variables for assemblage of sparse matrices
                 this.initializeSparseMtrxAssemblageVariables();
@@ -365,6 +369,14 @@ classdef Model < handle
     
                 % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the elements integration points
+        function initializeIntegrationPoints(this)
+            for el = 1 : this.nelem
+                this.element(el).type.initializeIntPoints();
             end
         end
 

@@ -112,12 +112,11 @@ classdef Model_M < Model
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
-                                this.condenseEnrDofs);
+                                this.condenseEnrDofs,this.subDivIntegration);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
-                elements(el).type.initializeIntPoints();
             end
             this.element = elements;
             
