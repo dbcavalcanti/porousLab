@@ -157,6 +157,12 @@ classdef Shape_CST < Shape
                     k = k + 2;
                 end
                 
+                % Remove duplicated nodes
+                [nodes, ~, ic] = unique(nodes, 'rows', 'stable');
+                
+                % Update connectivity matrix
+                dConnect(:) = ic(dConnect);
+                
                 % Perform a Delaunay triangulation to create subelements
                 DT = delaunayTriangulation(nodes,dConnect);
 
@@ -260,7 +266,7 @@ classdef Shape_CST < Shape
         %------------------------------------------------------------------
         % Size of the Gram matrix
         % The stress field in a CST element is constant
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 1;
         end
 

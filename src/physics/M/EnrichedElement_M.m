@@ -47,6 +47,8 @@ classdef EnrichedElement_M < RegularElement_M
         addStretchingMode  = false;
         addRelRotationMode = false;
         condenseEnrDofs    = true;
+        symmetricForm      = true;
+        stressIntCoeff     = [];
     end
     %% Constructor method
     methods
@@ -55,7 +57,7 @@ classdef EnrichedElement_M < RegularElement_M
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
                 addRelRotationMode,addStretchingMode, condenseEnrDofs,...
-                subDivInt)
+                subDivInt, symmetricForm)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
@@ -63,6 +65,7 @@ classdef EnrichedElement_M < RegularElement_M
             this.addRelRotationMode = addRelRotationMode;
             this.condenseEnrDofs    = condenseEnrDofs;
             this.subDivInt          = subDivInt;
+            this.symmetricForm      = symmetricForm;
         end
     end
     
@@ -209,8 +212,12 @@ classdef EnrichedElement_M < RegularElement_M
                 % Get kinematic enriched matrix
                 Gr = this.kinematicEnrichment(Bu,this.intPoint(i).X);
 
-                % Get the static enriched matrix (TEMP)
-                Gv = this.kinematicEnrichment(Bu,this.intPoint(i).X);
+                % Get the static enriched matrix
+                if this.symmetricForm
+                    Gv = Gr;
+                else
+                    Gv = this.equilibriumEnrichment(this.intPoint(i).X);
+                end
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u + Gr * ae;
@@ -302,6 +309,15 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Displacement jump order
+        function n = displacementJumpOrder(this)
+            n = 0;
+            if (this.addStretchingMode || this.addRelRotationMode) 
+                n = 1;
+            end
+        end
+
+        %------------------------------------------------------------------
         % Adds a discontinuity segment to the element
         function addDiscontinuitySegment(this,dseg)
             this.discontinuity = [this.discontinuity; dseg];
@@ -370,13 +386,14 @@ classdef EnrichedElement_M < RegularElement_M
                     % Linear map operator
                     M = [m(1),0;0,m(2);0,0;m(2),m(1)];
                     % Add term
-                    Gci(:,3) = Gci(:,3) + (h - phi) * M * m;
+                    Gci(:,3) = Gci(:,3) + h * M * m;
                 end
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
                 Gc(:,cols) = Gci;
             end
         end
+
         %------------------------------------------------------------------
         % Compute the enrichment auxiliary function
         function phi = auxiliaryfncPhi(this, id, N) 
@@ -389,5 +406,128 @@ classdef EnrichedElement_M < RegularElement_M
                 end
             end
         end
+
+        %------------------------------------------------------------------
+        % Compute the enrichment auxiliary function
+        function Gv = equilibriumEnrichment(this, Xn)
+            
+            % Initialize variables
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            jumpOrder         = this.displacementJumpOrder();
+            Gv = zeros(4,nDofDiscontinuity * nDiscontinuities);
+
+            % Get the stress interpolation coefficients
+            c = this.getStressInterpCoefficients();
+
+            % Cartesian coordinate of the int. point
+            X = this.shape.coordNaturalToCartesian(this.node,Xn);
+
+            % Stress interpolation polynomial
+            p = this.shape.polynomialStress(X);
+
+            % Evaluate the polynomial
+            g = c'*p;
+
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+                
+                % Get discontinuity data
+                m = this.discontinuity(i).tangentialVector();
+                n = this.discontinuity(i).normalVector();
+                P = this.discontinuity(i).projectionMatrix();
+                
+                % Get matrix associated with discontinuity i
+                if (jumpOrder == 0)
+                    Gi = - g(1,i) * P * [ m , n];
+                elseif (jumpOrder == 1)
+                    if ((this.addStretchingMode == true) && (this.addRelRotationMode == false))
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m];
+                    elseif ((this.addStretchingMode == false) && (this.addRelRotationMode == true))
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*n];
+                    else
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m, g(2,i)*n];
+                    end
+                end
+
+                % Assemble the matrix associated with discontinuity i
+                cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+                Gv(:,cols) = Gi;
+
+            end
+
+        end
+
+        %------------------------------------------------------------------
+        % Get the stress interpolation coefficients
+        function c = getStressInterpCoefficients(this)
+            if isempty(this.stressIntCoeff)
+                this.stressIntCoeff = this.computeStressIntCoeffs();
+            end
+            c = this.stressIntCoeff;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function c = computeStressIntCoeffs(this)
+            
+            % Gramm matrix
+            H = this.grammMatrix();
+
+            % Integral of the stresses along the discontinuities
+            S = this.dSetIntegralPolynomialStress();
+
+            % Compute coefficients
+            c = H\S;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function H = grammMatrix(this)
+
+            % Initialize variables
+            n = this.shape.dimPolynomialStressInterp();
+            H = zeros(n,n);
+
+            for i = 1:this.nIntPoints
+                % Numerical int. coefficient
+                detJ = this.shape.detJacobian(this.node,this.intPoint(i).X);
+                c = this.intPoint(i).w * detJ * this.t;
+
+                % Cartesian coordinate of the int. point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Stress interpolation polynomial
+                p = this.shape.polynomialStress(X);
+
+                % Gram matrix
+                H = H + (p * p') * c;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function S = dSetIntegralPolynomialStress(this)
+
+            % Initialize variables
+            dimPolyStress    = this.shape.dimPolynomialStressInterp();
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            jumpOrder        = this.displacementJumpOrder();
+
+            % Initialize matrix
+            S = zeros(dimPolyStress,nDiscontinuities*(jumpOrder + 1));
+
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+
+                % Evaluate integral of discontinuity i
+                Si = this.discontinuity(i).intPolynomialStressIntp(this);
+
+                % Assemble
+                cols = ((i-1) * (jumpOrder + 1) + 1):(i * (jumpOrder + 1));
+                S(:,cols) = Si;
+            end
+        end
+
     end
 end

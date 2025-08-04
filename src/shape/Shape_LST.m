@@ -195,7 +195,7 @@ classdef Shape_LST < Shape
         %------------------------------------------------------------------
         % Size of the Gram matrix
         % The stress field in a LST element is linear
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 3;
         end
 

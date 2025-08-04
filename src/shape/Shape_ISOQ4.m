@@ -235,6 +235,12 @@ classdef Shape_ISOQ4 < Shape
                     dConnect(i,:)  = [k, k+1];
                     k = k + 2;
                 end
+
+                % Remove duplicated nodes
+                [nodes, ~, ic] = unique(nodes, 'rows', 'stable');
+                
+                % Update connectivity matrix
+                dConnect(:) = ic(dConnect);
                 
                 % Perform a Delaunay triangulation to create subelements
                 DT = delaunayTriangulation(nodes,dConnect);
@@ -283,7 +289,7 @@ classdef Shape_ISOQ4 < Shape
         % The stress field in a Q4 element is assumed to be a linear
         % polynomial in terms of the relative coordinates x and y,
         % evaluated wrt to the element centroid
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 3;
         end
 

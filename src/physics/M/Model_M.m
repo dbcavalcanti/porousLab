@@ -53,6 +53,7 @@ classdef Model_M < Model
         %% Embedded related data
         addStretchingMode   = false;
         addRelRotationMode  = false;
+        symmetricSDAEFEM    = true;        % Flag for the use of a symmetric embedded formulation
     end
     
     %% Constructor method
@@ -112,7 +113,7 @@ classdef Model_M < Model
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
-                                this.condenseEnrDofs,this.subDivIntegration);
+                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;

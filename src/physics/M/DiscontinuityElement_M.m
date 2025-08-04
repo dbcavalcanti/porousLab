@@ -67,6 +67,15 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 this.ndof = this.ndof + 1;
             end
         end
+
+        %------------------------------------------------------------------
+        % Displacement jump order
+        function n = displacementJumpOrder(this)
+            n = 0;
+            if (this.stretchingMode || this.relRotationMode) 
+                n = 1;
+            end
+        end
         
         %------------------------------------------------------------------
         % Initializes the integration points for the element obtaining the
@@ -161,6 +170,53 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 end
                 if this.relRotationMode
                     Nd(2,c) = s;
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Projection matrix
+        function P = projectionMatrix(this)
+            n = this.normalVector();
+            P = [n(1) , 0.0;
+                 0.0  , n(2);
+                 0.0  , 0.0;
+                 n(2) , n(1)];
+        end
+
+        %------------------------------------------------------------------
+        % Integrate the polynomial stress interpolation of the continuum
+        % along the discontinuity
+        function S = intPolynomialStressIntp(this, celem)
+
+            % Initialize variables
+            jumpOrder     = this.displacementJumpOrder();
+            dimPolyStress = celem.shape.dimPolynomialStressInterp();
+            S = zeros(dimPolyStress, jumpOrder + 1);
+
+            % Get the discontinuity geometric properties
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            ld = this.ld();
+
+            % Numerical integration
+            for i = 1:this.nIntPoints
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Cartesian coordinates of the integration point 
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Continuum stress interpolation polynomial
+                p = celem.shape.polynomialStress(X);
+
+                if (jumpOrder == 0)
+                    S = S + p * c;
+                elseif (jumpOrder == 1)
+                    % Tangential coordinate
+                    s = m' * (X' - Xr');
+                    S = S + [p , s*p] * c;
                 end
             end
         end
