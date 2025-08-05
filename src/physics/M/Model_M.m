@@ -165,6 +165,9 @@ classdef Model_M < Model
         % Set the nodal pore-pressure values
         function setPorePressureField(this, P)
             this.P = P;
+            if (isempty(this.FeP) == false)
+                this.computePorePressureForceVct();
+            end
         end
 
         %------------------------------------------------------------------
