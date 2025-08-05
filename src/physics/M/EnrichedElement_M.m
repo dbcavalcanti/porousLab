@@ -283,6 +283,96 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Compute the forces due to the pore-pressure field
+        function fe = porePressureForce(this, pe)
+
+            if isempty(this.discontinuity)
+               fe = porePressureForce@RegularElement_M(this, pe);
+               return;
+            end
+
+            % Get the number of dofs of each type
+            nEnrDofs = this.getNumberEnrichedDofs();
+            nRegDofs = this.nglu;
+
+            % Initialize hydro-mechanical coupling forces
+            feu = zeros(nRegDofs,1);
+            fea = zeros(nEnrDofs,1);
+
+            % Identity vector
+            m = [1;1;1;0];
+
+            % Numerical integration of Q
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.BMatrix(dNdx,N);
+
+                % Get the static enriched matrix
+                if this.symmetricForm
+                    Gv = this.kinematicEnrichment(Bu,this.intPoint(i).X);
+                else
+                    Gv = this.equilibriumEnrichment(this.intPoint(i).X);
+                end
+
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                end
+
+                % Evaluate pore-pressure at the integration point
+                p = this.porePressureField(N, pe);
+
+                % Compute the forces
+                feu = feu + Bu' * m * p * c;
+                fea = fea + Gv' * m * p * c;
+
+            end
+
+            % Loop through the discontinuities
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+
+                % Initialize the discontinuity pore-pressure vector
+                pd = [0; 0];
+                for j = 1:2
+                    % Cartesian coordinate of node i of the discontinuity
+                    X = this.discontinuity(i).node(j,:);
+                    % Natural coordinates of this node
+                    Xn = this.shape.coordCartesianToNatural(this.node,X);
+                    % Shape function
+                    N = this.shape.shapeFncMtrx(Xn);
+                    % Pore-pressure value at this node
+                    pd(j) = N * pe;
+                end
+
+                % Get the discontinuity data
+                feai = this.discontinuity(i).porePressureForce(pd);
+
+                % Assemble the contribution of this discontinuity
+                fea(2*i-1:2*i,1) = fea(2*i-1:2*i,1) + feai;
+                
+            end
+
+            % Assemble vector
+            fe = [feu; fea];
+
+        end
+
+        %------------------------------------------------------------------
+        % Evaluates the pore-pressure field
+        function p = porePressureField(~, N,pe)
+            p = N * pe;
+        end
+
+        %------------------------------------------------------------------
         % Gets the number of enriched degrees of freedom
         function nEnrDof = getNumberEnrichedDofs(this)
             nEnrDof = this.getNumberOfDiscontinuities();

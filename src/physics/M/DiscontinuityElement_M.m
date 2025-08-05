@@ -35,6 +35,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
     properties (SetAccess = public, GetAccess = public)
         stretchingMode  = false;
         relRotationMode = false;
+        DP              = [];
     end
     %% Constructor method
     methods
@@ -259,9 +260,45 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 % Get strain component
                 f(i) = this.intPoint(i).strain(strainId);
             end
-            
         end
 
+        %------------------------------------------------------------------
+        function fe = porePressureForce(this, pd)
+
+            % Initialize the matrices for the numerical integration
+            fe = zeros(2,1);
+
+            % Get the lenght of the discontinuity
+            ld = this.ld();
+
+            % Get the discontinuity geometry
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            n  = [0;1];
+
+            % Initialize output matrices
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFnc(this.intPoint(i).X);
+
+                % Cartesian coordinates of the integration point 
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Get the shape function matrix
+                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Pore-pressure at the integration point
+                pdi = N * pd;
+
+                % Compute the internal force vector
+                fe = fe + Nd' * n * pdi * c;
+
+            end
+        end
 
     end
 end
