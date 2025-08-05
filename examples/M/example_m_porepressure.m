@@ -21,8 +21,8 @@ mdl.addPorePressure = true;
 % Create mesh
 Lx = 2.0e-1;  % Horizontal dimension (m)
 Ly = 2.0e-1;  % Vertical dimension (m)
-Nx = 10;       % Number of elements in the x-direction
-Ny = 10;       % Number of elements in the y-direction
+Nx = 1;       % Number of elements in the x-direction
+Ny = 1;       % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
