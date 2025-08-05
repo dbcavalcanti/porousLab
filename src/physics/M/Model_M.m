@@ -48,8 +48,11 @@ classdef Model_M < Model
         isPlaneStress       = false;
         %% Geostatic 
         addGeostatic        = false;
+        addPorePressure     = false;
         stressfnc           = [];
         FeG                 = [];
+        P                   = [];
+        FeP                 = [];         
         %% Embedded related data
         addStretchingMode   = false;
         addRelRotationMode  = false;
@@ -159,10 +162,48 @@ classdef Model_M < Model
         end
 
         %------------------------------------------------------------------
+        % Set the nodal pore-pressure values
+        function setPorePressureField(this, P)
+            this.P = P;
+        end
+
+        %------------------------------------------------------------------
+        % Add forces due to external pore-pressure field
+        function Fe = addPorePressureForces(this, Fe)
+            if ((this.addPorePressure == false) || (isempty(this.P)))
+                return
+            end
+            if (isempty(this.FeP))
+                this.computePorePressureForceVct();
+            end
+            Fe = Fe + this.FeP;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the forces due to the pore-pressure field.
+        function computePorePressureForceVct(this)
+            % Initialize
+            this.FeP = zeros(this.ndof,1);
+            % Compute and assemble element data
+            for el = 1:this.nelem
+                % Pressure "dofs"
+                pdof = this.element(el).type.connect;
+                % Displacement dofs
+                udof = this.element(el).type.gle;
+                % Get contribution from element el
+                fep = this.element(el).type.porePressureForce(this.P(pdof));
+                this.FeP(udof) = this.FeP(udof) + fep;
+            end
+            % Convert to sparse
+            this.FeP = sparse(this.FeP);
+        end
+
+        %------------------------------------------------------------------
         % Add contribution of nodal loads to reference load vector.
         function Fe = addNodalLoad(this,Fe)
             Fe = addNodalLoad@Model(this,Fe);
             Fe = this.addGeostaticForces(Fe);
+            Fe = this.addPorePressureForces(Fe);
         end
 
         % -----------------------------------------------------------------

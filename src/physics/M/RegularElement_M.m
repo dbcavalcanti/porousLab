@@ -194,6 +194,45 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Compute the forces due to the pore-pressure field
+        function fe = porePressureForce(this, pe)
+
+            % Initialize hydro-mechanical coupling matrix. The
+            % pore-pressure are discretized at the nodes of the element.
+            Q = zeros(this.nglu,this.nnd_el);
+
+            % Identity vector
+            m = [1;1;1;0];
+
+            % Numerical integration of Q
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.BMatrix(dNdx,N);
+
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                end
+
+                % Compute Q
+                Q = Q + Bu' * m * N * c;
+
+            end
+
+            % Compute forces due to the pore-pressure field
+            fe = Q * pe;
+
+        end
+
+        %------------------------------------------------------------------
         % Initialize the stresses at the integration point with the given
         % function
         function initialStress(this, stressfnc)
