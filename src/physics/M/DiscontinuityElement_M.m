@@ -220,5 +220,48 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 end
             end
         end
+
+        %------------------------------------------------------------------
+        % Get specified field. Fill the coordinate matrix and the field.
+        function [X, f] = getField(this,field)
+            if strcmp(field,'Sn')
+                [X, f] = this.getCohesiveStresses(2); 
+            elseif strcmp(field,'St')
+                [X, f] = this.getCohesiveStresses(1);
+            elseif strcmp(field,'Dn')
+                [X, f] = this.getDisplacementJump(2);
+            elseif strcmp(field,'Dt')
+                [X, f] = this.getDisplacementJump(1);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get cohesive stresses component
+        function [X, f] = getCohesiveStresses(this,stressId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point 
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get cohesive stresses
+                f(i) = this.intPoint(i).stress(stressId);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get cohesive stresses component
+        function [X, f] = getDisplacementJump(this,strainId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point 
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get strain component
+                f(i) = this.intPoint(i).strain(strainId);
+            end
+            
+        end
+
+
     end
 end
