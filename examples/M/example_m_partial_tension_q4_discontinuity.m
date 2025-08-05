@@ -30,9 +30,6 @@ Nx = 1;       % Number of elements in the x-direction
 Ny = 1;       % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
-% Model thickness
-mdl.t = 1.0;
-
 % Set mesh to model
 mdl.setMesh(node,elem);
 
