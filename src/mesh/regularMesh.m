@@ -96,8 +96,14 @@ if Nx < Ny
     for j=1:Ny
         for i=1:Nx  
             n1 = (j-1)*(Nx+1)+i; n2 = j*(Nx+1)+i;
-            ELEM{k} = [n1, n1+1, n2+1, n2];
-            k = k+1;
+            if strcmp(type,'CST')
+                ELEM{k}   = [n1, n2+1, n2];
+                ELEM{k+1} = [n1, n1+1, n2+1];
+                k = k+2;
+            else
+                ELEM{k} = [n1, n1+1, n2+1, n2];
+                k = k+1;
+            end
         end
     end
 else
