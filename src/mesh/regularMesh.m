@@ -13,10 +13,6 @@
 % * *yo*: Fixed y-coordinates (optional, default: [])
 % * *type*: Type of finite element ('ISOQ4' for quadrilateral or 'CST' for 
 %           constant strain triangle, default: 'ISOQ4')
-% * *quadDistrX*: Flag for quadratic distribution in x-direction 
-%                 (optional, default: false)
-% * *quadDistrY*: Flag for quadratic distribution in y-direction 
-%                 (optional, default: false)
 %
 %% Outputs
 % * *Node*: Matrix of node coordinates (Nx*Ny x 2), where each row 
@@ -32,27 +28,46 @@
 % Version 1.00.
 %
 %% Function definition
-function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,quadDistrX,quadDistrY)
+function [Node,ELEM] = regularMesh(Lx,Ly,Nx,Ny,xo,yo,type,cx,Ax,cy,Ay)
 
 if nargin < 5, xo = []; yo = []; end
 if nargin < 7, type = 'ISOQ4'; end
-if nargin < 9, quadDistrX = false; quadDistrY = false; end
+if nargin < 9, cx = 0; Ax = 0; end
+if nargin < 11, cy = 0; Ay = 0; end
 
-% Get the x and y coordinates of the nodes
-if quadDistrX == false
-    xcoord = getUniquePoints(linspace(0,Lx,Nx+1),xo, 0.2*Lx/Nx);
-else
-    xcoord = getUniquePoints(linspace(0,1,Nx+1),xo, 0.2*Lx/Nx);
-    xcoord = xcoord.^2;
-    xcoord = xcoord * Lx;
-end
-if quadDistrY == false
-    ycoord = getUniquePoints(linspace(0,Ly,Ny+1),yo, 0.2*Ly/Ny);
-else
-    ycoord = getUniquePoints(linspace(0,1,Ny+1),yo, 0.2*Ly/Ny);
-    ycoord = ycoord.^2;
-    ycoord = ycoord * Ly;
-end
+% Uniform parameter in [0,1]
+s = linspace(0,1,Nx+1);  
+
+% width of the dip
+sigma = max(min(8/Nx,1.0),0.0);
+
+% 2) inverted‐Gaussian “dip” PDF
+pdf = 1 - Ax*exp( -((s - cx).^2) ./ (2*sigma^2) );
+
+% 3) normalize PDF so area=1 (optional but cleaner)
+pdf = pdf / trapz(s,pdf);
+
+% 4) CIDF warp
+ux = cumtrapz(s, pdf);
+ux = ux / ux(end);     % ensure u(1)=1 exactly
+xcoord = getUniquePoints(Lx*ux, xo, 0.2*Lx/Nx);
+
+% Uniform parameter in [0,1]
+s = linspace(0,1,Ny+1);   
+
+% width of the dip
+sigma = max(min(10/Ny,1.0),0.0);
+
+% 2) inverted‐Gaussian “dip” PDF
+pdf = 1 - Ay*exp( -((s - cy).^2) ./ (2*sigma^2) );
+
+% 3) normalize PDF so area=1 (optional but cleaner)
+pdf = pdf / trapz(s,pdf);
+
+% 4) CIDF warp
+uy = cumtrapz(s, pdf);
+uy = uy / uy(end);     % ensure u(1)=1 exactly
+ycoord = getUniquePoints(Ly*uy, yo, 0.2*Ly/Ny);
 
 % Number of nodes in each direction
 Nx = length(xcoord) - 1;
