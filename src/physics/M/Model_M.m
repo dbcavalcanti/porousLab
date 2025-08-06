@@ -351,6 +351,9 @@ classdef Model_M < Model
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
+                    if this.addPorePressure
+                        this.discontinuitySet(i).segment(j).DP = 0.0;
+                    end
                 end
             end
             % Call the common initialization
@@ -389,6 +392,17 @@ classdef Model_M < Model
                     end
                 end
                 this.element(el).type.result.setVertices(vertices);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Evaluate a field at in a point inside an element
+        % Assumes that the point is in the element domain
+        function fieldValue = evaluateField(this, field, el, X)
+            fieldValue = evaluateField@Model(this, field, el, X);
+            if strcmp(field,'PressureExt')
+                pdof = this.element(el).type.connect;
+                fieldValue = this.element(el).type.pressureField(X,this.P(pdof));
             end
         end
     end
