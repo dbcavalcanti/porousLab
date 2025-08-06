@@ -145,7 +145,7 @@ classdef RegularElement_M < RegularElement
                 end
                 
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Bu' * Duu * Bu * c;
+                dfidu = dfidu + Bu' * Duu * Bu * c;
 
                 % Internal force vector
                 fi = fi + Bu' * stress * c;

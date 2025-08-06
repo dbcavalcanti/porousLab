@@ -105,17 +105,17 @@ classdef EnrichedElement_M < RegularElement_M
         function [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this)
 
             % Initialize the matrices and vectors that will be returned
-            Ce    = zeros(this.ngle, this.ngle);
-            dfidu = zeros(this.ngle, this.ngle);
+            Ce = zeros(this.ngle, this.ngle);
+            Ke = zeros(this.ngle, this.ngle);
 
             if this.condenseEnrDofs
                 % Compute the sub-matrices
                 [Kuu, Kua, Kau, Kaa, fiu, fia, feu] = this.solveLocalEq();
     
                 % Static condensation of the enrichment dofs
-                Ke = Kuu - Kua * (Kaa\Kau);
-                fi = fiu - Kua * (Kaa\fia);
-                fe = feu;
+                dfidu = Kuu - Kua * (Kaa\Kau);
+                fi    = fiu - Kua * (Kaa\fia);
+                fe    = feu;
             else
                 % Get enrichment dofs
                 ae = this.ue(this.nglu+1:end);
@@ -124,10 +124,10 @@ classdef EnrichedElement_M < RegularElement_M
                 [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
 
                 % Assemble element matrices
-                Ke = [ Kuu , Kua;
-                       Kau , Kaa];
-                fi = [ fiu; fia];
-                fe = [ feu; fea];
+                dfidu = [ Kuu , Kua;
+                          Kau , Kaa];
+                fi    = [ fiu; fia];
+                fe    = [ feu; fea];
 
             end
 
