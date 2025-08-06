@@ -177,7 +177,7 @@ classdef FEMPlot < handle
             % Set the limits 
             fmin = min(F);
             fmax = max(F);
-            pad = 0.02*(fmax-fmin);
+            pad = max(0.02*(fmax-fmin),0.001*mean(F));
             
             % Plota conforme o eixo escolhido
             if strcmp(axisPlot, 'y')
