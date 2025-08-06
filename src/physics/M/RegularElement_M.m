@@ -199,12 +199,12 @@ classdef RegularElement_M < RegularElement
 
             % Initialize hydro-mechanical coupling matrix. The
             % pore-pressure are discretized at the nodes of the element.
-            Q = zeros(this.nglu,this.nnd_el);
+            fe = zeros(this.nglu,1);
 
             % Identity vector
             m = [1;1;1;0];
 
-            % Numerical integration of Q
+            % Numerical integration of fe
             for i = 1:this.nIntPoints
 
                 % Shape function vector
@@ -222,13 +222,10 @@ classdef RegularElement_M < RegularElement
                     c = c * this.shape.axisSymmetricFactor(N,this.node);
                 end
 
-                % Compute Q
-                Q = Q + Bu' * m * N * c;
+                % Compute the force due to the pore-pressure
+                fe = fe + Bu' * m * N * pe * c;
 
             end
-
-            % Compute forces due to the pore-pressure field
-            fe = Q * pe;
 
         end
 
@@ -273,6 +270,27 @@ classdef RegularElement_M < RegularElement
             
             % Regular displacement field
             u = Nu*uv;
+        
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the pressure field inside a given element
+        function p = pressureField(this,X,pe)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   p   : pressure evaluated in "X"
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % capillary field
+            p = Nm*pe;
         
         end
 

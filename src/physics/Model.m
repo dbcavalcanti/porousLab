@@ -805,6 +805,7 @@ classdef Model < handle
         % Evaluate a field at in a point inside an element
         % Assumes that the point is in the element domain
         function fieldValue = evaluateField(this, field, el, X)
+            fieldValue = [];
             if strcmp(field,'Model')
                 fieldValue = this.matID(el);
             elseif strcmp(field,'Pressure')
