@@ -352,10 +352,8 @@ classdef EnrichedElement_M < RegularElement_M
                     N = this.shape.shapeFncMtrx(Xn);
                     % Function phi
                     phi = this.auxiliaryfncPhi(i, N);
-                    % Heaviside function
-                    h = this.discontinuity(i).heaviside(X);
                     % Pore-pressure value at this node
-                    pd(j) = N * pe + (h-phi)*this.discontinuity(i).DP;
+                    pd(j) = N * pe + (1-phi)*this.discontinuity(i).DP;
                 end
 
                 % Get the discontinuity data
