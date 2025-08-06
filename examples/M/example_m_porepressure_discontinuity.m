@@ -99,3 +99,4 @@ end
 mdl.plotField('Sx');
 mdl.plotField('Sy');
 mdl.plotField('Sxy');
+mdl.plotFieldAlongDiscontinuiy('Sn',1,'x')
