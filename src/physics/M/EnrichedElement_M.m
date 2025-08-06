@@ -328,7 +328,7 @@ classdef EnrichedElement_M < RegularElement_M
                 end
 
                 % Evaluate pore-pressure at the integration point
-                p = this.porePressureField(N, this.intPoint(i).X, pe)
+                p = this.porePressureField(N, this.intPoint(i).X, pe);
 
                 % Compute the forces
                 feu = feu + Bu' * m * p * c;
