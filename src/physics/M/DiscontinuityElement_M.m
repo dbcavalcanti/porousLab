@@ -266,7 +266,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         function fe = porePressureForce(this, pd)
 
             % Initialize the matrices for the numerical integration
-            fe = zeros(2,1);
+            fe = zeros(this.ndof,1);
 
             % Get the lenght of the discontinuity
             ld = this.ld();

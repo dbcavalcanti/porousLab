@@ -328,7 +328,7 @@ classdef EnrichedElement_M < RegularElement_M
                 end
 
                 % Evaluate pore-pressure at the integration point
-                p = this.porePressureField(N, pe);
+                p = this.porePressureField(N, this.intPoint(i).X, pe)
 
                 % Compute the forces
                 feu = feu + Bu' * m * p * c;
@@ -338,6 +338,7 @@ classdef EnrichedElement_M < RegularElement_M
 
             % Loop through the discontinuities
             nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
             for i = 1:nDiscontinuities
 
                 % Initialize the discontinuity pore-pressure vector
@@ -349,15 +350,22 @@ classdef EnrichedElement_M < RegularElement_M
                     Xn = this.shape.coordCartesianToNatural(this.node,X);
                     % Shape function
                     N = this.shape.shapeFncMtrx(Xn);
+                    % Function phi
+                    phi = this.auxiliaryfncPhi(i, N);
+                    % Heaviside function
+                    h = this.discontinuity(i).heaviside(X);
                     % Pore-pressure value at this node
-                    pd(j) = N * pe;
+                    pd(j) = N * pe + (h-phi)*this.discontinuity(i).DP;
                 end
 
                 % Get the discontinuity data
                 feai = this.discontinuity(i).porePressureForce(pd);
 
+                % Dofs associated with this discontinuity segment
+                dofs = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+
                 % Assemble the contribution of this discontinuity
-                fea(2*i-1:2*i,1) = fea(2*i-1:2*i,1) + feai;
+                fea(dofs,1) = fea(dofs,1) + feai;
                 
             end
 
@@ -368,8 +376,24 @@ classdef EnrichedElement_M < RegularElement_M
 
         %------------------------------------------------------------------
         % Evaluates the pore-pressure field
-        function p = porePressureField(~, N,pe)
+        function p = porePressureField(this, N, Xn, pe)
+
+            % Continuous part
             p = N * pe;
+
+            % Cartesian coordinate of the integration point
+            X = this.shape.coordNaturalToCartesian(this.node, Xn);
+
+            % Discontinuous part
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                % Function phi
+                phi = this.auxiliaryfncPhi(i, N);
+                % Heaviside function
+                h = this.discontinuity(i).heaviside(X);
+                % Add discontinuous part from discontinuity i
+                p = p + (h-phi) * this.discontinuity(i).DP;
+            end
         end
 
         %------------------------------------------------------------------
