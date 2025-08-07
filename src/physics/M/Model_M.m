@@ -54,9 +54,10 @@ classdef Model_M < Model
         P                   = [];
         FeP                 = [];         
         %% Embedded related data
-        addStretchingMode   = false;
-        addRelRotationMode  = false;
-        symmetricSDAEFEM    = true;        % Flag for the use of a symmetric embedded formulation
+        addTangentialStretchingMode = false;
+        addNormalStretchingMode     = false;
+        addRelRotationMode          = false;
+        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation
     end
     
     %% Constructor method
@@ -115,7 +116,8 @@ classdef Model_M < Model
                                 this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
                                 this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM);
                 end
                 if this.gravityOn
@@ -337,8 +339,9 @@ classdef Model_M < Model
         % -----------------------------------------------------------------
         % Adds some additional discontinuity data
         function addDiscontinuityData(this,additionalData)
-            this.addRelRotationMode = additionalData.addRelRotationMode;
-            this.addStretchingMode  = additionalData.addStretchingMode;
+            this.addRelRotationMode          = additionalData.addRelRotationMode;
+            this.addTangentialStretchingMode = additionalData.addTangentialStretchingMode;
+            this.addNormalStretchingMode     = additionalData.addNormalStretchingMode;
         end
 
         %------------------------------------------------------------------
@@ -349,7 +352,7 @@ classdef Model_M < Model
             for i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
+                    this.discontinuitySet(i).segment(j).addStretchingMode(this.addTangentialStretchingMode, this.addNormalStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
                     if this.addPorePressure
                         this.discontinuitySet(i).segment(j).DP = 0.0;

@@ -17,7 +17,7 @@ mdl = Model_M();
 mdl.condenseEnrDofs   = false;
 mdl.addPorePressure   = true;
 mdl.subDivIntegration = true;
-mdl.symmetricSDAEFEM  = false;
+mdl.symmetricSDAEFEM  = true;
 
 %% MESH
 
@@ -49,16 +49,16 @@ mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
 
 % Set external pore-pressure
-P = 10 * [0;1;0;1];
-% P = 10 * [1;0;1;0];
+% P = 10 * [0;1;0;1];
+P = 10 * [1;0;1;0];
 % P = 10 * [1;1;1;1];
 mdl.setPorePressureField(P);
 
 %% DISCONTINUITIES
 
 % Create discontinuities 
-Xd = [ 0.0 , 0.5*Ly;
-       Lx  , 0.5*Ly ];
+Xd = [ 0.0 , 0.25*Ly;
+       Lx  , 0.25*Ly ];
 fault = Discontinuity(Xd, true);
 
 % Set fracture material properties
@@ -67,7 +67,7 @@ fault.shearStiffness  = 1.0e15;       % Pa/m
 fault.normalStiffness = 1.0e15;       % Pa/m
 
 % Add fractures to model
-discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', false);
+discontinuityData = struct('addTangentialStretchingMode', true, 'addNormalStretchingMode', true, 'addRelRotationMode', false);
 mdl.addPreExistingDiscontinuities(fault, discontinuityData);
 
 % Set pressure jump at the discontinuities
@@ -75,7 +75,7 @@ nDiscontinuities = mdl.getNumberOfDiscontinuities();
 for i = 1:nDiscontinuities
     nDiscontinuitySeg = mdl.discontinuitySet(i).getNumberOfDiscontinuitySegments();
     for j = 1:nDiscontinuitySeg
-        mdl.discontinuitySet(i).segment(j).DP = 10;
+        mdl.discontinuitySet(i).segment(j).DP = -10;
     end
 end
 

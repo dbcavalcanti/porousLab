@@ -43,12 +43,13 @@
 classdef EnrichedElement_M < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        discontinuity = [];
-        addStretchingMode  = false;
-        addRelRotationMode = false;
-        condenseEnrDofs    = true;
-        symmetricForm      = true;
-        stressIntCoeff     = [];
+        discontinuity                = [];
+        addTangentialStretchingMode  = false;
+        addNormalStretchingMode      = false;
+        addRelRotationMode           = false;
+        condenseEnrDofs              = true;
+        symmetricForm                = true;
+        stressIntCoeff               = [];
     end
     %% Constructor method
     methods
@@ -56,16 +57,18 @@ classdef EnrichedElement_M < RegularElement_M
         function this = EnrichedElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
-                addRelRotationMode,addStretchingMode, condenseEnrDofs,...
+                addRelRotationMode,addTangentialStretchingMode, ...
+                addNormalStretchingMode, condenseEnrDofs,...
                 subDivInt, symmetricForm)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
-            this.addStretchingMode  = addStretchingMode;
-            this.addRelRotationMode = addRelRotationMode;
-            this.condenseEnrDofs    = condenseEnrDofs;
-            this.subDivInt          = subDivInt;
-            this.symmetricForm      = symmetricForm;
+            this.addTangentialStretchingMode  = addTangentialStretchingMode;
+            this.addNormalStretchingMode      = addNormalStretchingMode;
+            this.addRelRotationMode           = addRelRotationMode;
+            this.condenseEnrDofs              = condenseEnrDofs;
+            this.subDivInt                    = subDivInt;
+            this.symmetricForm                = symmetricForm;
         end
     end
     
@@ -352,8 +355,11 @@ classdef EnrichedElement_M < RegularElement_M
                     N = this.shape.shapeFncMtrx(Xn);
                     % Function phi
                     phi = this.auxiliaryfncPhi(i, N);
-                    % Pore-pressure value at this node
-                    pd(j) = N * pe + (1-phi)*this.discontinuity(i).DP;
+                    % Pore-pressure value at each side of the discontinuity
+                    ptop = N * pe + (1.0-phi)*this.discontinuity(i).DP;
+                    pbot = N * pe - phi*this.discontinuity(i).DP;
+                    % Pore-pressure at the discontinuity
+                    pd(j) = mean([ptop, pbot]);
                 end
 
                 % Get the discontinuity data
@@ -412,7 +418,10 @@ classdef EnrichedElement_M < RegularElement_M
         % the enriched element
         function n = getNumberOfDofPerDiscontinuity(this)
             n = 2;  
-            if this.addStretchingMode
+            if this.addTangentialStretchingMode
+                n = n + 1;
+            end
+            if this.addNormalStretchingMode
                 n = n + 1;
             end
             if this.addRelRotationMode
@@ -424,7 +433,7 @@ classdef EnrichedElement_M < RegularElement_M
         % Displacement jump order
         function n = displacementJumpOrder(this)
             n = 0;
-            if (this.addStretchingMode || this.addRelRotationMode) 
+            if (this.addTangentialStretchingMode || this.addNormalStretchingMode || this.addRelRotationMode) 
                 n = 1;
             end
         end
@@ -474,8 +483,12 @@ classdef EnrichedElement_M < RegularElement_M
                         Gci(:,2) = Gci(:,2) - Buj * n;
                         % Add stretching mode
                         c = 3;
-                        if this.addStretchingMode
+                        if this.addTangentialStretchingMode
                             Gci(:,c) = Gci(:,c) - Buj * (m * m') * (Xj' - Xr');
+                            c = c + 1;
+                        end
+                        if this.addNormalStretchingMode
+                            Gci(:,c) = Gci(:,c) - Buj * (n * n') * (Xj' - Xr');
                             c = c + 1;
                         end
                         % Add relative rotation mode
@@ -486,19 +499,22 @@ classdef EnrichedElement_M < RegularElement_M
                     end
                 end
                 % Add stretching mode
-                if this.addStretchingMode
+                if (this.addTangentialStretchingMode || this.addNormalStretchingMode)
                     % Cartesian coordinate of the int. point
                     X = this.shape.coordNaturalToCartesian(this.node,Xn);
-                    % Shape function matrix
-                    N = this.shape.shapeFncMtrx(Xn);
-                    % Function phi
-                    phi = this.auxiliaryfncPhi(i, N);
                     % Heaviside function
                     h = this.discontinuity(i).heaviside(X);
-                    % Linear map operator
-                    M = [m(1),0;0,m(2);0,0;m(2),m(1)];
-                    % Add term
-                    Gci(:,3) = Gci(:,3) + h * M * m;
+                    % Fill matrix Gci
+                    c = 3;
+                    if this.addTangentialStretchingMode
+                        M = [m(1),0;0,m(2);0,0;m(2),m(1)];
+                        Gci(:,c) = Gci(:,c) + h * M * m;
+                        c = c + 1;
+                    end
+                    if this.addNormalStretchingMode
+                        N = [n(1),0;0,n(2);0,0;n(2),n(1)];
+                        Gci(:,c) = Gci(:,c) + h * N * n;
+                    end                    
                 end
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
@@ -553,9 +569,9 @@ classdef EnrichedElement_M < RegularElement_M
                 if (jumpOrder == 0)
                     Gi = - g(1,i) * P * [ m , n];
                 elseif (jumpOrder == 1)
-                    if ((this.addStretchingMode == true) && (this.addRelRotationMode == false))
+                    if ((this.addTangentialStretchingMode == true) && (this.addRelRotationMode == false))
                         Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m];
-                    elseif ((this.addStretchingMode == false) && (this.addRelRotationMode == true))
+                    elseif ((this.addTangentialStretchingMode == false) && (this.addRelRotationMode == true))
                         Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*n];
                     else
                         Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m, g(2,i)*n];

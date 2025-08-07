@@ -33,9 +33,10 @@
 classdef DiscontinuityElement_M < DiscontinuityElement    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        stretchingMode  = false;
-        relRotationMode = false;
-        DP              = [];
+        tangentialStretchingMode = false;
+        normalStretchingMode     = false;
+        relRotationMode          = false;
+        DP                       = [];
     end
     %% Constructor method
     methods
@@ -51,10 +52,14 @@ classdef DiscontinuityElement_M < DiscontinuityElement
 
         %------------------------------------------------------------------
         % Enables the stretching mode. If enables, the number of degrees of
-        % freedom increases by 1
-        function addStretchingMode(this,flag)
-            this.stretchingMode = flag;
-            if flag == true
+        % freedom increases by 1 or 2
+        function addStretchingMode(this,flagTangential, flagNormal)
+            this.tangentialStretchingMode = flagTangential;
+            this.normalStretchingMode = flagNormal;
+            if flagTangential == true
+                this.ndof = this.ndof + 1;
+            end
+            if flagNormal == true
                 this.ndof = this.ndof + 1;
             end
         end
@@ -73,7 +78,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         % Displacement jump order
         function n = displacementJumpOrder(this)
             n = 0;
-            if (this.stretchingMode || this.relRotationMode) 
+            if (this.tangentialStretchingMode || this.normalStretchingMode || this.relRotationMode) 
                 n = 1;
             end
         end
@@ -165,7 +170,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             if this.ndof > 2
                 s = m' * (X' - Xr');
                 c = 3;
-                if this.stretchingMode
+                if this.tangentialStretchingMode
                     Nd(1,c) = s;
                     c = c + 1;
                 end
