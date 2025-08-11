@@ -14,7 +14,6 @@
 mdl = Model_H2();
 
 % Set model options
-mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
 mdl.gravityOn    = true;
 
 %% MESH
@@ -103,7 +102,7 @@ mdl.setInitialGasPressureAtDomain(369.73);
 % Analysis parameters
 ti        = 1.0;    % Initial time
 dt        = 1.0;    % Time step
-tf        = 320.0;   % Final time
+tf        = 184.0;  % Final time
 dtmax     = 1.0;    % Maximum time step
 dtmin     = 0.001;  % Minimum time step
 adaptStep = true;   % Adaptive step size
@@ -117,4 +116,5 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % Plot contours
-mdl.plotField('GasSaturation', [0.0, 0.831]);
+mdl.plotField('Model');
+mdl.plotField('GasSaturation', [0.0, 1.0]);
