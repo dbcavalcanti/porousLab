@@ -202,6 +202,9 @@ classdef RegularElement_H2M < RegularElement
             dkgrdPl = dkgrdSlm * dSlmdpl;
             dkgrdPg = dkgrdSlm * dSlmdpg;
 
+            % Average bulk density
+            rhoavg = (1.0 - phi) * rhos + phi * (mean(Sl) * mean(rhol) + mean(Sg) * mean(rhog));
+
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];
 
@@ -254,7 +257,7 @@ classdef RegularElement_H2M < RegularElement
                 H = H + Bp' * K * Bp * c;
                 
                 % Gravity force
-                fgravu = fgravu + Nu' * rhos * grav * c;
+                fgravu = fgravu + Nu' * rhoavg * grav * c;
                 fgravp = fgravp + Bp' * K * grav * c;
 
                 % Compute the hydromechanical coupling matrix
@@ -415,6 +418,31 @@ classdef RegularElement_H2M < RegularElement
             plOld = this.getOldNodalLiquidPressure();
             pgOld = this.getOldNodalGasPressure();
             pcOld = pgOld - plOld;
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the displacement field in the element.
+        function u = displacementField(this,X)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   u   : displacement vector evaluated in "X"
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+            Nu = this.shape.NuMtrx(Nm);
+
+            % Displacement dof vector
+            uv  = this.getNodalDisplacement();
+            
+            % Regular displacement field
+            u = Nu*uv;
+        
         end
 
         %------------------------------------------------------------------
