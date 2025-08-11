@@ -48,7 +48,6 @@ classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
                 klr = 1.0;
             else
                 klr = 1.0 - this.a * (1.0 - Sl)^this.b;
-                klr = max(klr,porousMedia.klrmin);
             end
         end
 
@@ -60,6 +59,7 @@ classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
             elseif (Sl > 1.0)
                 dkrdSl = 0.0;
             else
+                Sl = min(max(Sl,this.Slmin),1.0);
                 dkrdSl = this.a * this.b * (1.0 - Sl)^(this.b - 1.0);
             end
         end
