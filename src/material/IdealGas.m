@@ -21,7 +21,7 @@
 %% Class Definition
 classdef IdealGas < Fluid   
     %% Public attributes
-    properties (SetAccess = private, GetAccess = public)
+    properties (SetAccess = public, GetAccess = public)
         R = 8.3144621;      % Universal gas constant (J/(mol*K)
         T = 293.15;         % Temperature (K)
         M = 0.02897;        % Molar mass (kg/mol)
