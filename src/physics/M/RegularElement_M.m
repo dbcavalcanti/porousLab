@@ -213,6 +213,12 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to get old the nodal values of the displacement
+        function uOld = getOldNodalDisplacement(this)
+            uOld = this.ueOld(1:this.nglu);
+        end
+
+        %------------------------------------------------------------------
         % Function to compute the displacement field in the element.
         function u = displacementField(this,X)
         %

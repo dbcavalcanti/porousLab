@@ -46,15 +46,12 @@
 % Version 1.00.
 % 
 %% Class definition
-classdef RegularElement_H2M < RegularElement    
+classdef RegularElement_H2M < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glu        = [];            % Displacement dofs
         glp        = [];            % Liquid phase pressure dofs
         glpg       = [];            % Gas phase pressure dofs
-        nglu       = 0;             % Number of regular u-dof
         nglp       = 0;             % Number of regular p-dof
-        anm        = 'PlaneStrain'; % Analysis model
     end
     %% Constructor method
     methods
@@ -62,25 +59,17 @@ classdef RegularElement_H2M < RegularElement
         function this = RegularElement_H2M(node, elem, t, ...
                 mat, intOrder, glu, glp, glpg, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(node, elem, t, ...
-                mat, intOrder, massLumping, lumpStrategy, ...
-                isAxisSymmetric);
-            this.glu      = glu;
+            this = this@RegularElement_M(node, elem, t, ...
+                mat, intOrder, glu, massLumping, lumpStrategy, ...
+                isAxisSymmetric,isPlaneStress);
             this.glp      = glp;
             this.glpg     = glpg;
             this.gle      = [glu, glp, glpg];
             if (length(this.glp) ~= length(this.glpg))
                 error('Wrong number of pressure dofs');
             end
-            this.nglu     = length(this.glu);
             this.nglp     = length(this.glp);
             this.ngle     = length(this.gle);
-            if isPlaneStress
-                this.anm = 'PlaneStress';
-            end
-            if isAxisSymmetric
-                this.anm = 'AxisSymmetrical';
-            end
         end
     end
     
@@ -347,34 +336,6 @@ classdef RegularElement_H2M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Compute the strain-displacement matrix
-        function [B] = BMatrix(this,dNdx,N)
-            B = zeros(4,this.nnd_el*2);
-            for i = 1:this.nnd_el
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i);
-                B(4,2*i)   = dNdx(1,i);
-                if this.isAxisSymmetric
-                    r = N*this.node(:,1);
-                    B(3,2*i-1) = N(i)/r;
-                end
-            end
-        end
-
-        %------------------------------------------------------------------
-        % Function to get the nodal values of the displacement
-        function u = getNodalDisplacement(this)
-            u = this.ue(1:this.nglu);
-        end
-
-        %------------------------------------------------------------------
-        % Function to get old the nodal values of the displacement
-        function uOld = getOldNodalDisplacement(this)
-            uOld = this.ueOld(1:this.nglu);
-        end
-
-        %------------------------------------------------------------------
         % Function to get the nodal values of the liquid pressure
         function pl = getNodalLiquidPressure(this)
             a = this.nglu + 1;
@@ -418,31 +379,6 @@ classdef RegularElement_H2M < RegularElement
             plOld = this.getOldNodalLiquidPressure();
             pgOld = this.getOldNodalGasPressure();
             pcOld = pgOld - plOld;
-        end
-
-        %------------------------------------------------------------------
-        % Function to compute the displacement field in the element.
-        function u = displacementField(this,X)
-        %
-        % Input:
-        %   X   : position vector in the global cartesian coordinate system
-        %
-        % Output:
-        %   u   : displacement vector evaluated in "X"
-        
-            % Natural coordinate system
-            Xn = this.shape.coordCartesianToNatural(this.node,X);
-            
-            % Vector with the shape functions
-            Nm = this.shape.shapeFncMtrx(Xn);
-            Nu = this.shape.NuMtrx(Nm);
-
-            % Displacement dof vector
-            uv  = this.getNodalDisplacement();
-            
-            % Regular displacement field
-            u = Nu*uv;
-        
         end
 
         %------------------------------------------------------------------
