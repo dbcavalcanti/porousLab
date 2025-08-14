@@ -151,18 +151,18 @@ classdef DiscontinuityElement_H2 < DiscontinuityElement
             H = zeros(this.ndof_int, this.ndof_int);
             fgrav = zeros(this.ndof_int, 1);
             for i = 1:this.nIntPoints
-
-                % Derivative of the shape function w
-                dNds = [-0.5 , 0.5];
+               
+                % Compute the B matrix at the int. point and the detJ
+                [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Numerical integration coefficient
-                c = 0.5 * this.intPoint(i).w * ld * this.t;
+                c = this.intPoint(i).w * detJ * this.t;
 
                 % Compute permeability matrix
-                H = H + dNds' * K * aperture * dNds * c;
+                H = H + Bp' * K * aperture * Bp * c;
                 
                 % Gravity force
-                fgrav = fgrav + dNds' * K * aperture * grav * c;
+                fgrav = fgrav + Bp' * K * aperture * grav * [1;0] * c;
             end
 
             % Advective forces

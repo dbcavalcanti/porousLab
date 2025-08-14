@@ -20,7 +20,7 @@ mdl = Model_H2();
 % Create mesh
 Lx = 2.6;  % Horizontal dimension (m)
 Ly = 2.0;  % Vertical dimension (m)
-Nx = 50;  % Number of elements in the x-direction
+Nx = 30;  % Number of elements in the x-direction
 Ny = 35;    % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
