@@ -26,7 +26,8 @@ classdef Discontinuity < handle
         % The properties must be included in the data structure
         % constructed in the createMaterialDataStructure method
         cohesiveLaw         = [];
-        fluid               = [];
+        liquidFluid         = [];
+        gasFluid            = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
@@ -125,7 +126,8 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         % Create material data strcture.
         function mat = createMaterialDataStructure(this)
-            mat = struct('fluid',this.fluid,...
+            mat = struct('liquidFluid',this.liquidFluid,...
+                         'gasFluid',this.gasFluid,...
                          'cohesiveLaw',this.cohesiveLaw, ...
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
