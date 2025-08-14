@@ -66,19 +66,21 @@ classdef Shape_Bar < Shape
          %------------------------------------------------------------------
          % Compute the derivatives of the shape functions matrix.
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-            % Jacobian matrix
-            J = this.JacobianMtrx(X,Xn);
+            % Geometry
+            dxdS = this.JacobianMtrx(X, Xn);   % 1x2
+            detJ = norm(dxdS);
+            if detJ <= eps
+                error('Shape_Bar:dNdxMatrix:DegenerateElement', ...
+                      'Degenerate bar element: node coordinates are coincident or very close.');
+            end
 
-            % Determinant of the Jacobian matrix
-            detJ = norm(J);
+            % Unit tangent
+            t = (dxdS / detJ);   % 1x2
 
-            % Compute the derivatives of the shape functions wrt to the
-            % natural coordinate system
-            dNdxn = this.shapeFncDrv(Xn);
-
-            % Compute the derivatives of the shape functions wrt to the
-            % global cartesian coordinate system
-            dNdx = J\dNdxn;
+            % Chain rule on a 1D manifold embedded in 2D:
+            % grad N = (dN/ds) * (t / |J|)
+            dNds = this.shapeFncDrv(Xn);  % 1x2
+            dNdx = (t.' * dNds) / detJ;   % (2x1)*(1x2) -> 2x2
          end
 
          %------------------------------------------------------------------
@@ -121,19 +123,8 @@ classdef Shape_Bar < Shape
          %   X : vector with the x and y coordinates of a point in the 
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
-            % Extract the nodal coordinates
-            x = NODE(:,1);
-            y = NODE(:,2);
-            
-            % Vector with the shape functions
-            Nv = this.shapeFnc(Xn);
-            
-            % Initialize output
-            X = [0.0, 0.0];
-            
-            % Interpolation the position
-            X(1) = Nv(1)*x(1) + Nv(2)*x(2);
-            X(2) = Nv(1)*y(1) + Nv(2)*y(2);
+            Nv = this.shapeFnc(Xn);  % 1x2
+            X = Nv * NODE;           % 1x2
          end
 
          % ----------------------------------------------------------------
