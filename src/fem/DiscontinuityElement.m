@@ -15,7 +15,8 @@ classdef DiscontinuityElement < handle
         mat        = [];    % Material object
         intOrder   = 2;     % Order of the numerical integration
         dof        = [];    % Degrees of freedom vector
-        ndof       = 1;     % Number of dofs
+        dofOld     = [];    % Old degrees of freedom
+        ndof       = 0;     % Number of dofs
         nIntPoints = 1;     % Number of integration points
         intPoint   = [];    % Vector with integration point objects       
     end
@@ -95,6 +96,7 @@ classdef DiscontinuityElement < handle
         %------------------------------------------------------------------
         % Update state variables.
         function updateStateVar(this)
+            this.dofOld = this.dof;
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
