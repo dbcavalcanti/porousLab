@@ -57,8 +57,8 @@ mdl.setPorePressureField(P);
 %% DISCONTINUITIES
 
 % Create discontinuities 
-Xd = [ 0.0 , 0.25*Ly;
-       Lx  , 0.25*Ly ];
+Xd = [ 0.0 , 0.5*Ly;
+       Lx  , 0.5*Ly ];
 fault = Discontinuity(Xd, true);
 
 % Set fracture material properties

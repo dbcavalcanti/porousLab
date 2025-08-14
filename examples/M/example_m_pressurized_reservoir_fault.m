@@ -16,7 +16,7 @@ mdl = Model_M();
 % Set model options
 mdl.condenseEnrDofs   = false;
 mdl.addPorePressure   = true;
-mdl.subDivIntegration = true;
+mdl.subDivIntegration = false;
 mdl.symmetricSDAEFEM  = false;
 
 %% MESH
@@ -24,14 +24,12 @@ mdl.symmetricSDAEFEM  = false;
 % Create mesh
 Lx = 4000.0;  % Horizontal dimension (m)
 Ly = 1000.0;  % Vertical dimension (m)
-Nx = 51;      % Number of elements in the x-direction
+Nx = 60;      % Number of elements in the x-direction
 Ny = 60;      % Number of elements in the y-direction
-[node, elem] = regularMesh(Lx, Ly, Nx, Ny, [], [], 'ISOQ4', 0.5, 0.7, 0.5, 0.7);
-% [node, elem] = convertToQuadraticMesh(node, elem);
+[node, elem] = regularMesh(Lx, Ly, Nx, Ny, [], [], 'ISOQ4', 0.5, 0.7, 0.5, 0.8);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
-% mdl.resequenceNodes();
 
 %% MATERIALS
 
@@ -69,7 +67,7 @@ fault.shearStiffness  = 1.0e15;       % Pa/m
 fault.normalStiffness = 1.0e15;       % Pa/m
 
 % Add fractures to model
-discontinuityData = struct('addStretchingMode', true, 'addRelRotationMode', false);
+discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
 mdl.addPreExistingDiscontinuities(fault, discontinuityData);
 
 %% BOUNDARY CONDITIONS
@@ -83,7 +81,8 @@ mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
 mdl.addLoadAtBorder('top', 2, -70.0e6);
 
 % Set external pore-pressure
-P = 35.0e6 * ones(mdl.nnodes,1);
+P0 = 35.0e6;
+P = P0 * ones(mdl.nnodes,1);
 mdl.setPorePressureField(P);
 
 %% PROCESS
@@ -104,12 +103,11 @@ region = [0.0 , 350.0;
 
 % Update the pressure at the left side
 reservoir = inpoly(mdl.NODE,region);
-P(reservoir == 1) = P(reservoir == 1) + DP;
+P(reservoir == 1) = P0 + DP;
 
 % Update pressure at the right side
 % reservoir = isInsideRectangle(mdl.NODE, [0.5*Lx,350.0+offset-tol], [Lx+tol,650.0+offset+tol]);
-% P(reservoir == 1) = P(reservoir == 1) + DP;
-mdl.setPorePressureField(P);
+% P(reservoir == 1) = P0 + DP;
 
 % Set pressure jump at the discontinuities
 nDiscontinuities = mdl.getNumberOfDiscontinuities();
@@ -119,9 +117,14 @@ for i = 1:nDiscontinuities
         Xr = mdl.discontinuitySet(i).segment(j).referencePoint();
         if (Xr(2) > 350.0) && (Xr(2) < 650.0)
             mdl.discontinuitySet(i).segment(j).DP = DP;
+            econnect = mdl.ELEM{mdl.discontinuitySet(i).elemID(j)};
+            P(econnect) = P0 + DP;
         end
     end
 end
+
+% Update values
+mdl.setPorePressureField(P);
 
 % Run analysis
 anl.run(mdl);
