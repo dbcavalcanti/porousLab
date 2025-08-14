@@ -630,7 +630,7 @@ classdef Model < handle
                 % Get the element object
                 elementType = this.element(el).type;
 
-                % Update the element displacement vector of each element
+                % Update the element displacement vector of each element (TODO: move it to update state variables)
                 elementType.DTime = dt;
                 elementType.ue    = U(elementType.gle);
                 elementType.ueOld = UOld(elementType.gle);
