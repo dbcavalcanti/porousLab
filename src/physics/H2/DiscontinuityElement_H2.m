@@ -77,7 +77,7 @@ classdef DiscontinuityElement_H2 < DiscontinuityElement
             md = this.tangentialVector();
             ld = this.ld();
 
-            % Get gravity vector
+            % Get gravity acceleration at the tangential direction
             grav = g * md' * [0.0; -1.0];
 
             % Get the fluid viscosity
@@ -162,7 +162,7 @@ classdef DiscontinuityElement_H2 < DiscontinuityElement
                 H = H + Bp' * K * aperture * Bp * c;
                 
                 % Gravity force
-                fgrav = fgrav + Bp' * K * aperture * grav * [1;0] * c;
+                fgrav = fgrav + Bp' * K * aperture * grav * c;  % check
             end
 
             % Advective forces

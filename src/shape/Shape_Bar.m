@@ -67,20 +67,14 @@ classdef Shape_Bar < Shape
          % Compute the derivatives of the shape functions matrix.
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
             % Geometry
-            dxdS = this.JacobianMtrx(X, Xn);   % 1x2
-            detJ = norm(dxdS);
+            dNdxn = this.shapeFncDrv(Xn);   % 1x2
+            detJ = this.detJacobian(X,Xn);
             if detJ <= eps
                 error('Shape_Bar:dNdxMatrix:DegenerateElement', ...
                       'Degenerate bar element: node coordinates are coincident or very close.');
             end
 
-            % Unit tangent
-            t = (dxdS / detJ);   % 1x2
-
-            % Chain rule on a 1D manifold embedded in 2D:
-            % grad N = (dN/ds) * (t / |J|)
-            dNds = this.shapeFncDrv(Xn);  % 1x2
-            dNdx = (t.' * dNds) / detJ;   % (2x1)*(1x2) -> 2x2
+            dNdx = (dNdxn / detJ);   % 1x2
          end
 
          %------------------------------------------------------------------
