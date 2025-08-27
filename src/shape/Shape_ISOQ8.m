@@ -339,6 +339,15 @@ classdef Shape_ISOQ8 < Shape
         end
 
         %------------------------------------------------------------------
+        % Size of the Gram matrix
+        % The stress field in a Q4 element is assumed to be a linear
+        % polynomial in terms of the relative coordinates x and y,
+        % evaluated wrt to the element centroid
+        function n = dimPolynomialStressInterp(~)
+            n = 6;
+        end
+
+        %------------------------------------------------------------------
         % Integrand to compute the Gram Matrix
         function dH = integrandGramMtrx(this, node, X)
             X    = this.coordNaturalToCartesian(node,X);

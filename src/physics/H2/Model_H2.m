@@ -109,7 +109,6 @@ classdef Model_H2 < Model_H
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
-                elements(el).type.initializeIntPoints();
             end
             this.element = elements;
         end

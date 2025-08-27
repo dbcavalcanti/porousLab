@@ -242,6 +242,9 @@ classdef Discontinuity < handle
 
                 % Find the element that contains this segment
                 eID = this.findElementContainingSegment(NODE,ELEM,seg);
+                if eID == 0 
+                    error('Error finding element that contains discontinuity segment');
+                end
 
                 % Store element ID
                 elemIDs = [elemIDs;eID];

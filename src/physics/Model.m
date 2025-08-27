@@ -115,6 +115,7 @@ classdef Model < handle
         condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
         dofenr              = [];            % Vector with the enrichment dofs
         ndofenr             = 0;             % Number of enrichment dofs
+        subDivIntegration   = false;         % Flag to apply a sub-division of the element to define the integration points
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
     
@@ -353,6 +354,9 @@ classdef Model < handle
     
                 % Assemble discontinuity segments to the elements
                 this.assembleDiscontinuitySegments();
+
+                % Initialize integration points
+                this.initializeIntegrationPoints();
                 
                 % Compute auxiliar variables for assemblage of sparse matrices
                 this.initializeSparseMtrxAssemblageVariables();
@@ -365,6 +369,14 @@ classdef Model < handle
     
                 % Update flag to indicate that the model has already been initialized
                 this.initializeMdl = true;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the elements integration points
+        function initializeIntegrationPoints(this)
+            for el = 1 : this.nelem
+                this.element(el).type.initializeIntPoints();
             end
         end
 
@@ -618,7 +630,7 @@ classdef Model < handle
                 % Get the element object
                 elementType = this.element(el).type;
 
-                % Update the element displacement vector of each element
+                % Update the element displacement vector of each element (TODO: move it to update state variables)
                 elementType.DTime = dt;
                 elementType.ue    = U(elementType.gle);
                 elementType.ueOld = UOld(elementType.gle);
@@ -756,7 +768,7 @@ classdef Model < handle
                     if this.condenseEnrDofs == false
                         this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
                         this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
-                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof];
+                        this.dofenr = [this.dofenr, this.discontinuitySet(i).segment(j).dof];
                     end
                 end
             end
@@ -783,7 +795,7 @@ classdef Model < handle
             for i = 1:this.nnodes
                 fprintf("  %4d: \t",i);
                 for j = 1:this.ndof_nd
-                    fprintf("  %8.4e ",this.U(this.ID(i,j)))
+                    fprintf("  %+8.4e ",this.U(this.ID(i,j)))
                 end
                 fprintf("\n");
             end
@@ -793,6 +805,7 @@ classdef Model < handle
         % Evaluate a field at in a point inside an element
         % Assumes that the point is in the element domain
         function fieldValue = evaluateField(this, field, el, X)
+            fieldValue = [];
             if strcmp(field,'Model')
                 fieldValue = this.matID(el);
             elseif strcmp(field,'Pressure')
@@ -883,7 +896,7 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot given field along a given segment
-        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot,ax)
+        function plotFieldAlongSegment(this,field, Xi, Xf, npts, axisPlot, ax)
             if nargin < 7 || isempty(ax)
                 figure;         % Cria nova figura
                 ax = gca;       % Usa o eixo atual
@@ -891,7 +904,6 @@ classdef Model < handle
                 axes(ax);       % Define o eixo alvo
                 cla(ax);        % Limpa o conteúdo
             end
-            
             if nargin < 5
                 npts     = 100;
                 axisPlot = 'x';
@@ -900,6 +912,42 @@ classdef Model < handle
                 axisPlot = 'x';
             end
             FEMPlot(this).plotFieldAlongSegment(field, Xi, Xf, npts, axisPlot, ax);
+        end
+
+        % -----------------------------------------------------------------
+        % Plot field along a given discontinuity
+        function plotFieldAlongDiscontinuiy(this, field, id, axisPlot, ax)
+            if nargin < 5 || isempty(ax)
+                figure;         % Cria nova figura
+                ax = gca;       % Usa o eixo atual
+            else
+                axes(ax);       % Define o eixo alvo
+                cla(ax);        % Limpa o conteúdo
+            end
+            if nargin < 4
+                axisPlot = 'x';
+            end
+
+            nDiscontinuitySeg = this.discontinuitySet(id).getNumberOfDiscontinuitySegments();
+
+            % Considering that are two int points per discontinuity segment
+            s = zeros(2*nDiscontinuitySeg, 1);
+            f = zeros(2*nDiscontinuitySeg, 1);
+
+            % Initial point
+            Xi = this.discontinuitySet(id).X(1,:);
+
+            % Fill vectors
+            for j = 1:nDiscontinuitySeg
+                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field);
+                DX = Xj - Xi;
+                sj = sqrt(DX(:,1).^2 + DX(:,2).^2);
+                s(2*j-1:2*j,1) = sj;
+                f(2*j-1:2*j,1) = fj;
+            end
+            
+            % Plot
+            FEMPlot(this).plotFieldAlongDiscontinuity(s, f, field, axisPlot, ax);
         end
 
     end

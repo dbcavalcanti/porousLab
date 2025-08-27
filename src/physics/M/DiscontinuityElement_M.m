@@ -33,8 +33,10 @@
 classdef DiscontinuityElement_M < DiscontinuityElement    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        stretchingMode  = false;
-        relRotationMode = false;
+        tangentialStretchingMode = false;
+        normalStretchingMode     = false;
+        relRotationMode          = false;
+        DP                       = [];
     end
     %% Constructor method
     methods
@@ -50,10 +52,14 @@ classdef DiscontinuityElement_M < DiscontinuityElement
 
         %------------------------------------------------------------------
         % Enables the stretching mode. If enables, the number of degrees of
-        % freedom increases by 1
-        function addStretchingMode(this,flag)
-            this.stretchingMode = flag;
-            if flag == true
+        % freedom increases by 1 or 2
+        function addStretchingMode(this,flagTangential, flagNormal)
+            this.tangentialStretchingMode = flagTangential;
+            this.normalStretchingMode = flagNormal;
+            if flagTangential == true
+                this.ndof = this.ndof + 1;
+            end
+            if flagNormal == true
                 this.ndof = this.ndof + 1;
             end
         end
@@ -65,6 +71,15 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             this.relRotationMode = flag;
             if flag == true
                 this.ndof = this.ndof + 1;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Displacement jump order
+        function n = displacementJumpOrder(this)
+            n = 0;
+            if (this.tangentialStretchingMode || this.normalStretchingMode || this.relRotationMode) 
+                n = 1;
             end
         end
         
@@ -155,7 +170,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             if this.ndof > 2
                 s = m' * (X' - Xr');
                 c = 3;
-                if this.stretchingMode
+                if this.tangentialStretchingMode
                     Nd(1,c) = s;
                     c = c + 1;
                 end
@@ -164,5 +179,131 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 end
             end
         end
+
+        %------------------------------------------------------------------
+        % Projection matrix
+        function P = projectionMatrix(this)
+            n = this.normalVector();
+            P = [n(1) , 0.0;
+                 0.0  , n(2);
+                 0.0  , 0.0;
+                 n(2) , n(1)];
+        end
+
+        %------------------------------------------------------------------
+        % Integrate the polynomial stress interpolation of the continuum
+        % along the discontinuity
+        function S = intPolynomialStressIntp(this, celem)
+
+            % Initialize variables
+            jumpOrder     = this.displacementJumpOrder();
+            dimPolyStress = celem.shape.dimPolynomialStressInterp();
+            S = zeros(dimPolyStress, jumpOrder + 1);
+
+            % Get the discontinuity geometric properties
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            ld = this.ld();
+
+            % Numerical integration
+            for i = 1:this.nIntPoints
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Cartesian coordinates of the integration point 
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Continuum stress interpolation polynomial
+                p = celem.shape.polynomialStress(X);
+
+                if (jumpOrder == 0)
+                    S = S + p * c;
+                elseif (jumpOrder == 1)
+                    % Tangential coordinate
+                    s = m' * (X' - Xr');
+                    S = S + [p , s*p] * c;
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get specified field. Fill the coordinate matrix and the field.
+        function [X, f] = getField(this,field)
+            if strcmp(field,'Sn')
+                [X, f] = this.getCohesiveStresses(2); 
+            elseif strcmp(field,'St')
+                [X, f] = this.getCohesiveStresses(1);
+            elseif strcmp(field,'Dn')
+                [X, f] = this.getDisplacementJump(2);
+            elseif strcmp(field,'Dt')
+                [X, f] = this.getDisplacementJump(1);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get cohesive stresses component
+        function [X, f] = getCohesiveStresses(this,stressId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point 
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get cohesive stresses
+                f(i) = this.intPoint(i).stress(stressId);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get cohesive stresses component
+        function [X, f] = getDisplacementJump(this,strainId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point 
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get strain component
+                f(i) = this.intPoint(i).strain(strainId);
+            end
+        end
+
+        %------------------------------------------------------------------
+        function fe = porePressureForce(this, pd)
+
+            % Initialize the matrices for the numerical integration
+            fe = zeros(this.ndof,1);
+
+            % Get the lenght of the discontinuity
+            ld = this.ld();
+
+            % Get the discontinuity geometry
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            n  = [0;1];
+
+            % Initialize output matrices
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFnc(this.intPoint(i).X);
+
+                % Cartesian coordinates of the integration point 
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Get the shape function matrix
+                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Pore-pressure at the integration point
+                pdi = N * pd;
+
+                % Compute the internal force vector
+                fe = fe + Nd' * n * pdi * c;
+
+            end
+        end
+
     end
 end
