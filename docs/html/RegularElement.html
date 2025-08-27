@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>RegularElement Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="RegularElement.m">
-<style type="text/css">
+      --><title>RegularElement Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RegularElement.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,78 +67,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>RegularElement Class</h1>
-<!--introduction-->
-<p>This class represents a regular finite element in a finite element mesh. It provides properties and methods to define the element's geometry, material properties, numerical integration, and other characteristics required for finite element analysis.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Public properties</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Abstract methods</a>
-</li>
-<li>
-<a href="#8">Public methods</a>
-</li>
-<li>
-<a href="#9">Static methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>elementData</b>: Assembles the element stiffness matrix, damping matrix, internal force vector, external force vector, and derivative of internal force with respect to displacement.</li>
-<li>
-<b>elementLinearSystem</b>: Assembles the element's linear system matrices and vectors.</li>
-<li>
-<b>updateStateVar</b>: Updates the state variables, stress, and strain vectors.</li>
-<li>
-<b>characteristicLength</b>: Computes the characteristic length of the element.</li>
-<li>
-<b>getDomainArea</b>: Computes the area of the element's domain.</li>
-<li>
-<b>calculateArea</b>: Static method to calculate the area of a polygon given its vertices.</li>
-<li>
-<b>updateResultVertices</b>: Updates the result object's vertices property based on configuration.</li>
-<li>
-<b>sortCounterClockWise</b>: Static method to sort nodes in counterclockwise order.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> RegularElement &lt; handle
-</pre>
-<h2 id="5">Public properties</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
-        type            = <span class="string">'ISOQ4'</span>;  <span class="comment">% type of element</span>
+  </style></head><body><div class="content"><h1>RegularElement Class</h1><!--introduction--><p>This in an abstract class that defines a regular finite element in a finite element mesh. It provides properties and methods to define the element's geometry, material properties, numerical integration, and other characteristics required for finite element analysis.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Abstract methods</a></li><li><a href="#6">Public methods</a></li><li><a href="#7">Static methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> RegularElement &lt; handle
+</pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         shape           = [];       <span class="comment">% Object of the Shape class</span>
         node            = [];       <span class="comment">% Nodes of the fem mesh</span>
         connect         = [];       <span class="comment">% Nodes connectivity</span>
@@ -168,59 +93,49 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         isAxisSymmetric = false;    <span class="comment">% Flag to axissymetric models</span>
         DTime           = [];       <span class="comment">% Time increment</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="keyword">function</span> this = RegularElement(type,node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
+        <span class="keyword">function</span> this = RegularElement(node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
             <span class="keyword">if</span> (nargin &gt; 0)
-                <span class="keyword">if</span> strcmp(type,<span class="string">'ISOQ4'</span>)
+                this.node = node;
+                this.nnd_el = size(node,1);
+                this.connect = elem;
+                this.t = t;
+                this.mat = mat;
+                this.intOrder = intOrder;
+                this.massLumping = massLumping;
+                this.lumpStrategy = lumpStrategy;
+                this.isAxisSymmetric = isAxisSymmetric;
+                order = this.sortCounterClockWise(this.node);
+                this.result = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),<span class="string">'Model'</span>);
+
+                <span class="keyword">if</span> this.nnd_el == 4
                     this.shape = Shape_ISOQ4();
-                <span class="keyword">elseif</span> strcmp(type,<span class="string">'ISOQ8'</span>)
+                <span class="keyword">elseif</span> this.nnd_el == 8
                     this.shape = Shape_ISOQ8();
-                <span class="keyword">elseif</span> strcmp(type,<span class="string">'CST'</span>)
+                <span class="keyword">elseif</span> this.nnd_el == 3
                     this.shape = Shape_CST();
-                <span class="keyword">elseif</span> strcmp(type,<span class="string">'LST'</span>)
+                <span class="keyword">elseif</span> this.nnd_el == 6
                     this.shape = Shape_LST();
                 <span class="keyword">end</span>
-                this.node            = node;
-                this.nnd_el          = size(node,1);
-                this.connect         = elem;
-                this.t               = t;
-                this.mat             = mat;
-                this.intOrder        = intOrder;
-                this.massLumping     = massLumping;
-                this.lumpStrategy    = lumpStrategy;
-                this.isAxisSymmetric = isAxisSymmetric;
-                order                = this.sortCounterClockWise(this.node);
-                this.result          = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),<span class="string">'Model'</span>);
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Abstract methods</h2>
-<pre class="codeinput">    methods(Abstract)
-
+</pre><h2 id="5">Abstract methods</h2><pre class="codeinput">    methods(Abstract)
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% This function assembles the element matrices and vectors</span>
-        <span class="comment">%</span>
-        <span class="comment">% Output:</span>
+        <span class="comment">% Assemble element matrices and vectors.</span>
+        <span class="comment">% Outputs:</span>
         <span class="comment">%    Ke : element "stiffness" matrix</span>
         <span class="comment">%    Ce : element "damping" matrix</span>
         <span class="comment">%    fe : element "external force" vector</span>
         <span class="comment">%    fi : element "internal force" vector</span>
-        <span class="comment">% dfidu : element matrix of derivative of the internal force with</span>
-        <span class="comment">%         respect to displacement</span>
-        <span class="comment">%</span>
+        <span class="comment">% dfidu : element matrix of derivative of the internal force wrt displacement</span>
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
-
     <span class="keyword">end</span>
-</pre>
-<h2 id="8">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Public methods</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Assemble element matrices and vectors.</span>
-        <span class="keyword">function</span> [Ae, be] = elementLinearSystem(this,nlscheme)
+        <span class="keyword">function</span> [Ae,be] = elementLinearSystem(this,nlscheme)
             [Ke,Ce,fi,fe,dfidu] = this.elementData();
             [Ae,be] = nlscheme.assembleLinearSystem(Ce,Ke,fi,fe,dfidu,this.ue,this.ueOld,this.DTime);
         <span class="keyword">end</span>
@@ -232,6 +147,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
                 this.intPoint(i).updateStrainVct();
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Reset state variables.</span>
+        <span class="keyword">function</span> resetIntegrationPts(this)
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                this.intPoint(i).reset();
             <span class="keyword">end</span>
         <span class="keyword">end</span>
 
@@ -250,8 +173,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             A = this.calculateArea(this.node);
         <span class="keyword">end</span>
 
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Calculate the area of the element given its vertices</span>
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Calculate the area of the element from its vertices.</span>
         <span class="keyword">function</span> A = calculateArea(~,node)
             <span class="comment">% Vertices of the coordinates</span>
             vx = node(:,1);
@@ -268,8 +191,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Update result's object vertices property.</span>
-        <span class="comment">% If the 'Undeformed' configuration is selected, nothing needs to</span>
-        <span class="comment">% be done.</span>
         <span class="keyword">function</span> updateResultVertices(this,configuration)
             <span class="keyword">if</span> strcmp(configuration,<span class="string">'Deformed'</span>)
                 Nodes = this.getDeformedConfiguration();
@@ -277,72 +198,36 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="9">Static methods</h2>
-<pre class="codeinput">    methods(Static)
+</pre><h2 id="7">Static methods</h2><pre class="codeinput">    methods(Static)
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Sort nodes counterclockwise.</span>
-        <span class="comment">% It uses the centroid defined by the nodes as reference point.</span>
+        <span class="comment">% Sort nodes counterclockwise using the centroid defined by the nodes as reference point.</span>
         <span class="keyword">function</span> order = sortCounterClockWise(NODE)
             <span class="comment">% Centroid coordinate</span>
             cx = mean(NODE(:,1));
             cy = mean(NODE(:,2));
 
-            <span class="comment">% Compute the angle that the relative vector of the vertices</span>
-            <span class="comment">% from the centroid has with the horizontal axis</span>
-            a = atan2(NODE(:,2) - cy, NODE(:,1) - cx);
+            <span class="comment">% Compute the angle that the relative vector of the vertices from the centroid has with the horizontal axis</span>
+            a = atan2(NODE(:,2)-cy, NODE(:,1)-cx);
 
             <span class="comment">% Sort the angles</span>
-            [~, order] = sort(a);
+            [~,order] = sort(a);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RegularElement Class
-% This class represents a regular finite element in a finite element mesh.
-% It provides properties and methods to define the element's geometry, 
-% material properties, numerical integration, and other characteristics 
-% required for finite element analysis.
+% This in an abstract class that defines a regular finite element in a finite element mesh.
+% It provides properties and methods to define the element's geometry, material properties,
+% numerical integration, and other characteristics required for finite element analysis.
 %
-%% Methods
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
-%                  displacement.
-% * *elementLinearSystem*: Assembles the element's linear system matrices 
-%                          and vectors.
-% * *updateStateVar*: Updates the state variables, stress, and strain 
-%                     vectors.
-% * *characteristicLength*: Computes the characteristic length of the 
-%                           element.
-% * *getDomainArea*: Computes the area of the element's domain.
-% * *calculateArea*: Static method to calculate the area of a polygon 
-%                    given its vertices.
-% * *updateResultVertices*: Updates the result object's vertices property 
-%                           based on configuration.
-% * *sortCounterClockWise*: Static method to sort nodes in counterclockwise order.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef RegularElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        type            = 'ISOQ4';  % type of element
         shape           = [];       % Object of the Shape class
         node            = [];       % Nodes of the fem mesh
         connect         = [];       % Nodes connectivity
@@ -371,59 +256,55 @@ classdef RegularElement < handle
     %% Constructor method
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        function this = RegularElement(type,node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
+        function this = RegularElement(node,elem,t,mat,intOrder,massLumping,lumpStrategy,isAxisSymmetric)
             if (nargin > 0)
-                if strcmp(type,'ISOQ4')
+                this.node = node;
+                this.nnd_el = size(node,1);
+                this.connect = elem;
+                this.t = t;
+                this.mat = mat;
+                this.intOrder = intOrder;
+                this.massLumping = massLumping;
+                this.lumpStrategy = lumpStrategy;
+                this.isAxisSymmetric = isAxisSymmetric;
+                order = this.sortCounterClockWise(this.node);
+                this.result = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
+
+                if this.nnd_el == 4
                     this.shape = Shape_ISOQ4();
-                elseif strcmp(type,'ISOQ8')
+                elseif this.nnd_el == 8
                     this.shape = Shape_ISOQ8();
-                elseif strcmp(type,'CST')
+                elseif this.nnd_el == 3
                     this.shape = Shape_CST();   
-                elseif strcmp(type,'LST')
+                elseif this.nnd_el == 6
                     this.shape = Shape_LST();
                 end
-                this.node            = node;
-                this.nnd_el          = size(node,1);
-                this.connect         = elem;
-                this.t               = t;
-                this.mat             = mat;
-                this.intOrder        = intOrder;
-                this.massLumping     = massLumping;
-                this.lumpStrategy    = lumpStrategy;
-                this.isAxisSymmetric = isAxisSymmetric;
-                order                = this.sortCounterClockWise(this.node);
-                this.result          = Result(this.node(order,:),1:length(this.connect),0.0*ones(this.nnd_el,1),'Model');
             end
         end
     end
 
     %% Abstract methods
     methods(Abstract)
-        
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % This function assembles the element matrices and vectors 
-        %
-        % Output:
+        % Assemble element matrices and vectors.
+        % Outputs:
         %    Ke : element "stiffness" matrix
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force with 
-        %         respect to displacement
-        %
+        % dfidu : element matrix of derivative of the internal force wrt displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
-    
     end
 
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Assemble element matrices and vectors.
-        function [Ae, be] = elementLinearSystem(this,nlscheme)
+        function [Ae,be] = elementLinearSystem(this,nlscheme)
             [Ke,Ce,fi,fe,dfidu] = this.elementData();
             [Ae,be] = nlscheme.assembleLinearSystem(Ce,Ke,fi,fe,dfidu,this.ue,this.ueOld,this.DTime);
         end
-
+        
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Update state variables.
         function updateStateVar(this)
@@ -431,6 +312,14 @@ classdef RegularElement < handle
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
                 this.intPoint(i).updateStrainVct();
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Reset state variables.
+        function resetIntegrationPts(this)
+            for i = 1:this.nIntPoints
+                this.intPoint(i).reset();
             end
         end
 
@@ -449,8 +338,8 @@ classdef RegularElement < handle
             A = this.calculateArea(this.node);
         end
 
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Calculate the area of the element given its vertices
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Calculate the area of the element from its vertices.
         function A = calculateArea(~,node)
             % Vertices of the coordinates
             vx = node(:,1); 
@@ -467,8 +356,6 @@ classdef RegularElement < handle
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Update result's object vertices property.
-        % If the 'Undeformed' configuration is selected, nothing needs to 
-        % be done.
         function updateResultVertices(this,configuration)
             if strcmp(configuration,'Deformed')
                 Nodes = this.getDeformedConfiguration();
@@ -480,24 +367,20 @@ classdef RegularElement < handle
     %% Static methods
     methods(Static)
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Sort nodes counterclockwise.
-        % It uses the centroid defined by the nodes as reference point.
+        % Sort nodes counterclockwise using the centroid defined by the nodes as reference point.
         function order = sortCounterClockWise(NODE)
             % Centroid coordinate
             cx = mean(NODE(:,1));
             cy = mean(NODE(:,2));
 
-            % Compute the angle that the relative vector of the vertices 
-            % from the centroid has with the horizontal axis
-            a = atan2(NODE(:,2) - cy, NODE(:,1) - cx);
-            
+            % Compute the angle that the relative vector of the vertices from the centroid has with the horizontal axis
+            a = atan2(NODE(:,2)-cy, NODE(:,1)-cx);
+
             % Sort the angles
-            [~, order] = sort(a);
+            [~,order] = sort(a);
         end
     end
 end
 
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

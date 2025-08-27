@@ -173,17 +173,6 @@ classdef Shape_ISOQ8 < Shape
          end
 
          %------------------------------------------------------------------
-         % Compute the strain-displacement matrix
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,8*2);
-            for i = 1:8
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            end
-         end
-
-         %------------------------------------------------------------------
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -347,6 +336,15 @@ classdef Shape_ISOQ8 < Shape
                     end
                 end 
             end
+        end
+
+        %------------------------------------------------------------------
+        % Size of the Gram matrix
+        % The stress field in a Q4 element is assumed to be a linear
+        % polynomial in terms of the relative coordinates x and y,
+        % evaluated wrt to the element centroid
+        function n = dimPolynomialStressInterp(~)
+            n = 6;
         end
 
         %------------------------------------------------------------------

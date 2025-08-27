@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>fractureIDMtrx Function</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="fractureIDMtrx.m">
-<style type="text/css">
+      --><title>fractureIDMtrx Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="fractureIDMtrx.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,63 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>fractureIDMtrx Function</h1>
-<!--introduction-->
-<p>This function identifies the elements in a mesh that are intersected by fractures and computes an enrichment matrix to indicate these intersections. It also computes an adjacency matrix to represent connectivity between elements that share fracture nodes. The function uses geometric intersection tests to determine whether a fracture segment intersects an element edge.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Inputs</a>
-</li>
-<li>
-<a href="#2">Outputs</a>
-</li>
-<li>
-<a href="#3">Author</a>
-</li>
-<li>
-<a href="#4">Version History</a>
-</li>
-<li>
-<a href="#5">Function definition</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Inputs</h2>
-<div>
-<ul>
-<li>
-<b>NODE</b>: Matrix containing the coordinates of the mesh nodes. Each row represents a node, with columns for x and y coordinates.</li>
-<li>
-<b>ELEM</b>: Matrix defining the connectivity of the mesh elements. Each row represents an element, with columns indicating the node indices.</li>
-<li>
-<b>NODE_D</b>: Matrix containing the coordinates of the nodes defining the fractures. Each row represents a fracture node, with columns for x and y coordinates.</li>
-<li>
-<b>FRACT</b>: Matrix defining the fractures in the mesh. Each row represents a fracture segment, with columns indicating the indices of the nodes that define the segment.</li>
-</ul>
-</div>
-<h2 id="2">Outputs</h2>
-<div>
-<ul>
-<li>
-<b>IDenr</b>: Matrix indicating which elements are enriched by which fractures. A value of 1 indicates that the corresponding element is crossed by the corresponding fracture.</li>
-<li>
-<b>IDAdj</b>: Sparse adjacency matrix indicating connectivity between elements based on shared fracture nodes. A value of 1 indicates adjacency.</li>
-</ul>
-</div>
-<h2 id="3">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="4">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="5">Function definition</h2>
-<pre class="codeinput">
-<span class="keyword">function</span> [IDenr, IDAdj] = fractureIDMtrx(NODE,ELEM,NODE_D,FRACT)
+  </style></head><body><div class="content"><h1>fractureIDMtrx Function</h1><!--introduction--><p>This function identifies the elements in a mesh that are intersected by fractures and computes an enrichment matrix to indicate these intersections. It also computes an adjacency matrix to represent connectivity between elements that share fracture nodes. The function uses geometric intersection tests to determine whether a fracture segment intersects an element edge.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Inputs</a></li><li><a href="#2">Outputs</a></li><li><a href="#3">Author</a></li><li><a href="#4">Version History</a></li><li><a href="#5">Function definition</a></li></ul></div><h2 id="1">Inputs</h2><div><ul><li><b>NODE</b>: Matrix containing the coordinates of the mesh nodes. Each row           represents a node, with columns for x and y coordinates.</li><li><b>ELEM</b>: Matrix defining the connectivity of the mesh elements. Each           row represents an element, with columns indicating the node           indices.</li><li><b>NODE_D</b>: Matrix containing the coordinates of the nodes defining the             fractures. Each row represents a fracture node, with columns             for x and y coordinates.</li><li><b>FRACT</b>: Matrix defining the fractures in the mesh. Each row            represents a fracture segment, with columns indicating the            indices of the nodes that define the segment.</li></ul></div><h2 id="2">Outputs</h2><div><ul><li><b>IDenr</b>: Matrix indicating which elements are enriched by which            fractures. A value of 1 indicates that the corresponding            element is crossed by the corresponding fracture.</li><li><b>IDAdj</b>: Sparse adjacency matrix indicating connectivity between            elements based on shared fracture nodes. A value of 1            indicates adjacency.</li></ul></div><h2 id="3">Author</h2><p>Danilo Cavalcanti</p><h2 id="4">Version History</h2><p>Version 1.00.</p><h2 id="5">Function definition</h2><pre class="codeinput"><span class="keyword">function</span> [IDenr, IDAdj] = fractureIDMtrx(NODE,ELEM,NODE_D,FRACT)
 
 <span class="comment">% Initialize the matrix</span>
 IDenr = zeros(size(ELEM,1),size(FRACT,1));
@@ -210,14 +149,7 @@ IDAdj = sparse(size(ELEM,1),size(ELEM,1));
 
 
 <span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% fractureIDMtrx Function
 % This function identifies the elements in a mesh that are intersected by 
@@ -338,6 +270,4 @@ end
 
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

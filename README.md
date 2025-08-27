@@ -6,7 +6,7 @@
 [![License][license-image]][license-link]
 [![Contributing][contributing-image]][contributing-link]
 
-**PorousLab** is a MATLAB framework for solving multiphysics problems, mainly in the context of geomechanics and fractured porous media, based on the Finite Element Method (FEM).
+**PorousLab** is a MATLAB framework based on the Finite Element Method (FEM) for solving multiphysics problems, mainly in the context of geomechanics and fractured porous media.
 
 ## Table of Contents
 - [Main Features](#main-features)
@@ -57,7 +57,7 @@ It allows the program to be freely used by anyone for modification, private use,
 No liability and warranty are provided.
 
 [release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat
-[release-link]: https://github.com/bcavalcanti/porousLab/releases
+[release-link]: https://github.com/dbcavalcanti/porousLab/releases
 [license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
 [license-link]: LICENSE
 [contributing-image]: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg

@@ -107,17 +107,6 @@ classdef Shape_ISOQ4 < Shape
          end
 
          %------------------------------------------------------------------
-         % Compute the strain-displacement matrix
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,4*2);
-            for i = 1:4
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            end
-         end
-
-         %------------------------------------------------------------------
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -228,24 +217,33 @@ classdef Shape_ISOQ4 < Shape
                 n = size(X,2);
 				
             else
-                elemNodes = [elem.node]; FractSeg = [];
+                % Initialize the matrix that stores the connectivity of the
+                % discontinuity nodes after including them into the element
+                % node matrix
+                nDiscontinuities  = elem.getNumberOfDiscontinuities();
+                dConnect = zeros(nDiscontinuities,2);
+
+                % Initialize the node matrix. 
+                % Obs: Consider that discontinuities nodes are unique.
                 nnodes = size(elem.node,1);
-                k = 1;
-                for i = 1:elem.nfrac
-                    % Number of fracture segments
-                    nfracSeg = length(elem.fracture{i});
-                    % Get the fracture tip nodes
-                    fractiNodes = zeros(2);
-                    fractiNodes(1,:) = elem.fracture{i}(1).node(1,:);
-                    fractiNodes(2,:) = elem.fracture{i}(nfracSeg).node(2,:);
+                nodes = zeros(nnodes+2*nDiscontinuities,2);
+                nodes(1:nnodes,:) = elem.node;
+                k = 1 + nnodes;
+                for i = 1:nDiscontinuities
                     % Add to the element nodes
-                    elemNodes = [elemNodes;fractiNodes];
-                    FractSeg  = [FractSeg;nnodes+k,nnodes+k+1];
+                    nodes(k:k+1,:) = elem.discontinuity(i).node;
+                    dConnect(i,:)  = [k, k+1];
                     k = k + 2;
                 end
+
+                % Remove duplicated nodes
+                [nodes, ~, ic] = unique(nodes, 'rows', 'stable');
+                
+                % Update connectivity matrix
+                dConnect(:) = ic(dConnect);
                 
                 % Perform a Delaunay triangulation to create subelements
-                DT = delaunayTriangulation(elemNodes,FractSeg);
+                DT = delaunayTriangulation(nodes,dConnect);
 
                 % Number of subelements
                 nSubElem = size(DT.ConnectivityList,1);
@@ -291,7 +289,7 @@ classdef Shape_ISOQ4 < Shape
         % The stress field in a Q4 element is assumed to be a linear
         % polynomial in terms of the relative coordinates x and y,
         % evaluated wrt to the element centroid
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 3;
         end
 

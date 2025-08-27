@@ -48,6 +48,7 @@ classdef Anl_Transient < Anl
         %------------------------------------------------------------------
         % Execute the transient nonlinear analysis, handle time-stepping,
         % convergence checks, and update the model state.
+        % TODO: Improve it to avoid unnecessary iterations
         function run(this,mdl)
             disp("*** Performing transient nonlinear analysis...")
 
@@ -123,10 +124,9 @@ classdef Anl_Transient < Anl
                 if convFlg == false
                     disp("Solution did not converge!");
                     break;
+                else
+                    mdl.updateStateVar();
                 end
-
-                % Update state variables
-                mdl.updateStateVar();
 
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)

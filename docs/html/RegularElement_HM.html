@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>RegularElement_HM class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="RegularElement_HM.m">
-<style type="text/css">
+      --><title>RegularElement_HM class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RegularElement_HM.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,80 +67,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>RegularElement_HM class</h1>
-<!--introduction-->
-<p>This class defines a single-phase hydromechanical finite element. It extends the <i>RegularElement</i> class and incorporates additional attributes and methods specific to hydromechanical analysis.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Public attributes</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>initializeIntPoints</b>: Initializes the integration points for the element using the shape function and material properties.</li>
-<li>
-<b>elementData</b>: Assembles the element stiffness matrix, damping matrix, internal force vector, external force vector, and derivative of internal force with respect to displacement.</li>
-<li>
-<b>lumpedCompressibilityMatrix</b>: Computes the lumped compressibility matrix based on the element volume and compressibility coefficients.</li>
-<li>
-<b>addGravityForces</b>: Adds the contribution of gravity forces to the external force vector.</li>
-<li>
-<b>getNodalDisplacement</b>: Retrieves the nodal displacement values.</li>
-<li>
-<b>getNodalPressure</b>: Retrieves the nodal liquid pressure values.</li>
-<li>
-<b>pressureField</b>: Computes the pressure field inside the element at a given position in the global Cartesian coordinate system.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> RegularElement_HM &lt; RegularElement_M
-</pre>
-<h2 id="5">Public attributes</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+  </style></head><body><div class="content"><h1>RegularElement_HM class</h1><!--introduction--><p>This class defines a single-phase hydromechanical finite element. It extends the <i>RegularElement</i> class and incorporates additional attributes and methods specific to hydromechanical analysis.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Constructor method</a></li><li><a href="#7">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>initializeIntPoints</b>: Initializes the integration points for the                          element using the shape function and material                          properties.</li><li><b>elementData</b>: Assembles the element stiffness matrix, damping matrix,                  internal force vector, external force vector, and                  derivative of internal force with respect to                  displacement.</li><li><b>lumpedCompressibilityMatrix</b>: Computes the lumped compressibility                                  matrix based on the element volume and                                  compressibility coefficients.</li><li><b>addGravityForces</b>: Adds the contribution of gravity forces to the                       external force vector.</li><li><b>getNodalDisplacement</b>: Retrieves the nodal displacement values.</li><li><b>getNodalPressure</b>: Retrieves the nodal liquid pressure values.</li><li><b>pressureField</b>: Computes the pressure field inside the element at a                    given position in the global Cartesian coordinate                    system.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> RegularElement_HM &lt; RegularElement_M
+</pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         glp        = [];            <span class="comment">% Liquid phase pressure dofs</span>
         nglp       = 0;             <span class="comment">% Number of regular p-dof</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="keyword">function</span> this = RegularElement_HM(type, node, elem, t, <span class="keyword">...</span>
+        <span class="keyword">function</span> this = RegularElement_HM(node, elem, t, <span class="keyword">...</span>
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, <span class="keyword">...</span>
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement_M(type, node, elem, t, <span class="keyword">...</span>
+            this = this@RegularElement_M(node, elem, t, <span class="keyword">...</span>
                 mat, intOrder, glu, massLumping, lumpStrategy, <span class="keyword">...</span>
                 isAxisSymmetric,isPlaneStress);
             this.glp  = glp;
@@ -154,9 +86,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             this.ngle = length(this.gle);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Initialize the elements integration points</span>
@@ -382,17 +312,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RegularElement_HM class
 % This class defines a single-phase hydromechanical finite element. It 
@@ -434,10 +355,10 @@ classdef RegularElement_HM < RegularElement_M
     %% Constructor method
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        function this = RegularElement_HM(type, node, elem, t, ...
+        function this = RegularElement_HM(node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement_M(type, node, elem, t, ...
+            this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
             this.glp  = glp;
@@ -676,6 +597,4 @@ classdef RegularElement_HM < RegularElement_M
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

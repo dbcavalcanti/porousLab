@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>PorousMedia Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="PorousMedia.m">
-<style type="text/css">
+      --><title>PorousMedia Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="PorousMedia.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,77 +67,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>PorousMedia Class</h1>
-<!--introduction-->
-<p>This class defines a porous media object with various physical and mechanical properties. It includes methods for setting and retrieving these properties, as well as performing calculations related to porous media behavior.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class Definition</a>
-</li>
-<li>
-<a href="#5">Public attributes</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>effectiveSaturationDegree</b>: Computes the effective saturation degree.</li>
-<li>
-<b>intrinsicPermeabilityMatrix</b>: Returns the intrinsic permeability matrix.</li>
-<li>
-<b>setMinLiquidRelPermeability</b>: Sets the minimum liquid relative permeability.</li>
-<li>
-<b>setMinGasRelPermeability</b>: Sets the minimum gas relative permeability.</li>
-<li>
-<b>setUMATCapillaryPressureCurve</b>: Sets the user-defined capillary pressure curve.</li>
-<li>
-<b>setUMATLiquidRelPermCurve</b>: Sets the user-defined liquid relative permeability curve.</li>
-<li>
-<b>setUMATGasRelPermCurve</b>: Sets the user-defined gas relative permeability curve.</li>
-<li>
-<b>setMechanicalConstitutiveLaw</b>: Sets the mechanical constitutive law.</li>
-<li>
-<b>setMechanicalProperties</b>: Sets the mechanical properties (Young's modulus and Poisson's ratio).</li>
-<li>
-<b>setDensity</b>: Sets the density.</li>
-<li>
-<b>getDensity</b>: Retrieves the density.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class Definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> PorousMedia &lt; handle
-</pre>
-<h2 id="5">Public attributes</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+  </style></head><body><div class="content"><h1>PorousMedia Class</h1><!--introduction--><p>This class defines a porous media object with various physical and mechanical properties. It includes methods for setting and retrieving these properties, as well as performing calculations related to porous media behavior.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Constructor method</a></li><li><a href="#7">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>effectiveSaturationDegree</b>: Computes the effective saturation degree.</li><li><b>intrinsicPermeabilityMatrix</b>: Returns the intrinsic permeability                                  matrix.</li><li><b>setMinLiquidRelPermeability</b>: Sets the minimum liquid relative                                  permeability.</li><li><b>setMinGasRelPermeability</b>: Sets the minimum gas relative                               permeability.</li><li><b>setUMATCapillaryPressureCurve</b>: Sets the user-defined capillary                                    pressure curve.</li><li><b>setUMATLiquidRelPermCurve</b>: Sets the user-defined liquid relative                                permeability curve.</li><li><b>setUMATGasRelPermCurve</b>: Sets the user-defined gas relative                             permeability curve.</li><li><b>setMechanicalConstitutiveLaw</b>: Sets the mechanical constitutive law.</li><li><b>setMechanicalProperties</b>: Sets the mechanical properties (Young's                              modulus and Poisson's ratio).</li><li><b>setDensity</b>: Sets the density.</li><li><b>getDensity</b>: Retrieves the density.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> PorousMedia &lt; handle
+</pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         id                   = <span class="string">''</span>;
         Young                = [];              <span class="comment">% Young modulus (Pa)</span>
         nu                   = [];              <span class="comment">% Poisson ratio</span>
@@ -184,9 +110,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         klrmin               = 1.0e-9;          <span class="comment">% Minimum liquid relative permeability</span>
         kgrmin               = 1.0e-9;          <span class="comment">% Minimum gas relative permeability</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="6">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = PorousMedia(id, permeability, porosity, <span class="keyword">...</span>
                 biotCoefficient, solidBulkModulus, <span class="keyword">...</span>
@@ -212,9 +136,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
         <span class="comment">% -----------------------------------------------------------------</span>
         <span class="comment">% Compute the effective saturation degree</span>
         <span class="keyword">function</span> Se = effectiveSaturationDegree(this,Sl)
@@ -285,17 +207,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             rho = this.rho;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% PorousMedia Class
 % This class defines a porous media object with various physical and 
@@ -476,6 +389,4 @@ classdef PorousMedia < handle
     end
 end
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

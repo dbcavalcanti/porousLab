@@ -110,17 +110,6 @@ classdef Shape_LST < Shape
          end
 
          %------------------------------------------------------------------
-         % Compute the strain-displacement matrix
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,6*2);
-            for i = 1:6
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            end
-         end
-
-         %------------------------------------------------------------------
          % Get the integration points:
          % Output:
          %      X: Coordinates of the integration points in the natural
@@ -206,7 +195,7 @@ classdef Shape_LST < Shape
         %------------------------------------------------------------------
         % Size of the Gram matrix
         % The stress field in a LST element is linear
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 3;
         end
 

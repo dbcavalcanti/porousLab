@@ -117,9 +117,13 @@ classdef Model_H < Model
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
-                elements(el).type.initializeIntPoints();
             end
             this.element = elements;
+        end
+
+        %------------------------------------------------------------------
+        % Initialize additional model data associated with the physics
+        function initializePhysicsAdditionalData(~)
         end
 
         % -----------------------------------------------------------------

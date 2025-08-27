@@ -80,9 +80,8 @@ classdef MechanicalLinearElastic < MechanicalLaw
                        c*nu ,    c   , 0.0  ,  0.0;
                        0.0  ,   0.0  , 1.0  ,  0.0;
                        0.0  ,   0.0  , 0.0  , c*(1-nu)/2.0 ];
-                
 
-            elseif strcmp(ip.anm,'PlaneStrain')
+            else
 
                 De = [ 1.0-nu ,   nu   ,   nu   ,    0.0;
                          nu   , 1.0-nu ,   nu   ,    0.0;
@@ -91,8 +90,6 @@ classdef MechanicalLinearElastic < MechanicalLaw
 
                 De = De * E/(1.0 + nu)/(1.0 - 2.0*nu);
 
-            else
-                De = [];
             end
         end
 

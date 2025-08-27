@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>Shape_Bar Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="Shape_Bar.m">
-<style type="text/css">
+      --><title>Shape_Bar Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Shape_Bar.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,83 +67,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>Shape_Bar Class</h1>
-<!--introduction-->
-<p>This is class defines the behavior of a linear bar isoparametric element. It provides methods for evaluation the shape functions, computing derivatived, Jacobian matrices, stain-displacement matrices, and performing coordinate transformations between natural and Cartesian coordinate systems. Additionally, it supports integration point generation and operations related to stress interpolation and Gram matrix computation.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class Definition</a>
-</li>
-<li>
-<a href="#5">Constructor method</a>
-</li>
-<li>
-<a href="#6">Public methods: methods defined in the abstract superclass</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<p>This class provides the following methods:</p>
-<div>
-<ul>
-<li>
-<b>shapeFnc</b>: Evaluates the shape functions at a given point in the natural coordinate system.</li>
-<li>
-<b>shapeFncMtrx</b>: Computes the shape function matrix.</li>
-<li>
-<b>shapeFncDrv</b>: Computes the derivatives of the shape functions with respect to the natural coordinate.</li>
-<li>
-<b>JacobianMtrx</b>: Computes the Jacobian matrix for the element.</li>
-<li>
-<b>detJacobian</b>: Computes the determinant of the Jacobian matrix.</li>
-<li>
-<b>dNdxMatrix</b>: Computes the derivatives of the shape functions with respect to the global coordinate system and the determinant of the Jacobian.</li>
-<li>
-<b>BMatrix</b>: Computes the strain-displacement matrix.</li>
-<li>
-<b>getIntegrationPoints</b>: Provides the integration points, weights, and the total number of integration points for a given integration order.</li>
-<li>
-<b>coordNaturalToCartesian</b>: Transforms a point from the natural coordinate system to the global Cartesian coordinate system.</li>
-<li>
-<b>coordCartesianToNatural</b>: Placeholder method to transform a point from the global Cartesian coordinate system to the natural coordinate system (not implemented).</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00: Initial version (January 2023).</p>
-<h2 id="4">Class Definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> Shape_Bar &lt; Shape
-</pre>
-<h2 id="5">Constructor method</h2>
-<pre class="codeinput">    methods
+  </style></head><body><div class="content"><h1>Shape_Bar Class</h1><!--introduction--><p>This class inherits from the base class 'Shape' to implement the behavior of a linear bar isoparametric element.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class Definition</a></li><li><a href="#3">Constructor method</a></li><li><a href="#4">Public methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> Shape_Bar &lt; Shape
+</pre><h2 id="3">Constructor method</h2><pre class="codeinput">    methods
         <span class="keyword">function</span> this = Shape_Bar()
             this = this@Shape(<span class="string">'Bar'</span>);
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Public methods: methods defined in the abstract superclass</h2>
-<pre class="codeinput">    methods
-        <span class="comment">% -----------------------------------------------------------------</span>
-        <span class="comment">% Evaluate the shape function at a given point X of a linear</span>
-        <span class="comment">% quadrilateral isoparametric element.</span>
+</pre><h2 id="4">Public methods</h2><pre class="codeinput">    methods
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Evaluate the shape function at a given point X of a linear quadrilateral isoparametric element.</span>
          <span class="keyword">function</span> N = shapeFnc(~,Xn)
             <span class="comment">% Natural coordinates of the given point</span>
             s = Xn(1);
@@ -156,11 +83,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="comment">% Shape functions</span>
             N1 = (1.0 - s)/2.0;
             N2 = (1.0 + s)/2.0;
-            N   = [ N1  N2 ];
+            N  = [ N1  N2 ];
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Get the shape function matrix</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Get the shape function matrix.</span>
          <span class="keyword">function</span> Nm = shapeFncMtrx(this,Xn)
              <span class="comment">% Vector with the shape functions</span>
              N = this.shapeFnc(Xn);
@@ -170,15 +97,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                    0.0   N(1)  0.0   N(2)];
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Compute the derivatives of the shape functions wrt to the</span>
-         <span class="comment">% natural coordinate s</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Compute the derivatives of the shape functions wrt to the natural coordinate s.</span>
          <span class="keyword">function</span> dNdxn = shapeFncDrv(~,~)
-            dNdxn   = [ -0.5  0.5];
+            dNdxn = [ -0.5  0.5];
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Compute the jacobian matrix</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Compute the jacobian matrix.</span>
          <span class="keyword">function</span> J = JacobianMtrx(this,X,Xn)
             <span class="comment">% Compute the shape function derivatives wrt to the natural</span>
             <span class="comment">% coordinate system</span>
@@ -188,16 +114,16 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             J = dNdxn*X;
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Compute the determinant of the jacobian</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Compute the determinant of the jacobian.</span>
          <span class="keyword">function</span> detJ = detJacobian(this,X,Xn)
             <span class="comment">% Jacobian matrix</span>
             J = this.JacobianMtrx(X,Xn);
             detJ = norm(J);
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Compute the derivatives of the shape functions matrix</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Compute the derivatives of the shape functions matrix.</span>
          <span class="keyword">function</span> [dNdx,detJ] = dNdxMatrix(this,X,Xn)
             <span class="comment">% Jacobian matrix</span>
             J = this.JacobianMtrx(X,Xn);
@@ -214,8 +140,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             dNdx = J\dNdxn;
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
-         <span class="comment">% Compute the strain-displacement matrix</span>
+         <span class="comment">%------------------------------------------------------------------</span>
+         <span class="comment">% Compute the strain-displacement matrix.</span>
          <span class="keyword">function</span> [B] = BMatrix(~,dNdx)
             B = zeros(4,4*2);
             <span class="keyword">for</span> i = 1:4
@@ -225,13 +151,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
+         <span class="comment">%------------------------------------------------------------------</span>
          <span class="comment">% Get the integration points:</span>
          <span class="comment">% Output:</span>
-         <span class="comment">%      X: Coordinates of the integration points in the natural</span>
-         <span class="comment">%         system</span>
-         <span class="comment">%      w: Weight associated to each integration point</span>
-         <span class="comment">%      nIntPoints: Total number of integration points</span>
+         <span class="comment">%  X: Coordinates of the integration points in the natural system</span>
+         <span class="comment">%  w: Weight associated to each integration point</span>
+         <span class="comment">%  nIntPoints: Total number of integration points</span>
          <span class="keyword">function</span> [X,w,nIntPoints] = getIntegrationPoints(~,intOrder,~)
              <span class="keyword">if</span> intOrder == 0
                  X = 0.0;
@@ -253,7 +178,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
              <span class="keyword">end</span>
          <span class="keyword">end</span>
 
-         <span class="comment">% -----------------------------------------------------------------</span>
+         <span class="comment">%------------------------------------------------------------------</span>
          <span class="comment">% Transform a point from the natural coordinate system to the</span>
          <span class="comment">% global cartesian coordinate system</span>
          <span class="comment">% Input:</span>
@@ -277,8 +202,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             X = [0.0, 0.0];
 
             <span class="comment">% Interpolation the position</span>
-            X(1) = Nv(1)*x(1) +  Nv(2)*x(2);
-            X(2) = Nv(1)*y(1) +  Nv(2)*y(2);
+            X(1) = Nv(1)*x(1) + Nv(2)*x(2);
+            X(2) = Nv(1)*y(1) + Nv(2)*y(2);
          <span class="keyword">end</span>
 
          <span class="comment">% ----------------------------------------------------------------</span>
@@ -289,57 +214,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             Xn = [];
          <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Shape_Bar Class
-% This is class defines the behavior of a linear bar isoparametric element.
-% It provides methods for evaluation the shape functions, computing
-% derivatived, Jacobian matrices, stain-displacement matrices, and
-% performing coordinate transformations between natural and Cartesian
-% coordinate systems. Additionally, it supports integration point
-% generation and operations related to stress interpolation and Gram matrix
-% computation.
-%
-%% Methods
-% This class provides the following methods:
+% This class inherits from the base class 'Shape' to implement the behavior of a linear bar isoparametric element.
 % 
-% * *shapeFnc*: Evaluates the shape functions at a given point in the 
-%               natural coordinate system.
-% * *shapeFncMtrx*: Computes the shape function matrix.
-% * *shapeFncDrv*: Computes the derivatives of the shape functions with 
-%                  respect to the natural coordinate.
-% * *JacobianMtrx*: Computes the Jacobian matrix for the element.
-% * *detJacobian*: Computes the determinant of the Jacobian matrix.
-% * *dNdxMatrix*: Computes the derivatives of the shape functions with 
-%                 respect to the global coordinate system and the 
-%                 determinant of the Jacobian.
-% * *BMatrix*: Computes the strain-displacement matrix.
-% * *getIntegrationPoints*: Provides the integration points, weights, 
-%                           and the total number of integration points for 
-%                           a given integration order.
-% * *coordNaturalToCartesian*: Transforms a point from the natural 
-%                              coordinate system to the global Cartesian 
-%                              coordinate system.
-% * *coordCartesianToNatural*: Placeholder method to transform a point from 
-%                              the global Cartesian coordinate system to 
-%                              the natural coordinate system (not 
-%                              implemented).
-% 
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00: Initial version (January 2023).
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
 %% Class Definition
 classdef Shape_Bar < Shape
@@ -350,11 +232,10 @@ classdef Shape_Bar < Shape
         end
     end
 
-    %% Public methods: methods defined in the abstract superclass
+    %% Public methods
     methods
-        % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-        % Evaluate the shape function at a given point X of a linear 
-        % quadrilateral isoparametric element.
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Evaluate the shape function at a given point X of a linear quadrilateral isoparametric element.
          function N = shapeFnc(~,Xn)
             % Natural coordinates of the given point
             s = Xn(1);
@@ -362,11 +243,11 @@ classdef Shape_Bar < Shape
             % Shape functions
             N1 = (1.0 - s)/2.0;
             N2 = (1.0 + s)/2.0;
-            N   = [ N1  N2 ];
+            N  = [ N1  N2 ];
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Get the shape function matrix
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Get the shape function matrix.
          function Nm = shapeFncMtrx(this,Xn)
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
@@ -376,15 +257,14 @@ classdef Shape_Bar < Shape
                    0.0   N(1)  0.0   N(2)];
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Compute the derivatives of the shape functions wrt to the
-         % natural coordinate s
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Compute the derivatives of the shape functions wrt to the natural coordinate s.
          function dNdxn = shapeFncDrv(~,~)
-            dNdxn   = [ -0.5  0.5];
+            dNdxn = [ -0.5  0.5];
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Compute the jacobian matrix
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Compute the jacobian matrix.
          function J = JacobianMtrx(this,X,Xn)
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
@@ -394,16 +274,16 @@ classdef Shape_Bar < Shape
             J = dNdxn*X;
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Compute the determinant of the jacobian
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Compute the determinant of the jacobian.
          function detJ = detJacobian(this,X,Xn)
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
             detJ = norm(J);
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Compute the derivatives of the shape functions matrix
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Compute the derivatives of the shape functions matrix.
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
             % Jacobian matrix
             J = this.JacobianMtrx(X,Xn);
@@ -420,8 +300,8 @@ classdef Shape_Bar < Shape
             dNdx = J\dNdxn;
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-         % Compute the strain-displacement matrix
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+         % Compute the strain-displacement matrix.
          function [B] = BMatrix(~,dNdx)
             B = zeros(4,4*2);
             for i = 1:4
@@ -431,13 +311,12 @@ classdef Shape_Bar < Shape
             end
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
          % Get the integration points:
          % Output:
-         %      X: Coordinates of the integration points in the natural
-         %         system
-         %      w: Weight associated to each integration point
-         %      nIntPoints: Total number of integration points
+         %  X: Coordinates of the integration points in the natural system
+         %  w: Weight associated to each integration point
+         %  nIntPoints: Total number of integration points
          function [X,w,nIntPoints] = getIntegrationPoints(~,intOrder,~)
              if intOrder == 0
                  X = 0.0;
@@ -459,7 +338,7 @@ classdef Shape_Bar < Shape
              end
          end
 
-         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
@@ -483,8 +362,8 @@ classdef Shape_Bar < Shape
             X = [0.0, 0.0];
             
             % Interpolation the position
-            X(1) = Nv(1)*x(1) +  Nv(2)*x(2);
-            X(2) = Nv(1)*y(1) +  Nv(2)*y(2);
+            X(1) = Nv(1)*x(1) + Nv(2)*x(2);
+            X(2) = Nv(1)*y(1) + Nv(2)*y(2);
          end
 
          % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -498,6 +377,4 @@ classdef Shape_Bar < Shape
 end
 
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

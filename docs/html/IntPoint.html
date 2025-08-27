@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>IntPoint Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="IntPoint.m">
-<style type="text/css">
+      --><title>IntPoint Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="IntPoint.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,69 +67,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>IntPoint Class</h1>
-<!--introduction-->
-<p>This class defines an integration point object used in finite element analysis. It stores the properties and methods required to manage the state of an integration point, including its coordinates, weights, strain, stress, plastic strain, state variables, and constitutive model.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Public properties</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>IntPoint</b>: Constructor to initialize the integration point with coordinates, weight, and constitutive model.</li>
-<li>
-<b>initializeMechanicalAnalysisModel</b>: Initializes the mechanical analysis model and allocates memory for strain, stress, and state variables based on the analysis type.</li>
-<li>
-<b>updateStrainVct</b>: Updates the current strain vector and plastic strain vector to their previous states.</li>
-<li>
-<b>updateStateVar</b>: Updates the current state variable vector to its previous state.</li>
-<li>
-<b>updateStressVct</b>: Updates the current stress vector to its previous state.</li>
-<li>
-<b>getConstitutiveMtrx</b>: Retrieves the current constitutive matrix based on the given strain increment.</li>
-<li>
-<b>mechanicalLaw</b>: Computes the stress and constitutive matrix using the constitutive model and updates the current stress vector.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> IntPoint &lt; handle
-</pre>
-<h2 id="5">Public properties</h2>
-<pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+  </style></head><body><div class="content"><h1>IntPoint Class</h1><!--introduction--><p>This in an abstract class that defines an integration point object.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Public methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> IntPoint &lt; handle
+</pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         X                = [];   <span class="comment">% Coordinates of the integration point in the natural coordinate system</span>
         w                = 0.0;  <span class="comment">% Weight associated to the integration point</span>
         strain           = [];   <span class="comment">% Current strain vector</span>
@@ -149,9 +83,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         anm              = <span class="string">''</span>;   <span class="comment">% Analysis model tag</span>
         nVar             = 4;    <span class="comment">% Dimension of the stress and strain vectors</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = IntPoint(X,w,constitutiveMdl)
             <span class="keyword">if</span> nargin &gt; 0
@@ -161,11 +93,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="5">Public methods</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Initialize analysis model (mechanical part)</span>
+        <span class="comment">% Initialize analysis model (mechanical part).</span>
         <span class="keyword">function</span> initializeMechanicalAnalysisModel(this,anm)
             this.anm = anm;
 
@@ -194,80 +124,62 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update current strain vector</span>
+        <span class="comment">% Update current strain vector.</span>
         <span class="keyword">function</span> updateStrainVct(this)
             this.strainOld        = this.strain;
             this.plasticstrainOld = this.plasticstrain;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update current state variable vector</span>
+        <span class="comment">% Update current state variable vector.</span>
         <span class="keyword">function</span> updateStateVar(this)
             this.statevarOld = this.statevar;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Update current stress vector</span>
+        <span class="comment">% Update current stress vector.</span>
         <span class="keyword">function</span> updateStressVct(this)
             this.stressOld = this.stress;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Get current constitutive matrix</span>
+        <span class="comment">% Reset the integration point.</span>
+        <span class="keyword">function</span> reset(this)
+            nStvar = this.constitutiveMdl.getNumberStateVar();
+            this.strain      = zeros(this.nVar, 1);
+            this.stress      = zeros(this.nVar, 1);
+            this.statevar    = zeros(nStvar,    1);
+            this.strainOld   = zeros(this.nVar, 1);
+            this.stressOld   = zeros(this.nVar, 1);
+            this.statevarOld = zeros(nStvar,    1);
+            <span class="keyword">if</span> this.constitutiveMdl.hasPlasticStrain()
+                this.plasticstrain    = zeros(this.nVar,1);
+                this.plasticstrainOld = zeros(this.nVar,1);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get current constitutive matrix.</span>
         <span class="keyword">function</span> D = getConstitutiveMtrx(this,dStrain)
             D = this.constitutiveMdl.constitutiveMtrx(dStrain,this);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Get current constitutive matrix</span>
+        <span class="comment">% Compute the stress and constitutive matrix using the constitutive model</span>
+        <span class="comment">% and update the current stress vector.</span>
         <span class="keyword">function</span> [stress,D] = mechanicalLaw(this)
             [stress,D] = this.constitutiveMdl.mechanicalLaw(this);
             this.stress = stress;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% IntPoint Class
-% This class defines an integration point object used in finite element
-% analysis. It stores the properties and methods required to manage the
-% state of an integration point, including its coordinates, weights,
-% strain, stress, plastic strain, state variables, and constitutive model.
+% This in an abstract class that defines an integration point object.
 %
-%% Methods
-% * *IntPoint*: Constructor to initialize the integration point with 
-%               coordinates, weight, and constitutive model.
-% * *initializeMechanicalAnalysisModel*: Initializes the mechanical 
-%                                        analysis model and allocates 
-%                                        memory for strain, stress, and 
-%                                        state variables based on the 
-%                                        analysis type.
-% * *updateStrainVct*: Updates the current strain vector and plastic 
-%                      strain vector to their previous states.
-% * *updateStateVar*: Updates the current state variable vector to 
-%                     its previous state.
-% * *updateStressVct*: Updates the current stress vector to its 
-%                      previous state.
-% * *getConstitutiveMtrx*: Retrieves the current constitutive matrix based 
-%                          on the given strain increment.
-% * *mechanicalLaw*: Computes the stress and constitutive matrix using 
-%                    the constitutive model and updates the current 
-%                    stress vector.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti (dborges@cimne.upc.edu)
 % 
 %% Class definition
 classdef IntPoint < handle    
@@ -303,7 +215,7 @@ classdef IntPoint < handle
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Initialize analysis model (mechanical part)
+        % Initialize analysis model (mechanical part).
         function initializeMechanicalAnalysisModel(this,anm)
             this.anm = anm;
 
@@ -332,32 +244,49 @@ classdef IntPoint < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update current strain vector
+        % Update current strain vector.
         function updateStrainVct(this)
             this.strainOld        = this.strain;
             this.plasticstrainOld = this.plasticstrain;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update current state variable vector
+        % Update current state variable vector.
         function updateStateVar(this)
             this.statevarOld = this.statevar;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Update current stress vector
+        % Update current stress vector.
         function updateStressVct(this)
             this.stressOld = this.stress;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Get current constitutive matrix
+        % Reset the integration point.
+        function reset(this)
+            nStvar = this.constitutiveMdl.getNumberStateVar();
+            this.strain      = zeros(this.nVar, 1);
+            this.stress      = zeros(this.nVar, 1);
+            this.statevar    = zeros(nStvar,    1);
+            this.strainOld   = zeros(this.nVar, 1);
+            this.stressOld   = zeros(this.nVar, 1);
+            this.statevarOld = zeros(nStvar,    1);
+            if this.constitutiveMdl.hasPlasticStrain()
+                this.plasticstrain    = zeros(this.nVar,1);
+                this.plasticstrainOld = zeros(this.nVar,1);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get current constitutive matrix.
         function D = getConstitutiveMtrx(this,dStrain)
             D = this.constitutiveMdl.constitutiveMtrx(dStrain,this);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Get current constitutive matrix
+        % Compute the stress and constitutive matrix using the constitutive model
+        % and update the current stress vector.
         function [stress,D] = mechanicalLaw(this)
             [stress,D] = this.constitutiveMdl.mechanicalLaw(this);
             this.stress = stress;
@@ -366,6 +295,4 @@ classdef IntPoint < handle
 end
 
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>

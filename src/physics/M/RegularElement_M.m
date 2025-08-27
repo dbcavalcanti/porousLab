@@ -77,7 +77,7 @@ classdef RegularElement_M < RegularElement
         function initializeIntPoints(this)
 
             % Get integration points coordinates and weights
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder, this);
 
             % Get characteristic length
             lc = this.characteristicLength();
@@ -122,12 +122,15 @@ classdef RegularElement_M < RegularElement
 
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
+                
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
                
                 % Compute the B matrix at the int. point and the detJ
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx,N);
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u;
@@ -138,11 +141,11 @@ classdef RegularElement_M < RegularElement
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
-                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
                 end
                 
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Bu' * Duu * Bu * c;
+                dfidu = dfidu + Bu' * Duu * Bu * c;
 
                 % Internal force vector
                 fi = fi + Bu' * stress * c;
@@ -153,6 +156,22 @@ classdef RegularElement_M < RegularElement
                 end
             end
             
+        end
+
+        %------------------------------------------------------------------
+        % Compute the strain-displacement matrix
+        function [B] = BMatrix(this,dNdx,N)
+            B = zeros(4,this.nnd_el*2);
+            for i = 1:this.nnd_el
+                B(1,2*i-1) = dNdx(1,i); 
+                B(2,2*i)   = dNdx(2,i);
+                B(4,2*i-1) = dNdx(2,i);
+                B(4,2*i)   = dNdx(1,i);
+                if this.isAxisSymmetric
+                    r = N*this.node(:,1);
+                    B(3,2*i-1) = N(i)/r;
+                end
+            end
         end
 
         %------------------------------------------------------------------
@@ -175,17 +194,58 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Function to get the nodal values of the displacement
-        function u = getNodalDisplacement(this)
-            u = this.ue(1:this.nglu);
+        % Compute the forces due to the pore-pressure field
+        function fe = porePressureForce(this, pe)
+
+            % Initialize hydro-mechanical coupling matrix. The
+            % pore-pressure are discretized at the nodes of the element.
+            fe = zeros(this.nglu,1);
+
+            % Identity vector
+            m = [1;1;1;0];
+
+            % Numerical integration of fe
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.BMatrix(dNdx,N);
+
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                end
+
+                % Compute the force due to the pore-pressure
+                fe = fe + Bu' * m * N * pe * c;
+
+            end
+
         end
 
         %------------------------------------------------------------------
-        % Function to get the nodal values of the liquid pressure
-        function pl = getNodalPressure(this)
-            a = this.nglu + 1;
-            b = this.nglu + this.nglp;
-            pl = this.ue(a:b);
+        % Initialize the stresses at the integration point with the given
+        % function
+        function initialStress(this, stressfnc)
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Initialize the stresses
+                this.intPoint(i).stress    = stressfnc(X);
+                this.intPoint(i).stressOld = stressfnc(X);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the nodal values of the displacement
+        function u = getNodalDisplacement(this)
+            u = this.ue(1:this.nglu);
         end
 
         %------------------------------------------------------------------
@@ -210,6 +270,27 @@ classdef RegularElement_M < RegularElement
             
             % Regular displacement field
             u = Nu*uv;
+        
+        end
+
+        %------------------------------------------------------------------
+        % Function to compute the pressure field inside a given element
+        function p = pressureField(this,X,pe)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   p   : pressure evaluated in "X"
+        
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % capillary field
+            p = Nm*pe;
         
         end
 

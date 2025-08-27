@@ -43,10 +43,13 @@
 classdef EnrichedElement_M < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        discontinuity = [];
-        addStretchingMode  = false;
-        addRelRotationMode = false;
-        condenseEnrDofs    = true;
+        discontinuity                = [];
+        addTangentialStretchingMode  = false;
+        addNormalStretchingMode      = false;
+        addRelRotationMode           = false;
+        condenseEnrDofs              = true;
+        symmetricForm                = true;
+        stressIntCoeff               = [];
     end
     %% Constructor method
     methods
@@ -54,13 +57,18 @@ classdef EnrichedElement_M < RegularElement_M
         function this = EnrichedElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
-                addRelRotationMode,addStretchingMode, condenseEnrDofs)
+                addRelRotationMode,addTangentialStretchingMode, ...
+                addNormalStretchingMode, condenseEnrDofs,...
+                subDivInt, symmetricForm)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
-            this.addStretchingMode  = addStretchingMode;
-            this.addRelRotationMode = addRelRotationMode;
-            this.condenseEnrDofs    = condenseEnrDofs;
+            this.addTangentialStretchingMode  = addTangentialStretchingMode;
+            this.addNormalStretchingMode      = addNormalStretchingMode;
+            this.addRelRotationMode           = addRelRotationMode;
+            this.condenseEnrDofs              = condenseEnrDofs;
+            this.subDivInt                    = subDivInt;
+            this.symmetricForm                = symmetricForm;
         end
     end
     
@@ -100,17 +108,17 @@ classdef EnrichedElement_M < RegularElement_M
         function [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this)
 
             % Initialize the matrices and vectors that will be returned
-            Ce    = zeros(this.ngle, this.ngle);
-            dfidu = zeros(this.ngle, this.ngle);
+            Ce = zeros(this.ngle, this.ngle);
+            Ke = zeros(this.ngle, this.ngle);
 
             if this.condenseEnrDofs
                 % Compute the sub-matrices
                 [Kuu, Kua, Kau, Kaa, fiu, fia, feu] = this.solveLocalEq();
     
                 % Static condensation of the enrichment dofs
-                Ke = Kuu - Kua * (Kaa\Kau);
-                fi = fiu - Kua * (Kaa\fia);
-                fe = feu;
+                dfidu = Kuu - Kua * (Kaa\Kau);
+                fi    = fiu - Kua * (Kaa\fia);
+                fe    = feu;
             else
                 % Get enrichment dofs
                 ae = this.ue(this.nglu+1:end);
@@ -119,10 +127,10 @@ classdef EnrichedElement_M < RegularElement_M
                 [Kuu, Kua, Kau, Kaa, fiu, fia, feu, fea] = this.fillElementSubData(ae);
 
                 % Assemble element matrices
-                Ke = [ Kuu , Kua;
-                       Kau , Kaa];
-                fi = [ fiu; fia];
-                fe = [ feu; fea];
+                dfidu = [ Kuu , Kua;
+                          Kau , Kaa];
+                fi    = [ fiu; fia];
+                fe    = [ feu; fea];
 
             end
 
@@ -202,13 +210,17 @@ classdef EnrichedElement_M < RegularElement_M
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx);
 
                 % Get kinematic enriched matrix
-                Gr = this.kinematicEnrichment(Bu);
+                Gr = this.kinematicEnrichment(Bu,this.intPoint(i).X);
 
-                % Get the static enriched matrix (TEMP)
-                Gv = this.kinematicEnrichment(Bu);
+                % Get the static enriched matrix
+                if this.symmetricForm
+                    Gv = Gr;
+                else
+                    Gv = this.equilibriumEnrichment(this.intPoint(i).X);
+                end
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u + Gr * ae;
@@ -274,6 +286,121 @@ classdef EnrichedElement_M < RegularElement_M
         end
 
         %------------------------------------------------------------------
+        % Compute the forces due to the pore-pressure field
+        function fe = porePressureForce(this, pe)
+
+            if isempty(this.discontinuity)
+               fe = porePressureForce@RegularElement_M(this, pe);
+               return;
+            end
+
+            % Get the number of dofs of each type
+            nEnrDofs = this.getNumberEnrichedDofs();
+            nRegDofs = this.nglu;
+
+            % Initialize hydro-mechanical coupling forces
+            feu = zeros(nRegDofs,1);
+            fea = zeros(nEnrDofs,1);
+
+            % Identity vector
+            m = [1;1;1;0];
+
+            % Numerical integration of Q
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.BMatrix(dNdx,N);
+
+                % Get the static enriched matrix
+                if this.symmetricForm
+                    Gv = this.kinematicEnrichment(Bu,this.intPoint(i).X);
+                else
+                    Gv = this.equilibriumEnrichment(this.intPoint(i).X);
+                end
+
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                end
+
+                % Evaluate pore-pressure at the integration point
+                p = this.porePressureField(N, this.intPoint(i).X, pe);
+
+                % Compute the forces
+                feu = feu + Bu' * m * p * c;
+                fea = fea + Gv' * m * p * c;
+
+            end
+
+            % Loop through the discontinuities
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            for i = 1:nDiscontinuities
+
+                % Initialize the discontinuity pore-pressure vector
+                pd = [0; 0];
+                for j = 1:2
+                    % Cartesian coordinate of node i of the discontinuity
+                    X = this.discontinuity(i).node(j,:);
+                    % Natural coordinates of this node
+                    Xn = this.shape.coordCartesianToNatural(this.node,X);
+                    % Shape function
+                    N = this.shape.shapeFncMtrx(Xn);
+                    % Function phi
+                    phi = this.auxiliaryfncPhi(i, N);
+                    % Pore-pressure value at each side of the discontinuity
+                    ptop = N * pe + (1.0-phi)*this.discontinuity(i).DP;
+                    pbot = N * pe - phi*this.discontinuity(i).DP;
+                    % Pore-pressure at the discontinuity
+                    pd(j) = mean([ptop, pbot]);
+                end
+
+                % Get the discontinuity data
+                feai = this.discontinuity(i).porePressureForce(pd);
+
+                % Dofs associated with this discontinuity segment
+                dofs = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+
+                % Assemble the contribution of this discontinuity
+                fea(dofs,1) = fea(dofs,1) + feai;
+                
+            end
+
+            % Assemble vector
+            fe = [feu; fea];
+
+        end
+
+        %------------------------------------------------------------------
+        % Evaluates the pore-pressure field
+        function p = porePressureField(this, N, Xn, pe)
+
+            % Continuous part
+            p = N * pe;
+
+            % Cartesian coordinate of the integration point
+            X = this.shape.coordNaturalToCartesian(this.node, Xn);
+
+            % Discontinuous part
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                % Function phi
+                phi = this.auxiliaryfncPhi(i, N);
+                % Heaviside function
+                h = this.discontinuity(i).heaviside(X);
+                % Add discontinuous part from discontinuity i
+                p = p + (h-phi) * this.discontinuity(i).DP;
+            end
+        end
+
+        %------------------------------------------------------------------
         % Gets the number of enriched degrees of freedom
         function nEnrDof = getNumberEnrichedDofs(this)
             nEnrDof = this.getNumberOfDiscontinuities();
@@ -291,11 +418,23 @@ classdef EnrichedElement_M < RegularElement_M
         % the enriched element
         function n = getNumberOfDofPerDiscontinuity(this)
             n = 2;  
-            if this.addStretchingMode
+            if this.addTangentialStretchingMode
+                n = n + 1;
+            end
+            if this.addNormalStretchingMode
                 n = n + 1;
             end
             if this.addRelRotationMode
                 n = n + 1;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Displacement jump order
+        function n = displacementJumpOrder(this)
+            n = 0;
+            if (this.addTangentialStretchingMode || this.addNormalStretchingMode || this.addRelRotationMode) 
+                n = 1;
             end
         end
 
@@ -322,7 +461,7 @@ classdef EnrichedElement_M < RegularElement_M
         % contributions of discontinuities in the element. The enrichment
         % includes translation, stretching and relative rotation modes
         % depending on the configuration
-        function Gc = kinematicEnrichment(this, Bu) 
+        function Gc = kinematicEnrichment(this, Bu,Xn) 
             nDiscontinuities  = this.getNumberOfDiscontinuities();
             nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
             Gc = zeros(4,nDofDiscontinuity * nDiscontinuities);
@@ -344,8 +483,12 @@ classdef EnrichedElement_M < RegularElement_M
                         Gci(:,2) = Gci(:,2) - Buj * n;
                         % Add stretching mode
                         c = 3;
-                        if this.addStretchingMode
+                        if this.addTangentialStretchingMode
                             Gci(:,c) = Gci(:,c) - Buj * (m * m') * (Xj' - Xr');
+                            c = c + 1;
+                        end
+                        if this.addNormalStretchingMode
+                            Gci(:,c) = Gci(:,c) - Buj * (n * n') * (Xj' - Xr');
                             c = c + 1;
                         end
                         % Add relative rotation mode
@@ -355,11 +498,164 @@ classdef EnrichedElement_M < RegularElement_M
                         end
                     end
                 end
+                % Add stretching mode
+                if (this.addTangentialStretchingMode || this.addNormalStretchingMode)
+                    % Cartesian coordinate of the int. point
+                    X = this.shape.coordNaturalToCartesian(this.node,Xn);
+                    % Heaviside function
+                    h = this.discontinuity(i).heaviside(X);
+                    % Fill matrix Gci
+                    c = 3;
+                    if this.addTangentialStretchingMode
+                        M = [m(1),0;0,m(2);0,0;m(2),m(1)];
+                        Gci(:,c) = Gci(:,c) + h * M * m;
+                        c = c + 1;
+                    end
+                    if this.addNormalStretchingMode
+                        N = [n(1),0;0,n(2);0,0;n(2),n(1)];
+                        Gci(:,c) = Gci(:,c) + h * N * n;
+                    end                    
+                end
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
                 Gc(:,cols) = Gci;
             end
         end
+
         %------------------------------------------------------------------
+        % Compute the enrichment auxiliary function
+        function phi = auxiliaryfncPhi(this, id, N) 
+            phi = 0.0;
+            for j = 1:this.nnd_el
+                Xj = this.node(j,:);
+                hj = this.discontinuity(id).heaviside(Xj);
+                if (hj > 0.0)
+                    phi = phi + N(:, j);
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Compute the enrichment auxiliary function
+        function Gv = equilibriumEnrichment(this, Xn)
+            
+            % Initialize variables
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            jumpOrder         = this.displacementJumpOrder();
+            Gv = zeros(4,nDofDiscontinuity * nDiscontinuities);
+
+            % Get the stress interpolation coefficients
+            c = this.getStressInterpCoefficients();
+
+            % Cartesian coordinate of the int. point
+            X = this.shape.coordNaturalToCartesian(this.node,Xn);
+
+            % Stress interpolation polynomial
+            p = this.shape.polynomialStress(X);
+
+            % Evaluate the polynomial
+            g = c'*p;
+
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+                
+                % Get discontinuity data
+                m = this.discontinuity(i).tangentialVector();
+                n = this.discontinuity(i).normalVector();
+                P = this.discontinuity(i).projectionMatrix();
+                
+                % Get matrix associated with discontinuity i
+                if (jumpOrder == 0)
+                    Gi = - g(1,i) * P * [ m , n];
+                elseif (jumpOrder == 1)
+                    if ((this.addTangentialStretchingMode == true) && (this.addRelRotationMode == false))
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m];
+                    elseif ((this.addTangentialStretchingMode == false) && (this.addRelRotationMode == true))
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*n];
+                    else
+                        Gi = - P * [ g(1,i)*m , g(1,i)*n, g(2,i)*m, g(2,i)*n];
+                    end
+                end
+
+                % Assemble the matrix associated with discontinuity i
+                cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
+                Gv(:,cols) = Gi;
+
+            end
+
+        end
+
+        %------------------------------------------------------------------
+        % Get the stress interpolation coefficients
+        function c = getStressInterpCoefficients(this)
+            if isempty(this.stressIntCoeff)
+                this.stressIntCoeff = this.computeStressIntCoeffs();
+            end
+            c = this.stressIntCoeff;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function c = computeStressIntCoeffs(this)
+            
+            % Gramm matrix
+            H = this.grammMatrix();
+
+            % Integral of the stresses along the discontinuities
+            S = this.dSetIntegralPolynomialStress();
+
+            % Compute coefficients
+            c = H\S;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function H = grammMatrix(this)
+
+            % Initialize variables
+            n = this.shape.dimPolynomialStressInterp();
+            H = zeros(n,n);
+
+            for i = 1:this.nIntPoints
+                % Numerical int. coefficient
+                detJ = this.shape.detJacobian(this.node,this.intPoint(i).X);
+                c = this.intPoint(i).w * detJ * this.t;
+
+                % Cartesian coordinate of the int. point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Stress interpolation polynomial
+                p = this.shape.polynomialStress(X);
+
+                % Gram matrix
+                H = H + (p * p') * c;
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress interpolation coefficients
+        function S = dSetIntegralPolynomialStress(this)
+
+            % Initialize variables
+            dimPolyStress    = this.shape.dimPolynomialStressInterp();
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            jumpOrder        = this.displacementJumpOrder();
+
+            % Initialize matrix
+            S = zeros(dimPolyStress,nDiscontinuities*(jumpOrder + 1));
+
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+
+                % Evaluate integral of discontinuity i
+                Si = this.discontinuity(i).intPolynomialStressIntp(this);
+
+                % Assemble
+                cols = ((i-1) * (jumpOrder + 1) + 1):(i * (jumpOrder + 1));
+                S(:,cols) = Si;
+            end
+        end
+
     end
 end

@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      -->
-<title>NonlinearScheme_Picard Class</title>
-<meta name="generator" content="MATLAB 24.2">
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2025-04-07">
-<meta name="DC.source" content="NonlinearScheme_Picard.m">
-<style type="text/css">
+      --><title>NonlinearScheme_Picard Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="NonlinearScheme_Picard.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,84 +67,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style>
-</head>
-<body>
-<div class="content">
-<h1>NonlinearScheme_Picard Class</h1>
-<!--introduction-->
-<p>This class implements the Picard nonlinear scheme for solving nonlinear systems of equations. It is based on a fully implicit time integration scheme and includes an optional relaxation mechanism to improve convergence.</p>
-<p>Reference: Li and Wei (2015). An efficient finite element procedure for analyzing three‐phase porous media based on the relaxed Picard method. Int J Numer Methods Eng, 101(11):825-846.</p>
-<!--/introduction-->
-<h2>Contents</h2>
-<div>
-<ul>
-<li>
-<a href="#1">Methods</a>
-</li>
-<li>
-<a href="#2">Author</a>
-</li>
-<li>
-<a href="#3">Version History</a>
-</li>
-<li>
-<a href="#4">Class definition</a>
-</li>
-<li>
-<a href="#5">Public properties</a>
-</li>
-<li>
-<a href="#6">Constructor method</a>
-</li>
-<li>
-<a href="#7">Public methods</a>
-</li>
-</ul>
-</div>
-<h2 id="1">Methods</h2>
-<div>
-<ul>
-<li>
-<b>assembleLinearSystem</b>: Assembles the Jacobian matrix and the residual vector for the nonlinear system.</li>
-<li>
-<b>applyBCtoRHS</b>: Applies boundary conditions to the right-hand side vector.</li>
-<li>
-<b>addNodalForces</b>: Adds nodal forces to the right-hand side vector.</li>
-<li>
-<b>eval</b>: Evaluates the solution increment and updates the solution vector.</li>
-<li>
-<b>convergence</b>: Checks for convergence of the nonlinear solver.</li>
-<li>
-<b>updateRelaxation</b>: Updates the relaxation parameter based on the generalized angle between successive increments.</li>
-</ul>
-</div>
-<h2 id="2">Author</h2>
-<p>Danilo Cavalcanti</p>
-<h2 id="3">Version History</h2>
-<p>Version 1.00.</p>
-<h2 id="4">Class definition</h2>
-<pre class="codeinput">
-<span class="keyword">classdef</span> NonlinearScheme_Picard &lt; NonlinearScheme
-</pre>
-<h2 id="5">Public properties</h2>
-<pre class="codeinput">    properties(SetAccess = public,GetAccess = public)
+  </style></head><body><div class="content"><h1>NonlinearScheme_Picard Class</h1><!--introduction--><p>This class inherits from the base class 'NonlinearScheme' to implement the Picard nonlinear scheme for solving nonlinear systems of equations. It is based on a fully implicit time integration scheme and includes an optional relaxation mechanism to improve relaxation mechanism to improve convergence.</p><p>Reference: Li and Wei (2015). An efficient finite element procedure for analyzing three&#8208;phase porous media based on the relaxed Picard method. Int J Numer Methods Eng, 101(11):825-846.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Public methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> NonlinearScheme_Picard &lt; NonlinearScheme
+</pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties(SetAccess = public,GetAccess = public)
         relax = 1.0;
         applyRelaxation = false;
     <span class="keyword">end</span>
-</pre>
-<h2 id="6">Constructor method</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = NonlinearScheme_Picard()
             this = this@NonlinearScheme();
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<h2 id="7">Public methods</h2>
-<pre class="codeinput">    methods
+</pre><h2 id="5">Public methods</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Assembles the linear system</span>
+        <span class="comment">% Assemble the Jacobian matrix and the residual vector.</span>
         <span class="keyword">function</span> [A,b] = assembleLinearSystem(~,C,K,~,fe,dfidx,~,xOld,dt)
             <span class="comment">% RHS vector</span>
             b = C * xOld / dt + fe;
@@ -159,43 +90,38 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Applies the boundary conditions to the right-hand side vector</span>
+        <span class="comment">% Apply boundary conditions to the right-hand side of the system.</span>
         <span class="keyword">function</span> bf = applyBCtoRHS(~,A,b,x,doffree,doffixed)
             bf = b(doffree) - A(doffree,doffixed) * x(doffixed);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Adds nodal forces to the right-hand side vector</span>
+        <span class="comment">% Add nodal forces to the right-hand side vector.</span>
         <span class="keyword">function</span> b = addNodalForces(~,b,fe)
             b = b + fe;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Evaluates the solution increment and updates the solution vector</span>
+        <span class="comment">% Evaluate the solution increment and updates the solution vector.</span>
         <span class="keyword">function</span> [X,dx] = eval(this,A,b,X,dxOld,freedof,iter)
             XOld = X;
             X(freedof) = A\b;
-
             <span class="keyword">if</span> this.applyRelaxation
                 <span class="keyword">if</span> iter &gt; 1
                     this.updateRelaxation(X,XOld,dxOld);
                     X(freedof) = this.relax * X(freedof) + (1.0 - this.relax) * XOld(freedof);
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
-
             dx = X - XOld;
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Checks the convergence of the nonlinear solver</span>
-        <span class="keyword">function</span> convFlg = convergence(this,X,~,dX,~, doffree,iter)
+        <span class="comment">% Check for convergence of the nonlinear scheme.</span>
+        <span class="keyword">function</span> convFlg = convergence(this,X,~,dX,~, doffree,iter,echo)
             <span class="comment">% Evaluate error</span>
             normError = norm(dX(doffree));
             <span class="keyword">if</span> this.normalizeError
                 normError = normError / norm(X(doffree));
-                fprintf(<span class="string">"\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n"</span>,iter,normError);
-            <span class="keyword">else</span>
-                fprintf(<span class="string">"\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n"</span>,iter,normError);
             <span class="keyword">end</span>
 
             <span class="comment">% Check convergence</span>
@@ -204,10 +130,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">else</span>
                 convFlg = false;
             <span class="keyword">end</span>
+
+            <span class="keyword">if</span> echo
+                fprintf(<span class="string">"\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n"</span>,iter,normError);
+            <span class="keyword">end</span>
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Updates the relaxation parameter based on the generalized angle</span>
+        <span class="comment">% Update the relaxation parameter based on the generalized angle</span>
         <span class="comment">% between successive increments.</span>
         <span class="keyword">function</span> updateRelaxation(this,X,XOld,dxOld)
             dx = X - XOld;
@@ -223,46 +153,23 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre>
-<pre class="codeinput">
-<span class="keyword">end</span>
-</pre>
-<p class="footer">
-<br>
-<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
-<br>
-</p>
-</div>
-<!--
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% NonlinearScheme_Picard Class
-% This class implements the Picard nonlinear scheme for solving nonlinear 
-% systems of equations. It is based on a fully implicit time integration 
-% scheme and includes an optional relaxation mechanism to improve 
+% This class inherits from the base class 'NonlinearScheme' to implement
+% the Picard nonlinear scheme for solving nonlinear systems of equations.
+% It is based on a fully implicit time integration scheme and includes an
+% optional relaxation mechanism to improve relaxation mechanism to improve
 % convergence.
 %
 % Reference:
 % Li and Wei (2015). An efficient finite element procedure for analyzing 
-% three‐phase porous media based on the relaxed Picard method. Int J Numer 
-% Methods Eng, 101(11):825-846.
+% three‐phase porous media based on the relaxed Picard method.
+% Int J Numer Methods Eng, 101(11):825-846.
 %
-%% Methods
-% * *assembleLinearSystem*: Assembles the Jacobian matrix and the residual 
-%                           vector for the nonlinear system.
-% * *applyBCtoRHS*: Applies boundary conditions to the right-hand side 
-%                   vector.
-% * *addNodalForces*: Adds nodal forces to the right-hand side vector. 
-% * *eval*: Evaluates the solution increment and updates the solution 
-%           vector.
-% * *convergence*: Checks for convergence of the nonlinear solver.
-% * *updateRelaxation*: Updates the relaxation parameter based on the 
-%                       generalized angle between successive increments.
-%
-%% Author
-% Danilo Cavalcanti
-%
-%% Version History
-% Version 1.00.
+%% Authors
+% * Danilo Cavalcanti
 % 
 %% Class definition
 classdef NonlinearScheme_Picard < NonlinearScheme
@@ -283,7 +190,7 @@ classdef NonlinearScheme_Picard < NonlinearScheme
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Assembles the linear system
+        % Assemble the Jacobian matrix and the residual vector.
         function [A,b] = assembleLinearSystem(~,C,K,~,fe,dfidx,~,xOld,dt)
             % RHS vector
             b = C * xOld / dt + fe;
@@ -293,43 +200,38 @@ classdef NonlinearScheme_Picard < NonlinearScheme
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Applies the boundary conditions to the right-hand side vector
+        % Apply boundary conditions to the right-hand side of the system.
         function bf = applyBCtoRHS(~,A,b,x,doffree,doffixed)
             bf = b(doffree) - A(doffree,doffixed) * x(doffixed);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Adds nodal forces to the right-hand side vector
+        % Add nodal forces to the right-hand side vector.
         function b = addNodalForces(~,b,fe)
             b = b + fe;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Evaluates the solution increment and updates the solution vector
+        % Evaluate the solution increment and updates the solution vector.
         function [X,dx] = eval(this,A,b,X,dxOld,freedof,iter)
             XOld = X;
             X(freedof) = A\b;
-
             if this.applyRelaxation
                 if iter > 1
                     this.updateRelaxation(X,XOld,dxOld);
                     X(freedof) = this.relax * X(freedof) + (1.0 - this.relax) * XOld(freedof);
                 end
             end
-
             dx = X - XOld;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Checks the convergence of the nonlinear solver
-        function convFlg = convergence(this,X,~,dX,~, doffree,iter)
+        % Check for convergence of the nonlinear scheme.
+        function convFlg = convergence(this,X,~,dX,~, doffree,iter,echo)
             % Evaluate error
             normError = norm(dX(doffree));
             if this.normalizeError
                 normError = normError / norm(X(doffree));
-                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
-            else
-                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
             end
 
             % Check convergence
@@ -338,10 +240,14 @@ classdef NonlinearScheme_Picard < NonlinearScheme
             else
                 convFlg = false;
             end
+
+            if echo
+                fprintf("\t\t iter.: %3d , ||dX||/||X|| = %7.3e \n",iter,normError);
+            end
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Updates the relaxation parameter based on the generalized angle 
+        % Update the relaxation parameter based on the generalized angle 
         % between successive increments.
         function updateRelaxation(this,X,XOld,dxOld)
             dx = X - XOld;
@@ -360,6 +266,4 @@ classdef NonlinearScheme_Picard < NonlinearScheme
 end
 
 ##### SOURCE END #####
--->
-</body>
-</html>
+--></body></html>
