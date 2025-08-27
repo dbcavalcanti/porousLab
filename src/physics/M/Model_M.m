@@ -48,11 +48,16 @@ classdef Model_M < Model
         isPlaneStress       = false;
         %% Geostatic 
         addGeostatic        = false;
+        addPorePressure     = false;
         stressfnc           = [];
         FeG                 = [];
+        P                   = [];
+        FeP                 = [];         
         %% Embedded related data
-        addStretchingMode   = false;
-        addRelRotationMode  = false;
+        addTangentialStretchingMode = false;
+        addNormalStretchingMode     = false;
+        addRelRotationMode          = false;
+        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation
     end
     
     %% Constructor method
@@ -111,13 +116,13 @@ classdef Model_M < Model
                                 this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                 this.t, emat, this.intOrder,dof_e, ...
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                                this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode,...
-                                this.condenseEnrDofs);
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
-                elements(el).type.initializeIntPoints();
             end
             this.element = elements;
             
@@ -159,10 +164,51 @@ classdef Model_M < Model
         end
 
         %------------------------------------------------------------------
+        % Set the nodal pore-pressure values
+        function setPorePressureField(this, P)
+            this.P = P;
+            if (isempty(this.FeP) == false)
+                this.computePorePressureForceVct();
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Add forces due to external pore-pressure field
+        function Fe = addPorePressureForces(this, Fe)
+            if ((this.addPorePressure == false) || (isempty(this.P)))
+                return
+            end
+            if (isempty(this.FeP))
+                this.computePorePressureForceVct();
+            end
+            Fe = Fe + this.FeP;
+        end
+
+        %------------------------------------------------------------------
+        % Compute the forces due to the pore-pressure field.
+        function computePorePressureForceVct(this)
+            % Initialize
+            this.FeP = zeros(this.ndof,1);
+            % Compute and assemble element data
+            for el = 1:this.nelem
+                % Pressure "dofs"
+                pdof = this.element(el).type.connect;
+                % Displacement dofs
+                udof = this.element(el).type.gle;
+                % Get contribution from element el
+                fep = this.element(el).type.porePressureForce(this.P(pdof));
+                this.FeP(udof) = this.FeP(udof) + fep;
+            end
+            % Convert to sparse
+            this.FeP = sparse(this.FeP);
+        end
+
+        %------------------------------------------------------------------
         % Add contribution of nodal loads to reference load vector.
         function Fe = addNodalLoad(this,Fe)
             Fe = addNodalLoad@Model(this,Fe);
             Fe = this.addGeostaticForces(Fe);
+            Fe = this.addPorePressureForces(Fe);
         end
 
         % -----------------------------------------------------------------
@@ -293,8 +339,9 @@ classdef Model_M < Model
         % -----------------------------------------------------------------
         % Adds some additional discontinuity data
         function addDiscontinuityData(this,additionalData)
-            this.addRelRotationMode = additionalData.addRelRotationMode;
-            this.addStretchingMode  = additionalData.addStretchingMode;
+            this.addRelRotationMode          = additionalData.addRelRotationMode;
+            this.addTangentialStretchingMode = additionalData.addTangentialStretchingMode;
+            this.addNormalStretchingMode     = additionalData.addNormalStretchingMode;
         end
 
         %------------------------------------------------------------------
@@ -305,8 +352,11 @@ classdef Model_M < Model
             for i = 1:nDiscontinuities
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
-                    this.discontinuitySet(i).segment(j).addStretchingMode(this.addStretchingMode);
+                    this.discontinuitySet(i).segment(j).addStretchingMode(this.addTangentialStretchingMode, this.addNormalStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
+                    if this.addPorePressure
+                        this.discontinuitySet(i).segment(j).DP = 0.0;
+                    end
                 end
             end
             % Call the common initialization
@@ -345,6 +395,17 @@ classdef Model_M < Model
                     end
                 end
                 this.element(el).type.result.setVertices(vertices);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Evaluate a field at in a point inside an element
+        % Assumes that the point is in the element domain
+        function fieldValue = evaluateField(this, field, el, X)
+            fieldValue = evaluateField@Model(this, field, el, X);
+            if strcmp(field,'PressureExt')
+                pdof = this.element(el).type.connect;
+                fieldValue = this.element(el).type.pressureField(X,this.P(pdof));
             end
         end
     end

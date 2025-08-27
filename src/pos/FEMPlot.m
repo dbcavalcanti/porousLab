@@ -165,6 +165,40 @@ classdef FEMPlot < handle
         end
 
         %------------------------------------------------------------------
+        % Plots the field along a discontinuity
+        function plotFieldAlongDiscontinuity(this, S, F, field, axisPlot, ax)
+
+            % Initialize, plot and configure the figure
+            cla(ax);
+            hold(ax, 'on');
+            box(ax, 'on');
+            grid(ax, 'on');
+
+            % Set the limits 
+            fmin = min(F);
+            fmax = max(F);
+            pad = max(0.02*(fmax-fmin),max(0.001*mean(F),0.01));
+            
+            % Plota conforme o eixo escolhido
+            if strcmp(axisPlot, 'y')
+                plot(ax, F, S, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                xlabel(ax, field);
+                ylabel(ax, 'Longitudinal distance (m)');
+                xlim(ax, [fmin-pad, fmax+pad]);
+            elseif strcmp(axisPlot, 'x')
+                plot(ax, S, F, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                ylabel(ax, field);
+                xlabel(ax, 'Longitudinal distance (m)');
+                ylim(ax, [fmin-pad, fmax+pad]);
+            end
+            
+            % Aplica formatação
+            set(ax, 'FontName', this.DEFAULT_FONT_NAME);
+            set(ax, 'FontSize', this.DEFAULT_FONT_SIZE);         
+
+        end
+
+        %------------------------------------------------------------------
         % Combines faces, vertices, and vertex data from all elements in the model.
         function [allFaces, allVertices, allVertexData] = getElementsPatches(this)
             
