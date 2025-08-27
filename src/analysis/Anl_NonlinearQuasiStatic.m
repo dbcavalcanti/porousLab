@@ -106,7 +106,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
                 end
 
                 % Tangent stiffness matrix
-                [K,~,~,Fref] = mdl.globalMatrices(U);
+                [~,~,~,Fref,K] = mdl.globalMatrices(U);
 
                 % Tangent increment of displacements for predicted solution
                 d_Up0 = this.solveSystem(mdl,K,Fref,U);
@@ -169,7 +169,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
                 while (conv == 0 && iter <= this.max_iter)
                     % Vector of external and internal forces
                     Fext = lbd * Fref;
-                    [K,~,Fint] = mdl.globalMatrices(U);
+                    [~,~,Fint,~,K] = mdl.globalMatrices(U);
 
                     % Vector of unbalanced forces
                     R = Fext - Fint;

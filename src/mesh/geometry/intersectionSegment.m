@@ -147,14 +147,14 @@ function [flagInt,pint,t12,t34] = intersectionSegment(segment1,segment2)
     % Check for one point of the first segment touching the second segment
     area123 =  area2d(p1, p2, p3);
     area124 =  area2d(p1, p2, p4);
-    if sign123 == 0.0
+    if sign341 == 0.0
         flagInt = true;
         t12 = 0.0;
         t34 = area123 / (area123 - area124);
         pint = p1;
         return
     end
-    if sign124 == 0.0
+    if sign342 == 0.0
         flagInt = true;
         t12 = 1.0;
         t34 = area123 / (area123 - area124);
@@ -174,7 +174,7 @@ end
 % Sign of the oriented area
 function signArea = signArea2d(p1,p2,p3)
     det = area2d(p1,p2,p3);
-    if abs(det) < 1e-8
+    if abs(det) < 1e-9
         signArea = 0.0;
     else
         if det > 0.0
