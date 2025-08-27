@@ -61,7 +61,7 @@ fracture.shearStiffness  = 1.0;
 fracture.normalStiffness = 1.0;
 
 % Add fractures to model
-discontinuityData = struct('addStretchingMode', false, 'addRelRotationMode', true);
+discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS
