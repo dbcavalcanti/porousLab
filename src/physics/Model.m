@@ -918,13 +918,15 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot field along a given discontinuity
+        % Input:
+        %   - id: id of the discontinuity 
         function plotFieldAlongDiscontinuiy(this, field, id, axisPlot, ax)
             if nargin < 5 || isempty(ax)
-                figure;         % Cria nova figura
-                ax = gca;       % Usa o eixo atual
+                figure;         
+                ax = gca;     
             else
-                axes(ax);       % Define o eixo alvo
-                cla(ax);        % Limpa o conteúdo
+                axes(ax);       
+                cla(ax);        
             end
             if nargin < 4
                 axisPlot = 'x';
@@ -941,7 +943,8 @@ classdef Model < handle
 
             % Fill vectors
             for j = 1:nDiscontinuitySeg
-                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field);
+                dof_j = this.discontinuitySet(id).segment(j).dof;
+                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field,this.U(dof_j));
                 DX = Xj - Xi;
                 sj = sqrt(DX(:,1).^2 + DX(:,2).^2);
                 s(2*j-1:2*j,1) = sj;
