@@ -274,6 +274,23 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.glu;
+
+            % Reset the displacements
+            this.ue(1:this.nglu) = 0.0;
+            this.ueOld(1:this.nglu) = 0.0;
+
+            % Reset the strains
+            for i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(4,1);
+                this.intPoint(i).strainOld = zeros(4,1);
+            end
+        end
+
+        %------------------------------------------------------------------
         % Function to compute the pressure field inside a given element
         function p = pressureField(this,X,pe)
         %
