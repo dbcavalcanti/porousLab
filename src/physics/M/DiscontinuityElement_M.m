@@ -229,7 +229,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
 
         %------------------------------------------------------------------
         % Get specified field. Fill the coordinate matrix and the field.
-        function [X, f] = getField(this,field)
+        function [X, f] = getField(this,field,~)
             if strcmp(field,'Sn')
                 [X, f] = this.getCohesiveStresses(2); 
             elseif strcmp(field,'St')
@@ -238,6 +238,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 [X, f] = this.getDisplacementJump(2);
             elseif strcmp(field,'Dt')
                 [X, f] = this.getDisplacementJump(1);
+            else 
+                X = []; f = [];
             end
         end
 

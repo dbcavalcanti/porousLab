@@ -103,7 +103,9 @@ classdef Model_HM < Model_M
                             this.NODE(this.ELEM{el},:), this.ELEM{el},...
                             this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                            this.isPlaneStress,this.addRelRotationMode,this.addStretchingMode);
+                            this.isPlaneStress,this.addRelRotationMode, ...
+                            this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                            this.subDivIntegration, this.symmetricSDAEFEM);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -111,7 +113,7 @@ classdef Model_HM < Model_M
             end
             this.element = elements;
         end
-        
+
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a node
         function setPressureDirichletBCAtNode(this, nodeId, value)

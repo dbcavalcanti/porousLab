@@ -30,10 +30,13 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
 
         %------------------------------------------------------------------
         % Enables the stretching mode. If enables, the number of degrees of
-        % freedom increases by 1
-        function addStretchingMode(this,flag)
-            addStretchingMode@DiscontinuityElement_M(this,flag);
-            if flag == true
+        % freedom increases by 1 or 2
+        function addStretchingMode(this,flagTangential, flagNormal)
+            addStretchingMode@DiscontinuityElement_M(this,flagTangential, flagNormal);
+            if flagTangential == true
+                this.ndof_u = this.ndof_u + 1;
+            end
+            if flagNormal == true
                 this.ndof_u = this.ndof_u + 1;
             end
         end
@@ -191,13 +194,23 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
             if this.ndof_u > 2
                 s = m' * (X' - Xr');
                 c = 3;
-                if this.stretchingMode
+                if this.tangentialStretchingMode
                     Na(1,c) = s;
                     c = c + 1;
                 end
                 if this.relRotationMode
                     Na(2,c) = s;
                 end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get specified field. Fill the coordinate matrix and the field.
+        function [X, f] = getField(this,field,dof_values)
+            [X, f] = getField@DiscontinuityElement_M(this,field);
+            if strcmp(field,'Pressure')
+                X = this.node;
+                f = dof_values(this.ndof_u + this.ndof_jump+1:end);
             end
         end
     end
