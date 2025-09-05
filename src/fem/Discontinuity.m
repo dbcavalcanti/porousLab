@@ -158,7 +158,7 @@ classdef Discontinuity < handle
             for i = 1:size(this.Xlin, 1)-1
                 if (this.elemID(i) > 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
-                    plot(seg(:,1), seg(:,2), '-.r', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
+                    plot(seg(:,1), seg(:,2), '-.k', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
                 end
             end
         end

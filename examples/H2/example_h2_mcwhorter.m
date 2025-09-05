@@ -18,11 +18,7 @@ mdl = Model_H2();
 %% MESH
 
 % Create mesh
-Lx = 2.6;  % Horizontal dimension (m)
-Ly = 0.5;  % Vertical dimension (m)
-Nx = 100;  % Number of elements in the x-direction
-Ny = 1;    % Number of elements in the y-direction
-[node, elem] = regularMesh(Lx, Ly, Nx, Ny);
+[node, elem] = regularMesh(2.6, 0.5, 100, 1);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -93,5 +89,5 @@ anl.run(mdl);
 mdl.plotField('CapillaryPressure');
 
 % Plot graphs
-Xi = [0.0, 0.0]; Xf = [Lx, 0.0];
+Xi = [0.0, 0.0]; Xf = [2.6, 0.0];
 mdl.plotFieldAlongSegment('LiquidSaturation', Xi, Xf, 500, 'x');
