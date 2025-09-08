@@ -3,7 +3,9 @@
 % Fluid-flow through the foundation of a gravity dam.
 %
 % References:
-% * Segura and Carol (2004). On zero-thickness interface elements for diffusion problems. Int J Numer Anal Methods Geomech, 28(9):947-962.
+% * Segura and Carol (2004).
+% On zero-thickness interface elements for diffusion problems.
+% Int J Numer Anal Methods Geomech, 28(9):947-962.
 %
 % Physics:
 % * Single-phase hydraulic (H)
@@ -23,8 +25,8 @@ mdl.intOrder = 3;
 % Create mesh
 Lx = 24.0;  % Horizontal dimension (m)
 Ly = 6.0;   % Vertical dimension (m)
-Nx = 90;  % Number of elements in the x-direction
-Ny = 35;  % Number of elements in the y-direction
+Nx = 48;  % Number of elements in the x-direction
+Ny = 12;  % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
@@ -34,7 +36,6 @@ mdl.setMesh(node, elem);
 
 % Create fluids
 water = Fluid('water');
-water.K = 2.2e+9;  % Compressibility/Bulk modulus (1/Pa)
 
 % Create porous media
 rock = PorousMedia('rock');
@@ -47,20 +48,14 @@ mdl.setMaterial(rock, water);
 %% BOUNDARY CONDITIONS
 
 % Set Dirichlet boundary conditions
-for i = 1:size(mdl.NODE,1)
-    if ((mdl.NODE(i,1) < 8.0) && (abs(mdl.NODE(i,2)-Ly) < 1.0e-9))
-        mdl.setPressureDirichletBCAtNode(i, 120.0e3);
-    end
-    if ((mdl.NODE(i,1) > 12.0) && (abs(mdl.NODE(i,2)-Ly) < 1.0e-9))
-        mdl.setPressureDirichletBCAtNode(i, 60.0e3);
-    end
-end
+mdl.setPressureDirichletBCAtBorder('top', 120.0e3, [0.0, 8.0]);
+mdl.setPressureDirichletBCAtBorder('top', 60.0e3,  [12.0, 24.0]);
 
 %% DISCONTINUITIES
 
 % Generate fractures
-% FractureDataDamFoundation = generateRandomFractures(Lx, Ly, 20, 2*Lx/Nx, 'Seed', 123);
-FractureDataDamFoundation = generateParallelFractures(Lx, Ly, -pi/4.0, 1.0);
+FractureDataDamFoundation = generateRandomFractures(Lx, Ly, 20, 2*Lx/Nx, 'Seed', 12345);
+% FractureDataDamFoundation = generateParallelFractures(Lx, Ly, -pi/4.0, 1.0);
 % FractureDataDamFoundation2 = generateParallelFractures(Lx, Ly,  pi/3.0, 3.0);
 % FractureDataDamFoundation = [FractureDataDamFoundation1; FractureDataDamFoundation2];
 
@@ -70,7 +65,7 @@ nd = length(FractureDataDamFoundation);
 % Create discontinuities
 fractures(1,nd) = Discontinuity();
 for i = 1:nd
-    fractures(i) = Discontinuity(FractureDataDamFoundation{i}, false);
+    fractures(i) = Discontinuity(FractureDataDamFoundation{i}, true);
 end
 
 % Set fracture material properties
@@ -86,18 +81,8 @@ mdl.addPreExistingDiscontinuities(fractures);
 
 %% PROCESS
 
-% Analysis parameters
-ti        = 1.0;    % Initial time
-dt        = 1.0;    % Time step
-tf        = 500.0;  % Final time
-dtmax     = 50.0;   % Maximum time step
-dtmin     = 0.001;  % Minimum time step
-adaptStep = true;   % Adaptive step size
-
 % Run analysis
-% anl = Anl_Linear();
-anl = Anl_Transient("Newton");
-anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
+anl = Anl_Linear();
 anl.run(mdl);
 
 %% POST-PROCESS
