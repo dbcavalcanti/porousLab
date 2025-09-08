@@ -256,8 +256,15 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a border
-        function setDirichletBCAtBorder(this, border, dofId, value)
-            nodeIds = this.getNodesAtBorder(border);
+        function setDirichletBCAtBorder(this, border, dofId, value, range)
+            if nargin < 5
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
+            nodeIds = this.getNodesAtBorder(border,range);
             for i = 1:length(nodeIds)
                 this.setDirichletBCAtNode(nodeIds(i),dofId,value);
             end
@@ -310,16 +317,16 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Identify the nodes contained in any of the borders
-        function nodeIds = getNodesAtBorder(this,border)
+        function nodeIds = getNodesAtBorder(this,border,range)
             % Get the nodes at the given border
             if strcmp(border,'left')
-                nodeIds = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12) & ((this.NODE(:,2))>range(1)-1.0e-12) & ((this.NODE(:,2))<range(2)+1.0e-12));
             elseif strcmp(border,'right')
-                nodeIds = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12) & ((this.NODE(:,2))>range(1)-1.0e-12) & ((this.NODE(:,2))<range(2)+1.0e-12));
             elseif strcmp(border,'top')
-                nodeIds = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12) & ((this.NODE(:,1))>range(1)-1.0e-12) & ((this.NODE(:,1))<range(2)+1.0e-12));
             elseif strcmp(border,'bottom')
-                nodeIds = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12) & ((this.NODE(:,1))>range(1)-1.0e-12) & ((this.NODE(:,1))<range(2)+1.0e-12));
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');

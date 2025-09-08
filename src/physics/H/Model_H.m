@@ -140,8 +140,8 @@ classdef Model_H < Model
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a border
-        function setPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 1, value);
+        function setPressureDirichletBCAtBorder(this, border, value, range)
+            this.setDirichletBCAtBorder(border, 1, value, range);
         end
 
         % -----------------------------------------------------------------
