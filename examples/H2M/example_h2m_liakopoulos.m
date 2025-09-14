@@ -36,7 +36,7 @@ mdl.setMesh(node, elem);
 
 % Create fluids
 water = Fluid('water');
-water.K = 1.0e+25;      % Compressibility/Bulk modulus (1/Pa)
+water.K = 2.2e9;      % Bulk modulus (Pa)
 
 gas = IdealGas('gas');
 gas.mu = 1.8e-5;        % Viscosity (Pa*s)
@@ -89,8 +89,8 @@ end
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.01;     % Initial time
-dt        = 0.01;     % Time step
+ti        = 0.001;     % Initial time
+dt        = 0.001;     % Time step
 tf        = 300.0;    % Final time
 dtmax     = 60.0;     % Maximum time step
 dtmin     = 0.0001;   % Minimum time step

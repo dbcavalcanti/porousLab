@@ -47,6 +47,11 @@ classdef IdealGas < Fluid
             rho = pg * this.M / (this.R * this.T);
         end
         %------------------------------------------------------------------
+        % Get the fluid bulk modulus based on the ideal Gas law
+        function K = getBulkModulus(this,~)
+            K = this.M / (this.R * this.T);
+        end
+        %------------------------------------------------------------------
         % Set the value of the universal gas constant
         function setUniversalGasConstant(this,R)
             this.R = R;

@@ -45,5 +45,10 @@ classdef Fluid < handle
         function rho = getDensity(this,~)
             rho = this.rho;
         end
+        %------------------------------------------------------------------
+        % Get the fluid bulk modulus based on the ideal Gas law
+        function K = getBulkModulus(this,~)
+            K = this.K;
+        end
     end
 end

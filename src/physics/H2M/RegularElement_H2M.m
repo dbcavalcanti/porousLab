@@ -124,8 +124,8 @@ classdef RegularElement_H2M < RegularElement_M
             phi = constModel.porousMedia.phi;
 
             % Get the fluids bulk modulus
-            Klb  = constModel.liquidFluid.K;
-            Kgb  = constModel.gasFluid.K;
+            Klb  = constModel.liquidFluid.getBulkModulus();
+            Kgb  = 1e25; %constModel.gasFluid.getBulkModulus();
             
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
