@@ -134,7 +134,6 @@ classdef RegularElement_H2M < RegularElement_M
             pc = pg - pl;
 
             % Vector with the old nodal dofs
-            uOld  = this.getOldNodalDisplacement();
             plOld = this.getOldNodalLiquidPressure(); 
             pgOld = this.getOldNodalGasPressure();
             pcOld = pgOld - plOld;
@@ -207,6 +206,7 @@ classdef RegularElement_H2M < RegularElement_M
             Q = zeros(this.nglu, this.nglp);
             fgravu = zeros(this.nglu, 1);
             fgravp = zeros(this.nglp, 1);
+            fv = zeros(this.nglp, 1);
             for i = 1:this.nIntPoints
 
                 % Shape function matrix
@@ -251,6 +251,12 @@ classdef RegularElement_H2M < RegularElement_M
 
                 % Compute the hydromechanical coupling matrix
                 Q = Q + Bu' * m * Np * c;
+                
+                % Volumetric strain rate
+                devdt = m' * (this.intPoint(i).strain - this.intPoint(i).strainOld) / this.DTime;
+
+                % Volumetric strain forces
+                fv = fv + Np' * devdt * c;
 
                 % Compute the element volume
                 vol = vol + c;
@@ -277,22 +283,7 @@ classdef RegularElement_H2M < RegularElement_M
             Hgl = (H * pg) * dkgrdPl' /mug;
             Hgg = Hgg + (H * pg) * dkgrdPg' /mug;
 
-            % Compute the gravity forces
-            feu = zeros(this.nglu,1);
-            fel = zeros(this.nglp,1);
-            feg = zeros(this.nglp,1);
-            if (this.gravityOn)
-                feu = fgravu;
-                fel = (klr / mul) * mean(rhol) * fgravp;
-                feg = (kgr / mug) * mean(rhog) * fgravp;
-                Hll = Hll - (1.0/mul) * fgravp * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol)';
-                Hlg = Hlg - (1.0/mul) * fgravp * (mean(rhol) * dklrdPg)';
-                Hgl = Hgl - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPl)';
-                Hgg = Hgg - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog)';
-            end
-
             % Volumetric strain forces
-            fv  = Q' * (u - uOld) / this.DTime;
             fil = fil + mean(Sl) * fv;
             fig = fig + mean(Sg) * fv;
 
@@ -317,19 +308,28 @@ classdef RegularElement_H2M < RegularElement_M
             dfildpg = Hlg + diag(Clg);
             dfigdpl = Hgl + diag(Clg);
             dfigdpg = Hgg + diag(Cgg);
+
+            % Compute the gravity forces
+            if (this.gravityOn)
+                fiu = fiu - fgravu;
+                fil = fil - (klr / mul) * mean(rhol) * fgravp;
+                fig = fig - (kgr / mug) * mean(rhog) * fgravp;
+                dfildpl = dfildpl - (1.0/mul) * fgravp * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol)';
+                dfildpg = dfildpg - (1.0/mul) * fgravp * (mean(rhol) * dklrdPg)';
+                dfigdpl = dfigdpl - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPl)';
+                dfigdpg = dfigdpg - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog)';
+            end
             
             % Assemble the element matrices
-            dfidu = [ dfiudu, dfiudpl ,  dfiudpg;
+            dfidu = [ dfiudu, dfiudpl , dfiudpg;
                       dfildu, dfildpl , dfildpg;
                       dfigdu, dfigdpl , dfigdpg ];
 
             % Assemble element internal force vector
             fi = [fiu; fil; fig];
 
-            % Assemble element external force vector
-            fe = [feu; fel; feg];
-
             % Initialize matrices that are not being used
+            fe = zeros(this.ngle, 1);
             Ce = zeros(this.ngle, this.ngle);
             Ke = zeros(this.ngle, this.ngle);
             
