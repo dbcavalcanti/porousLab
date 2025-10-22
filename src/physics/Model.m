@@ -225,6 +225,17 @@ classdef Model < handle
                 countFree = countFree + 1;
             end
         end
+
+        %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
+        function resetDirichletBC(this, dofId)
+            for i = 1:this.nnodes
+                for j = 1:length(dofId)
+                    this.DIRICHLET_TAG(i,dofId(j)) = 0;
+                    this.DIRICHLET_VAL(i,dofId(j)) = NaN;
+                end
+            end
+        end
         
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a node
@@ -244,6 +255,14 @@ classdef Model < handle
                         this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
                     end
                 end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
+        function setDirichletBCAtDomain(this, dofId, value)
+            for i = 1:this.nnodes
+                this.setDirichletBCAtNode(i,dofId,value);
             end
         end
 
@@ -325,6 +344,32 @@ classdef Model < handle
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
                 nodeIds = [];
             end
+        end
+
+        %------------------------------------------------------------------
+        % Update a prescribed Dirichlet boundary condition value at a node
+        function updateValueDirichletBCAtNode(this, nodeId, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error updating prescribed Dirichlet BC at a node');
+                disp('length(dofId) ~= length(value)');
+                error('Error in updateDirichletBCAtNode');
+            end
+            for i = 1:length(dofId)
+                if ( this.DIRICHLET_TAG(nodeId,dofId(i)) == 1)
+                    this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                else
+                    disp('Error updating prescribed Dirichlet BC at a node');
+                    disp('This node did not have a prescribed value.')
+                    error('Error in updateDirichletBCAtNode');
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Update the DOFs vector to respect the new BC values.
+        function updateDirichletBC(this)
+            this.applyDirichletBCtoDOFVct();
+            this.createNodeDofIdMtrx();
         end
         
         %------------------------------------------------------------------
@@ -408,24 +453,36 @@ classdef Model < handle
             this.U = zeros(this.ndof,1);
 
             % Set the initial values
+            this.applyICtoDOFVct();
+
+            % Set the prescribed values
+            this.applyDirichletBCtoDOFVct();
+
+            % Save initial dofs to the elements
+            for el = 1 : this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Apply the initial conditions to the DOFs vector
+        function applyICtoDOFVct(this)
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
                     this.U(this.ID(i,j)) = this.INIT(i,j);
                 end
             end
+        end
 
-            % Set the prescribed values
+        %------------------------------------------------------------------
+        % Apply the Dirichlet BC to the DOFs vector
+        function applyDirichletBCtoDOFVct(this)
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
                     if (this.DIRICHLET_TAG(i,j) == 1.0)
                         this.U(this.ID(i,j)) = this.DIRICHLET_VAL(i,j);
                     end
                 end
-            end
-
-            % Save initial dofs to the elements
-            for el = 1 : this.nelem
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
             end
         end
 
@@ -947,7 +1004,7 @@ classdef Model < handle
                 [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field,this.U(dof_j));
                 DX = Xj - Xi;
                 sj = sqrt(DX(:,1).^2 + DX(:,2).^2);
-                s(2*j-1:2*j,1) = sj;
+                s(2*j-1:2*j,1) = sj; %Xj(:,2);
                 f(2*j-1:2*j,1) = fj;
             end
             
