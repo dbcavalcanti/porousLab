@@ -57,7 +57,7 @@ classdef Anl_Transient < Anl
             mdl.preComputations();
 
             % Initialize analysis parameters
-            t    = this.ti;
+            t    = this.ti + this.dt;
             t0   = this.ti;
             step = 1;
 
@@ -137,13 +137,14 @@ classdef Anl_Transient < Anl
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
                     fstep = (this.desiredIter/iter)^(0.25);
-                    this.dt = min(fstep * this.dt, this.dtMax);
+                    this.dt = max(min(fstep * this.dt, this.dtMax),this.dtMin);
                 end
 
                 % Update time
                 t0 = t;
                 if (t + this.dt) > this.tf
                     this.dt = this.tf - t;
+                    if (abs(t - this.tf)< 1.0e-15) && (abs(this.dt) < 1.0e-12), break, end
                 end
                 t = t + this.dt;
                 step = step + 1;

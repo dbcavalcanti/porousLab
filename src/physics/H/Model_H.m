@@ -141,6 +141,7 @@ classdef Model_H < Model
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a border
         function setPressureDirichletBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
             this.setDirichletBCAtBorder(border, 1, value, range);
         end
 

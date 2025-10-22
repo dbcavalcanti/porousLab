@@ -257,7 +257,7 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a border
         function setDirichletBCAtBorder(this, border, dofId, value, range)
-            if nargin < 5
+            if ((nargin < 5) || isempty(range))
                 if strcmp(border,'left') || strcmp(border,'right')
                     range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
                 elseif strcmp(border,'top') || strcmp(border,'bottom')
