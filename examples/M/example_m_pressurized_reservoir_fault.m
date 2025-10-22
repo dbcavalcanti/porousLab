@@ -34,12 +34,13 @@ mdl.setMesh(node, elem);
 %% MATERIALS
 
 % Earth pressure coefficient
-K0 = 0.60;
+% K0 = 0.60;
 
 % Create porous media
 rock = PorousMedia('rock');   
-rock.Young = 14.95e+9;        % Young modulus (Pa)
-rock.nu    = K0/(1+K0);         % Poisson ratio
+rock.Young = 11868.0e+6;        % Young modulus (Pa)
+% rock.nu    = K0/(1+K0);         % Poisson ratio
+rock.nu    = 0.29;         % Poisson ratio
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -50,7 +51,7 @@ mdl.setMaterial(rock);
 Xdc = 0.5 * [Lx, Ly];
 
 % Fault dip
-dip = 70.0;
+dip = 60.0;
 dxdy = 0.0;
 if (dip-90)<1.0e-8
     dxdy = 1.0/tand(dip);
@@ -96,32 +97,9 @@ tol    = 1.0e-5;
 offset = 0.0;
 DP     = 20.0e6;
 
-region = [0.0 , 350.0;
-          Xdc(1)+(350.0 - Xdc(2))*dxdy , 350.0;
-          Xdc(1)+(650.0 - Xdc(2))*dxdy , 650.0;
-          0.0 , 650.0;];
-
-% Update the pressure at the left side
-reservoir = inpoly(mdl.NODE,region);
+% Update pressure at the reservoir
+reservoir = isInsideRectangle(mdl.NODE, [0.0-tol,350.0+offset-tol], [Lx+tol,650.0+offset+tol]);
 P(reservoir == 1) = P0 + DP;
-
-% Update pressure at the right side
-% reservoir = isInsideRectangle(mdl.NODE, [0.5*Lx,350.0+offset-tol], [Lx+tol,650.0+offset+tol]);
-% P(reservoir == 1) = P0 + DP;
-
-% Set pressure jump at the discontinuities
-nDiscontinuities = mdl.getNumberOfDiscontinuities();
-for i = 1:nDiscontinuities
-    nDiscontinuitySeg = mdl.discontinuitySet(i).getNumberOfDiscontinuitySegments();
-    for j = 1:nDiscontinuitySeg
-        Xr = mdl.discontinuitySet(i).segment(j).referencePoint();
-        if (Xr(2) > 350.0) && (Xr(2) < 650.0)
-            mdl.discontinuitySet(i).segment(j).DP = DP;
-            econnect = mdl.ELEM{mdl.discontinuitySet(i).elemID(j)};
-            P(econnect) = P0 + DP;
-        end
-    end
-end
 
 % Update values
 mdl.setPorePressureField(P);
@@ -135,17 +113,17 @@ mdl.plotField('PressureExt');
 hold on;
 fault.plotIntersectedGeometry();
 
-% Plot stresses
-mdl.plotField('Sx');
-hold on;
-fault.plotIntersectedGeometry();
-mdl.plotField('Sy');
-hold on;
-fault.plotIntersectedGeometry();
-mdl.plotField('Sxy');
-hold on;
-fault.plotIntersectedGeometry();
-
+% % Plot stresses
+% mdl.plotField('Sx');
+% hold on;
+% fault.plotIntersectedGeometry();
+% mdl.plotField('Sy');
+% hold on;
+% fault.plotIntersectedGeometry();
+% mdl.plotField('Sxy');
+% hold on;
+% fault.plotIntersectedGeometry();
+mdl.plotFieldAlongSegment('Sy',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
 mdl.plotFieldAlongSegment('Sx',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
 mdl.plotFieldAlongDiscontinuiy('St',1,'y');
 mdl.plotFieldAlongDiscontinuiy('Sn',1,'y');
