@@ -31,6 +31,7 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        conductive          = true;
         leakoff             = 1.0;
     end
 

@@ -43,6 +43,7 @@ classdef MaterialDiscontinuity_M < handle
     end
     %% Public methods
     methods
+        
         % -----------------------------------------------------------------
         % Evaluate the mechanical constitutive law
         function [stress,D] = mechanicalLaw(this,ip)

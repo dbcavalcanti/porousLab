@@ -56,6 +56,12 @@ classdef MaterialDiscontinuity_HM < handle
         end
 
         % -----------------------------------------------------------------
+        % Evaluate the mechanical constitutive law
+        function initializeAperture(this,ip)
+           this.mechanical.initializeAperture(this.parameters,ip);
+        end
+
+        % -----------------------------------------------------------------
         % Get the number of state variables associated with the mechanical
         % constitutive law
         function nstVar = getNumberStateVar(this)
@@ -68,11 +74,23 @@ classdef MaterialDiscontinuity_HM < handle
             flag = this.mechanical.isElastoPlastic();
         end
 
+        % -----------------------------------------------------------------
+        % Check if the material is elasto-plastic or not
+        function w = getAperture(this,ip)
+            w = this.initialAperture + ip.strainOld(2);
+        end
+
+        % -----------------------------------------------------------------
+        % Check if the material is elasto-plastic or not
+        function updateAperture(~,ip)
+            ip.statevar(1) = ip.statevarOld(1) + (ip.strain(2) - ip.strainOld(2));
+        end
+
         %------------------------------------------------------------------
         % Computes the longitudinal permeability coefficient based on the
         % cubic's law
-        function kl = longitudinalPermeability(this)
-            w = this.initialAperture();
+        function kl = longitudinalPermeability(this,ip)
+            w = this.getAperture(ip);
             kl = w*w*w/12.0/this.fluid.mu;
         end
 

@@ -99,7 +99,7 @@ classdef Model_HM < Model_M
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress);
                 else
-                    elements(el) = EnrichedElement_HM(...
+                    elements(el) = EnrichedElementConductive_HM(...
                             this.NODE(this.ELEM{el},:), this.ELEM{el},...
                             this.t, emat, this.intOrder,udofs,pdofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
@@ -116,14 +116,26 @@ classdef Model_HM < Model_M
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a node
+        function resetPressureDirichletBC(this)
+            this.resetDirichletBC(3);
+        end
+
+        % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a node
+        function setPressureDirichletBCAtDomain(this, value)
+            this.setDirichletBCAtDomain(3, value);
+        end
+
+        % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a node
         function setPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 1, value);
+            this.setDirichletBCAtNode(nodeId, 3, value);
         end
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a point
         function setPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 1, value);
+            this.setDirichletBCAtPoint(X, 3, value);
         end
 
         % -----------------------------------------------------------------
@@ -171,7 +183,7 @@ classdef Model_HM < Model_M
         % -----------------------------------------------------------------
         % Initializes a single discontinuity segment
         function seg = initializeDiscontinuitySegment(~,nodeD,matD)
-            seg = DiscontinuityElement_HM(nodeD,matD);
+            seg = DiscontinuityElementConductive_HM(nodeD,matD);
         end
 
     end

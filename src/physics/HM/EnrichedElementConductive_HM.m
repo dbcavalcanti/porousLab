@@ -28,7 +28,7 @@
 % Version 1.00.
 %
 %% Class definition
-classdef EnrichedElement_HM < RegularElement_HM   
+classdef EnrichedElementConductive_HM < RegularElement_HM   
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
@@ -42,7 +42,7 @@ classdef EnrichedElement_HM < RegularElement_HM
     %% Constructor method
     methods
         %------------------------------------------------------------------
-        function this = EnrichedElement_HM(node, elem, t, ...
+        function this = EnrichedElementConductive_HM(node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress, ...
                 addRelRotationMode,addTangentialStretchingMode, ...
@@ -75,6 +75,23 @@ classdef EnrichedElement_HM < RegularElement_HM
         end
 
         %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.glu;
+
+            resetDisplacements@RegularElement_HM(this);
+
+            % Loop through the discontinuities
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities == 0, return, end
+            for i = 1:nDiscontinuities
+                this.discontinuity(i).resetDisplacements();
+                udofs = [udofs,this.discontinuity(i).dof];
+            end
+        end
+
+        %------------------------------------------------------------------
         % Computes the element data for the current element based on wether
         % the element contains a discontinuity or not.
         % 
@@ -92,77 +109,53 @@ classdef EnrichedElement_HM < RegularElement_HM
                [Ke, Ce, fi, fe, dfidu] = elementData@RegularElement_HM(this);
            else
                % Compute contribution of the continuum
-               [Kuu, Kua, Kau, Kaa, Quc, Quj, Qac, Qaj, Qca, Qja, Hcc, Hcj, Hjc, Hjj, Scc, Scj, Sjc, Sjj, fiu, fia, fic, fij, feu, fea, fec, fej] = this.fillElementSubData();
+               [Kuu, Kua, Kau, Kaa, Quc, Qac, Qca, Hcc, Scc, fiu, fia, fic, feu, fea, fec] = this.fillElementSubData();
                
                % Compute contribution of the discontinuity
-               [fid, Kdd, Qad, Hdd, Sdd, Lcc, Lcj, Lcd, Ljc, Ljj, Ljd, Ldc, Ldj, Ldd, Tdc, Tdj] = getDiscontinuitiesData(this);
+               [fid, Kdd, Qad, Hdd, Sdd, Tdc] = getDiscontinuitiesData(this);
 
                % Add contribution of the discontinuity stiffness
                fia = fia + fid;
                Kaa = Kaa + Kdd;
 
-               % Add contribution of the coupling matrices
-               Hcc = Hcc + Lcc;
-               Hcj = Hcj + Lcj;
-               Hjc = Hjc + Ljc;
-               Hjj = Hjj + Ljj;
-               Hdd = Hdd + Ldd;
+               % Condense the internal discontinuity pressure
+               Hcc = Hcc + Tdc' * Hdd * Tdc;
+               Scc = Scc + Tdc' * Sdd * Tdc;
+               Qac = Qac + Qad * Tdc;
+               Qca = Qca + Tdc' * Qad';
 
                % Number of displacement and pressure jump dofs
                ndofa = size(Kaa,1);
-               ndofj = size(Hjj,1);
-               ndofd = size(Hdd,1);
 
                % Create auxiliary zero sub-matrices
                Ouu = zeros(this.nglu, this.nglu);
                Ouc = zeros(this.nglu, this.nglp);
                Oua = zeros(this.nglu, ndofa);
-               Ouj = zeros(this.nglu, ndofj);
-               Oud = zeros(this.nglu, ndofd);
 
                Ocu = zeros(this.nglp, this.nglu);
                Occ = zeros(this.nglp, this.nglp);
                Oca = zeros(this.nglp, ndofa);
-               Ocj = zeros(this.nglp, ndofj);
-               Ocd = zeros(this.nglp, ndofd);
 
                Oau = zeros(ndofa, this.nglu);
                Oac = zeros(ndofa, this.nglp);
                Oaa = zeros(ndofa, ndofa);
-               Oaj = zeros(ndofa, ndofj);
-               Oad = zeros(ndofa, ndofd);
-
-               Oju = zeros(ndofj, this.nglu);
-               Ojc = zeros(ndofj, this.nglp);
-               Oja = zeros(ndofj, ndofa);
-               Ojj = zeros(ndofj, ndofj);
-               Ojd = zeros(ndofj, ndofd);
-
-               Odd = zeros(ndofd, ndofd);
-               od = zeros(ndofd, 1);
                
                % Assemble the element matrices
-               dfidu = [ Kuu,  Ouc,  Kua,  Ouj,  Oud;
-                         Ocu,  Occ,  Oca,  Ocj,  Ocd;
-                         Kau,  Oac,  Kaa,  Oaj,  Oad;
-                         Oju,  Ojc,  Oja,  Ojj,  Ojd;
-                         Oud', Ocd', Oad', Ojd', Odd];
+               dfidu = [ Kuu,  Ouc,  Kua
+                         Ocu,  Occ,  Oca;
+                         Kau,  Oac,  Kaa];
 
-               Ke = [ Ouu,  -Quc,  Oua,  -Quj,  Oud;
-                      Ocu,   Hcc,  Oca,   Hcj, -Lcd;
-                      Oau,  -Qac,  Oaa,  -Qaj, -Qad;
-                      Oju,   Hjc,  Oja,   Hjj, -Ljd;
-                      Oud', -Ldc,  Oad', -Ldj,  Hdd];
+               Ke = [ Ouu,  -Quc,  Oua;
+                      Ocu,   Hcc,  Oca;
+                      Oau,  -Qac,  Oaa];
                
-               Ce = [ Ouu,  Ouc,  Oua,  Ouj,  Oud;
-                      Quc', Scc,  Qca,  Scj,  Ocd;
-                      Oau,  Oac,  Oaa,  Oaj,  Oad;
-                      Quj', Sjc,  Qja,  Sjj,  Ojd;
-                      Oud', Ocd', Qad', Ojd', Sdd];
+               Ce = [ Ouu,  Ouc,  Oua;
+                      Quc', Scc,  Qca;
+                      Oau,  Oac,  Oaa];
                
-               fi = [fiu; fic; fia; fij; od];
+               fi = [fiu; fic; fia];
                
-               fe = [feu; fec; fea; fej; od];
+               fe = [feu; fec; fea];
            
            end
         end
@@ -170,12 +163,11 @@ classdef EnrichedElement_HM < RegularElement_HM
         %------------------------------------------------------------------
         % Computes and assembles the sub-matrices and sub-vectors for an
         % enriched finite element
-        function [Kuu, Kua, Kau, Kaa, Quc, Quj, Qac, Qaj, Qca, Qja, Hcc, Hcj, Hjc, Hjj, Scc, Scj, Sjc, Sjj, fiu, fia, fic, fij, feu, fea, fec, fej] = fillElementSubData(this)
+        function [Kuu, Kua, Kau, Kaa, Quc, Qac, Qca, Hcc, Scc, fiu, fia, fic, feu, fea, fec] = fillElementSubData(this)
 
             % Number of displacement and pressure jump dofs
             nd = this.getNumberOfDiscontinuities();
             ndofa = nd * this.getNumberOfDisplacementDofPerDiscontinuity();
-            ndofj = nd; % Each discontinuity has a pressure jump dof
 
             % Initialize stiffness sub-matrices
             Kuu = zeros(this.nglu, this.nglu);
@@ -185,41 +177,29 @@ classdef EnrichedElement_HM < RegularElement_HM
 
             % Initialize the hydro-mechanical coupling sub-matrices
             Quc = zeros(this.nglu, this.nglp);
-            Quj = zeros(this.nglu, ndofj);
             Qac = zeros(ndofa, this.nglp);
-            Qaj = zeros(ndofa, ndofj);
             Qca = zeros(this.nglp, ndofa);
-            Qja = zeros(ndofj, ndofa);
             
             % Initialize fluid-flow sub-matrices
             Hcc = zeros(this.nglp, this.nglp);
-            Hcj = zeros(this.nglp, ndofj);
-            Hjc = zeros(ndofj, this.nglp);
-            Hjj = zeros(ndofj, ndofj);
 
             % Initialize compressibity sub-matrices
             Scc = zeros(this.nglp , this.nglp);
-            Scj = zeros(this.nglp , ndofj);
-            Sjc = zeros(ndofj, this.nglp);
-            Sjj = zeros(ndofj, ndofj);
 
             % Initialize external force vector
             feu = zeros(this.nglu, 1);
             fec = zeros(this.nglp, 1);
             fea = zeros(ndofa, 1);
-            fej = zeros(ndofj, 1);
 
             % Initialize internal force vector
             fiu = zeros(this.nglu, 1);
             fic = zeros(this.nglp, 1);
             fia = zeros(ndofa, 1);
-            fij = zeros(ndofj, 1);
             
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
             pc = this.getNodalPressure();
             a  = this.getDisplacementJumpDofs(ndofa);
-            pj = this.getPressureJumpDofs(ndofa);
 
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];
@@ -242,9 +222,6 @@ classdef EnrichedElement_HM < RegularElement_HM
                 % Assemble the B-matrix for the mechanical part
                 Bu = this.BMatrix(Bp);
 
-                % Compute the G matrix
-                Gp = this.Gmatrix(Bp);
-
                 % Get kinematic enriched matrix
                 Gr = this.kinematicEnrichment(Bu);
 
@@ -256,7 +233,7 @@ classdef EnrichedElement_HM < RegularElement_HM
                 end
 
                 % Pressure values at the integration point
-                pIP = Npc * pc + Npj * pj;
+                pIP = Npc * pc;
         
                 % Compute the permeability matrix
                 kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
@@ -291,23 +268,14 @@ classdef EnrichedElement_HM < RegularElement_HM
 
                 % Compute the hydro-mechanical coupling sub-matrices
                 Quc = Quc + Bu'  * m  * biot * Npc * c;
-                Quj = Quj + Bu'  * m  * biot * Npj * c;
                 Qac = Qac + Gv'  * m  * biot * Npc * c;
-                Qaj = Qaj + Gv'  * m  * biot * Npj * c;
                 Qca = Qca + Npc' * m' * biot * Gr  * c;
-                Qja = Qja + Npj' * m' * biot * Gr  * c;
         
                 % Compute permeability sub-matrices
                 Hcc = Hcc + Bp' * kh * Bp * c;
-                Hcj = Hcj + Bp' * kh * Gp * c;
-                Hjc = Hjc + Gp' * kh * Bp * c;
-                Hjj = Hjj + Gp' * kh * Gp * c;
 
                 % Compute compressibility matrices
                 Scc = Scc + Npc' * comp * Npc * c;
-                Scj = Scj + Npc' * comp * Npj * c;
-                Sjc = Sjc + Npj' * comp * Npc * c;
-                Sjj = Sjj + Npj' * comp * Npj * c;
                 
                 % Compute the gravity forces
                 if (this.gravityOn)
@@ -320,13 +288,12 @@ classdef EnrichedElement_HM < RegularElement_HM
         %------------------------------------------------------------------
         % Computes the stiffness matrix and force vector contributions
         % from discontinuities in the enriched element
-        function [fid, Kdd, Qad, Hdd, Sdd, Lcc, Lcj, Lcd, Ljc, Ljj, Ljd, Ldc, Ldj, Ldd, Tdc, Tdj] = getDiscontinuitiesData(this)
+        function [fid, Kdd, Qad, Hdd, Sdd, Tdc] = getDiscontinuitiesData(this)
 
             % Number of displacement and pressure jump dofs
             nDiscontinuities = this.getNumberOfDiscontinuities();
             ndofa_discontinuity = this.getNumberOfDisplacementDofPerDiscontinuity();
             ndofa = nDiscontinuities * ndofa_discontinuity;
-            ndofj = nDiscontinuities;
             ndofd = nDiscontinuities * 2;
 
             % Initialize the output data
@@ -336,20 +303,8 @@ classdef EnrichedElement_HM < RegularElement_HM
             Hdd = zeros(ndofd, ndofd);
             Sdd = zeros(ndofd, ndofd);
 
-            % Flow coupling matrices
-            Lcc = zeros(this.nglp  , this.nglp);
-            Lcj = zeros(this.nglp  , ndofj);
-            Lcd = zeros(this.nglp  , ndofd);
-            Ljc = zeros(ndofj , this.nglp);
-            Ljj = zeros(ndofj , ndofj);
-            Ljd = zeros(ndofj , ndofd);
-            Ldc = zeros(ndofd  , this.nglp);
-            Ldj = zeros(ndofd  , ndofj);
-            Ldd = zeros(ndofd  , ndofd);
-
             % Condensation matrices
             Tdc = zeros(ndofd,this.nglp);
-            Tdj = zeros(ndofd,ndofj);
             
             % Get dof vector
             a = this.getDisplacementJumpDofs(ndofa);
@@ -366,7 +321,7 @@ classdef EnrichedElement_HM < RegularElement_HM
                 dofs_d = 2*(i-1)+1 : 2*i;
 
                 % Get the discontinuity data
-                [fidi, Kddi, Qadi, Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi,~,~,~] = this.discontinuity(i).elementData(a(dofs_a),this,i);
+                [fidi, Kddi, Qadi, Hddi, Sddi,~,~,~] = this.discontinuity(i).elementData(a(dofs_a));
 
                 % Assemble the contribution of this discontinuity
                 fid(dofs_a) = fid(dofs_d) + fidi;
@@ -374,15 +329,6 @@ classdef EnrichedElement_HM < RegularElement_HM
                 Qad(dofs_a, dofs_d) = Qad(dofs_a, dofs_d) + Qadi;
                 Hdd(dofs_d, dofs_d) = Hdd(dofs_d, dofs_d) + Hddi;
                 Sdd(dofs_d, dofs_d) = Sdd(dofs_d, dofs_d) + Sddi;
-                Lcc = Lcc + Lcci;
-                Lcj(:,i) = Lcj(:,i) + Lcji;
-                Lcd(:,dofs_d) = Lcd(:,dofs_d) + Lcdi;
-                Ljc(i,:) = Ljc(i,:) + Ljci;
-                Ljj(i,i) = Ljj(i,i) + Ljji;
-                Ljd(i,dofs_d) = Ljd(i,dofs_d) + Ljdi;
-                Ldc(dofs_d,:) = Ldc(dofs_d,:) + Ldci;
-                Ldj(dofs_d,i) = Ldj(dofs_d,i) + Ldji;
-                Ldd(dofs_d,dofs_d) = Ldd(dofs_d,dofs_d) + Lddi;
 
                 % Loop through the nodes of the discontinuity to fill the
                 % condensation matrix
@@ -391,8 +337,6 @@ classdef EnrichedElement_HM < RegularElement_HM
                     Xn = this.shape.coordCartesianToNatural(this.node,X);
                     Np = this.shape.shapeFncMtrx(Xn);
                     Tdc(dofs_d(j),:) = Np;
-                    Nenr_i = this.enrichedShapeFncValues(i, Np, X);
-                    Tdj(dofs_d(j),i) = 0.5 * (Nenr_i(2) + Nenr_i(3));
                 end
                 
             end
@@ -461,14 +405,10 @@ classdef EnrichedElement_HM < RegularElement_HM
             nDiscontinuities = this.getNumberOfDiscontinuities();
             ndofa_d = this.getNumberOfDisplacementDofPerDiscontinuity();
             dof_a = [];
-            dof_j = [];
-            dof_d = [];
             for i = 1:nDiscontinuities
                 dof_a = [dof_a, this.discontinuity(i).dof(1:ndofa_d)];
-                dof_j = [dof_j, this.discontinuity(i).dof(1+ndofa_d)];
-                dof_d = [dof_d, this.discontinuity(i).dof(2+ndofa_d:end)];
             end
-            this.gle = [this.gle, dof_a, dof_j, dof_d];
+            this.gle = [this.gle, dof_a];
             this.ngle = length(this.gle);
         end
 
