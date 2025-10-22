@@ -15,7 +15,7 @@ classdef Discontinuity < handle
 
         % Geometry tools 
         useRepel = false;          % Flag to enable/disable the repel process
-        repelTol = 1.0e-2;         % Node repel tolerance
+        repelTol = 1.0e-1;         % Node repel tolerance
         savePerturbNodes = false;  % Flag to save the perturbed nodes
 
         % Topology
@@ -31,6 +31,10 @@ classdef Discontinuity < handle
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        frictionAngle       = [];
+        dilationAngle       = [];
+        cohesion            = [];
+        tensionCutOff       = [];
         conductive          = true;
         leakoff             = 1.0;
     end
@@ -132,6 +136,10 @@ classdef Discontinuity < handle
                          'normalStiffness',this.normalStiffness, ...
                          'shearStiffness',this.shearStiffness,...
                          'contactPenalization',this.contactPenalization,...
+                         'frictionAngle',this.frictionAngle,...
+                         'dilationAngle', this.dilationAngle,...
+                         'cohesion', this.cohesion,...
+                         'tensionCutOff',this.tensionCutOff,...
                          'leakoff',this.leakoff);
         end
 
