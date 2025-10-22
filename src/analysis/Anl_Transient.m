@@ -56,7 +56,7 @@ classdef Anl_Transient < Anl
             mdl.preComputations();
 
             % Initialize analysis parameters
-            t    = this.ti;
+            t    = this.ti + this.dt;
             t0   = this.ti;
             step = 1;
 
