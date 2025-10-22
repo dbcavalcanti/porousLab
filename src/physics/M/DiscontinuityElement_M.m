@@ -75,6 +75,16 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         end
 
         %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function resetDisplacements(this)
+            % Reset the strains
+            for i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(2,1);
+                this.intPoint(i).strainOld = zeros(2,1);
+            end
+        end
+
+        %------------------------------------------------------------------
         % Displacement jump order
         function n = displacementJumpOrder(this)
             n = 0;
@@ -238,6 +248,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 [X, f] = this.getDisplacementJump(2);
             elseif strcmp(field,'Dt')
                 [X, f] = this.getDisplacementJump(1);
+            elseif strcmp(field,'Aperture')
+                [X, f] = this.getAperture();
             else 
                 X = []; f = [];
             end
@@ -253,6 +265,21 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
                 % Get cohesive stresses
                 f(i) = this.intPoint(i).stress(stressId);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Get cohesive stresses component
+        function [X, f] = getAperture(this)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point 
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Initial aperture
+                w0 = this.intPoint(i).constitutiveMdl.parameters.initialAperture;
+                % Get strain component
+                f(i) = 1000*(w0+this.intPoint(i).strain(2));
             end
         end
 

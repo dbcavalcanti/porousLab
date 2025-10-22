@@ -24,7 +24,7 @@
 classdef MechanicalCohesiveLinearElastic < handle  
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        nstVar = 0;   % Number of state variables
+        nstVar = 1;   % Number of state variables
     end
     %% Constructor method
     methods
@@ -54,6 +54,11 @@ classdef MechanicalCohesiveLinearElastic < handle
         % Flag to return that the material is not elasto-plastic
         function flag = isElastoPlastic()
             flag = false;
+        end
+        %------------------------------------------------------------------
+        function initializeAperture(material, ip)
+            ip.statevar(1) = material.initialAperture;
+            ip.statevarOld(1) = material.initialAperture;
         end
         %------------------------------------------------------------------
         % Compute the elastic constitutive matrix

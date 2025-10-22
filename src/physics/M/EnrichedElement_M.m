@@ -95,6 +95,34 @@ classdef EnrichedElement_M < RegularElement_M
             
         end
 
+        % -----------------------------------------------------------------
+        % Update state variables.
+        function updateStateVar(this)
+            updateStateVar@RegularElement_M(this);
+            % Loop through the discontinuities
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities == 0, return, end
+            for i = 1:nDiscontinuities
+                this.discontinuity(i).updateStateVar();
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.gle;
+
+            resetDisplacements@RegularElement_M(this);
+
+            % Loop through the discontinuities
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities == 0, return, end
+            for i = 1:nDiscontinuities
+                this.discontinuity(i).resetDisplacements();
+            end
+        end
+
         %------------------------------------------------------------------
         % Computes the enriched element data for the finite element.
         % 
