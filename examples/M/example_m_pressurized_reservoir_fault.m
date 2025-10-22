@@ -16,7 +16,6 @@ mdl = Model_M();
 % Set model options
 mdl.condenseEnrDofs   = false;
 mdl.addPorePressure   = true;
-mdl.subDivIntegration = false;
 mdl.symmetricSDAEFEM  = false;
 
 %% MESH
@@ -69,7 +68,7 @@ fault.normalStiffness = 1.0e15;       % Pa/m
 
 % Add fractures to model
 discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
-mdl.addPreExistingDiscontinuities(fault, discontinuityData);
+mdl.addPreExistingDiscontinuities(fault);
 
 %% BOUNDARY CONDITIONS
 
@@ -92,19 +91,24 @@ mdl.setPorePressureField(P);
 anl = Anl_Linear();
 anl.run(mdl);
 
+mdl.resetDisplacements();
+
 % Parameters
 tol    = 1.0e-5;
-offset = 0.0;
-DP     = 20.0e6;
 
 % Update pressure at the reservoir
-reservoir = isInsideRectangle(mdl.NODE, [0.0-tol,350.0+offset-tol], [Lx+tol,650.0+offset+tol]);
-P(reservoir == 1) = P0 + DP;
+reservoir = isInsideRectangle(mdl.NODE, [0.0-tol,350.0-tol], [Lx+tol,650.0+tol]);
+P(reservoir == 1) = P0 + 20.0e6;
 
 % Update values
 mdl.setPorePressureField(P);
 
+% Analysis parameters
+clear anl
+
 % Run analysis
+anl = Anl_Transient("Newton");
+anl.setUpTransientSolver(0.0, 1.0, 1.0);
 anl.run(mdl);
 
 %% POST-PROCESS
@@ -127,5 +131,6 @@ mdl.plotFieldAlongSegment('Sy',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
 mdl.plotFieldAlongSegment('Sx',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
 mdl.plotFieldAlongDiscontinuiy('St',1,'y');
 mdl.plotFieldAlongDiscontinuiy('Sn',1,'y');
-
+mdl.plotField('Uy');
+mdl.plotField('Ux');
 
