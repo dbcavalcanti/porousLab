@@ -14,9 +14,7 @@
 mdl = Model_M();
 
 % Set model options
-mdl.condenseEnrDofs   = false;
 mdl.addPorePressure   = true;
-mdl.symmetricSDAEFEM  = false;
 
 %% MESH
 
@@ -44,7 +42,26 @@ rock.nu    = 0.29;         % Poisson ratio
 % Set materials to model
 mdl.setMaterial(rock);
 
+%% BOUNDARY CONDITIONS
+
+% Displacements
+mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
+mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
+
+% Pressure load
+mdl.addLoadAtBorder('top', 2, -70.0e6);
+
+% Set external pore-pressure
+P0 = 35.0e6;
+P = P0 * ones(mdl.nnodes,1);
+mdl.setPorePressureField(P);
+
 %% DISCONTINUITIES
+
+% Set formulation options
+mdl.symmetricSDAEFEM = false;
+mdl.condenseEnrDofs  = false;
 
 % Fault center
 Xdc = 0.5 * [Lx, Ly];
@@ -69,21 +86,6 @@ fault.normalStiffness = 1.0e15;       % Pa/m
 % Add fractures to model
 discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
 mdl.addPreExistingDiscontinuities(fault);
-
-%% BOUNDARY CONDITIONS
-
-% Displacements
-mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
-mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
-mdl.setDisplacementDirichletBCAtBorder('bottom', [NaN, 0.0]);
-
-% Pressure load
-mdl.addLoadAtBorder('top', 2, -70.0e6);
-
-% Set external pore-pressure
-P0 = 35.0e6;
-P = P0 * ones(mdl.nnodes,1);
-mdl.setPorePressureField(P);
 
 %% PROCESS
 
@@ -117,20 +119,56 @@ mdl.plotField('PressureExt');
 hold on;
 fault.plotIntersectedGeometry();
 
-% % Plot stresses
-% mdl.plotField('Sx');
-% hold on;
-% fault.plotIntersectedGeometry();
-% mdl.plotField('Sy');
-% hold on;
-% fault.plotIntersectedGeometry();
-% mdl.plotField('Sxy');
-% hold on;
-% fault.plotIntersectedGeometry();
-mdl.plotFieldAlongSegment('Sy',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
-mdl.plotFieldAlongSegment('Sx',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y');
-mdl.plotFieldAlongDiscontinuiy('St',1,'y');
-mdl.plotFieldAlongDiscontinuiy('Sn',1,'y');
+% Analytical solution of the stresses at the continuum
+npts = 50;
+K0 = rock.nu/(1.0 - rock.nu);
+y_plot = linspace(0.0, Ly, npts);
+sy_anal = zeros(npts,1);
+for i = 1:npts
+    if (y_plot(i) >= 350.0) && (y_plot(i) <= 650.0)
+        sy_anal(i) = -70.0e6 + 35.0e6 + 20.0e6; 
+    else
+        sy_anal(i) = -70.0e6 + 35.0e6;
+    end
+end
+sx_anal = K0 * sy_anal;
+
+% Analytical solution of the stresses along the fault
+sn_anal = zeros(npts,1);
+st_anal = zeros(npts,1);
+s_anal = zeros(npts,1);
+dXd = Xd(2,:) - Xd(1,:);
+ld = norm(dXd);
+md = dXd / ld;
+cs = md(1); sn = md(2);
+Rot = [cs , sn; -sn , cs];
+for i = 1:npts
+    coord_d_i = Xd(1,:) + (i - 1) * (ld / (npts - 1)) * md;
+    s_anal(i) = (i - 1) * (ld / (npts - 1));
+    if (coord_d_i(2) >= 350.0) && (coord_d_i(2) <= 650.0)
+        sv = -70.0e6 + 35.0e6 + 20.0e6; 
+    else
+        sv = -70.0e6 + 35.0e6;
+    end
+    sh = K0 * sv;
+    S = [sh , 0; 0, sv];
+    Smn = Rot * S * Rot';
+    sn_anal(i) = Smn(2,2);
+    st_anal(i) = Smn(1,2);
+end
+
+mdl.plotFieldAlongSegment('Sy',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y'); hold on
+plot(sy_anal,y_plot,'ok','DisplayName','Analytical');
+
+mdl.plotFieldAlongSegment('Sx',[0.5*Lx,0.0],[0.5*Lx,Ly],100,'y'); hold on
+plot(sx_anal,y_plot,'ok','DisplayName','Analytical');
+
+mdl.plotFieldAlongDiscontinuiy('St',1,'y'); hold on
+plot(st_anal,s_anal,'ok','DisplayName','Analytical');
+
+mdl.plotFieldAlongDiscontinuiy('Sn',1,'y'); hold on
+plot(sn_anal,s_anal,'ok','DisplayName','Analytical');
+
 mdl.plotField('Uy');
 mdl.plotField('Ux');
 

@@ -76,8 +76,8 @@ classdef MaterialDiscontinuity_HM < handle
 
         % -----------------------------------------------------------------
         % Check if the material is elasto-plastic or not
-        function w = getAperture(this,ip)
-            w = this.initialAperture + ip.strainOld(2);
+        function w = getAperture(~,ip)
+            w = ip.statevarOld(1);
         end
 
         % -----------------------------------------------------------------

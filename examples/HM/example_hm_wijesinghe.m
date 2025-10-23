@@ -44,19 +44,17 @@ mdl.setDisplacementDirichletBCAtBorder('left',   [0.0, NaN]);
 mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 
 % Loads
-mdl.addLoadAtBorder('top', 2, -50.0e3);
+mdl.addLoadAtBorder('top', 2, -50.0e6);
 
 % Pressure
-mdl.setPressureDirichletBCAtDomain(11.0e3);
+mdl.setPressureDirichletBCAtDomain(11.0e6);
 
 %% DISCONTINUITY
 
 % Polyline that defines the discontinuity
-%                  x     y
-fracture_geom = [ 0.0  , 0.5;
-                  25.0 , 0.5];
-
-fracture = Discontinuity(fracture_geom, true);
+Xd = [ 0.0  , 0.5;
+       25.0 , 0.5];
+fracture = Discontinuity(Xd, true);
 
 % Set fracture material properties
 fracture.cohesiveLaw     = 'elastic';
@@ -66,34 +64,38 @@ fracture.initialAperture = 1.0e-5;
 fracture.fluid           = water;
 
 % Add fractures to model
-discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
-mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
+mdl.addPreExistingDiscontinuities(fracture);
 
 %% PROCESS
 
 % Analysis parameters
-ti = 1.0;    % Initial time
+ti = 0.0;    % Initial time
 dt = 1.0;    % Time step
-tf = 2.0;   % Final time
+tf = 1.0;   % Final time
 
 % Run analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf);
 anl.run(mdl);
 
-mdl.resetDisplacements();
+mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
+mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
+
+% mdl.resetDisplacements();
 mdl.resetPressureDirichletBC();
+mdl.setUpdateAperture(true);
 
 for i = 1:mdl.nnodes
     if (mdl.NODE(i,1)<1.0e-12 && (abs(mdl.NODE(i,2)-0.5))<0.03)
-        mdl.setPressureDirichletBCAtNode(i,11.9e3);
+        mdl.setPressureDirichletBCAtNode(i,11.9e6);
     end
 end
-mdl.setPressureDirichletBCAtBorder('right', 11.0e3);
+mdl.setPressureDirichletBCAtBorder('right', 11.0e6);
 mdl.updateDirichletBC();
 
-anl = Anl_Transient("Newton");
-anl.setUpTransientSolver(0.01, 0.01, 500, 10, 0.0001, true);
+% clear anl
+% anl = Anl_Transient("Newton");
+anl.setUpTransientSolver(0.0, 0.01, 500.0, 1, 0.0001, true);
 
 anl.run(mdl);
 
@@ -106,5 +108,6 @@ mdl.plotField('Pressure');
 Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
 % mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'x');
 mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
+mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
 mdl.plotFieldAlongDiscontinuiy('Sn',1,'x');
 mdl.plotFieldAlongDiscontinuiy('Dn',1,'x');

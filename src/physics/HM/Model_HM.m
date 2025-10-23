@@ -44,6 +44,11 @@
 %
 %% Class definition
 classdef Model_HM < Model_M     
+    %% Public attributes
+    properties (SetAccess = public, GetAccess = public)
+        %% Embedded related data
+        updateAperture = false;
+    end
     %% Constructor method
     methods
         function this = Model_HM()
@@ -112,6 +117,18 @@ classdef Model_HM < Model_M
                 end
             end
             this.element = elements;
+        end
+
+        % -----------------------------------------------------------------
+        % Set the flag to update the aperture of the discontinuities
+        function setUpdateAperture(this, flag)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
+                for j = 1:nDiscontinuitySeg
+                    this.discontinuitySet(i).segment(j).updateAperture = flag;
+                end
+            end
         end
 
         % -----------------------------------------------------------------

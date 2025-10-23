@@ -206,8 +206,8 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
 
         %------------------------------------------------------------------
         % Get specified field. Fill the coordinate matrix and the field.
-        function [X, f] = getField(this,field,dof_values)
-            [X, f] = getField@DiscontinuityElement_M(this,field);
+        function [X, f] = getField(this,field,dof_values,celem)
+            [X, f] = getField@DiscontinuityElement_M(this,field,celem);
             if strcmp(field,'Pressure')
                 X = this.node;
                 f = dof_values(this.ndof_u + this.ndof_jump+1:end);

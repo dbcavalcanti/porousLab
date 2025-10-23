@@ -239,7 +239,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
 
         %------------------------------------------------------------------
         % Get specified field. Fill the coordinate matrix and the field.
-        function [X, f] = getField(this,field,~)
+        function [X, f] = getField(this,field,~,~)
             if strcmp(field,'Sn')
                 [X, f] = this.getCohesiveStresses(2); 
             elseif strcmp(field,'St')
@@ -276,10 +276,8 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             for i = 1:this.nIntPoints
                 % Cartesian coordinates of the integration point 
                 X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
-                % Initial aperture
-                w0 = this.intPoint(i).constitutiveMdl.parameters.initialAperture;
-                % Get strain component
-                f(i) = 1000*(w0+this.intPoint(i).strain(2));
+                % Get aperture component
+                f(i) = 1.0E3 * this.intPoint(i).statevar(1); % Convert to mm
             end
         end
 

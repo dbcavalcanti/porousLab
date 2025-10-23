@@ -14,6 +14,7 @@ classdef DiscontinuityElementConductive_HM < DiscontinuityElement_M
     properties (SetAccess = public, GetAccess = public)
         ndof_u    = 2;      % Displacement jump dofs
         ndof_int  = 2;      % Discontinuity internal pressure dofs
+        updateAperture = false;
     end
     %% Constructor method
     methods
@@ -125,7 +126,9 @@ classdef DiscontinuityElementConductive_HM < DiscontinuityElement_M
                 kh = this.intPoint(i).constitutiveMdl.longitudinalPermeability(this.intPoint(i));
                 
                 % Update aperture
-                this.intPoint(i).constitutiveMdl.updateAperture(this.intPoint(i));
+                if this.updateAperture
+                    this.intPoint(i).constitutiveMdl.updateAperture(this.intPoint(i));
+                end
 
                 % Get compressibility coefficient
                 comp = this.intPoint(i).constitutiveMdl.compressibility();
@@ -174,12 +177,26 @@ classdef DiscontinuityElementConductive_HM < DiscontinuityElement_M
 
         %------------------------------------------------------------------
         % Get specified field. Fill the coordinate matrix and the field.
-        function [X, f] = getField(this,field,dof_values)
-            [X, f] = getField@DiscontinuityElement_M(this,field);
+        function [X, f] = getField(this,field,dof_values,celem)
+            [X, f] = getField@DiscontinuityElement_M(this,field, dof_values, celem);
             if strcmp(field,'Pressure')
                 X = this.node;
-                f = dof_values(this.ndof_u + this.ndof_jump+1:end);
+                f = this.getPorePressure(X, celem);
             end
         end
+
+        %------------------------------------------------------------------
+        function p = getPorePressure(~, X, celem)
+            pc = celem.getNodalPressure();
+            npts = size(X,1);
+            p = zeros(npts,1);
+            for j = 1:npts
+                Xn = celem.shape.coordCartesianToNatural(celem.node,X(j,:));
+                Np = celem.shape.shapeFncMtrx(Xn);
+                p(j) = Np * pc;
+            end
+        end
+
+
     end
 end

@@ -1001,7 +1001,9 @@ classdef Model < handle
             % Fill vectors
             for j = 1:nDiscontinuitySeg
                 dof_j = this.discontinuitySet(id).segment(j).dof;
-                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field,this.U(dof_j));
+                cElemID = this.discontinuitySet(id).elemID(j);
+                cElem = this.element(cElemID).type;
+                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field,this.U(dof_j), cElem);
                 DX = Xj - Xi;
                 sj = sqrt(DX(:,1).^2 + DX(:,2).^2);
                 s(2*j-1:2*j,1) = sj; %Xj(:,2);
