@@ -72,9 +72,9 @@ classdef MechanicalCohesiveLinearElastic < handle
             dn = ip.strain(2);
 
             % Closure model
-            if dn < -1.0e-6
-                kn = kn * 1.0e3;
-            end
+            % if dn < -1.0e-4
+            %     kn = kn * 1.0e3;
+            % end
 
             % Assemble constitutive matrix
             De = [ ks   0.0;
