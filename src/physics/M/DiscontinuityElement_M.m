@@ -44,6 +44,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         function this = DiscontinuityElement_M(node, mat)
             this = this@DiscontinuityElement(node, mat)
             this.ndof = 2;
+            this.nNodalDofs = 4;
         end
     end
 
@@ -92,6 +93,31 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 n = 1;
             end
         end
+
+        %------------------------------------------------------------------
+        % Matrix that transforms the nodal dofs into the local dofs
+        function MR = getDofTransformationMtrx(this)
+            if this.useNodalEnrDofs == false
+                MR = eye(this.ndof);
+            else
+                ld = this.ld();
+                M = [ 0.5    ,  0.0    , 0.5    , 0.0;
+                      0.0    ,  0.5    , 0.0    , 0.5;
+                     -1.0/ld ,  0.0    , 1.0/ld , 0.0;
+                      0.0    , -1.0/ld , 0.0    , 1.0/ld];
+                mn = this.rotationFromGlobalToLocal();
+                R  = blkdiag(mn,mn);
+                MR = M * R;
+                lin = [1,2];
+                if this.tangentialStretchingMode
+                    lin = [lin,3];
+                end
+                if this.relRotationMode
+                    lin = [lin,4];
+                end
+                MR = MR(lin,:);
+            end
+        end
         
         %------------------------------------------------------------------
         % Initializes the integration points for the element obtaining the
@@ -130,8 +156,13 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             Ce = []; fe = []; dfidu = [];
 
             % Initialize the matrices for the numerical integration
-            Ke = zeros(this.ndof,this.ndof);
-            fi = zeros(this.ndof,1);
+            if this.useNodalEnrDofs
+                ndofs = this.nNodalDofs;
+            else
+                ndofs = this.ndof;
+            end
+            Ke = zeros(ndofs,ndofs);
+            fi = zeros(ndofs,1);
 
             % Get the lenght of the discontinuity
             ld = this.ld();
@@ -142,6 +173,9 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             % Get the discontinuity tangential vector
             m = this.tangentialVector();
 
+            % Transformation matrix to use the nodal degrees of freedom
+            M = this.getDofTransformationMtrx();
+
             % Initialize output matrices
             for i = 1:this.nIntPoints
 
@@ -149,10 +183,15 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
 
                 % Get the shape function matrix
-                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+                Ndl = this.enrichmentInterpolationMatrix(X,Xr,m);
+                if this.useNodalEnrDofs
+                    Nd = this.nodalEnrichmentInterpolationMatrix(this.intPoint(i).X);
+                else
+                    Nd = Ndl;
+                end
 
                 % Compute the strain vector
-                this.intPoint(i).strain = Nd * ae;
+                this.intPoint(i).strain = Ndl * M * ae;
 
                 % Compute the stress vector and the constitutive matrix
                 [td,Td] = this.intPoint(i).mechanicalLaw();
@@ -161,10 +200,10 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 c = 0.5 * ld * this.intPoint(i).w * this.t;
 
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Nd' * Td * Nd * c;
+                Ke = Ke + (Nd' * Td * Nd) * c;
 
                 % Compute the internal force vector
-                fi = fi + Nd' * td * c;
+                fi = fi + (Nd' * td) * c;
 
             end
         end
@@ -188,6 +227,19 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                     Nd(2,c) = s;
                 end
             end
+        end
+
+        %------------------------------------------------------------------
+        % Computes the enrichment interpolation matrix for the given
+        % integration point coordinate. This shape function is used
+        % whenever nodal dofs are used. The direct use of this shape
+        % function avoid undesired coupling terms in the dofs that appear 
+        % from the transformation from global to local dofs. 
+        function Nd = nodalEnrichmentInterpolationMatrix(this,xi)
+            mn = this.rotationFromGlobalToLocal();
+            R  = blkdiag(mn,mn);
+            Nd = 0.5*[1.0-xi , 0.0   , 1.0+xi, 0.0;
+                      0.0    , 1.0-xi, 0.0   , 1.0+xi]*R;
         end
 
         %------------------------------------------------------------------

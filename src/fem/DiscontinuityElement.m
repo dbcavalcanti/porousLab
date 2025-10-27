@@ -9,15 +9,17 @@
 classdef DiscontinuityElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        shape      = [];    % Object of the Shape class
-        node       = [];    % Nodes of the fem mesh
-        t          = 1.0;   % Thickness
-        mat        = [];    % Material object
-        intOrder   = 2;     % Order of the numerical integration
-        dof        = [];    % Degrees of freedom vector
-        ndof       = 1;     % Number of dofs
-        nIntPoints = 1;     % Number of integration points
-        intPoint   = [];    % Vector with integration point objects       
+        shape           = [];    % Object of the Shape class
+        node            = [];    % Nodes of the fem mesh
+        t               = 1.0;   % Thickness
+        mat             = [];    % Material object
+        intOrder        = 2;     % Order of the numerical integration
+        dof             = [];    % Degrees of freedom vector
+        ndof            = 1;     % Number of dofs
+        nIntPoints      = 1;     % Number of integration points
+        intPoint        = [];    % Vector with integration point objects   
+        useNodalEnrDofs = false;
+        nNodalDofs      = [];    % Number of nodal enrichment dofs
     end
 
     %% Constructor method
@@ -77,6 +79,14 @@ classdef DiscontinuityElement < handle
         end
 
         %------------------------------------------------------------------
+        % Rotation from global to local
+        function R = rotationFromGlobalToLocal(this)
+            m = this.tangentialVector();
+            R = [ m(1) , m(2);   % cs  , sn
+                 -m(2) , m(1)];  % -sn , cs
+        end
+
+        %------------------------------------------------------------------
         % Compute heaviside function associated with the discontinuity at a given point.
         function h = heaviside(this,X)
             n  = this.normalVector();
@@ -90,6 +100,12 @@ classdef DiscontinuityElement < handle
         function initializeDofs(this,ndofs)
             this.dof = 1:this.ndof;
             this.dof = this.dof + ndofs;
+        end
+
+        %------------------------------------------------------------------
+        % Set degrees of freedom vector.
+        function setDofs(this,dofs)
+            this.dof = dofs;
         end
 
         %------------------------------------------------------------------

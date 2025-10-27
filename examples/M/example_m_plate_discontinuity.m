@@ -16,13 +16,14 @@ mdl = Model_M();
 % Set model options
 mdl.isPlaneStress   = true;
 mdl.condenseEnrDofs = true;
+mdl.useNodalEnrDofs = true;
 
 %% MESH
 
 % Create mesh
 Lx = 2.0;  % Horizontal dimension (m)
 Ly = 2.0;  % Vertical dimension (m)
-Nx = 1;    % Number of elements in the x-direction
+Nx = 2;    % Number of elements in the x-direction
 Ny = 1;    % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
@@ -45,7 +46,7 @@ mdl.setMaterial(rock);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
 % Loads
-mdl.addLoadAtPoint([0.0,2.0], [-0.5,1.5]);                            
+mdl.addLoadAtPoint([0.0,2.0], [-0.5, 1.5]);                            
 
 %% DISCONTINUITIES
 
@@ -79,3 +80,5 @@ mdl.printResults();
 mdl.plotField('Model');
 hold on;
 fracture.plotIntersectedGeometry();
+
+mdl.plotFieldAlongDiscontinuiy('Dn',1,'x');

@@ -57,7 +57,7 @@ classdef Model_M < Model
         addTangentialStretchingMode = false;
         addNormalStretchingMode     = false;
         addRelRotationMode          = false;
-        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation
+        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation     
     end
     
     %% Constructor method
@@ -67,6 +67,7 @@ classdef Model_M < Model
             this = this@Model();
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'M';     % Tag with the physics name
+            this.nNodalEnrDofs = 2;
             if (printFlag)
                 disp("*** Physics: Mechanical");
             end 
@@ -118,7 +119,8 @@ classdef Model_M < Model
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode, ...
                                 this.addTangentialStretchingMode, this.addNormalStretchingMode,...
-                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM);
+                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM, ...
+                                this.useNodalEnrDofs);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -373,6 +375,7 @@ classdef Model_M < Model
         %------------------------------------------------------------------
         % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
+            
             % First set the specific properties
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -380,6 +383,7 @@ classdef Model_M < Model
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addTangentialStretchingMode, this.addNormalStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
+                    this.discontinuitySet(i).segment(j).useNodalEnrDofs = this.useNodalEnrDofs;
                     if this.addPorePressure
                         this.discontinuitySet(i).segment(j).DP = 0.0;
                     end

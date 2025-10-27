@@ -115,6 +115,8 @@ classdef Model < handle
         condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
         dofenr              = [];            % Vector with the enrichment dofs
         ndofenr             = 0;             % Number of enrichment dofs
+        useNodalEnrDofs     = false;         % Flag to use nodal enrichment dofs
+        nNodalEnrDofs       = 0;             % Number of nodal enrichment dofs (used if useNodalEnrDofs == true)
         subDivIntegration   = false;         % Flag to apply a sub-division of the element to define the integration points
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
@@ -816,16 +818,30 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Initialize the discontinuity segments
         function initializeDiscontinuitySegments(this)
+            if this.useNodalEnrDofs, this.condenseEnrDofs = false; end
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
+                % Initialize vector with the nodal enrichment dofs
+                if this.useNodalEnrDofs
+                    nNodesDiscontinuity = size(this.discontinuitySet(i).Xlin,1);
+                    nEnrDofs = nNodesDiscontinuity*this.nNodalEnrDofs;
+                    nodalEnrDofs = this.ndof+1:(this.ndof+nEnrDofs);
+                    this.ndof = this.ndof + nEnrDofs;
+                    this.dofenr = [this.dofenr; nodalEnrDofs'];
+                    nodalEnrDofs = reshape(nodalEnrDofs, this.nNodalEnrDofs, nNodesDiscontinuity).';
+                end
                 % Initialize common properties and dofs
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).t = this.t;
-                    if this.condenseEnrDofs == false
+                    if (this.condenseEnrDofs == false) && (this.useNodalEnrDofs == false)
                         this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
                         this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
                         this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof'];
+                    end
+                    if (this.condenseEnrDofs == false) && (this.useNodalEnrDofs == true)
+                        dEnrDofs = [nodalEnrDofs(j,:), nodalEnrDofs(j+1,:)];
+                        this.discontinuitySet(i).segment(j).setDofs(dEnrDofs);
                     end
                 end
             end
