@@ -19,14 +19,15 @@ mdl = Model_M();
 mdl.isPlaneStress     = true;
 mdl.condenseEnrDofs   = false;
 mdl.subDivIntegration = true;
+mdl.useNodalEnrDofs = true;
 
 %% MESH
 
 % Create mesh
 Lx = 2.0e-3;  % Horizontal dimension (m)
 Ly = 1.0e-3;  % Vertical dimension (m)
-Nx = 5;       % Number of elements in the x-direction
-Ny = 5;       % Number of elements in the y-direction
+Nx = 1;       % Number of elements in the x-direction
+Ny = 1;       % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Model thickness
@@ -58,7 +59,7 @@ mdl.addLoadAtPoint([2.0,1.0], [-13.49,0.0]);
 %% DISCONTINUITIES
 
 % Create discontinuities 
-Dx = [0.0; 2.0e-3];  % X-coordinates of polyline defining the fracture
+Dx = [0.0; 2.0e-3];     % X-coordinates of polyline defining the fracture
 Dy = [0.5e-3; 0.5e-3];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
@@ -69,7 +70,7 @@ fracture.shearStiffness  = 1.0e10;    % Pa/m
 fracture.normalStiffness = 1.0e10;    % Pa/m
 
 % Add fractures to model
-discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', true, 'addRelRotationMode', true);
+discontinuityData = struct('addTangentialStretchingMode', true, 'addNormalStretchingMode', false, 'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS

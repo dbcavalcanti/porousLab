@@ -1,6 +1,10 @@
 %% DESCRIPTION
 %
 % Block crossed by strong discontinuity.
+% Reference:
+% Dias-da-Costa, D. (2013, June 21). 
+% Finite elements with embedded discontinuities in the scope of the
+% discrete crack approach [Lecture notes]. Thom Conference Room.
 %
 % Physics:
 % * Mechanical (M)
