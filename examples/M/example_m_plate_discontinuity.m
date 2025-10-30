@@ -66,7 +66,8 @@ fracture.shearStiffness  = 1.0;
 fracture.normalStiffness = 1.0;
 
 % Add fractures to model
-discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', true);
+discontinuityData = struct('addTangentialStretchingMode', false, ...
+                           'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS
@@ -84,5 +85,3 @@ mdl.printResults();
 mdl.plotField('Model');
 hold on;
 fracture.plotIntersectedGeometry();
-
-mdl.plotFieldAlongDiscontinuiy('Dn',1,'x');

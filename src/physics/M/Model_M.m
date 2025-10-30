@@ -366,10 +366,21 @@ classdef Model_M < Model
 
         % -----------------------------------------------------------------
         % Adds some additional discontinuity data
-        function addDiscontinuityData(this,additionalData)
-            this.addRelRotationMode          = additionalData.addRelRotationMode;
-            this.addTangentialStretchingMode = additionalData.addTangentialStretchingMode;
-            this.addNormalStretchingMode     = additionalData.addNormalStretchingMode;
+        function addDiscontinuityData(this, additionalData)
+            if nargin < 2 || ~isstruct(additionalData)
+                return
+            end
+            fields = {
+                'addRelRotationMode'
+                'addTangentialStretchingMode'
+                'addNormalStretchingMode'
+            };
+            for i = 1:numel(fields)
+                f = fields{i};
+                if isfield(additionalData, f) && ~isempty(additionalData.(f))
+                    this.(f) = additionalData.(f);
+                end
+            end
         end
 
         %------------------------------------------------------------------

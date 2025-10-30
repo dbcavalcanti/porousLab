@@ -4,7 +4,7 @@
 % To run a simulation, call this function by passing the full path to the simulation script as input argument.
 % If no input argument is provided, a dialog appears for manual selection of the simulation script.
 %
-function porouslab(varargin)
+function mdl = porouslab(varargin)
     clc; clearvars -except varargin; close all;
     addpath(genpath(pwd));
     print_header;
