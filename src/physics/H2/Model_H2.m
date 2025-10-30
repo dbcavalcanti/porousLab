@@ -130,8 +130,9 @@ classdef Model_H2 < Model_H
         % -----------------------------------------------------------------
         % Prescribe a gas-phase pressure Dirichlet boundary condition at 
         % a border
-        function setGasPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 2, value);
+        function setGasPressureDirichletBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
+            this.setDirichletBCAtBorder(border, 2, value, range);
         end
 
         % -----------------------------------------------------------------
