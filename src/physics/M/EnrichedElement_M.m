@@ -587,8 +587,12 @@ classdef EnrichedElement_M < RegularElement_M
             
             % Initialize variables
             nDiscontinuities  = this.getNumberOfDiscontinuities();
-            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
-            jumpOrder         = this.displacementJumpOrder();
+            nLocalDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nDofDiscontinuity = nLocalDofDiscontinuity;
+            if this.useNodalEnrDofs
+                nDofDiscontinuity = this.nNodalEnrDofs;
+            end
+            jumpOrder = this.displacementJumpOrder();
             Gv = zeros(4,nDofDiscontinuity * nDiscontinuities);
 
             % Get the stress interpolation coefficients
@@ -626,8 +630,11 @@ classdef EnrichedElement_M < RegularElement_M
 
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
-                Gv(:,cols) = Gi;
 
+                % Get transformation matrix from local to global
+                T = this.discontinuity(i).getDofTransformationMtrx();
+
+                Gv(:,cols) = Gi * T;
             end
 
         end
