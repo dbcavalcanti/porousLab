@@ -163,7 +163,7 @@ classdef EnrichedElement_H < RegularElement_H
                 pIP = Np * pl;
         
                 % Compute the permeability matrix
-                kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
+                kh = permeabilityTensor(this, i);
 
                 % Get compressibility coefficient
                 comp = this.intPoint(i).constitutiveMdl.compressibilityCoeff();
@@ -192,6 +192,23 @@ classdef EnrichedElement_H < RegularElement_H
                 end
             end
 
+        end
+
+        function Kxy = permeabilityTensor(this, ip_id)
+            Kxy = this.intPoint(ip_id).constitutiveMdl.permeabilityTensor();
+            nDiscontinuities  = this.getNumberOfDiscontinuities();
+            % Loop through the discontinuities
+            for i = 1:nDiscontinuities
+                R = this.discontinuity(i).rotationFromGlobalToLocal();
+                % Rotate the permeability tensor
+                Kmn = R * Kxy * R';
+                % Apply transversal permeability coefficient
+                kt = this.discontinuity(i).mat.transversalPermeability;
+                kt = min(max(kt, 0.0), 1.0);
+                Kmn(2,2) = kt * Kmn(2,2);
+                % Rotate back to the cartesian system
+                Kxy = R' * Kmn * R;
+            end
         end
 
         %------------------------------------------------------------------

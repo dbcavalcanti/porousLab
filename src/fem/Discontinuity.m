@@ -38,6 +38,7 @@ classdef Discontinuity < handle
         tensionCutOff       = [];
         conductive          = true;
         leakoff             = 1.0;
+        transversalPerm     = 1.0;
     end
 
     %% Constructor method
@@ -142,7 +143,8 @@ classdef Discontinuity < handle
                          'dilationAngle', this.dilationAngle,...
                          'cohesion', this.cohesion,...
                          'tensionCutOff',this.tensionCutOff,...
-                         'leakoff',this.leakoff);
+                         'leakoff',this.leakoff, ...
+                         'transversalPermeability', this.transversalPerm);
         end
 
         %------------------------------------------------------------------
