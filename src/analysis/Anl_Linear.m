@@ -29,7 +29,7 @@ classdef Anl_Linear < Anl
             mdl.preComputations();
 
             % Compute global stiffness matrix
-            [K,~,~,Fext,dFidX] = mdl.globalMatrices(mdl.U);
+            [K,~,Fi,Fext,dFidX] = mdl.globalMatrices(mdl.U);
 
             % Set linear system
             if ((nnz(K)>0) && (nnz(dFidX) == 0))
@@ -39,7 +39,7 @@ classdef Anl_Linear < Anl
             elseif ((nnz(K) == 0) && (nnz(dFidX) == 0))
                 error("Physics did not fill either K or dFidX.")
             end
-            b = Fext(mdl.doffree) - A(mdl.doffree,mdl.doffixed) * mdl.U(mdl.doffixed);
+            b = Fext(mdl.doffree) - Fi(mdl.doffree) - A(mdl.doffree,mdl.doffixed) * mdl.U(mdl.doffixed);
 
             % Solve linear system
             mdl.U(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b;

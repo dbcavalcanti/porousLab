@@ -36,7 +36,6 @@ mdl.setMesh(node, elem);
 % Create porous media
 rock = PorousMedia('rock');   
 rock.Young = 11868.0e+6;        % Young modulus (Pa)
-% rock.nu    = K0/(1+K0);         % Poisson ratio
 rock.nu    = 0.29;         % Poisson ratio
 
 % Set materials to model
@@ -105,12 +104,7 @@ P(reservoir == 1) = P0 + 20.0e6;
 % Update values
 mdl.setPorePressureField(P);
 
-% Analysis parameters
-clear anl
-
 % Run analysis
-anl = Anl_Transient("Newton");
-anl.setUpTransientSolver(0.0, 1.0, 1.0);
 anl.run(mdl);
 
 %% POST-PROCESS
