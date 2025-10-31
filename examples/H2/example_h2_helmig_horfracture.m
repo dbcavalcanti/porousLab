@@ -38,7 +38,7 @@ gas.rho = 1460.0;
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.K                  = 1.0e-12;        % Intrinsic permeability (m2)
+rock.K                  = 1.0e-13;        % Intrinsic permeability (m2)
 rock.phi                = 0.2;            % Porosity
 rock.Slr                = 0.0;            % Residual liquid saturation
 rock.Sgr                = 0.0;            % Residual gas saturation
@@ -62,28 +62,40 @@ pc = @(Sl) (rock.Pb * ((Sl-rock.Slr)/(1.0-rock.Slr-rock.Sgr))^(-1/rock.lambda));
 mdl.setPressureDirichletBCAtBorder('left',  2.0e5, [0.0, 0.1]);
 mdl.setPressureDirichletBCAtBorder('right', 1.0e5, [0.9, 1.0]);
 mdl.setGasPressureDirichletBCAtBorder('left',  2.0e5+pc(0.001), [0.0, 0.1]);
-mdl.setGasPressureDirichletBCAtBorder('right',  1.0e5+pc(0.99), [0.9, 1.0]);
+mdl.setGasPressureDirichletBCAtBorder('right',  1.0e5+pc(0.97), [0.9, 1.0]);
 
 % Initial conditions
 mdl.setInitialPressureAtDomain(1.0e5);
-mdl.setInitialGasPressureAtDomain(1.0e5+pc(0.99));
+mdl.setInitialGasPressureAtDomain(1.0e5+pc(0.97));
 
 %% DISCONTINUITIES
 
 % Create discontinuities
-Xd = [0.5, 0.0;
-      0.5, 1.0]; 
+Xd = [0.0, 0.5;
+      1.0, 0.5]; 
 fracture = Discontinuity(Xd, true);
 
+rockf = PorousMedia('rock');
+rockf.K                  = 1.0e-13;        % Intrinsic permeability (m2)
+rockf.phi                = 0.2;            % Porosity
+rockf.Slr                = 0.0;            % Residual liquid saturation
+rockf.Sgr                = 0.0;            % Residual gas saturation
+rockf.Pb                 = 1.0e+3;         % Gas-entry pressure
+rockf.lambda             = 2.0;            % Curve-fitting parameter
+rockf.liqRelPermeability = 'BrooksCorey';  % Liquid relative permeability
+rockf.gasRelPermeability = 'BrooksCorey';  % Gas relative permeability
+rockf.capillaryPressure  = 'BrooksCorey';  % Saturation degree function
+rockf.setMinGasRelPermeability(1.0e-4);
+rockf.setMinLiquidRelPermeability(1.0e-4);
 % Set fracture material properties
-fracture.porousMedia = rock;
+fracture.porousMedia = rockf;
 fracture.liquidFluid = water;
 fracture.gasFluid = gas;
-fracture.porosity = 0.3;
-fracture.initialAperture = 5.0e-3;
+fracture.porosity = 1.0;
+fracture.initialAperture = 1.0e-3;
 
 % Add fractures to model
-% mdl.addPreExistingDiscontinuities(fracture);
+mdl.addPreExistingDiscontinuities(fracture);
 
 %% PROCESS
 
@@ -105,6 +117,8 @@ anl.run(mdl);
 
 % Plot contours
 mdl.plotField('GasSaturation');
+hold on;
+fracture.plotIntersectedGeometry();
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [Lx, Ly];
