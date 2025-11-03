@@ -78,6 +78,8 @@ classdef Material_H2 < handle
                 this.capillaryPressure = CapillaryPressureUMAT(curve(:,1),curve(:,2));
             elseif strcmp('Liakopoulos',matData.porousMedia.capillaryPressure)
                 this.capillaryPressure = CapillaryPressureLiakopoulos();
+            elseif strcmp('Log',matData.porousMedia.capillaryPressure)
+                this.capillaryPressure = CapillaryPressureLog();
             end
         end
     end
@@ -87,6 +89,9 @@ classdef Material_H2 < handle
         % Get the liquid saturation degree
         function Sl = saturationDegree(this,pc)
             Sl = this.capillaryPressure.saturationDegree(pc, this.porousMedia);
+            if isnan(Sl) || isinf(Sl)
+                error("Liquid saturation degree is NaN or Inf.");
+            end
         end
 
         %------------------------------------------------------------------
@@ -94,20 +99,35 @@ classdef Material_H2 < handle
         % pressure
         function dSldpc = derivativeSaturationDegree(this,pc)
             dSldpc = this.capillaryPressure.derivativeSaturationDegree(pc, this.porousMedia);
+            if isnan(dSldpc) || isinf(dSldpc)
+                error("Derivative of the liquid saturation degree is NaN or Inf.");
+            end
         end
 
         %------------------------------------------------------------------
         % Compute the relative permeabilities
         function [klr, kgr] = relativePermeabilities(this,Sl)
             klr = this.liqRelativePermeability.calculate(Sl, this.porousMedia);
+            if isnan(klr) || isinf(klr)
+                error("Liquid relative permeability is NaN or Inf.");
+            end
             kgr = this.gasRelativePermeability.calculate(Sl, this.porousMedia);
+            if isnan(kgr) || isinf(kgr)
+                error("Gas relative permeability is NaN or Inf.");
+            end
         end
 
         %------------------------------------------------------------------
         % Compute the relative permeabilities
         function [dklrdSl, dkgrdSl] = derivativeRelPerm(this,Sl)
             dklrdSl = this.liqRelativePermeability.derivative(Sl, this.porousMedia);
+            if isnan(dklrdSl) || isinf(dklrdSl)
+                error("Liquid relative permeability derivative is NaN or Inf.");
+            end
             dkgrdSl = this.gasRelativePermeability.derivative(Sl, this.porousMedia);
+            if isnan(dkgrdSl) || isinf(dkgrdSl)
+                error("Gas relative permeability derivative is NaN or Inf.");
+            end
         end
 
         %------------------------------------------------------------------

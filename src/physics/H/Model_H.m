@@ -159,8 +159,9 @@ classdef Model_H < Model
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Neumann boundary condition at a border
-        function setPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 1, value);
+        function setPressureNeumannBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
+            this.setNeumannBCAtBorder(border, 1, value, range);
         end
 
         % -----------------------------------------------------------------
