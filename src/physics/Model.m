@@ -285,8 +285,15 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Prescribe a Neumann boundary condition at a node
-        function setNeumannBCAtBorder(this, border, dofId, value)
-            nodeIds = this.getNodesAtBorder(border);
+        function setNeumannBCAtBorder(this, border, dofId, value, range)
+            if ((nargin < 5) || isempty(range))
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
+            nodeIds = this.getNodesAtBorder(border, range);
             for i = 1:length(nodeIds)
                 this.setNeumannBCAtNode(nodeIds(i),dofId,value);
             end
@@ -677,6 +684,11 @@ classdef Model < handle
             Fe = sparse(this.ndof,1);
             Fe = this.addNodalLoad(Fe);
             b = nonlinearScheme.addNodalForces(b,Fe);
+
+            % Check matrix
+            if any(isnan(nonzeros(A)))
+                error('Linear system matrix has NaN values');
+            end
 
         end
 
