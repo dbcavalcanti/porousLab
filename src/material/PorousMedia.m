@@ -31,7 +31,7 @@
 % Version 1.00.
 %
 %% Class Definition
-classdef PorousMedia < handle    
+classdef PorousMedia < handle & matlab.mixin.Copyable    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         id                   = '';
