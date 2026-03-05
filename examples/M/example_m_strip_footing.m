@@ -38,7 +38,7 @@ rock.Young         = 1.0e+7;           % Young modulus (kPa)
 rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
-rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
+rock.dilationAngle = 10*pi/180;        % Dilation angle (rad)
 rock.stressIntAlgorithm = 'alternative';
 
 % Set materials to model
@@ -66,7 +66,7 @@ anl.increment     = 0.1;
 anl.max_increment = 1.0;
 anl.max_lratio    = 2.0;
 anl.max_step      = 100;
-anl.max_iter      = 300;
+anl.max_iter      = 10;
 anl.trg_iter      = 7;
 anl.tol           = 1.0e-4;
 

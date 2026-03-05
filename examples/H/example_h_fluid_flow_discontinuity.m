@@ -13,6 +13,9 @@
 % Create model
 mdl = Model_H();
 
+mdl.equivalentContinuum = true;
+mdl.condenseEnrDofs = true;
+
 %% MESH
 
 % Create mesh

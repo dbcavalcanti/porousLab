@@ -13,6 +13,9 @@
 % Create model
 mdl = Model_H();
 
+mdl.equivalentContinuum = true;
+mdl.condenseEnrDofs = true;
+
 %% MESH
 
 % Create mesh
@@ -20,6 +23,7 @@ Lx = 5.0;  % Horizontal dimension (m)
 Ly = 3.0;  % Vertical dimension (m)
 Nx = 15*3;    % Number of elements in the x-direction
 Ny = 9*3;    % Number of elements in the y-direction
+% [node, elem] = regularMesh(Lx, Ly, Nx, Ny,[],[],'CST');
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
@@ -48,10 +52,10 @@ mdl.setPressureDirichletBCAtBorder('right', 0.0);
 
 %% DISCONTINUITIES
 
-fractures(1,2) = Discontinuity();
+fractures(1,1) = Discontinuity();
 
 % Create discontinuities
-Dx = [2.5; 2.5];  % X-coordinates of polyline defining the fracture
+Dx = [2.5; 2.9];  % X-coordinates of polyline defining the fracture
 Dy = [0.0; Ly];   % Y-coordinates of polyline defining the fracture
 fractures(1) = Discontinuity([Dx, Dy], true);
 
@@ -61,16 +65,16 @@ fractures(1).initialAperture = 1.0e-3;
 fractures(1).transversalPerm = 0.0;
 % fracture.leakoff = 1.0e-15;
 
-% Create discontinuities
-Dx = [0.0; Lx];  % X-coordinates of polyline defining the fracture
-Dy = [1.5; 1.5];   % Y-coordinates of polyline defining the fracture
-fractures(2) = Discontinuity([Dx, Dy], true);
-
-% Set fracture material properties
-fractures(2).fluid = water;
-fractures(2).initialAperture = 1.0e-3;
-fractures(2).transversalPerm = 0.0;
-% fracture.leakoff = 1.0e-15;
+% % Create discontinuities
+% Dx = [0.0; Lx];  % X-coordinates of polyline defining the fracture
+% Dy = [2.5; 1.5];   % Y-coordinates of polyline defining the fracture
+% fractures(2) = Discontinuity([Dx, Dy], true);
+% 
+% % Set fracture material properties
+% fractures(2).fluid = water;
+% fractures(2).initialAperture = 1.0e-3;
+% fractures(2).transversalPerm = 0.0;
+% % fracture.leakoff = 1.0e-15;
 
 % Add fractures to model
 mdl.addPreExistingDiscontinuities(fractures);
@@ -90,4 +94,4 @@ anl.run(mdl);
 mdl.plotField('Pressure');
 hold on;
 fractures(1).plotIntersectedGeometry();
-fractures(2).plotIntersectedGeometry();
+% fractures(2).plotIntersectedGeometry();
