@@ -519,7 +519,7 @@ classdef MechanicalElastoPlasticMohrCoulomb < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Yield function F(sigma)
-        function f = yieldCondition(this, material, ~, stress)
+        function f = yieldCondition(this, material, ~, stress, ~)
 
             J2 = max(this.stressInvariantJ2(stress), 1e-10);
             J3 = this.stressInvariantJ3(stress);
@@ -538,7 +538,7 @@ classdef MechanicalElastoPlasticMohrCoulomb < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % dF/dsigma
-        function df = yieldStressGradient(this, material, ~, stress) 
+        function df = yieldStressGradient(this, material, ~, stress, ~)
             
             % Material parameters
             phi = material.frictionAngle;
@@ -583,7 +583,7 @@ classdef MechanicalElastoPlasticMohrCoulomb < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Flow vector n = ∂g/∂σ  (nonassociated if psi ≠ phi)
-        function n = flowVector(this, material, ~, stress)
+        function n = flowVector(this, material, ~, stress, ~)
             
             % Material parameters
             psi = material.dilationAngle;
@@ -628,7 +628,7 @@ classdef MechanicalElastoPlasticMohrCoulomb < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % dn/dsigma = ∂^2 g / ∂σ∂σ (Hessian of potential)
-        function dn = flowVectorGradient(this, material, ~, stress)
+        function dn = flowStressGradient(this, material, ~, stress, ~)
             % Material parameters
             psi = material.dilationAngle;
 
@@ -682,15 +682,33 @@ classdef MechanicalElastoPlasticMohrCoulomb < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
-        % Returns the hardening value
-        function h = hardening(~, ~, ~, ~) 
-            h = 0.0;
+        % Gradient of the yield function wrt to the state variables vector
+        function dfda = yieldStateGradient(~,~,~,~,~)
+            dfda = zeros(0,1);
         end
 
         %------------------------------------------------------------------
-        % Gradient of the hardening law wrt to the stress vector
-        function dh = hardeningStressGradient(~, material, ip, stress) %#ok<INUSD>
-            dh = 0.0;
+        % Flow vector gradient wrt to the state variables vector
+        function dnda = flowStateGradient(~,~,ip,~,~)
+            dnda = zeros(ip.nVar,0);
+        end
+
+        %------------------------------------------------------------------
+        % Internal/state variables evolution
+        function h = stateEvolution(~, ~, ~, ~, ~)
+            h = zeros(0,1);
+        end
+
+        %------------------------------------------------------------------
+        % Gradient of the internal/state variables law wrt to the stress vector
+        function dhds = stateStressGradient(~, ~, ip, ~, ~)
+            dhds = zeros(0,ip.nVar);
+        end
+
+        %------------------------------------------------------------------
+        % Gradient of the internal/state variables law wrt to the state variables
+        function dhda = stateStateGradient(~, ~, ~, ~, ~)
+            dhda = zeros(0,0);
         end
     end
 

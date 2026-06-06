@@ -277,7 +277,7 @@ classdef MechanicalLaw < handle
         %------------------------------------------------------------------
         % von Mises stress hessian matrix
         function d2sVM = vonMisesStressHessian(this,stress)
-            J2    = this.stressInvariantJ2(stress);
+            J2    = max(this.stressInvariantJ2(stress), 1e-12);
             dJ2   = this.gradientJ2(stress);
             d2J2  = this.hessianJ2();
             dsVMdJ2 = 0.5*sqrt(3.0/J2);
