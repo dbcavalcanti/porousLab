@@ -38,8 +38,8 @@ rock.Young         = 1.0e+7;           % Young modulus (kPa)
 rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
-rock.dilationAngle = 10*pi/180;        % Dilation angle (rad)
-% rock.stressIntAlgorithm = 'alternative';
+rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
+rock.stressIntAlgorithm = 'alternative';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -66,8 +66,8 @@ anl.increment     = 0.1;
 anl.max_increment = 1.0;
 anl.max_lratio    = 2.0;
 anl.max_step      = 100;
-anl.max_iter      = 10;
-anl.trg_iter      = 7;
+anl.max_iter      = 20;
+anl.trg_iter      = 4;
 anl.tol           = 1.0e-4;
 
 % Node and DOF used to plot Load Factor vs Displacement
@@ -83,5 +83,6 @@ anl.run(mdl);
 anl.plotCurves();
 
 % Plot contours
+mdl.plotField('PEMAG');
 mdl.plotField('PEMAG',[0.0,0.01]);
 mdl.plotField('Uy');
