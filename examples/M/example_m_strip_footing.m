@@ -32,14 +32,14 @@ mdl.resequenceNodes() ;
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.mechanical    = 'mohrCoulomb';  % Constitutive law
+rock.mechanical    = 'druckerPrager';  % Constitutive law
 rock.MCmatch       = 'planestrain';    % How Drucker-Prager surfaces matches Mohr-Coulomb
 rock.Young         = 1.0e+7;           % Young modulus (kPa)
 rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
-rock.stressIntAlgorithm = 'alternative';
+% rock.stressIntAlgorithm = 'alternative';
 
 % Set materials to model
 mdl.setMaterial(rock);

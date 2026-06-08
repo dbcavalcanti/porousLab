@@ -61,7 +61,7 @@ fracture.cohesiveLaw     = 'elastic';
 fracture.shearStiffness  = 100.0e9;
 fracture.normalStiffness = 100.0e9;
 fracture.initialAperture = 1.0e-5;
-fracture.fluid           = water;
+% fracture.fluid           = water;
 
 % Add fractures to model
 mdl.addPreExistingDiscontinuities(fracture);

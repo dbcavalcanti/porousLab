@@ -54,8 +54,8 @@ mdl.setPressureDirichletBCAtBorder('top', 60.0e3,  [12.0, 24.0]);
 %% DISCONTINUITIES
 
 % Generate fractures
-FractureDataDamFoundation = generateRandomFractures(Lx, Ly, 20, 2*Lx/Nx, 'Seed', 12345);
-% FractureDataDamFoundation = generateParallelFractures(Lx, Ly, -pi/4.0, 1.0);
+% FractureDataDamFoundation = generateRandomFractures(Lx, Ly, 20, 2*Lx/Nx, 'Seed', 12345);
+FractureDataDamFoundation = generateParallelFractures(Lx, Ly, -pi/4.0, 1.0);
 % FractureDataDamFoundation2 = generateParallelFractures(Lx, Ly,  pi/3.0, 3.0);
 % FractureDataDamFoundation = [FractureDataDamFoundation1; FractureDataDamFoundation2];
 
