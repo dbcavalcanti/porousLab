@@ -36,6 +36,18 @@ classdef RelativePermeabilityPolynomialLiquid < RelativePermeability
             klr = Sl*porousMedia.m;
             klr = max(klr,porousMedia.klrmin);
         end
+
+        %------------------------------------------------------------------
+        % Compute the liquid phase relative permeability derivative wrt the
+        % liquid saturation degree
+        function dkrdSl = derivative(this, Sl, porousMedia)
+            kr = this.calculate(Sl, porousMedia);
+            if (kr==porousMedia.klrmin)
+                dkrdSl = 0.0;
+            else
+                dkrdSl = porousMedia.m;
+            end
+        end
         
     end
 end

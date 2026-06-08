@@ -9,15 +9,16 @@
 classdef DiscontinuityElement < handle    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        shape           = [];    % Object of the Shape class
-        node            = [];    % Nodes of the fem mesh
-        t               = 1.0;   % Thickness
-        mat             = [];    % Material object
-        intOrder        = 2;     % Order of the numerical integration
-        dof             = [];    % Degrees of freedom vector
-        ndof            = 1;     % Number of dofs
-        nIntPoints      = 1;     % Number of integration points
-        intPoint        = [];    % Vector with integration point objects   
+        shape      = [];    % Object of the Shape class
+        node       = [];    % Nodes of the fem mesh
+        t          = 1.0;   % Thickness
+        mat        = [];    % Material object
+        intOrder   = 2;     % Order of the numerical integration
+        dof        = [];    % Degrees of freedom vector
+        dofOld     = [];    % Old degrees of freedom
+        ndof       = 0;     % Number of dofs
+        intPoint   = [];    % Vector with integration point objects       
+        nIntPoints = 1;     % Number of integration points
         useNodalEnrDofs = false;
         nNodalDofs      = [];    % Number of nodal enrichment dofs
     end
@@ -111,6 +112,7 @@ classdef DiscontinuityElement < handle
         %------------------------------------------------------------------
         % Update state variables.
         function updateStateVar(this)
+            this.dofOld = this.dof;
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();

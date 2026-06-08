@@ -25,8 +25,11 @@ classdef Discontinuity < handle
         % Properties:
         % The properties must be included in the data structure
         % constructed in the createMaterialDataStructure method
+        porousMedia         = [];
+        porosity            = [];
         cohesiveLaw         = [];
-        fluid               = [];
+        liquidFluid         = [];
+        gasFluid            = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
@@ -132,7 +135,10 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         % Create material data strcture.
         function mat = createMaterialDataStructure(this)
-            mat = struct('fluid',this.fluid,...
+            mat = struct('porousMedia',this.porousMedia,...
+                         'porosity', this.porosity,...
+                         'liquidFluid',this.liquidFluid,...
+                         'gasFluid',this.gasFluid,...
                          'cohesiveLaw',this.cohesiveLaw, ...
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
@@ -165,7 +171,7 @@ classdef Discontinuity < handle
             for i = 1:size(this.Xlin, 1)-1
                 if (this.elemID(i) > 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
-                    plot(seg(:,1), seg(:,2), '-.r', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
+                    plot(seg(:,1), seg(:,2), '-.k', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
                 end
             end
         end

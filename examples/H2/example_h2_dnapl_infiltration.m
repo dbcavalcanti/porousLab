@@ -15,11 +15,9 @@
 %% MODEL
 
 % Create model
-mdl = Model_H2_PcPg();
+mdl = Model_H2();
 
 % Set model options
-mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
-mdl.lumpStrategy = 2;
 mdl.gravityOn    = true;
 
 %% MESH
@@ -92,19 +90,19 @@ mdl.setMaterial([mat1, mat2], water, dnapl);
 
 %% BOUNDARY AND INITIAL CONDITIONS
 
-% Capillary pressure
-mdl.setCapillaryPressureDirichletBCAtBorder('left'  , 755.0);
-mdl.setCapillaryPressureDirichletBCAtBorder('right' , 755.0);
-mdl.setCapillaryPressureDirichletBCAtBorder('bottom', 755.0);
-mdl.setInitialCapillaryPressureAtDomain(755.0);
+% Initial capillary pressure (Pa)
+pci = 755.0; 
 
-% Gas pressure (hydrostatic profile)
+% Hydrostatic profile
 for i = 1:mdl.nnodes
     pg = 7886.5 - 9810.0 * mdl.NODE(i,2);
+    pl = pg - pci;
     mdl.setInitialGasPressureAtNode(i, pg);
+    mdl.setInitialPressureAtNode(i, pl);
 
-    % Fix gas pressure at lateral borders
+    % Fix pressure at lateral borders
     if ((abs(mdl.NODE(i,1)) < 1.0e-12) || ((abs(mdl.NODE(i,1) - Lx)) < 1.0e-12))
+        mdl.setPressureDirichletBCAtNode(i, pl);
         mdl.setGasPressureDirichletBCAtNode(i, pg);
     end
 end
@@ -122,15 +120,15 @@ end
 % Analysis parameters
 ti        = 1.0;    % Initial time
 dt        = 1.0;    % Time step
-tf        = 800.0;  % Final time
+tf        = 2000.0;  % Final time
 dtmax     = 20.0;   % Maximum time step
 dtmin     = 0.01;   % Minimum time step
 adaptStep = true;   % Adaptive step size
 
 % Run analysis
-anl = Anl_Transient("Picard");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
-anl.setRelativeConvergenceCriteria(true);
+anl.maxIter = 10;
 anl.run(mdl);
 
 %% POST-PROCESS

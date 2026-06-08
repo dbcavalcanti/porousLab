@@ -17,17 +17,15 @@
 mdl = Model_H2();
 
 % Set model options
-mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
-mdl.lumpStrategy = 2;
-mdl.intOrder     = 3;     % Integration rule order for the domain
+mdl.gravityOn  = true;
 
 %% MESH
 
 % Create mesh
-Lx = 2.6;  % Horizontal dimension (m)
-Ly = 0.5;  % Vertical dimension (m)
-Nx = 100;  % Number of elements in the x-direction
-Ny = 1;    % Number of elements in the y-direction
+Lx = 1.0;  % Horizontal dimension (m)
+Ly = 1.0;  % Vertical dimension (m)
+Nx = 31;  % Number of elements in the x-direction
+Ny = 31;    % Number of elements in the y-direction
 [node, elem] = regularMesh(Lx, Ly, Nx, Ny);
 
 % Set mesh to model
@@ -37,19 +35,23 @@ mdl.setMesh(node, elem);
 
 % Create fluids
 water = Fluid('water');
-gas   = Fluid('gas');
+gas   = IdealGas('gas');
+gas.mu = 1.65e-5;
+gas.T  = 293.2016;
 
 % Create porous media
 rock = PorousMedia('rock');
-rock.K                  = 1.0e-10;        % Intrinsic permeability (m2)
-rock.phi                = 0.3;            % Porosity
+rock.K                  = 1.0e-12;        % Intrinsic permeability (m2)
+rock.phi                = 0.1;            % Porosity
 rock.Slr                = 0.0;            % Residual liquid saturation
 rock.Sgr                = 0.0;            % Residual gas saturation
-rock.Pb                 = 5.0e+3;         % Gas-entry pressure
+rock.Pb                 = 2.0e+3;         % Gas-entry pressure
 rock.lambda             = 2.0;            % Curve-fitting parameter
 rock.liqRelPermeability = 'BrooksCorey';  % Liquid relative permeability
 rock.gasRelPermeability = 'BrooksCorey';  % Gas relative permeability
 rock.capillaryPressure  = 'BrooksCorey';  % Saturation degree function
+rock.setMinGasRelPermeability(1.0e-4);
+rock.setMinLiquidRelPermeability(1.0e-4);
 
 % Set materials to model
 mdl.setMaterial(rock, water, gas);
@@ -57,19 +59,39 @@ mdl.setMaterial(rock, water, gas);
 %% BOUNDARY AND INITIAL CONDITIONS
 
 % Set Dirichlet boundary conditions
-mdl.setPressureDirichletBCAtBorder('left', 195.0e+3);
-mdl.setGasPressureDirichletBCAtBorder('left', 200.0e+3);
+mdl.setPressureDirichletBCAtBorder('top', 0.0);
+mdl.setGasPressureDirichletBCAtBorder('top', 1000.0);
 
-% Set initial conditions
-mdl.setInitialPressureAtDomain(-50.0e+3);
+% Set Neumann boundary conditions
+mdl.setGasPressureNeumannBCAtBorder('bottom', 0.00001);
+
+% Initial conditions
+mdl.setInitialGasPressureAtDomain(1000.0);
+
+%% DISCONTINUITIES
+
+% Create discontinuities
+Xd = [0.5, 0.0;
+      0.5, 1.0]; 
+fracture = Discontinuity(Xd, true);
+
+% Set fracture material properties
+fracture.porousMedia = rock;
+fracture.liquidFluid = water;
+fracture.gasFluid = gas;
+fracture.porosity = 0.3;
+fracture.initialAperture = 5.0e-3;
+
+% Add fractures to model
+mdl.addPreExistingDiscontinuities(fracture);
 
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.1;        % Initial time
-dt        = 0.1;        % Time step
-tf        = 1000;       % Final time
-dtmax     = 10.0;       % Maximum time step
+ti        = 0.00001;      % Initial time
+dt        = 0.00001;      % Time step
+tf        = 100;       % Final time
+dtmax     = 2.0;        % Maximum time step
 dtmin     = 0.0000001;  % Minimum time step
 adaptStep = true;       % Adaptive step size
 
@@ -82,8 +104,8 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % Plot contours
-mdl.plotField('CapillaryPressure');
+mdl.plotField('GasSaturation');
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [Lx, 0.0];
-mdl.plotFieldAlongSegment('LiquidPressure', Xi, Xf, 500, 'x');
+mdl.plotFieldAlongSegment('LiquidSaturation', Xi, Xf, 500, 'x');

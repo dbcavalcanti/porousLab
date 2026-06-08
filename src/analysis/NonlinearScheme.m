@@ -13,6 +13,7 @@ classdef NonlinearScheme < handle
     properties (SetAccess = public, GetAccess = public)
         tol = 1.0e-5;
         normalizeError = false;
+        scaleLinearSystem = false;
     end
 
     %% Constructor method

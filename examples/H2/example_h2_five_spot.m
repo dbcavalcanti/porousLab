@@ -1,6 +1,6 @@
 %% DESCRIPTION
 %
-% Five-spot corner problem using the Pc-Pg two-phase flow formulation.
+% Five-spot corner problem using the Pl-Pg two-phase flow formulation.
 %
 % Physics:
 % * Two-phase hydraulic (H2)
@@ -11,7 +11,7 @@
 %% MODEL
 
 % Create model
-mdl = Model_H2_PcPg();
+mdl = Model_H2();
 
 % Set model options
 mdl.massLumping  = true;  % Diagonalize compressibility matrix (mass lumping)
@@ -52,14 +52,16 @@ mdl.setMaterial(rock, water, gas);
 
 %% BOUNDARY AND INITIAL CONDITIONS
 
+%pc = pg - pl
+% pl = pg - pc
 % Set Dirichlet boundary conditions
-mdl.setCapillaryPressureDirichletBCAtPoint([0.0, 0.0], 0.0);
-mdl.setCapillaryPressureDirichletBCAtPoint([Lx, Ly], 105018.5554);
+mdl.setPressureDirichletBCAtPoint([0.0, 0.0], 1.5e6);
+mdl.setPressureDirichletBCAtPoint([Lx, Ly], 1.0e6-105018.5554);
 mdl.setGasPressureDirichletBCAtPoint([0.0, 0.0], 1.5e6);
 mdl.setGasPressureDirichletBCAtPoint([Lx, Ly], 1.0e6);
 
 % Set initial conditions
-mdl.setInitialCapillaryPressureAtDomain(105018.5554);
+mdl.setInitialPressureAtDomain(0.0);
 mdl.setInitialGasPressureAtDomain(105018.5554);
 
 %% PROCESS
@@ -74,10 +76,9 @@ dtmin     = 0.001*day;  % Minimum time step
 adaptStep = true;       % Adaptive step size
 
 % Run analysis
-anl = Anl_Transient("Picard");
+anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
-anl.setRelativeConvergenceCriteria(true);
-anl.maxIter = 15;
+anl.maxIter = 10;
 anl.run(mdl);
 
 %% POST-PROCESS
