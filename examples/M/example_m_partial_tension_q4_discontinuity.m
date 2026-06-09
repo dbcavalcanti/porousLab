@@ -2,7 +2,7 @@
 %
 % Block crossed by strong discontinuity. Stretching mode.
 %
-% Reference DOI: 10.1016/j.cma.2009.07.013
+% Reference DOI: 10.1016/j.cma.2011.05.008
 %
 % Physics:
 % * Mechanical (M)
@@ -17,7 +17,6 @@ mdl = Model_M();
 
 % Set model options
 mdl.isPlaneStress     = true;
-mdl.condenseEnrDofs   = false;
 mdl.subDivIntegration = true;
 mdl.symmetricSDAEFEM  = false;
 
