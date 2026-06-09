@@ -1,6 +1,7 @@
 %% DESCRIPTION
 %
-% Kueper and Frind problem using the two-phase flow formulation.
+% Kueper and Frind problem using liquid pressure (Pl) and gas pressure (Pg)
+% as primary variables.
 %
 % Physics:
 % * Two-phase hydraulic (H2)

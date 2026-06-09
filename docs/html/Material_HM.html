@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Material_HM Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Material_HM.m"><style type="text/css">
+      --><title>Material_HM Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Material_HM.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -134,23 +134,23 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 ##### SOURCE BEGIN #####
 %% Material_HM Class
 % The _Material_HM_ class represents a material model for hydro-mechanical
-% analysis. It encapsulates the properties and behaviors of the fluid, 
+% analysis. It encapsulates the properties and behaviors of the fluid,
 % porous media, and mechanical constitutive behavior.
-% 
+%
 %% Methods
-% * *mechanicalLaw*: Evaluates the mechanical constitutive law at a given 
-%                    integration point and returns the stress and the 
+% * *mechanicalLaw*: Evaluates the mechanical constitutive law at a given
+%                    integration point and returns the stress and the
 %                    constitutive matrix.
-% * *getNumberStateVar*: Returns the number of state variables associated 
+% * *getNumberStateVar*: Returns the number of state variables associated
 %                        with the mechanical constitutive law.
 % * *biotCoeff*: Returns the Biot coefficient of the porous media.
-% * *permeabilityTensor*: Computes and returns the permeability tensor, 
+% * *permeabilityTensor*: Computes and returns the permeability tensor,
 %                         accounting for the fluid viscosity.
-% * *compressibilityCoeff*: Computes and returns the compressibility 
+% * *compressibilityCoeff*: Computes and returns the compressibility
 %                           coefficient of the material.
-% * *hasPlasticStrain*: Checks if the material exhibits elasto-plastic 
+% * *hasPlasticStrain*: Checks if the material exhibits elasto-plastic
 %                       behavior.
-% 
+%
 %% Author
 % Danilo Cavalcanti
 %
@@ -164,7 +164,7 @@ classdef Material_HM < handle
         fluid       = Fluid();
         porousMedia = PorousMedia();
         mechanical  = [];
-    end  
+    end
     %% Constructor method
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -216,7 +216,7 @@ classdef Material_HM < handle
             % Compute the compressibility
             comp = (biot - phi)/Ks + phi/Kf;
         end
-        
+
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Checks if the material exhibits elasto-plastic behaviour
         function flag = hasPlasticStrain(this)

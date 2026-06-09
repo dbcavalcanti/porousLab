@@ -3,7 +3,7 @@
 % two-phase fluid flow. It extends the _Model_M_ class and is designed to 
 % handle problems involving coupled solid deformation and fluid flow
 % (liquid and gas phases) in porous media. Each node in the model has four
-% degress of freedom:
+% degrees of freedom:
 %
 % * 2 displacement components (ux,uy)
 % * 1 liquid-phase pore pressure (Pl)
@@ -39,13 +39,13 @@
 % * *setGasPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
-% * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtNode*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtPoint*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
-% * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtBorder*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
 % * *setInitialGasPressureAtDomain*: Sets the initial gas-phase pressure 
@@ -78,10 +78,10 @@ classdef Model_H2M < Model_M
     methods
 
         %------------------------------------------------------------------
-        % Sets de material properties
+        % Sets the material properties
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics H2M requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
                 error('Error in setMaterial.');
             end

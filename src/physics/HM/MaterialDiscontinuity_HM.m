@@ -1,14 +1,18 @@
-%% MaterialDiscontinuity_H class
-% This class represents a material discontinuity in a porous medium, 
-% characterized by its initial aperture and the fluid properties. 
-% It provides methods to compute the longitudinal permeability 
-% coefficient and compressibility based on the material's properties.
+%% MaterialDiscontinuity_HM Class
+% This class represents a hydro-mechanical material discontinuity,
+% characterized by cohesive mechanical properties, aperture, leak-off, and
+% liquid-fluid properties. It provides methods to evaluate the cohesive law,
+% update aperture, and compute longitudinal permeability and
+% compressibility.
 %
 %% Methods
-% * *longitudinalPermeability*: Computes the longitudinal permeability 
+% * *mechanicalLaw*: Evaluates the cohesive mechanical law.
+% * *initializeAperture*: Initializes the aperture state variable.
+% * *updateAperture*: Updates the aperture state variable.
+% * *longitudinalPermeability*: Computes the longitudinal permeability
 %                               coefficient based on the cubic law.
-% * *compressibility*: Computes  the compressibility of the material 
-%                      discontinuity based on its aperture and fluid 
+% * *compressibility*: Computes the compressibility of the material
+%                      discontinuity based on its aperture and fluid
 %                      properties.
 % 
 %% Author
@@ -56,7 +60,7 @@ classdef MaterialDiscontinuity_HM < handle
         end
 
         % -----------------------------------------------------------------
-        % Evaluate the mechanical constitutive law
+        % Initialize the aperture state variable
         function initializeAperture(this,ip)
            this.mechanical.initializeAperture(this.parameters,ip);
         end
@@ -75,13 +79,13 @@ classdef MaterialDiscontinuity_HM < handle
         end
 
         % -----------------------------------------------------------------
-        % Check if the material is elasto-plastic or not
+        % Get the aperture from the previous state variables
         function w = getAperture(~,ip)
             w = ip.statevarOld(1);
         end
 
         % -----------------------------------------------------------------
-        % Check if the material is elasto-plastic or not
+        % Update the aperture state variable from the normal strain increment
         function updateAperture(~,ip)
             ip.statevar(1) = ip.statevarOld(1) + (ip.strain(2) - ip.strainOld(2));
         end

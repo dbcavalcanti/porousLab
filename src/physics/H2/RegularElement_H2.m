@@ -9,19 +9,10 @@
 % * *initializeIntPoints*: Initializes the integration points for the 
 %                          element using the shape function and material 
 %                          properties.
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
-%                  displacement.
-% * *permeabilityTensors*: Computes the permeability tensors for the 
-%                          element.
-% * *compressibilityCoeffs*: Computes the compressibility coefficients 
-%                            for the element.
-% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
-%                                  matrices based on the element volume 
-%                                  and compressibility coefficients.
-% * *addGravityForces*: Adds the contribution of gravity forces to the 
-%                       external force vector.
+% * *elementData*: Assembles the element residual and tangent terms for
+%                  liquid pressure and gas pressure, including advective,
+%                  gravity, storage, saturation, density, and relative
+%                  permeability contributions.
 % * *getNodalLiquidPressure*: Retrieves the nodal liquid pressure values.
 % * *getNodalGasPressure*: Retrieves the nodal gas pressure values.
 % * *getNodalCapillaryPressure*: Retrieves the nodal capillary pressure 
@@ -300,7 +291,7 @@ classdef RegularElement_H2 < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Add contribution of the gravity forces to the external force vct
+        % Add contribution of the gravity forces to the external force vector
         function [fel,feg] = addGravityForces(this,fel,feg,Bp,kl,kg,pl,pg,c)
 
             % Get gravity vector

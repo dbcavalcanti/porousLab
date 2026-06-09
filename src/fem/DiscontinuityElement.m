@@ -1,5 +1,5 @@
 %% DiscontinuityElement Class
-% This in an abstract class that defines a discontinuity element in a finite element mesh.
+% This is an abstract class that defines a discontinuity element in a finite element mesh.
 % It provides methods to compute geometric and physical properties of the discontinuity.
 % 
 %% Authors
@@ -44,7 +44,7 @@ classdef DiscontinuityElement < handle
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force wrt displacement
+% dfidu : element matrix of derivative of the internal force with respect to displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     end
 

@@ -1,15 +1,12 @@
-%% MaterialDiscontinuity_H class
-% This class represents a material discontinuity in a porous medium, 
-% characterized by its initial aperture and the fluid properties. 
-% It provides methods to compute the longitudinal permeability 
-% coefficient and compressibility based on the material's properties.
+%% MaterialDiscontinuity_H2 Class
+% This class represents a two-phase flow material discontinuity in a porous
+% medium, characterized by its initial aperture, porosity, leak-off, and
+% liquid/gas fluid properties. It extends _Material_H2_ and provides the
+% longitudinal permeability of the discontinuity.
 %
 %% Methods
-% * *longitudinalPermeability*: Computes the longitudinal permeability 
+% * *longitudinalPermeability*: Computes the longitudinal permeability
 %                               coefficient based on the cubic law.
-% * *compressibility*: Computes  the compressibility of the material 
-%                      discontinuity based on its aperture and fluid 
-%                      properties.
 % 
 %% Author
 % Danilo Cavalcanti

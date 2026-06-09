@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>RegularElement Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RegularElement.m"><style type="text/css">
+      --><title>RegularElement Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="RegularElement.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>RegularElement Class</h1><!--introduction--><p>This in an abstract class that defines a regular finite element in a finite element mesh. It provides properties and methods to define the element's geometry, material properties, numerical integration, and other characteristics required for finite element analysis.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Abstract methods</a></li><li><a href="#6">Public methods</a></li><li><a href="#7">Static methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> RegularElement &lt; handle
+  </style></head><body><div class="content"><h1>RegularElement Class</h1><!--introduction--><p>This is an abstract class that defines a regular finite element in a finite element mesh. It provides properties and methods to define the element's geometry, material properties, numerical integration, and other characteristics required for finite element analysis.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Abstract methods</a></li><li><a href="#6">Public methods</a></li><li><a href="#7">Static methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> RegularElement &lt; handle
 </pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         shape           = [];       <span class="comment">% Object of the Shape class</span>
         node            = [];       <span class="comment">% Nodes of the fem mesh</span>
@@ -92,6 +92,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         lumpStrategy    = 1;        <span class="comment">% Id of the diagonalization strategy</span>
         isAxisSymmetric = false;    <span class="comment">% Flag to axissymetric models</span>
         DTime           = [];       <span class="comment">% Time increment</span>
+        subDivInt       = false;    <span class="comment">% Flag to apply a sub-division of the element to define the integration points</span>
     <span class="keyword">end</span>
 </pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
@@ -129,7 +130,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%    Ce : element "damping" matrix</span>
         <span class="comment">%    fe : element "external force" vector</span>
         <span class="comment">%    fi : element "internal force" vector</span>
-        <span class="comment">% dfidu : element matrix of derivative of the internal force wrt displacement</span>
+<span class="comment">% dfidu : element matrix of derivative of the internal force with respect to displacement</span>
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
     <span class="keyword">end</span>
 </pre><h2 id="6">Public methods</h2><pre class="codeinput">    methods
@@ -217,15 +218,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RegularElement Class
-% This in an abstract class that defines a regular finite element in a finite element mesh.
+% This is an abstract class that defines a regular finite element in a finite element mesh.
 % It provides properties and methods to define the element's geometry, material properties,
 % numerical integration, and other characteristics required for finite element analysis.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
-% 
+%
 %% Class definition
-classdef RegularElement < handle    
+classdef RegularElement < handle
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         shape           = [];       % Object of the Shape class
@@ -250,7 +251,8 @@ classdef RegularElement < handle
         massLumping     = false;    % Flag to apply a diagonalization of the compressibility matrix
         lumpStrategy    = 1;        % Id of the diagonalization strategy
         isAxisSymmetric = false;    % Flag to axissymetric models
-        DTime           = [];       % Time increment          
+        DTime           = [];       % Time increment
+        subDivInt       = false;    % Flag to apply a sub-division of the element to define the integration points
     end
 
     %% Constructor method
@@ -275,7 +277,7 @@ classdef RegularElement < handle
                 elseif this.nnd_el == 8
                     this.shape = Shape_ISOQ8();
                 elseif this.nnd_el == 3
-                    this.shape = Shape_CST();   
+                    this.shape = Shape_CST();
                 elseif this.nnd_el == 6
                     this.shape = Shape_LST();
                 end
@@ -292,7 +294,7 @@ classdef RegularElement < handle
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force wrt displacement
+% dfidu : element matrix of derivative of the internal force with respect to displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
     end
 
@@ -304,7 +306,7 @@ classdef RegularElement < handle
             [Ke,Ce,fi,fe,dfidu] = this.elementData();
             [Ae,be] = nlscheme.assembleLinearSystem(Ce,Ke,fi,fe,dfidu,this.ue,this.ueOld,this.DTime);
         end
-        
+
         % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
         % Update state variables.
         function updateStateVar(this)
@@ -329,7 +331,7 @@ classdef RegularElement < handle
             lc = this.getDomainArea();
             if strcmp(this.shape.type,'CST') || strcmp(this.shape.type,'LST')
                 lc = lc * sqrt(2.0);
-            end 
+            end
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -342,12 +344,12 @@ classdef RegularElement < handle
         % Calculate the area of the element from its vertices.
         function A = calculateArea(~,node)
             % Vertices of the coordinates
-            vx = node(:,1); 
+            vx = node(:,1);
             vy = node(:,2);
 
             % Shifted vertices
             vxS = vx([2:end, 1]);
-            vyS = vy([2:end, 1]); 
+            vyS = vy([2:end, 1]);
 
             % Compute polygon area
             temp = vx.*vyS - vy.*vxS;
@@ -360,7 +362,7 @@ classdef RegularElement < handle
             if strcmp(configuration,'Deformed')
                 Nodes = this.getDeformedConfiguration();
                 this.result.setVertices(Nodes);
-            end  
+            end
         end
     end
 

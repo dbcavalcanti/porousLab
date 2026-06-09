@@ -18,13 +18,13 @@
 % * *setPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
 %                                     conditions for liquid-phase pore 
 %                                     pressure at a specific border.
-% * *setPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtNode*: Sets pressure Neumann boundary
 %                                 conditions for liquid-phase pore 
 %                                 pressure at a specific node.
-% * *setPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtPoint*: Sets pressure Neumann boundary
 %                                  conditions for liquid-phase pore 
 %                                  pressure at a specific point.
-% * *setPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtBorder*: Sets pressure Neumann boundary
 %                                   conditions for liquid-phase pore 
 %                                   pressure at a specific border.
 % * *setInitialPressureAtDomain*: Sets the initial pressure value for the 
@@ -77,7 +77,7 @@ classdef Model_H < Model
         % Sets the material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics H requires 2 attribute(s): porousMedia, fluid.');
                 error('Error in setMaterial.');
             end

@@ -1,6 +1,7 @@
 %% DESCRIPTION
 %
-% McWhorter and Sunada problem using the two-phase flow formulation
+% McWhorter and Sunada problem using liquid pressure (Pl) and gas pressure
+% (Pg) as primary variables.
 %
 % References:
 % * McWhorter and Sunada (1990). Exact integral solutions for two-phase

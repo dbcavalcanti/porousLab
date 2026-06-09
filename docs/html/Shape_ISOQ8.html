@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Shape_ISOQ8 Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Shape_ISOQ8.m"><style type="text/css">
+      --><title>Shape_ISOQ8 Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Shape_ISOQ8.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -232,17 +232,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
          <span class="keyword">end</span>
 
          <span class="comment">%------------------------------------------------------------------</span>
-         <span class="comment">% Compute the strain-displacement matrix</span>
-         <span class="keyword">function</span> [B] = BMatrix(~,dNdx)
-            B = zeros(4,8*2);
-            <span class="keyword">for</span> i = 1:8
-                B(1,2*i-1) = dNdx(1,i);
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            <span class="keyword">end</span>
-         <span class="keyword">end</span>
-
-         <span class="comment">%------------------------------------------------------------------</span>
          <span class="comment">% Transform a point from the natural coordinate system to the</span>
          <span class="comment">% global cartesian coordinate system</span>
          <span class="comment">% Input:</span>
@@ -409,6 +398,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Size of the Gram matrix</span>
+        <span class="comment">% The stress field in a Q4 element is assumed to be a linear</span>
+        <span class="comment">% polynomial in terms of the relative coordinates x and y,</span>
+        <span class="comment">% evaluated wrt to the element centroid</span>
+        <span class="keyword">function</span> n = dimPolynomialStressInterp(~)
+            n = 6;
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Integrand to compute the Gram Matrix</span>
         <span class="keyword">function</span> dH = integrandGramMtrx(this, node, X)
             X    = this.coordNaturalToCartesian(node,X);
@@ -478,7 +476,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 ##### SOURCE BEGIN #####
 %% Shape_ISOQ8 Class
 % This class inherits from the base class 'Shape' to implement the behavior of a quadratic quadrilateral isoparametric element (ISOQ8).
-% 
+%
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
@@ -494,7 +492,7 @@ classdef Shape_ISOQ8 < Shape
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Evaluate the shape function at a given point X of a linear 
+        % Evaluate the shape function at a given point X of a linear
         % quadrilateral isoparametric element.
          function N = shapeFnc(~,Xn)
             % Natural coordinates of the given point
@@ -558,8 +556,8 @@ classdef Shape_ISOQ8 < Shape
             dN7_dxi  = - xi - eta*xi;
             dN8_dxi  = eta*eta/2 - 0.5;
 
-            dN1_deta = eta/2 + xi/4 - (eta*xi)/2 - xi^2/4;  
-            dN2_deta = eta/2 - xi/4 + (eta*xi)/2 - xi^2/4; 
+            dN1_deta = eta/2 + xi/4 - (eta*xi)/2 - xi^2/4;
+            dN2_deta = eta/2 - xi/4 + (eta*xi)/2 - xi^2/4;
             dN3_deta = eta/2 + xi/4 + (eta*xi)/2 + xi^2/4;
             dN4_deta = eta/2 - xi/4 - (eta*xi)/2 + xi^2/4;
             dN5_deta  = xi*xi/2 - 0.5;
@@ -593,7 +591,7 @@ classdef Shape_ISOQ8 < Shape
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
-              
+
             % Jacobian matrix
             J = dNdxn * X;
          end
@@ -604,7 +602,7 @@ classdef Shape_ISOQ8 < Shape
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.linearShapeFncDrv(Xn);
-              
+
             % Jacobian matrix
             J = dNdxn * X;
          end
@@ -651,39 +649,28 @@ classdef Shape_ISOQ8 < Shape
          end
 
          %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-         % Compute the strain-displacement matrix
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,8*2);
-            for i = 1:8
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            end
-         end
-
-         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
          %   NODE : matrix with the x and y coordinates of the nodes of an
          %           ISOQ8 element
-         %   Xn   : vector with the xi and eta coordinates of a point in 
+         %   Xn   : vector with the xi and eta coordinates of a point in
          %          the natural coordinate system
          %
          % Output:
-         %   X : vector with the x and y coordinates of a point in the 
+         %   X : vector with the x and y coordinates of a point in the
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
-            
+
             % Vector with the shape functions
             Nv = this.shapeFnc(Xn);
-            
+
             % Initialize output
             X = [0.0, 0.0];
-            
+
             % Interpolation the position
             X(1) = Nv(1)*x(1) +  Nv(2)*x(2) +  Nv(3)*x(3) +  Nv(4)*x(4) + Nv(5)*x(5) +  Nv(6)*x(6) +  Nv(7)*x(7) +  Nv(8)*x(8);
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2) +  Nv(3)*y(3) +  Nv(4)*y(4) + Nv(5)*y(5) +  Nv(6)*y(6) +  Nv(7)*y(7) +  Nv(8)*y(8);
@@ -693,9 +680,9 @@ classdef Shape_ISOQ8 < Shape
          % Transform a point from the natural coordinate system to the
          % global cartesian coordinate system
          % Input:
-         %   NODE : matrix with the x and y coordinates of the nodes of the 
+         %   NODE : matrix with the x and y coordinates of the nodes of the
          %          element
-         %   X    : vector with the x and y coordinates of a point in the 
+         %   X    : vector with the x and y coordinates of a point in the
          %          global cartesian coordinate system
          %
          % Output:
@@ -706,7 +693,7 @@ classdef Shape_ISOQ8 < Shape
             % Extract the nodal coordinates
             x = NODE(1:4,1);
             y = NODE(1:4,2);
-            
+
             % Felippa's algorithm:
             xb  = x(1) - x(2) + x(3) - x(4);
             yb  = y(1) - y(2) + y(3) - y(4);
@@ -725,7 +712,7 @@ classdef Shape_ISOQ8 < Shape
             bet = -A - xp0*yb + yp0*xb;
             cxi = xp0*ycx - yp0*xcx;
             cet = xp0*yce - yp0*xce;
-            
+
             % Natural coordinates
             xi  = 2.0*cxi / (-sqrt(bxi^2 - 2*J1*cxi) - bxi);
             eta = 2.0*cet / (sqrt(bet^2 + 2*J2*cet) - bet);
@@ -734,7 +721,7 @@ classdef Shape_ISOQ8 < Shape
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Function to get the matrices with the coordinates and weights of
-        % integration points in the natural coordinate system. 
+        % integration points in the natural coordinate system.
         % The definition of the integration points depends on the choice of
         % the order of the quadrature rule and the option for subdividing
         % the domain or not.
@@ -757,7 +744,7 @@ classdef Shape_ISOQ8 < Shape
                 % Compute the integration points
                 [w,x] = this.getlineQuadrature(intOrder);
 
-                % Assemble the matrix with the integration points 
+                % Assemble the matrix with the integration points
                 [Xip,Yip] = meshgrid(x,x);
                 X = [Xip(:)';Yip(:)'];
 
@@ -784,7 +771,7 @@ classdef Shape_ISOQ8 < Shape
                     FractSeg  = [FractSeg;nnodes+k,nnodes+k+1];
                     k = k + 2;
                 end
-                
+
                 % Perform a Delaunay triangulation to create subelements
                 DT = delaunayTriangulation(elemNodes,FractSeg);
 
@@ -815,7 +802,7 @@ classdef Shape_ISOQ8 < Shape
                         detJel = this.detJacobian(elem.node,x(:,ip));
                         detJ   = shapeCST.detJacobian(DT.Points(DT.ConnectivityList(subelem,:),:),x(:,ip));
                         W(count) = w(ip)*detJ/detJel;
-                
+
                         % Mapping the integration point to the quadrilateral
                         % element natural system
                         X(:,count) = this.coordCartesianToNatural(elem.node,Xi)';
@@ -823,8 +810,17 @@ classdef Shape_ISOQ8 < Shape
                         count = count + 1;
 
                     end
-                end 
+                end
             end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Size of the Gram matrix
+        % The stress field in a Q4 element is assumed to be a linear
+        % polynomial in terms of the relative coordinates x and y,
+        % evaluated wrt to the element centroid
+        function n = dimPolynomialStressInterp(~)
+            n = 6;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -866,31 +862,31 @@ classdef Shape_ISOQ8 < Shape
         function [w,gp] = getlineQuadrature(order)
             % Number of Gauss points
             intOrder = order;
-        
+
             % Define the coefficients of the three-term recurrence
             % relationship
             a = @(intOrder)(2*intOrder+1)./(intOrder+1);
             b = @(intOrder)0;
             c = @(intOrder)intOrder./(intOrder+1);
-        
+
             % Constructe the symmetric tridiagonal matrix
             A = -b(0:intOrder-1)./a(0:intOrder-1); B = sqrt(c(1:intOrder-1)./(a(0:intOrder-2).*a(1:intOrder-1)));
-            J = diag(B,1) + diag(A) + diag(B,-1);  
-        
+            J = diag(B,1) + diag(A) + diag(B,-1);
+
             % Compute the eigenvalues and eigenvectors
             [V,D] = eig(J,'vector');
-        
+
             % Save (sorted) points and weights
             [gp,I] = sort(D);
-            w = (2*V(1,I).^2)'; 
-        
+            w = (2*V(1,I).^2)';
+
             % Note: The next three lines insure zero is zero and the points
             % and weights are perfectly symmetric
-            gp(abs(gp)<10*eps) = 0; 
+            gp(abs(gp)<10*eps) = 0;
             gp(ceil(end/2)+1:end) = -flipud(gp(1:floor(end/2)));
             w(ceil(end/2)+1:end) = flipud(w(1:floor(end/2)));
 
-        end  
+        end
     end
 end
 

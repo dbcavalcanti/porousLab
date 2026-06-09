@@ -1,26 +1,21 @@
 %% Material_H2 class
 % This class defines the material properties and behavior for a porous 
 % medium involving liquid and gas phases. It includes methods for 
-% computing relative permeabilities, saturation degrees, permeability 
-% matrices, and compressibility coefficients for the liquid and gas phases.
+% computing saturation degrees, saturation derivatives, relative
+% permeabilities, relative permeability derivatives, and gas-density
+% derivatives for the liquid and gas phases.
 %
 %% Methods
 % * *saturationDegree*: Computes the liquid saturation degree based on 
 %                       the capillary pressure pc.
-% * *permeabilityMtrcs*: Computes the permeability matrices for the liquid
-%                        and gas phases based on the liquid saturation 
-%                        degree Sl, liquid pressure pl, and gas 
-%                        pressure pg.
-% * *permeabilityMtrcsPgPc*: Computes the permeability matrices for the
-%                            liquid and gas phases considering the 
-%                            gas-to-liquid density ratio.
-% * *compressibilityCoeffs*: Computes the compressibility coefficients for
-%                            the liquid and gas phases based on the liquid 
-%                            saturation degree Sl, liquid pressure pl, 
-%                            and gas pressure pg.
-% * *compressibilityCoeffsPgPc*: Computes the compressibility coefficients
-%                                considering the gas-to-liquid 
-%                                density ratio.
+% * *derivativeSaturationDegree*: Computes the derivative of the liquid
+%                                 saturation degree with respect to the
+%                                 capillary pressure pc.
+% * *relativePermeabilities*: Computes the liquid and gas relative
+%                             permeabilities.
+% * *derivativeRelPerm*: Computes the derivatives of the liquid and gas
+%                        relative permeabilities with respect to liquid
+%                        saturation.
 % * *derivativeGasDensityWrtGasPressure*: Computes the derivative of the 
 %                                         gas density with respect to the 
 %                                         gas pressure Pg.
@@ -133,9 +128,9 @@ classdef Material_H2 < handle
         %------------------------------------------------------------------
         % Compute the derivative of the gas density wrt to the gas pressure
         function drhogdpg = derivativeGasDensityWrtGasPressure(this,rhog,pg)
-            % Pertubation value
+            % Perturbation value
             pert = sqrt(eps);
-            % Compute the gas density given a pertubation at the gas pressure
+            % Compute the gas density given a perturbation at the gas pressure
             rhogPert = this.gasFluid.getDensity(pg + pert);
             % Compute the derivative
             drhogdpg = (rhogPert - rhog)/(pert);

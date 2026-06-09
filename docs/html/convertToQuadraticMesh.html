@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>convertToQuadraticMesh function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="convertToQuadraticMesh.m"><style type="text/css">
+      --><title>convertToQuadraticMesh function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="convertToQuadraticMesh.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -120,20 +120,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 ##### SOURCE BEGIN #####
 %% convertToQuadraticMesh function
 % This function converts a linear mesh into a quadratic mesh.
-% 
+%
 %% Inputs
-% * *NODE*: A matrix of size Nx2 containing the x and y coordinates of 
-%           the nodes. Each row represents a node, with the first column 
+% * *NODE*: A matrix of size Nx2 containing the x and y coordinates of
+%           the nodes. Each row represents a node, with the first column
 %           as the x-coordinate and the second column as the y-coordinate.
-% * *ELEM*: A connectivity matrix of size Mx4 (for Q4 elements) or Mx3 
-%           (for T3 elements). Each row represents an element, with 
-%           columns specifying the indices of the nodes that form the 
+% * *ELEM*: A connectivity matrix of size Mx4 (for Q4 elements) or Mx3
+%           (for T3 elements). Each row represents an element, with
+%           columns specifying the indices of the nodes that form the
 %           element.
-% 
+%
 %% Outputs
-% * *NODE_quad*: An updated NODE matrix that includes the original nodes 
+% * *NODE_quad*: An updated NODE matrix that includes the original nodes
 %                and the newly created mid-edge nodes.
-% * *ELEM_quad*: An updated connectivity matrix that includes the 
+% * *ELEM_quad*: An updated connectivity matrix that includes the
 %                quadratic connectivity for each element.
 %
 %% Author

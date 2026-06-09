@@ -19,13 +19,13 @@
 % * *setGasPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
-% * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtNode*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtPoint*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
-% * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtBorder*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
 % * *setInitialGasPressureAtDomain*: Sets the initial gas-phase pressure 
@@ -60,7 +60,7 @@ classdef Model_H2 < Model_H
         % Sets the material properties
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics H2 requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
                 error('Error in setMaterial.');
             end

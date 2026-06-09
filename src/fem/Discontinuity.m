@@ -1,5 +1,5 @@
 %% Discontinuity Class
-% This in an abstract class that defines a discontinuity in a finite element mesh.
+% This is an abstract class that defines a discontinuity in a finite element mesh.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
@@ -133,7 +133,7 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Create material data strcture.
+        % Create material data structure.
         function mat = createMaterialDataStructure(this)
             mat = struct('porousMedia',this.porousMedia,...
                          'porosity', this.porosity,...
@@ -394,7 +394,7 @@ classdef Discontinuity < handle
             for i = 1:size(NODE, 1)
                 node = NODE(i,:); % Current mesh node
 
-                % Distance to detect and perturn nodes
+                % Distance to detect and perturb nodes
                 repelDistance = this.repelTol * Lc(i);
 
                 % Check if this node is close to any node in Xlin
@@ -410,7 +410,7 @@ classdef Discontinuity < handle
                     % If the node is too close, repel it
                     if distance < repelDistance
 
-                        % Get the pertubation direction
+                        % Get the perturbation direction
                         if abs(node(1) - xmin) < 1.0e-12
                             pert_dir = [0.0 , 1.0];
                         elseif abs(node(1) - xmax) < 1.0e-12

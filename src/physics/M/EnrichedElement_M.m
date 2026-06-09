@@ -78,7 +78,7 @@ classdef EnrichedElement_M < RegularElement_M
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % Computes the element data for the current element based on wether
+        % Computes the element data for the current element based on whether
         % the element contains a discontinuity or not.
         % 
         % Outputs:

@@ -1,5 +1,5 @@
 %% Shape Class
-% This in an abstract class that defines an element shape.
+% This is an abstract class that defines an element shape.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)

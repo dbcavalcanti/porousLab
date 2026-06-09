@@ -65,10 +65,10 @@ classdef Model_HM < Model_M
     methods
 
         %------------------------------------------------------------------
-        % Sets de material properties
+        % Sets the material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics HM requires 2 attribute(s): porousMedia, fluid.');
                 error('Error in setMaterial.');
             end

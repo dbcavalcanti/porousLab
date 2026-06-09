@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Anl_Transient Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Anl_Transient.m"><style type="text/css">
+      --><title>Anl_Transient Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Anl_Transient.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -79,6 +79,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         adaptStep   = false;  <span class="comment">% Adaptive step size</span>
         maxIter     = 250;    <span class="comment">% Maximum number of iterations</span>
         maxAttempts = 10;     <span class="comment">% Maximum attempts to converge</span>
+        desiredIter = 5;      <span class="comment">% Desired number of iterations</span>
         echo        = true;   <span class="comment">% Flag to print in the command window</span>
     <span class="keyword">end</span>
 </pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
@@ -104,6 +105,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Execute the transient nonlinear analysis, handle time-stepping,</span>
         <span class="comment">% convergence checks, and update the model state.</span>
+        <span class="comment">% TODO: Improve it to avoid unnecessary iterations</span>
         <span class="keyword">function</span> run(this,mdl)
             disp(<span class="string">"*** Performing transient nonlinear analysis..."</span>)
 
@@ -111,7 +113,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             mdl.preComputations();
 
             <span class="comment">% Initialize analysis parameters</span>
-            t    = this.ti;
+            t    = this.ti + this.dt;
             t0   = this.ti;
             step = 1;
 
@@ -154,6 +156,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                             <span class="keyword">break</span>;
                         <span class="keyword">end</span>
 
+                        <span class="comment">% Check for NaN</span>
+                        <span class="keyword">if</span> (any(isnan(dx)) || any(isnan(X)))
+                            <span class="keyword">break</span>;
+                        <span class="keyword">end</span>
+
                         <span class="comment">% Check maximum number of iterations</span>
                         iter = iter + 1;
                         <span class="keyword">if</span> (iter &gt; this.maxIter)
@@ -179,20 +186,21 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 <span class="keyword">if</span> convFlg == false
                     disp(<span class="string">"Solution did not converge!"</span>);
                     <span class="keyword">break</span>;
+                <span class="keyword">else</span>
+                    mdl.updateStateVar();
                 <span class="keyword">end</span>
-
-                <span class="comment">% Update state variables</span>
-                mdl.updateStateVar();
 
                 <span class="comment">% Update time step</span>
                 <span class="keyword">if</span> (this.adaptStep == true) &amp;&amp; (attempt == 1) &amp;&amp; (brokenStep == false) &amp;&amp; (attemptOld == 1)
-                    this.dt = min(2 * this.dt, this.dtMax);
+                    fstep = (this.desiredIter/iter)^(0.25);
+                    this.dt = max(min(fstep * this.dt, this.dtMax),this.dtMin);
                 <span class="keyword">end</span>
 
                 <span class="comment">% Update time</span>
                 t0 = t;
                 <span class="keyword">if</span> (t + this.dt) &gt; this.tf
                     this.dt = this.tf - t;
+                    <span class="keyword">if</span> (abs(t - this.tf)&lt; 1.0e-15) &amp;&amp; (abs(this.dt) &lt; 1.0e-12), <span class="keyword">break</span>, <span class="keyword">end</span>
                 <span class="keyword">end</span>
                 t = t + this.dt;
                 step = step + 1;
@@ -228,6 +236,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Enable or disable scaling of the linear system</span>
+        <span class="keyword">function</span> setScaleLinearSystem(this,flag)
+            this.nlscheme.scaleLinearSystem = flag;
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Enable or disable relaxation for the Picard nonlinear solution scheme.</span>
         <span class="keyword">function</span> setPicardRelaxation(this,flag)
             this.nlscheme.applyRelaxation = flag;
@@ -260,7 +274,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
-% 
+%
 %% Class definition
 classdef Anl_Transient < Anl
     %% Public properties
@@ -275,6 +289,7 @@ classdef Anl_Transient < Anl
         adaptStep   = false;  % Adaptive step size
         maxIter     = 250;    % Maximum number of iterations
         maxAttempts = 10;     % Maximum attempts to converge
+        desiredIter = 5;      % Desired number of iterations
         echo        = true;   % Flag to print in the command window
     end
 
@@ -304,6 +319,7 @@ classdef Anl_Transient < Anl
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Execute the transient nonlinear analysis, handle time-stepping,
         % convergence checks, and update the model state.
+        % TODO: Improve it to avoid unnecessary iterations
         function run(this,mdl)
             disp("*** Performing transient nonlinear analysis...")
 
@@ -311,7 +327,7 @@ classdef Anl_Transient < Anl
             mdl.preComputations();
 
             % Initialize analysis parameters
-            t    = this.ti;
+            t    = this.ti + this.dt;
             t0   = this.ti;
             step = 1;
 
@@ -354,6 +370,11 @@ classdef Anl_Transient < Anl
                             break;
                         end
 
+                        % Check for NaN
+                        if (any(isnan(dx)) || any(isnan(X)))
+                            break;
+                        end
+
                         % Check maximum number of iterations
                         iter = iter + 1;
                         if (iter > this.maxIter)
@@ -366,7 +387,7 @@ classdef Anl_Transient < Anl
                         break;
                     end
 
-                    % Reduce time step 
+                    % Reduce time step
                     this.dt = max(this.dt/4.0, this.dtMin);
 
                     % Clean previous attempt
@@ -379,20 +400,21 @@ classdef Anl_Transient < Anl
                 if convFlg == false
                     disp("Solution did not converge!");
                     break;
+                else
+                    mdl.updateStateVar();
                 end
-
-                % Update state variables
-                mdl.updateStateVar();
 
                 % Update time step
                 if (this.adaptStep == true) && (attempt == 1) && (brokenStep == false) && (attemptOld == 1)
-                    this.dt = min(2 * this.dt, this.dtMax);
+                    fstep = (this.desiredIter/iter)^(0.25);
+                    this.dt = max(min(fstep * this.dt, this.dtMax),this.dtMin);
                 end
 
                 % Update time
                 t0 = t;
                 if (t + this.dt) > this.tf
                     this.dt = this.tf - t;
+                    if (abs(t - this.tf)< 1.0e-15) && (abs(this.dt) < 1.0e-12), break, end
                 end
                 t = t + this.dt;
                 step = step + 1;
@@ -425,6 +447,12 @@ classdef Anl_Transient < Anl
             this.adaptStep = adaptStep;
             this.dtMax = dtMax;
             this.dtMin = dtMin;
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Enable or disable scaling of the linear system
+        function setScaleLinearSystem(this,flag)
+            this.nlscheme.scaleLinearSystem = flag;
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH

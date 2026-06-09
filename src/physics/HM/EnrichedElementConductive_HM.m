@@ -1,8 +1,8 @@
-%% EnrichedElement_H class
-% This class extends the _RegularElement_H_ class to define a finite 
-% element for single-phase fluid flow that incorporates enriched elements 
-% to handle discontinuities. It provides methods to compute element data, 
-% manage discontinuities, and calculate enriched degrees of freedom.
+%% EnrichedElementConductive_HM Class
+% This class extends the _RegularElement_HM_ class to define a conductive
+% hydro-mechanical finite element with displacement enrichments for
+% discontinuities. It provides methods to compute enriched element data,
+% manage discontinuity segments, and calculate enriched degrees of freedom.
 %
 %% Methods
 % * *elementData*: Computes the element data (stiffness matrix, damping 
@@ -92,7 +92,7 @@ classdef EnrichedElementConductive_HM < RegularElement_HM
         end
 
         %------------------------------------------------------------------
-        % Computes the element data for the current element based on wether
+        % Computes the element data for the current element based on whether
         % the element contains a discontinuity or not.
         % 
         % Outputs:

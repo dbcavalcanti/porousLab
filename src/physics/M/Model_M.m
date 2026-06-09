@@ -81,7 +81,7 @@ classdef Model_M < Model
         % Sets the material properties
         function setMaterial(this,porousMedia)
             if nargin < 2
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics M requires 1 attribute(s): porousMedia.');
                 error('Error in setMaterial.');
             end

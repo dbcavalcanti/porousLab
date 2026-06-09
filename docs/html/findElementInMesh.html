@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>findElementInMesh function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="findElementInMesh.m"><style type="text/css">
+      --><title>findElementInMesh function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="findElementInMesh.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -166,25 +166,25 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% findElementInMesh function
-% This function determines the element in a 2D mesh that contains a given 
-% point P. It supports both triangular and quadrilateral elements. The 
-% function calculates the area of the element and compares it with the 
-% sum of the areas formed by the point P and the vertices of the element. 
-% If the areas match within a tolerance, the point is considered to be 
+% This function determines the element in a 2D mesh that contains a given
+% point P. It supports both triangular and quadrilateral elements. The
+% function calculates the area of the element and compares it with the
+% sum of the areas formed by the point P and the vertices of the element.
+% If the areas match within a tolerance, the point is considered to be
 % inside the element.
-% 
+%
 %% Inputs
-% * *NODE*: A matrix containing the coordinates of the nodes. Each row 
-%           represents a node, with the first column as the x-coordinate 
+% * *NODE*: A matrix containing the coordinates of the nodes. Each row
+%           represents a node, with the first column as the x-coordinate
 %           and the second column as the y-coordinate.
-% * *ELEM*: A matrix containing the indices of the nodes that form each 
-%           element. Each row represents an element, and the number of 
+% * *ELEM*: A matrix containing the indices of the nodes that form each
+%           element. Each row represents an element, and the number of
 %           columns corresponds to the number of vertices.
-% * *P*: A vector representing the coordinates of the point to locate 
+% * *P*: A vector representing the coordinates of the point to locate
 %        in the mesh.
-% 
+%
 %% Outputs
-% * *elemId*: The index of the element in which the point P is located. If 
+% * *elemId*: The index of the element in which the point P is located. If
 %             the point is not inside any element, elemId is set to 0.
 %
 %% Author
@@ -207,10 +207,10 @@ function elemId = findElementInMesh(NODE, ELEM, P)
         if (nv == 6) || (nv ==8)
             nv = nv / 2;
         end
-        
+
         % Get the coordinates of the corner nodes
-        vertices = NODE(ELEM{i}(1:nv), :); 
-        
+        vertices = NODE(ELEM{i}(1:nv), :);
+
         % Define vertices
         if nv == 3
             pv1 = P - vertices(1, :);
@@ -235,8 +235,8 @@ function elemId = findElementInMesh(NODE, ELEM, P)
             vA3 = cross([pv3, 0], [pv4, 0]);
             vA4 = cross([pv4, 0], [pv1, 0]);
         end
-        
-        
+
+
         % Calculate the area of each triangle
         if nv == 3
             A1 = 0.5 * norm(vA1);
@@ -250,10 +250,10 @@ function elemId = findElementInMesh(NODE, ELEM, P)
             A4 = 0.5 * norm(vA4);
             Ai = A1 + A2 + A3 + A4;
         end
-        
+
         % Area of the element
         Aelem = calculateQuadrilateralArea(vertices);
-        
+
         if abs(Aelem - Ai ) < 1e-9
             elemId = i;
             return;
@@ -270,7 +270,7 @@ function area = calculateQuadrilateralArea(vertices)
     if isClockwise(vertices)
         vertices = flipud(vertices);
     end
-    
+
     % Calculate the area using the shoelace formula
     n = size(vertices, 1);
     area = 0.5 * abs(sum(vertices(1:end-1, 1) .* vertices(2:end, 2)) ...

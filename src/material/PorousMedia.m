@@ -69,7 +69,7 @@ classdef PorousMedia < handle & matlab.mixin.Copyable
         SlPc_umat            = [];              % User material curve saturation law
         klr_umat             = [];              % User material curve liquid relative permeability
         kgr_umat             = [];              % User material curve gas relative permeability
-        m                    = 1;               % Expoent for the polynomial relationships
+        m                    = 1;               % Exponent for the polynomial relationships
     end
     properties (SetAccess = protected, GetAccess = public)
         klrmin               = 1.0e-9;          % Minimum liquid relative permeability

@@ -1,6 +1,7 @@
 %% DESCRIPTION
 %
-% Liakopoulos problem using the hydromechanical with two-phase flow formulation.
+% Liakopoulos problem using hydro-mechanical coupling with liquid pressure
+% (Pl) and gas pressure (Pg) as primary variables.
 %
 % References:
 % * Schrefler and Xiaoyong (1993). A fully coupled model for water flow and airflow in deformable porous media. Water Resour Res, 29(1):155–167

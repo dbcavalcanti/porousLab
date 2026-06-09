@@ -218,7 +218,7 @@ classdef RegularElement_HM < RegularElement_M
         end
 
         %------------------------------------------------------------------
-        % Add contribution of the gravity forces to the external force vct
+        % Add contribution of the gravity forces to the external force vector
         function [feu,fep] = addGravityForces(this,feu,fep,Np,Bp,kh,pl,c)
 
             % Get gravity vector

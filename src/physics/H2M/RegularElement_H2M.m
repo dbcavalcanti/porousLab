@@ -5,24 +5,15 @@
 % incorporates additional attributes and methods specific to 
 % hydromechanical coupling in porous media.
 %
-% 
 %% Methods
 % * *initializeIntPoints*: Initializes the integration points for the 
 %                          element using the shape function and material 
 %                          properties.
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
-%                  displacement.
-% * *permeabilityTensors*: Computes the permeability tensors for the 
-%                          element.
-% * *compressibilityCoeffs*: Computes the compressibility coefficients 
-%                            for the element.
-% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
-%                                  matrices based on the element volume 
-%                                  and compressibility coefficients.
-% * *addGravityForces*: Adds the contribution of gravity forces to the 
-%                       external force vector.
+% * *elementData*: Assembles the coupled mechanical, liquid-pressure, and
+%                  gas-pressure residual and tangent terms, including
+%                  deformation, advective flow, gravity, storage,
+%                  saturation, density, and relative permeability
+%                  contributions.
 % * *getNodalDisplacement*: Retrieves the nodal displacement values.
 % * *getNodalLiquidPressure*: Retrieves the nodal liquid pressure values.
 % * *getNodalGasPressure*: Retrieves the nodal gas pressure values.

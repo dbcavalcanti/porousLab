@@ -1,6 +1,7 @@
 %% DESCRIPTION
 %
-% Buckley-Leverett problem using the Pl-Pg two-phase flow formulation.
+% Buckley-Leverett problem using liquid pressure (Pl) and gas pressure (Pg)
+% as primary variables.
 %
 % Physics:
 % * Two-phase hydraulic (H2)

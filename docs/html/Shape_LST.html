@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Shape_LST Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Shape_LST.m"><style type="text/css">
+      --><title>Shape_LST Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Shape_LST.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -169,17 +169,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
          <span class="keyword">end</span>
 
          <span class="comment">%------------------------------------------------------------------</span>
-         <span class="comment">% Compute the strain-displacement matrix</span>
-         <span class="keyword">function</span> [B] = BMatrix(~,dNdx)
-            B = zeros(4,6*2);
-            <span class="keyword">for</span> i = 1:6
-                B(1,2*i-1) = dNdx(1,i);
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            <span class="keyword">end</span>
-         <span class="keyword">end</span>
-
-         <span class="comment">%------------------------------------------------------------------</span>
          <span class="comment">% Get the integration points:</span>
          <span class="comment">% Output:</span>
          <span class="comment">%      X: Coordinates of the integration points in the natural</span>
@@ -265,7 +254,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Size of the Gram matrix</span>
         <span class="comment">% The stress field in a LST element is linear</span>
-        <span class="keyword">function</span> n = getSizeGramMtrx(~)
+        <span class="keyword">function</span> n = dimPolynomialStressInterp(~)
             n = 3;
         <span class="keyword">end</span>
 
@@ -339,7 +328,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 ##### SOURCE BEGIN #####
 %% Shape_LST Class
 % This class inherits from the base class 'Shape' to implement the behavior of a linear strain triangular (LST) isoparametric element.
-% 
+%
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
@@ -355,7 +344,7 @@ classdef Shape_LST < Shape
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Evaluate the shape function at a given point X of a linear 
+        % Evaluate the shape function at a given point X of a linear
         % triangular isoparametric element.
          function N = shapeFnc(~,Xn)
             % Natural coordinates of the given point
@@ -417,7 +406,7 @@ classdef Shape_LST < Shape
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
-            
+
             % Jacobian matrix
             J = dNdxn*X;
          end
@@ -449,17 +438,6 @@ classdef Shape_LST < Shape
          end
 
          %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-         % Compute the strain-displacement matrix
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,6*2);
-            for i = 1:6
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
-            end
-         end
-
-         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
          % Get the integration points:
          % Output:
          %      X: Coordinates of the integration points in the natural
@@ -471,7 +449,7 @@ classdef Shape_LST < Shape
              if order == 2
                  X          = [1/6,  1/6;
                                2/3,  1/6;
-                               1/6,  2/3]';  
+                               1/6,  2/3]';
                  w          = [1/6,1/6,1/6];
                  nIntPoints = 3;
              elseif order == 1
@@ -488,24 +466,24 @@ classdef Shape_LST < Shape
          % Input:
          %   NODE : matrix with the x and y coordinates of the nodes of an
          %           CST element
-         %   Xn   : vector with the xi and eta coordinates of a point in 
+         %   Xn   : vector with the xi and eta coordinates of a point in
          %          the natural coordinate system
          %
          % Output:
-         %   X : vector with the x and y coordinates of a point in the 
+         %   X : vector with the x and y coordinates of a point in the
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
 
             % Extract the nodal coordinates
             x = NODE(:,1);
             y = NODE(:,2);
-            
+
             % Vector with the shape functions
             Nv = this.shapeFnc(Xn);
-            
+
             % Initialize output
             X = [0.0, 0.0];
-            
+
             % Interpolation the position
             X(1) = Nv(1)*x(1) +  Nv(2)*x(2) +  Nv(3)*x(3) + Nv(4)*x(4) +  Nv(5)*x(5) +  Nv(6)*x(6);
             X(2) = Nv(1)*y(1) +  Nv(2)*y(2) +  Nv(3)*y(3) + Nv(4)*y(4) +  Nv(5)*y(5) +  Nv(6)*y(6);
@@ -545,7 +523,7 @@ classdef Shape_LST < Shape
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Size of the Gram matrix
         % The stress field in a LST element is linear
-        function n = getSizeGramMtrx(~)
+        function n = dimPolynomialStressInterp(~)
             n = 3;
         end
 
@@ -565,7 +543,7 @@ classdef Shape_LST < Shape
             % Gram matrix
             dH = [  1.0          Xrel(1)           Xrel(2);
                    Xrel(1)    Xrel(1)*Xrel(1)   Xrel(2)*Xrel(1);
-                   Xrel(2)    Xrel(1)*Xrel(2)   Xrel(2)*Xrel(2)];  
+                   Xrel(2)    Xrel(1)*Xrel(2)   Xrel(2)*Xrel(2)];
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -607,7 +585,7 @@ classdef Shape_LST < Shape
             % Coordinates of the integration points
             X          = [1/6,  1/6;
                           2/3,  1/6;
-                          1/6,  2/3]';  
+                          1/6,  2/3]';
              % Weights
              w          = [1/6,1/6,1/6];
              % Total number of integration points
