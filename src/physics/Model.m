@@ -346,6 +346,13 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Identify the nodes contained in any of the borders
         function nodeIds = getNodesAtBorder(this,border,range)
+            if ((nargin < 3) || isempty(range))
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
             % Get the nodes at the given border
             if strcmp(border,'left')
                 nodeIds = find((abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12) & ((this.NODE(:,2))>range(1)-1.0e-12) & ((this.NODE(:,2))<range(2)+1.0e-12));
