@@ -73,7 +73,7 @@ anl.run(mdl);
 %% POST-PROCESS
 
 % Plot model
-mdl.plotField('Sy');
+mdl.plotField('Uy');
 hold on;
 fracture.plotIntersectedGeometry();
 
