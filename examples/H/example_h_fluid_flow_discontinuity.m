@@ -13,6 +13,9 @@
 % Create model
 mdl = Model_H();
 
+mdl.equivalentContinuum = true;
+mdl.condenseEnrDofs = true;
+
 %% MESH
 
 % Create mesh
@@ -55,7 +58,7 @@ Dy = [1.1; 1.9];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
 % Set fracture material properties
-fracture.fluid = water;
+fracture.liquidFluid = water;
 fracture.initialAperture = 1.0e-3;
 
 % Add fractures to model

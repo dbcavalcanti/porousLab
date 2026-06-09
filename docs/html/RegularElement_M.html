@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>RegularElement_M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RegularElement_M.m"><style type="text/css">
+      --><title>RegularElement_M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="RegularElement_M.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -100,7 +100,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">function</span> initializeIntPoints(this)
 
             <span class="comment">% Get integration points coordinates and weights</span>
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder, this);
 
             <span class="comment">% Get characteristic length</span>
             lc = this.characteristicLength();
@@ -146,11 +146,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="comment">% Numerical integration of the sub-matrices</span>
             <span class="keyword">for</span> i = 1:this.nIntPoints
 
+                <span class="comment">% Shape function vector</span>
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
                 <span class="comment">% Compute the B matrix at the int. point and the detJ</span>
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 <span class="comment">% Assemble the B-matrix for the mechanical part</span>
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx,N);
 
                 <span class="comment">% Compute the strain vector</span>
                 this.intPoint(i).strain = Bu * u;
@@ -161,11 +164,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 <span class="comment">% Numerical integration coefficient</span>
                 c = this.intPoint(i).w * detJ * this.t;
                 <span class="keyword">if</span> this.isAxisSymmetric
-                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
                 <span class="keyword">end</span>
 
                 <span class="comment">% Compute the stiffness sub-matrix</span>
-                Ke = Ke + Bu' * Duu * Bu * c;
+                dfidu = dfidu + Bu' * Duu * Bu * c;
 
                 <span class="comment">% Internal force vector</span>
                 fi = fi + Bu' * stress * c;
@@ -179,7 +182,23 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Add contribution of the gravity forces to the external force vct</span>
+        <span class="comment">% Compute the strain-displacement matrix</span>
+        <span class="keyword">function</span> [B] = BMatrix(this,dNdx,N)
+            B = zeros(4,this.nnd_el*2);
+            <span class="keyword">for</span> i = 1:this.nnd_el
+                B(1,2*i-1) = dNdx(1,i);
+                B(2,2*i)   = dNdx(2,i);
+                B(4,2*i-1) = dNdx(2,i);
+                B(4,2*i)   = dNdx(1,i);
+                <span class="keyword">if</span> this.isAxisSymmetric
+                    r = N*this.node(:,1);
+                    B(3,2*i-1) = N(i)/r;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Add contribution of the gravity forces to the external force vector</span>
         <span class="keyword">function</span> fe = addGravityForces(this, fe, Xn, c)
 
             <span class="comment">% Get gravity vector</span>
@@ -198,17 +217,64 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Compute the forces due to the pore-pressure field</span>
+        <span class="keyword">function</span> fe = porePressureForce(this, pe)
+
+            <span class="comment">% Initialize hydro-mechanical coupling matrix. The</span>
+            <span class="comment">% pore-pressure are discretized at the nodes of the element.</span>
+            fe = zeros(this.nglu,1);
+
+            <span class="comment">% Identity vector</span>
+            m = [1;1;1;0];
+
+            <span class="comment">% Numerical integration of fe</span>
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+
+                <span class="comment">% Shape function vector</span>
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                <span class="comment">% Compute the B matrix at the int. point and the detJ</span>
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                <span class="comment">% Assemble the B-matrix for the mechanical part</span>
+                Bu = this.BMatrix(dNdx,N);
+
+                <span class="comment">% Numerical integration coefficient</span>
+                c = this.intPoint(i).w * detJ * this.t;
+                <span class="keyword">if</span> this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                <span class="keyword">end</span>
+
+                <span class="comment">% Compute the force due to the pore-pressure</span>
+                fe = fe + Bu' * m * N * pe * c;
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Initialize the stresses at the integration point with the given</span>
+        <span class="comment">% function</span>
+        <span class="keyword">function</span> initialStress(this, stressfnc)
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                <span class="comment">% Initialize the stresses</span>
+                this.intPoint(i).stress    = stressfnc(X);
+                this.intPoint(i).stressOld = stressfnc(X);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Function to get the nodal values of the displacement</span>
         <span class="keyword">function</span> u = getNodalDisplacement(this)
             u = this.ue(1:this.nglu);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Function to get the nodal values of the liquid pressure</span>
-        <span class="keyword">function</span> pl = getNodalPressure(this)
-            a = this.nglu + 1;
-            b = this.nglu + this.nglp;
-            pl = this.ue(a:b);
+        <span class="comment">% Function to get old the nodal values of the displacement</span>
+        <span class="keyword">function</span> uOld = getOldNodalDisplacement(this)
+            uOld = this.ueOld(1:this.nglu);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
@@ -233,6 +299,44 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
             <span class="comment">% Regular displacement field</span>
             u = Nu*uv;
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Function to reset the displacements and strains</span>
+        <span class="keyword">function</span> udofs = resetDisplacements(this)
+
+            udofs = this.glu;
+
+            <span class="comment">% Reset the displacements</span>
+            this.ue(1:this.nglu) = 0.0;
+            this.ueOld(1:this.nglu) = 0.0;
+
+            <span class="comment">% Reset the strains</span>
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(4,1);
+                this.intPoint(i).strainOld = zeros(4,1);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Function to compute the pressure field inside a given element</span>
+        <span class="keyword">function</span> p = pressureField(this,X,pe)
+        <span class="comment">%</span>
+        <span class="comment">% Input:</span>
+        <span class="comment">%   X   : position vector in the global cartesian coordinate system</span>
+        <span class="comment">%</span>
+        <span class="comment">% Output:</span>
+        <span class="comment">%   p   : pressure evaluated in "X"</span>
+
+            <span class="comment">% Natural coordinate system</span>
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+
+            <span class="comment">% Vector with the shape functions</span>
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            <span class="comment">% capillary field</span>
+            p = Nm*pe;
 
         <span class="keyword">end</span>
 
@@ -429,38 +533,38 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RegularElement_M Class
-% This class defines a mechanical finite element. It extends the 
-% _RegularElement_ class and provides additional functionality for 
-% mechanical analysis, including displacement degrees of freedom, stress 
-% and strain computation, and integration point initialization. 
+% This class defines a mechanical finite element. It extends the
+% _RegularElement_ class and provides additional functionality for
+% mechanical analysis, including displacement degrees of freedom, stress
+% and strain computation, and integration point initialization.
 %
 %% Methods
-% * *initializeIntPoints*: Initializes the integration points for the 
-%                          element, including their coordinates, weights, 
+% * *initializeIntPoints*: Initializes the integration points for the
+%                          element, including their coordinates, weights,
 %                          and mechanical analysis models.
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
+% * *elementData*: Assembles the element stiffness matrix, damping matrix,
+%                  internal force vector, external force vector, and
+%                  derivative of internal force with respect to
 %                  displacement.
-% * *addGravityForces*: Adds the contribution of gravity forces to the 
+% * *addGravityForces*: Adds the contribution of gravity forces to the
 %                       external force vector.
 % * *getNodalDisplacement*: Retrieves the nodal displacement values.
 % * *getNodalPressure*: Retrieves the nodal liquid pressure values.
-% * *displacementField*: Computes the displacement field at a given 
+% * *displacementField*: Computes the displacement field at a given
 %                        global Cartesian coordinate.
-% * *integrationPointInterpolation*: Computes the interpolation matrix 
+% * *integrationPointInterpolation*: Computes the interpolation matrix
 %                                    for integration points.
-% * *stressField*: Evaluates the stress tensor at a given point by 
+% * *stressField*: Evaluates the stress tensor at a given point by
 %                  extrapolating results from integration points.
-% * *strainField*: Evaluates the strain tensor at a given point by 
+% * *strainField*: Evaluates the strain tensor at a given point by
 %                  extrapolating results from integration points.
-% * *plasticstrainMagnitude*: Computes the magnitude of the plastic 
+% * *plasticstrainMagnitude*: Computes the magnitude of the plastic
 %                             strain tensor at a given point.
-% * *stressCylindrical*: Transforms the stress tensor to cylindrical 
+% * *stressCylindrical*: Transforms the stress tensor to cylindrical
 %                        coordinates.
-% * *principalStress*: Computes the principal stresses from the 
+% * *principalStress*: Computes the principal stresses from the
 %                      stress tensor.
-% * *principalStrain*: Computes the principal strains from the 
+% * *principalStrain*: Computes the principal strains from the
 %                      strain tensor.
 %
 %% Author
@@ -468,9 +572,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 %
 %% Version History
 % Version 1.00.
-% 
+%
 %% Class definition
-classdef RegularElement_M < RegularElement    
+classdef RegularElement_M < RegularElement
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         glu        = [];            % Displacement dofs
@@ -498,7 +602,7 @@ classdef RegularElement_M < RegularElement
             end
         end
     end
-    
+
     %% Public methods
     methods
 
@@ -507,7 +611,7 @@ classdef RegularElement_M < RegularElement
         function initializeIntPoints(this)
 
             % Get integration points coordinates and weights
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder);
+            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(this.intOrder, this);
 
             % Get characteristic length
             lc = this.characteristicLength();
@@ -524,14 +628,14 @@ classdef RegularElement_M < RegularElement
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % This function assembles the element matrices and vectors 
+        % This function assembles the element matrices and vectors
         %
         % Output:
         %    Ke : element "stiffness" matrix
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force with 
+        % dfidu : element matrix of derivative of the internal force with
         %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
@@ -546,47 +650,66 @@ classdef RegularElement_M < RegularElement
 
             % Initialize the internal force vector
             fi = zeros(this.nglu, 1);
-            
+
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
 
             % Numerical integration of the sub-matrices
             for i = 1:this.nIntPoints
-               
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
                 % Compute the B matrix at the int. point and the detJ
                 [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(dNdx);
+                Bu = this.BMatrix(dNdx,N);
 
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u;
 
                 % Compute the stress vector and the constitutive matrix
                 [stress,Duu] = this.intPoint(i).mechanicalLaw();
-        
+
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
-                    c = c * this.shape.axisSymmetricFactor(Np,this.node);
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
                 end
-                
+
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Bu' * Duu * Bu * c;
+                dfidu = dfidu + Bu' * Duu * Bu * c;
 
                 % Internal force vector
                 fi = fi + Bu' * stress * c;
-                
+
                 % Compute the gravity forces
                 if (this.gravityOn)
                     fe = this.addGravityForces(fe,this.intPoint(i).X,c);
                 end
             end
-            
+
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Add contribution of the gravity forces to the external force vct
+        % Compute the strain-displacement matrix
+        function [B] = BMatrix(this,dNdx,N)
+            B = zeros(4,this.nnd_el*2);
+            for i = 1:this.nnd_el
+                B(1,2*i-1) = dNdx(1,i);
+                B(2,2*i)   = dNdx(2,i);
+                B(4,2*i-1) = dNdx(2,i);
+                B(4,2*i)   = dNdx(1,i);
+                if this.isAxisSymmetric
+                    r = N*this.node(:,1);
+                    B(3,2*i-1) = N(i)/r;
+                end
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Add contribution of the gravity forces to the external force vector
         function fe = addGravityForces(this, fe, Xn, c)
 
             % Get gravity vector
@@ -601,7 +724,56 @@ classdef RegularElement_M < RegularElement
 
             % Compute the contribution of the gravitational forces
             fe = fe + Nu' * rhos * grav * c;
-            
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Compute the forces due to the pore-pressure field
+        function fe = porePressureForce(this, pe)
+
+            % Initialize hydro-mechanical coupling matrix. The
+            % pore-pressure are discretized at the nodes of the element.
+            fe = zeros(this.nglu,1);
+
+            % Identity vector
+            m = [1;1;1;0];
+
+            % Numerical integration of fe
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Compute the B matrix at the int. point and the detJ
+                [dNdx, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
+
+                % Assemble the B-matrix for the mechanical part
+                Bu = this.BMatrix(dNdx,N);
+
+                % Numerical integration coefficient
+                c = this.intPoint(i).w * detJ * this.t;
+                if this.isAxisSymmetric
+                    c = c * this.shape.axisSymmetricFactor(N,this.node);
+                end
+
+                % Compute the force due to the pore-pressure
+                fe = fe + Bu' * m * N * pe * c;
+
+            end
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Initialize the stresses at the integration point with the given
+        % function
+        function initialStress(this, stressfnc)
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Initialize the stresses
+                this.intPoint(i).stress    = stressfnc(X);
+                this.intPoint(i).stressOld = stressfnc(X);
+            end
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -611,11 +783,9 @@ classdef RegularElement_M < RegularElement
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Function to get the nodal values of the liquid pressure
-        function pl = getNodalPressure(this)
-            a = this.nglu + 1;
-            b = this.nglu + this.nglp;
-            pl = this.ue(a:b);
+        % Function to get old the nodal values of the displacement
+        function uOld = getOldNodalDisplacement(this)
+            uOld = this.ueOld(1:this.nglu);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -627,20 +797,58 @@ classdef RegularElement_M < RegularElement
         %
         % Output:
         %   u   : displacement vector evaluated in "X"
-        
+
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
-            
+
             % Vector with the shape functions
             Nm = this.shape.shapeFncMtrx(Xn);
             Nu = this.shape.NuMtrx(Nm);
 
             % Displacement dof vector
             uv  = this.getNodalDisplacement();
-            
+
             % Regular displacement field
             u = Nu*uv;
-        
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.glu;
+
+            % Reset the displacements
+            this.ue(1:this.nglu) = 0.0;
+            this.ueOld(1:this.nglu) = 0.0;
+
+            % Reset the strains
+            for i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(4,1);
+                this.intPoint(i).strainOld = zeros(4,1);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Function to compute the pressure field inside a given element
+        function p = pressureField(this,X,pe)
+        %
+        % Input:
+        %   X   : position vector in the global cartesian coordinate system
+        %
+        % Output:
+        %   p   : pressure evaluated in "X"
+
+            % Natural coordinate system
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+
+            % Vector with the shape functions
+            Nm = this.shape.shapeFncMtrx(Xn);
+
+            % capillary field
+            p = Nm*pe;
+
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -658,7 +866,7 @@ classdef RegularElement_M < RegularElement
                 P(1,3) = P(1,3) + this.intPoint(i).X(2);
                 P(2,1) = P(2,1) + this.intPoint(i).X(1);
                 P(2,2) = P(2,2) + this.intPoint(i).X(1) * this.intPoint(i).X(1);
-                P(2,3) = P(2,3) + this.intPoint(i).X(1) * this.intPoint(i).X(2); 
+                P(2,3) = P(2,3) + this.intPoint(i).X(1) * this.intPoint(i).X(2);
                 P(3,1) = P(3,1) + this.intPoint(i).X(2);
                 P(3,2) = P(3,2) + this.intPoint(i).X(2) * this.intPoint(i).X(1);
                 P(3,3) = P(3,3) + this.intPoint(i).X(2) * this.intPoint(i).X(2);
@@ -674,7 +882,7 @@ classdef RegularElement_M < RegularElement
         % Input:
         %   X   : position vector in the global cartesian coordinate system
             if nargin > 2, this.ue = ue; end
-        
+
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
 
@@ -692,7 +900,7 @@ classdef RegularElement_M < RegularElement
                 stressIP(i,4) = this.intPoint(i).stress(4);
             end
 
-            % Coefficients for the polynomial approximation 
+            % Coefficients for the polynomial approximation
             c = S * stressIP;
 
             % Interpolated stress field at the given node
@@ -708,7 +916,7 @@ classdef RegularElement_M < RegularElement
         % Input:
         %   X   : position vector in the global cartesian coordinate system
             if nargin > 2, this.ue = ue; end
-        
+
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
 
@@ -726,7 +934,7 @@ classdef RegularElement_M < RegularElement
                 strainIP(i,4) = this.intPoint(i).strain(4);
             end
 
-            % Coefficients for the polynomial approximation 
+            % Coefficients for the polynomial approximation
             c = S * strainIP;
 
             % Interpolated stress field at the given node
@@ -742,7 +950,7 @@ classdef RegularElement_M < RegularElement
         % Input:
         %   X   : position vector in the global cartesian coordinate system
             if nargin > 2, this.ue = ue; end
-        
+
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
 
@@ -760,7 +968,7 @@ classdef RegularElement_M < RegularElement
                 pstrainIP(i,4) = this.intPoint(i).plasticstrain(4);
             end
 
-            % Coefficients for the polynomial approximation 
+            % Coefficients for the polynomial approximation
             c = S * pstrainIP;
 
             % Interpolated stress field at the given node
@@ -781,7 +989,7 @@ classdef RegularElement_M < RegularElement
 
             % Compute the angle theta
             theta = atan2(X(2), X(1)); % Angle in radians
-            
+
             % Transform the stresses
             sr = sx * cos(theta)^2 + sy * sin(theta)^2 + 2 * tauxy * cos(theta) * sin(theta);
             stheta = sx * sin(theta)^2 + sy * cos(theta)^2 - 2 * tauxy * cos(theta) * sin(theta);
@@ -833,5 +1041,6 @@ classdef RegularElement_M < RegularElement
         end
     end
 end
+
 ##### SOURCE END #####
 --></body></html>

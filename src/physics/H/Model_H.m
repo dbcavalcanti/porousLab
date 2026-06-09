@@ -18,13 +18,13 @@
 % * *setPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
 %                                     conditions for liquid-phase pore 
 %                                     pressure at a specific border.
-% * *setPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtNode*: Sets pressure Neumann boundary
 %                                 conditions for liquid-phase pore 
 %                                 pressure at a specific node.
-% * *setPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtPoint*: Sets pressure Neumann boundary
 %                                  conditions for liquid-phase pore 
 %                                  pressure at a specific point.
-% * *setPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+% * *setPressureNeumannBCAtBorder*: Sets pressure Neumann boundary
 %                                   conditions for liquid-phase pore 
 %                                   pressure at a specific border.
 % * *setInitialPressureAtDomain*: Sets the initial pressure value for the 
@@ -53,6 +53,9 @@
 %
 %% Class definition
 classdef Model_H < Model    
+    properties (SetAccess = public, GetAccess = public)
+        equivalentContinuum = false;
+    end
     %% Constructor method
     methods
         function this = Model_H(printFlag)
@@ -74,7 +77,7 @@ classdef Model_H < Model
         % Sets the material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics H requires 2 attribute(s): porousMedia, fluid.');
                 error('Error in setMaterial.');
             end
@@ -110,9 +113,9 @@ classdef Model_H < Model
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 else
                     elements(el) = EnrichedElement_H(...
-                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
-                                this.t, emat, this.intOrder,dof_e, ...
-                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                                    this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                    this.t, emat, this.intOrder,dof_e, ...
+                                    this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -140,8 +143,9 @@ classdef Model_H < Model
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a border
-        function setPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 1, value);
+        function setPressureDirichletBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
+            this.setDirichletBCAtBorder(border, 1, value, range);
         end
 
         % -----------------------------------------------------------------
@@ -158,8 +162,9 @@ classdef Model_H < Model
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Neumann boundary condition at a border
-        function setPressureNeumannBCAtBorder(this, border, value)
-            this.setNeumannBCAtBorder(border, 1, value);
+        function setPressureNeumannBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
+            this.setNeumannBCAtBorder(border, 1, value, range);
         end
 
         % -----------------------------------------------------------------

@@ -1,22 +1,27 @@
 %% MechanicalElastoPlastic Class
-% This class implements an elasto-plastic constitutive law based on the 
-% Von Mises yield criterion. It inherits from the _MechanicalElastoPlastic_ 
-% base class and provides specific implementations for the yield condition, 
-% flow rule, and hardening law.
+% This class implements the common interface for elasto-plastic
+% constitutive laws. It inherits from the _MechanicalLinearElastic_ class
+% and defines the stress integration data required by the implicit
+% return-mapping algorithm.
 %
 %% Methods
-% * *yieldCondition*: Computes the yield function value based on the Von 
-%                     Mises stress and the material's yield strength.
+% * *eval*: Computes the stress vector and the constitutive matrix.
+% * *yieldCondition*: Computes the yield function value.
 % * *yieldStressGradient*: Computes the gradient of the yield function 
 %                          with respect to the stress vector.
+% * *yieldStateGradient*: Computes the gradient of the yield function
+%                         with respect to the state variables.
 % * *flowVector*: Computes the flow direction vector (plastic strain 
-%                 direction) based on the deviatoric stress.
-% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+%                 direction).
+% * *flowStressGradient*: Computes the gradient of the flow vector with
 %                         respect to the stress vector.
-% * *hardening*: Returns the hardening modulus of the material.
-% * *hardeningStressGradient*: Returns the gradient of the hardening law 
-%                              with respect to the stress vector 
-%                              (constant in this case).
+% * *flowStateGradient*: Computes the gradient of the flow vector with
+%                        respect to the state variables.
+% * *stateEvolution*: Computes the hardening/softening law.
+% * *stateStressGradient*: Computes the gradient of the hardening/softening
+%                          law with respect to the stress vector.
+% * *stateStateGradient*: Computes the gradient of the hardening/softening
+%                         law with respect to the state variables.
 %
 %% Author
 % Danilo Cavalcanti
@@ -30,6 +35,8 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
         returnMappingMaxIter = 100;
         returnYieldConditionTol = 1.0e-8;
         returnNormResidualFlowRuleTol = 1.0e-8;
+        returnNormResidualHardeningTol = 1.0e-8;
+        nPlasticInternalVars = 0;
     end
     %% Constructor method
     methods
@@ -41,17 +48,20 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
     %% Abstract methods
     methods(Abstract)
 
-        f = yieldCondition(this,material,ip,stress);
+        % Yield surface and its gradients ---------------------------------
+        f     = yieldCondition(this, material, ip, stress, state);
+        dfds  = yieldStressGradient(this, material, ip, stress, state);
+        dfda  = yieldStateGradient(this, material, ip, stress, state);
 
-        df = yieldStressGradient(this,material,ip,stress);
+        % Flow vector and its gradients -----------------------------------
+        n     = flowVector(this, material, ip, stress, state);
+        dnds  = flowStressGradient(this, material, ip, stress, state);
+        dnda  = flowStateGradient(this, material, ip, stress, state);
 
-        n = flowVector(this,material,ip,stress);
-
-        dn = flowVectorGradient(this,material,ip,stress);
-
-        h = hardening(this,material,ip,stress);
-
-        dh = hardeningStressGradient(this,material,ip,stress);
+        % Internal/state variables evolution and its gradients ------------
+        h     = stateEvolution(this, material, ip, stress, state);
+        dhds  = stateStressGradient(this, material, ip, stress, state);
+        dhda  = stateStateGradient(this, material, ip, stress, state);
 
     end
     %% Public methods
@@ -60,6 +70,13 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
         %------------------------------------------------------------------
         % Compute the stress vector and the constitutive matrix
         function [stress,Dt] = eval(this,material,ip)
+            [stress,Dt] = this.implicitReturnMapping(material,ip);
+        end
+
+        %------------------------------------------------------------------
+        % Compute the stress vector and the constitutive matrix with the
+        % fully implicit return mapping algorithm
+        function [stress,Dt] = implicitReturnMapping(this,material,ip)
 
             % Constitutive matrix
             De = this.elasticConstitutiveMatrix(material,ip);
@@ -69,74 +86,114 @@ classdef MechanicalElastoPlastic < MechanicalLinearElastic
             % Trial stress vector
             stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
-            % Evaluate the yield condition
-            f = this.yieldCondition(material,ip,stress);
+            % Previous plastic variables
+            epOld    = ip.plasticstrainOld;
+            stateOld = ip.statevarOld;
+            state    = stateOld;
+            nStress  = length(stress);
+            nState   = length(stateOld);
+
+            % Evaluate the yield condition at the trial state
+            ip.plasticstrain = epOld;
+            ip.statevar      = stateOld;
+            f = this.yieldCondition(material,ip,stress,state);
+            yieldTol = this.returnYieldConditionTol * max(1.0,norm(stress));
 
             % Elastic step
-            if f < 0.0, return, end
+            if f < yieldTol
+                return
+            end
 
             % Initialize variables for the return mapping
             lambda = 0.0;
-            ep     = ip.plasticstrainOld;
-            epOld  = ip.plasticstrainOld;
-            iter   = 1;
-            r      = zeros(4,1);
+            iter = 1;
+            converged = false;
 
             % Return mapping: closest point projection
-            while (abs(f) > this.returnYieldConditionTol) || (norm(r) > this.returnNormResidualFlowRuleTol)
+            while iter <= this.returnMappingMaxIter
 
-                % Flow vector
-                n = this.flowVector(material,ip,stress);
+                % Yield function, flow vector and hardening/softening law
+                f = this.yieldCondition(material,ip,stress,state);
+                n = this.flowVector(material,ip,stress,state);
+                h = this.stateEvolution(material,ip,stress,state);
+                yieldTol = this.returnYieldConditionTol * max(1.0,norm(stress));
 
-                % Gradient of the yield condition
-                df = this.yieldStressGradient(material,ip,stress);
+                % Residuals of the plastic flow and hardening laws
+                r1 = Ce * stress - ip.strain + epOld + lambda * n;
+                r2 = -state + stateOld + lambda * h;
 
-                % Gradient of the flow rule vector
-                dn = this.flowVectorGradient(material,ip,stress);
-                
-                % Hardening
-                h = this.hardening(material,ip,stress);
+                % Check convergence
+                if (abs(f) <= yieldTol) && ...
+                   (norm(r1) <= this.returnNormResidualFlowRuleTol) && ...
+                   (norm(r2) <= this.returnNormResidualHardeningTol)
+                    converged = true;
+                    break
+                end
 
-                % Auxiliary matrix
-                Psi = Ce + lambda * dn;
+                % Gradients of the yield function
+                dfds = this.yieldStressGradient(material,ip,stress,state);
+                dfda = this.yieldStateGradient(material,ip,stress,state);
+
+                % Gradients of the flow rule vector
+                dnds = this.flowStressGradient(material,ip,stress,state);
+                dnda = this.flowStateGradient(material,ip,stress,state);
+
+                % Gradients of the hardening/softening law
+                dhds = this.stateStressGradient(material,ip,stress,state);
+                dhda = this.stateStateGradient(material,ip,stress,state);
+
+                % Auxiliary system from the first two residual blocks
+                K = [Ce + lambda * dnds, lambda * dnda;
+                     lambda * dhds, -eye(nState) + lambda * dhda];
+                rho = [r1; r2];
+                e = [n; h];
+                g = [dfds; dfda];
 
                 % Increment of the plastic multiplier
-                dlambda = (f - df'*(Psi \ r)) / (df' * (Psi \ n) + h);
+                dlambda = (f - g' * (K \ rho)) / (g' * (K \ e));
 
-                % Update the stress vector
-                dstress = -Psi \ (r + dlambda * n);
-                stress = stress + dstress;
-
-                % Update the plastic multipler
+                % Stress and internal-variable corrections
+                delta = -K \ (rho + dlambda * e);
+                stress = stress + delta(1:nStress);
+                state  = state  + delta(nStress+1:end);
                 lambda = lambda + dlambda;
 
-                % Update the plastic strain
-                ep = epOld + lambda * n;
-
-                % Check yield condition
-                f = this.yieldCondition(material,ip,stress);
-
-                % Residual of the flow rule
-                r = -ep + epOld + lambda * n;
-
                 % Update iteration counter
-                if iter > this.returnMappingMaxIter, break, end
                 iter = iter + 1;
 
             end
 
-            % Compute the flow vector at the final stress state
-            n  = this.flowVector(material,ip,stress);
-            df = this.yieldStressGradient(material,ip,stress);
-            dn = this.flowVectorGradient(material,ip,stress);
+            % Check convergence of the local Newton iteration
+            if ~converged
+                error(['Error: implicit return mapping did not converge. ', ...
+                       'f = %.6e, yieldTol = %.6e, norm(r1) = %.6e, norm(r2) = %.6e, lambda = %.6e, iter = %d'], ...
+                       f,yieldTol,norm(r1),norm(r2),lambda,iter);
+            end
 
-            % Update the plastic strain
-            ip.plasticstrain = ep;
+            % Store the accepted state variables
+            ip.statevar = state;
+            ip.plasticstrain = ip.strain - Ce * stress;
 
             % Compute algorithmic tangent constitutive tensor
-            Psi = inv(Ce + lambda * dn);
-            Dt  = Psi - (Psi * (n * df') * Psi)/(df' * (Psi * n));
-            % Dt  = De - (De * (n * df') * De)/(df' * (De * n));
+            n = this.flowVector(material,ip,stress,state);
+            h = this.stateEvolution(material,ip,stress,state);
+            dfds = this.yieldStressGradient(material,ip,stress,state);
+            dfda = this.yieldStateGradient(material,ip,stress,state);
+            dnds = this.flowStressGradient(material,ip,stress,state);
+            dnda = this.flowStateGradient(material,ip,stress,state);
+            dhds = this.stateStressGradient(material,ip,stress,state);
+            dhda = this.stateStateGradient(material,ip,stress,state);
+
+            K = [Ce + lambda * dnds, lambda * dnda;
+                 lambda * dhds, -eye(nState) + lambda * dhda];
+            e = [n; h];
+            g = [dfds; dfda];
+            rhs = [eye(nStress); zeros(nState,nStress)];
+
+            Krhs = K \ rhs;
+            Ke   = K \ e;
+            dsol = Krhs - Ke * ((g' * Krhs) / (g' * Ke));
+            Dt = dsol(1:nStress,:);
 
         end
     end

@@ -44,12 +44,19 @@
 %
 %% Class definition
 classdef Model_HM < Model_M     
+    %% Public attributes
+    properties (SetAccess = public, GetAccess = public)
+        %% Embedded related data
+        updateAperture = false;
+        discontinuityTransversalFlow = false;
+    end
     %% Constructor method
     methods
         function this = Model_HM()
             this = this@Model_M(false);
             this.ndof_nd = 3;       % Number of dofs per node
             this.physics = 'HM';    % Tag with the physics name
+            this.condenseEnrDofs = false; % Enrichment dofs are global
             disp("*** Physics: Single-phase flow hydro-mechanical (HM)");
         end
     end
@@ -58,10 +65,10 @@ classdef Model_HM < Model_M
     methods
 
         %------------------------------------------------------------------
-        % Sets de material properties
+        % Sets the material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics HM requires 2 attribute(s): porousMedia, fluid.');
                 error('Error in setMaterial.');
             end
@@ -91,28 +98,72 @@ classdef Model_HM < Model_M
                         'fluid',this.mat.fluid);
                 udofs = this.getElementDofs(el,[1,2]);
                 pdofs = this.getElementDofs(el,3);
-                elements(el) = RegularElement_HM(...
-                            this.NODE(this.ELEM{el},:), this.ELEM{el},...
-                            this.t, emat, this.intOrder,udofs,pdofs, ...
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                            this.isPlaneStress);
+                if (this.enriched == false)
+                    elements(el) = RegularElement_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress);
+                else
+                    if (this.discontinuityTransversalFlow == true)
+                        elements(el) = EnrichedElement_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                                this.subDivIntegration, this.symmetricSDAEFEM);
+                    else
+                        elements(el) = EnrichedElementConductive_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                                this.subDivIntegration, this.symmetricSDAEFEM);
+                    end
+                end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
             end
             this.element = elements;
         end
-        
+
+        % -----------------------------------------------------------------
+        % Set the flag to update the aperture of the discontinuities
+        function setUpdateAperture(this, flag)
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            for i = 1:nDiscontinuities
+                nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
+                for j = 1:nDiscontinuitySeg
+                    this.discontinuitySet(i).segment(j).updateAperture = flag;
+                end
+            end
+        end
+
+        % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a node
+        function resetPressureDirichletBC(this)
+            this.resetDirichletBC(3);
+        end
+
+        % -----------------------------------------------------------------
+        % Prescribe a pressure Dirichlet boundary condition at a node
+        function setPressureDirichletBCAtDomain(this, value)
+            this.setDirichletBCAtDomain(3, value);
+        end
+
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a node
         function setPressureDirichletBCAtNode(this, nodeId, value)
-            this.setDirichletBCAtNode(nodeId, 1, value);
+            this.setDirichletBCAtNode(nodeId, 3, value);
         end
 
         % -----------------------------------------------------------------
         % Prescribe a pressure Dirichlet boundary condition at a point
         function setPressureDirichletBCAtPoint(this, X, value)
-            this.setDirichletBCAtPoint(X, 1, value);
+            this.setDirichletBCAtPoint(X, 3, value);
         end
 
         % -----------------------------------------------------------------
@@ -153,14 +204,23 @@ classdef Model_HM < Model_M
 
         % -----------------------------------------------------------------
         % Initializes an array of discontinuity segments
-        function seg = initializeDiscontinuitySegArray(~,n)
-            seg(n,1) = DiscontinuityElement_H([],[]);
+        function seg = initializeDiscontinuitySegArray(this,n)
+            seg = [];
+            if (this.discontinuityTransversalFlow == true)
+                seg(n,1) = DiscontinuityElement_HM([],[]);
+            else
+                seg(n,1) = DiscontinuityElementConductive_HM([],[]);
+            end
         end
 
         % -----------------------------------------------------------------
         % Initializes a single discontinuity segment
-        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
-            seg = DiscontinuityElement_H(nodeD,matD);
+        function seg = initializeDiscontinuitySegment(this,nodeD,matD)
+            if (this.discontinuityTransversalFlow == true)
+                seg = DiscontinuityElement_HM(nodeD,matD);
+            else
+                seg = DiscontinuityElementConductive_HM(nodeD,matD);
+            end
         end
 
     end

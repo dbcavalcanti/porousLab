@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>MechanicalNonlinearElasticDruckerPrager class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="MechanicalNonlinearElasticDruckerPrager.m"><style type="text/css">
+      --><title>MechanicalNonlinearElasticDruckerPrager class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="MechanicalNonlinearElasticDruckerPrager.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -255,9 +255,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% MechanicalNonlinearElasticDruckerPrager class
-% This class implements a nonlinear elastic constitutive model based on the 
-% Drucker-Prager criterion. The model is a surrogate nonlinear elastic 
-% formulation proposed by Zhao et al. (2020) and is implemented following 
+% This class implements a nonlinear elastic constitutive model based on the
+% Drucker-Prager criterion. The model is a surrogate nonlinear elastic
+% formulation proposed by Zhao et al. (2020) and is implemented following
 % the Abaqus UMAT provided by the authors.
 %
 % Reference:
@@ -267,7 +267,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Struct Multidisc Optim 62, 3205–3227 (2020).
 %
 %% Methods
-% * *eval*: Computes the stress vector and constitutive matrix based on 
+% * *eval*: Computes the stress vector and constitutive matrix based on
 %           material properties and integration point data.
 %
 %% Author
@@ -277,7 +277,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 %
 %% Class Definition
-classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic  
+classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
     %% Constructor method
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -315,7 +315,7 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
 
             % Drucker-Prager yield function
             fYield = alpha * Is1 + sqrt(Js2) - kappa;
-            
+
             % Return if it is in a elastic state
             if fYield < 0.0, return; end
 
@@ -362,7 +362,7 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
                                     9/8 * sy * (nu - 1/2) * (eyy^2 + gxy^2))) / ...
                                     (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
                                     (4 * nup * nu - 2 * nup^2 + nu - 1);
-                             
+
              De(1,2) = -16 / 9 * (-E * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
                     (nup^2 - 4 * nup - 1/2) * sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) / 2 + ...
                     sqrt(3) * (1 + nup) * ((-1/2 + nup) * ...
@@ -371,9 +371,9 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
                     (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
                     (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
                     (4 * nup * nu - 2 * nup^2 + nu - 1);
-             
+
              De(1,3) = 0.0;
-             
+
              De(1,4) = 4 * sqrt(3) * (1 + nup) * ...
                     (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) * ...
                     (-E * (-1/2 + nup) * eyy^2 + ...
@@ -391,7 +391,7 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
                                    (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) / ...
                                    (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
                                    (4 * nup * nu - 2 * nup^2 + nu - 1);
-                      
+
               De(2,2) = 8 / 9 * (12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2)^(-1/2) * ...
                            (-5 * E * (nup^2 - 2/5 * nup + 2/5) * (exx^2 - exx * eyy + eyy^2 + 3/4 * gxy^2) * ...
                            sqrt(12 * exx^2 - 12 * exx * eyy + 12 * eyy^2 + 9 * gxy^2) + ...
@@ -399,9 +399,9 @@ classdef MechanicalNonlinearElasticDruckerPrager < MechanicalLinearElastic
                            (-1/2 + nup) * E + 9 * (exx^2 + gxy^2) * sy * (nu - 1/2))) / ...
                            (4 * exx^2 - 4 * exx * eyy + 4 * eyy^2 + 3 * gxy^2) / ...
                            (4 * nup * nu - 2 * nup^2 + nu - 1);
-              
+
               De(2,3) = 0.0;
-              
+
               De(2,4) = -4 * sqrt(3) * (E * (-1/2 + nup) * exx^2 + ...
                            (-E * (-1/2 + nup) * eyy - sy * (nu - 1/2)) * exx + ...
                            E * (-1/2 + nup) * gxy^2 / 2 + 2 * sy * (nu - 1/2) * eyy) * ...

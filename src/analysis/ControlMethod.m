@@ -1,5 +1,5 @@
-%% Control Method Class
-% This in an abstract class that defines a control method object
+%% ControlMethod Class
+% This is an abstract class that defines a control method object.
 % for nonlinear quasi-static analysis.
 %
 %% Authors

@@ -115,6 +115,8 @@ classdef Model < handle
         condenseEnrDofs     = true;          % Flag to condense the enrichment dofs
         dofenr              = [];            % Vector with the enrichment dofs
         ndofenr             = 0;             % Number of enrichment dofs
+        useNodalEnrDofs     = false;         % Flag to use nodal enrichment dofs
+        nNodalEnrDofs       = 0;             % Number of nodal enrichment dofs (used if useNodalEnrDofs == true)
         subDivIntegration   = false;         % Flag to apply a sub-division of the element to define the integration points
         initializeMdl       = false;         % Flag to check if the model has been initialized
     end
@@ -225,6 +227,17 @@ classdef Model < handle
                 countFree = countFree + 1;
             end
         end
+
+        %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
+        function resetDirichletBC(this, dofId)
+            for i = 1:this.nnodes
+                for j = 1:length(dofId)
+                    this.DIRICHLET_TAG(i,dofId(j)) = 0;
+                    this.DIRICHLET_VAL(i,dofId(j)) = NaN;
+                end
+            end
+        end
         
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a node
@@ -249,6 +262,14 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a node        
+        function setDirichletBCAtDomain(this, dofId, value)
+            for i = 1:this.nnodes
+                this.setDirichletBCAtNode(i,dofId,value);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Prescribe a Dirichlet boundary condition at a node        
         function setDirichletBCAtPoint(this, X, dofId, value)
             nodeId = this.closestNodeToPoint(X);
             this.setDirichletBCAtNode(nodeId,dofId,value);
@@ -256,8 +277,15 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Prescribe a Dirichlet boundary condition at a border
-        function setDirichletBCAtBorder(this, border, dofId, value)
-            nodeIds = this.getNodesAtBorder(border);
+        function setDirichletBCAtBorder(this, border, dofId, value, range)
+            if ((nargin < 5) || isempty(range))
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
+            nodeIds = this.getNodesAtBorder(border,range);
             for i = 1:length(nodeIds)
                 this.setDirichletBCAtNode(nodeIds(i),dofId,value);
             end
@@ -278,8 +306,15 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Prescribe a Neumann boundary condition at a node
-        function setNeumannBCAtBorder(this, border, dofId, value)
-            nodeIds = this.getNodesAtBorder(border);
+        function setNeumannBCAtBorder(this, border, dofId, value, range)
+            if ((nargin < 5) || isempty(range))
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
+            nodeIds = this.getNodesAtBorder(border, range);
             for i = 1:length(nodeIds)
                 this.setNeumannBCAtNode(nodeIds(i),dofId,value);
             end
@@ -310,21 +345,54 @@ classdef Model < handle
 
         %------------------------------------------------------------------
         % Identify the nodes contained in any of the borders
-        function nodeIds = getNodesAtBorder(this,border)
+        function nodeIds = getNodesAtBorder(this,border,range)
+            if ((nargin < 3) || isempty(range))
+                if strcmp(border,'left') || strcmp(border,'right')
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif strcmp(border,'top') || strcmp(border,'bottom')
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
             % Get the nodes at the given border
             if strcmp(border,'left')
-                nodeIds = find(abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,1)-min(this.NODE(:,1)))<1.0e-12) & ((this.NODE(:,2))>range(1)-1.0e-12) & ((this.NODE(:,2))<range(2)+1.0e-12));
             elseif strcmp(border,'right')
-                nodeIds = find(abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,1)-max(this.NODE(:,1)))<1.0e-12) & ((this.NODE(:,2))>range(1)-1.0e-12) & ((this.NODE(:,2))<range(2)+1.0e-12));
             elseif strcmp(border,'top')
-                nodeIds = find(abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,2)-max(this.NODE(:,2)))<1.0e-12) & ((this.NODE(:,1))>range(1)-1.0e-12) & ((this.NODE(:,1))<range(2)+1.0e-12));
             elseif strcmp(border,'bottom')
-                nodeIds = find(abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12);
+                nodeIds = find((abs(this.NODE(:,2)-min(this.NODE(:,2)))<1.0e-12) & ((this.NODE(:,1))>range(1)-1.0e-12) & ((this.NODE(:,1))<range(2)+1.0e-12));
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
                 nodeIds = [];
             end
+        end
+
+        %------------------------------------------------------------------
+        % Update a prescribed Dirichlet boundary condition value at a node
+        function updateValueDirichletBCAtNode(this, nodeId, dofId, value)
+            if (length(dofId) ~= length(value))
+                disp('Error updating prescribed Dirichlet BC at a node');
+                disp('length(dofId) ~= length(value)');
+                error('Error in updateDirichletBCAtNode');
+            end
+            for i = 1:length(dofId)
+                if ( this.DIRICHLET_TAG(nodeId,dofId(i)) == 1)
+                    this.DIRICHLET_VAL(nodeId,dofId(i)) = value(i);
+                else
+                    disp('Error updating prescribed Dirichlet BC at a node');
+                    disp('This node did not have a prescribed value.')
+                    error('Error in updateDirichletBCAtNode');
+                end
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Update the DOFs vector to respect the new BC values.
+        function updateDirichletBC(this)
+            this.applyDirichletBCtoDOFVct();
+            this.createNodeDofIdMtrx();
         end
         
         %------------------------------------------------------------------
@@ -408,24 +476,36 @@ classdef Model < handle
             this.U = zeros(this.ndof,1);
 
             % Set the initial values
+            this.applyICtoDOFVct();
+
+            % Set the prescribed values
+            this.applyDirichletBCtoDOFVct();
+
+            % Save initial dofs to the elements
+            for el = 1 : this.nelem
+                this.element(el).type.ue = this.U(this.element(el).type.gle);
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Apply the initial conditions to the DOFs vector
+        function applyICtoDOFVct(this)
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
                     this.U(this.ID(i,j)) = this.INIT(i,j);
                 end
             end
+        end
 
-            % Set the prescribed values
+        %------------------------------------------------------------------
+        % Apply the Dirichlet BC to the DOFs vector
+        function applyDirichletBCtoDOFVct(this)
             for i = 1:this.nnodes
                 for j = 1:this.ndof_nd
                     if (this.DIRICHLET_TAG(i,j) == 1.0)
                         this.U(this.ID(i,j)) = this.DIRICHLET_VAL(i,j);
                     end
                 end
-            end
-
-            % Save initial dofs to the elements
-            for el = 1 : this.nelem
-                this.element(el).type.ue = this.U(this.element(el).type.gle);
             end
         end
 
@@ -671,6 +751,11 @@ classdef Model < handle
             Fe = this.addNodalLoad(Fe);
             b = nonlinearScheme.addNodalForces(b,Fe);
 
+            % Check matrix
+            if any(isnan(nonzeros(A)))
+                error('Linear system matrix has NaN values');
+            end
+
         end
 
         %------------------------------------------------------------------
@@ -759,16 +844,30 @@ classdef Model < handle
         %------------------------------------------------------------------
         % Initialize the discontinuity segments
         function initializeDiscontinuitySegments(this)
+            if this.useNodalEnrDofs, this.condenseEnrDofs = false; end
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
+                % Initialize vector with the nodal enrichment dofs
+                if this.useNodalEnrDofs
+                    nNodesDiscontinuity = size(this.discontinuitySet(i).Xlin,1);
+                    nEnrDofs = nNodesDiscontinuity*this.nNodalEnrDofs;
+                    nodalEnrDofs = this.ndof+1:(this.ndof+nEnrDofs);
+                    this.ndof = this.ndof + nEnrDofs;
+                    this.dofenr = [this.dofenr; nodalEnrDofs'];
+                    nodalEnrDofs = reshape(nodalEnrDofs, this.nNodalEnrDofs, nNodesDiscontinuity).';
+                end
                 % Initialize common properties and dofs
                 nDiscontinuitySeg = this.discontinuitySet(i).getNumberOfDiscontinuitySegments();
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).t = this.t;
-                    if this.condenseEnrDofs == false
+                    if (this.condenseEnrDofs == false) && (this.useNodalEnrDofs == false)
                         this.discontinuitySet(i).segment(j).initializeDofs(this.ndof);
                         this.ndof = this.ndof + this.discontinuitySet(i).segment(j).ndof;
-                        this.dofenr = [this.dofenr, this.discontinuitySet(i).segment(j).dof];
+                        this.dofenr = [this.dofenr; this.discontinuitySet(i).segment(j).dof'];
+                    end
+                    if (this.condenseEnrDofs == false) && (this.useNodalEnrDofs == true)
+                        dEnrDofs = [nodalEnrDofs(j,:), nodalEnrDofs(j+1,:)];
+                        this.discontinuitySet(i).segment(j).setDofs(dEnrDofs);
                     end
                 end
             end
@@ -884,12 +983,14 @@ classdef Model < handle
 
             this.updateResultVertexData(field)
             FEMPlot(this).plotMesh(ax);
-            if isempty(range)
-                colorbar(ax);
-            else
-                clim(ax, range);
-                c = colorbar(ax);
-                c.Limits = range;
+            if strcmp(field,"Model") == false
+                if isempty(range)
+                    colorbar(ax);
+                else
+                    clim(ax, range);
+                    c = colorbar(ax);
+                    c.Limits = range;
+                end
             end
 
         end
@@ -916,13 +1017,15 @@ classdef Model < handle
 
         % -----------------------------------------------------------------
         % Plot field along a given discontinuity
+        % Input:
+        %   - id: id of the discontinuity 
         function plotFieldAlongDiscontinuiy(this, field, id, axisPlot, ax)
             if nargin < 5 || isempty(ax)
-                figure;         % Cria nova figura
-                ax = gca;       % Usa o eixo atual
+                figure;         
+                ax = gca;     
             else
-                axes(ax);       % Define o eixo alvo
-                cla(ax);        % Limpa o conteúdo
+                axes(ax);       
+                cla(ax);        
             end
             if nargin < 4
                 axisPlot = 'x';
@@ -939,10 +1042,13 @@ classdef Model < handle
 
             % Fill vectors
             for j = 1:nDiscontinuitySeg
-                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field);
+                dof_j = this.discontinuitySet(id).segment(j).dof;
+                cElemID = this.discontinuitySet(id).elemID(j);
+                cElem = this.element(cElemID).type;
+                [Xj, fj] = this.discontinuitySet(id).segment(j).getField(field,this.U(dof_j), cElem);
                 DX = Xj - Xi;
                 sj = sqrt(DX(:,1).^2 + DX(:,2).^2);
-                s(2*j-1:2*j,1) = sj;
+                s(2*j-1:2*j,1) = sj; %Xj(:,2);
                 f(2*j-1:2*j,1) = fj;
             end
             

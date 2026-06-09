@@ -38,10 +38,18 @@ classdef Material_H < handle
     methods
 
         % -----------------------------------------------------------------
-        % Returns the biot coefficient
-        function kh = permeabilityTensor(this)
-            kh = this.porousMedia.intrinsicPermeabilityMatrix();
-            kh = kh / this.fluid.mu;
+        % Returns the porous media intrinsic permeability tensor
+        function kh0 = intrinsicPermeabilityTensor(this)
+            kh0 = this.porousMedia.intrinsicPermeabilityMatrix();
+        end
+
+        % -----------------------------------------------------------------
+        % Returns the permeability tensor
+        function kh = permeabilityTensor(this, kh0)
+            if nargin < 2   
+                kh0 = this.porousMedia.intrinsicPermeabilityMatrix();
+            end
+            kh = kh0 / this.fluid.mu;
         end
 
         % -----------------------------------------------------------------

@@ -18,12 +18,12 @@
 % * *yieldStressGradient*: Computes the gradient of the yield function 
 %                          with respect to the stress vector.
 % * *flowVector*: Computes the flow vector for the plastic potential.
-% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+% * *flowStressGradient*: Computes the gradient of the flow vector with
 %                         respect to the stress vector.
 % * *pseudoInv*: Computes the pseudoinverse of a given matrix using SVD.
-% * *hardening*: Returns the hardening value.
-% * *hardeningStressGradient*: Returns the gradient of the hardening law 
-%                              with respect to the stress vector  
+% * *stateEvolution*: Computes the hardening/softening law.
+% * *stateStressGradient*: Computes the gradient of the hardening/softening
+%                          law with respect to the stress vector.
 %
 %% Author
 % Danilo Cavalcanti
@@ -103,7 +103,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
                 stress = s + p * Id;
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
-                dn = this.flowVectorGradient(material,ip,stress);
+                dn = this.flowStressGradient(material,ip,stress,[]);
                 Psi = this.pseudoInv(Ce + lambda * dn);
                 Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
             else 
@@ -142,7 +142,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Yield function definition
-        function f = yieldCondition(this,material,~,stress)
+        function f = yieldCondition(this,material,~,stress,~)
             % Material parameters
             [eta, xi] = this.getMohrCoulombCorrespondence(material);
             % Stress invariants
@@ -154,7 +154,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Gradient of the yield function wrt to the stress vector
-        function df = yieldStressGradient(this,material,ip,stress)
+        function df = yieldStressGradient(this,material,ip,stress,~)
             % Material parameters
             eta = this.getMohrCoulombCorrespondence(material);
             % Deviatoric stress invariant
@@ -177,8 +177,14 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
+        % Gradient of the yield function wrt to the state variables vector
+        function dfda = yieldStateGradient(~,~,~,~,~)
+            dfda = zeros(0,1);
+        end
+
+        %------------------------------------------------------------------
         % Flow vector
-        function n = flowVector(this,material,ip,stress)
+        function n = flowVector(this,material,ip,stress,~)
             % Material parameters
             [~,~,etaB] = this.getMohrCoulombCorrespondence(material);
             % Deviatoric stress invariant
@@ -202,7 +208,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %------------------------------------------------------------------
         % Flow vector gradient
-        function dn = flowVectorGradient(this,~,ip,stress)
+        function dn = flowStressGradient(this,~,ip,stress,~)
             % Deviatoric stress invariant 
             J2   = this.stressInvariantJ2(stress);
             dJ2  = this.gradientJ2(stress);
@@ -225,6 +231,12 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
+        % Flow vector gradient wrt to the state variables vector
+        function dnda = flowStateGradient(~,~,ip,~,~)
+            dnda = zeros(ip.nVar,0);
+        end
+
+        %------------------------------------------------------------------
         % Computes the pseudoinverse of a given matrix using SVD
         function Ai = pseudoInv(~,A)
             % Assume A is your input matrix
@@ -244,15 +256,21 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %------------------------------------------------------------------
-        % Returns the hardening value
-        function h = hardening(~,~,~,~)
-            h = 0.0;
+        % Internal/state variables evolution
+        function h = stateEvolution(~,~,~,~,~)
+            h = zeros(0,1);
         end
 
         %------------------------------------------------------------------
-        % Gradient of the hardening law wrt to the stress vector
-        function dh = hardeningStressGradient(~,~,~,~)
-            dh = 0.0;
+        % Gradient of the internal/state variables law wrt to the stress vector
+        function dhds = stateStressGradient(~,~,ip,~,~)
+            dhds = zeros(0,ip.nVar);
+        end
+
+        %------------------------------------------------------------------
+        % Gradient of the internal/state variables law wrt to the state variables
+        function dhda = stateStateGradient(~,~,~,~,~)
+            dhda = zeros(0,0);
         end
 
     end

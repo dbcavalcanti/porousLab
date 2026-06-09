@@ -57,7 +57,7 @@ classdef Model_M < Model
         addTangentialStretchingMode = false;
         addNormalStretchingMode     = false;
         addRelRotationMode          = false;
-        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation
+        symmetricSDAEFEM            = true;        % Flag for the use of a symmetric embedded formulation     
     end
     
     %% Constructor method
@@ -67,6 +67,7 @@ classdef Model_M < Model
             this = this@Model();
             this.ndof_nd = 2;       % Number of dofs per node
             this.physics = 'M';     % Tag with the physics name
+            this.nNodalEnrDofs = 2;
             if (printFlag)
                 disp("*** Physics: Mechanical");
             end 
@@ -80,7 +81,7 @@ classdef Model_M < Model
         % Sets the material properties
         function setMaterial(this,porousMedia)
             if nargin < 2
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics M requires 1 attribute(s): porousMedia.');
                 error('Error in setMaterial.');
             end
@@ -118,7 +119,8 @@ classdef Model_M < Model
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress,this.addRelRotationMode, ...
                                 this.addTangentialStretchingMode, this.addNormalStretchingMode,...
-                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM);
+                                this.condenseEnrDofs,this.subDivIntegration, this.symmetricSDAEFEM, ...
+                                this.useNodalEnrDofs);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -212,6 +214,15 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
+        % Reset the displacements and strains of the model
+        function resetDisplacements(this)
+            for el = 1 : this.nelem
+                udofs = this.element(el).type.resetDisplacements();
+                this.U(udofs) = 0.0;
+            end
+        end
+
+        % -----------------------------------------------------------------
         % Prescribe a displacement Dirichlet boundary condition at a node
         function setDisplacementDirichletBCAtNode(this, nodeId, value)
             this.setDirichletBCAtNode(nodeId, [1,2], value);
@@ -243,16 +254,31 @@ classdef Model_M < Model
 
         % -----------------------------------------------------------------
         % Impose a load at a border
-        function addLoadAtBorder(this, border, dir, p)
+        function addLoadAtBorder(this, border, dir, p, range)
+            if nargin < 5
+                if (strcmp(border,'left') || strcmp(border,'right')) 
+                    range = [min(this.NODE(:,2)) , max(this.NODE(:,2))];
+                elseif (strcmp(border,'top')||strcmp(border,'bottom'))
+                    range = [min(this.NODE(:,1)) , max(this.NODE(:,1))];
+                end
+            end
+
+            % Tolerance
+            tol = 1.0e-12;
+
             % Get the nodes at the given border
             if strcmp(border,'left')
                 ref = min(this.NODE(:,1));
+                ndir = 1;
             elseif strcmp(border,'right')
                 ref = max(this.NODE(:,1));
+                ndir = 1;
             elseif strcmp(border,'top')
                 ref = max(this.NODE(:,2));
+                ndir = 2;
             elseif strcmp(border,'bottom')
                 ref = min(this.NODE(:,2));
+                ndir = 2;
             else
                 disp('Warning: non-supported border.');
                 disp('Available borders tag: ''left'',''right'', ''top'',''bottom''');
@@ -287,14 +313,16 @@ classdef Model_M < Model
                     edgeY = [cY(j) , cY(j+1)];
             
                     % select the edge
-                    if dir == 1
-                        edge = edgeX;
-                    elseif dir == 2
+                    if ndir == 1
+                        edge   = edgeX;
+                        eRange = edgeY;
+                    elseif ndir == 2
                         edge = edgeY;
+                        eRange = edgeX;
                     end
             
                     % check if the edge belong to the boundary
-                    if norm(edge-ref) < 1.0e-12
+                    if ((norm(edge-ref) < tol) && (min(eRange)>(range(1)-tol)) && (max(eRange)<(range(2)+tol)))
                         
                         % Compute the length of the edge
                         dx = edgeX(2) - edgeX(1);
@@ -338,15 +366,27 @@ classdef Model_M < Model
 
         % -----------------------------------------------------------------
         % Adds some additional discontinuity data
-        function addDiscontinuityData(this,additionalData)
-            this.addRelRotationMode          = additionalData.addRelRotationMode;
-            this.addTangentialStretchingMode = additionalData.addTangentialStretchingMode;
-            this.addNormalStretchingMode     = additionalData.addNormalStretchingMode;
+        function addDiscontinuityData(this, additionalData)
+            if nargin < 2 || ~isstruct(additionalData)
+                return
+            end
+            fields = {
+                'addRelRotationMode'
+                'addTangentialStretchingMode'
+                'addNormalStretchingMode'
+            };
+            for i = 1:numel(fields)
+                f = fields{i};
+                if isfield(additionalData, f) && ~isempty(additionalData.(f))
+                    this.(f) = additionalData.(f);
+                end
+            end
         end
 
         %------------------------------------------------------------------
         % Initializes discontinuity segments
         function initializeDiscontinuitySegments(this)
+            
             % First set the specific properties
             nDiscontinuities = this.getNumberOfDiscontinuities();
             for i = 1:nDiscontinuities
@@ -354,6 +394,7 @@ classdef Model_M < Model
                 for j = 1:nDiscontinuitySeg
                     this.discontinuitySet(i).segment(j).addStretchingMode(this.addTangentialStretchingMode, this.addNormalStretchingMode);
                     this.discontinuitySet(i).segment(j).addRelRotationMode(this.addRelRotationMode);
+                    this.discontinuitySet(i).segment(j).useNodalEnrDofs = this.useNodalEnrDofs;
                     if this.addPorePressure
                         this.discontinuitySet(i).segment(j).DP = 0.0;
                     end

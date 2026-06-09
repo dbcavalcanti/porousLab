@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Shape_Bar Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Shape_Bar.m"><style type="text/css">
+      --><title>Shape_Bar Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Shape_Bar.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -125,30 +125,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
          <span class="comment">%------------------------------------------------------------------</span>
          <span class="comment">% Compute the derivatives of the shape functions matrix.</span>
          <span class="keyword">function</span> [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-            <span class="comment">% Jacobian matrix</span>
-            J = this.JacobianMtrx(X,Xn);
-
-            <span class="comment">% Determinant of the Jacobian matrix</span>
-            detJ = norm(J);
-
-            <span class="comment">% Compute the derivatives of the shape functions wrt to the</span>
-            <span class="comment">% natural coordinate system</span>
-            dNdxn = this.shapeFncDrv(Xn);
-
-            <span class="comment">% Compute the derivatives of the shape functions wrt to the</span>
-            <span class="comment">% global cartesian coordinate system</span>
-            dNdx = J\dNdxn;
-         <span class="keyword">end</span>
-
-         <span class="comment">%------------------------------------------------------------------</span>
-         <span class="comment">% Compute the strain-displacement matrix.</span>
-         <span class="keyword">function</span> [B] = BMatrix(~,dNdx)
-            B = zeros(4,4*2);
-            <span class="keyword">for</span> i = 1:4
-                B(1,2*i-1) = dNdx(1,i);
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
+            <span class="comment">% Geometry</span>
+            dNdxn = this.shapeFncDrv(Xn);   <span class="comment">% 1x2</span>
+            detJ = this.detJacobian(X,Xn);
+            <span class="keyword">if</span> detJ &lt;= eps
+                error(<span class="string">'Shape_Bar:dNdxMatrix:DegenerateElement'</span>, <span class="keyword">...</span>
+                      <span class="string">'Degenerate bar element: node coordinates are coincident or very close.'</span>);
             <span class="keyword">end</span>
+
+            dNdx = (dNdxn / detJ);   <span class="comment">% 1x2</span>
          <span class="keyword">end</span>
 
          <span class="comment">%------------------------------------------------------------------</span>
@@ -191,19 +176,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
          <span class="comment">%   X : vector with the x and y coordinates of a point in the</span>
          <span class="comment">%       global coordinate system</span>
          <span class="keyword">function</span> X = coordNaturalToCartesian(this,NODE,Xn)
-            <span class="comment">% Extract the nodal coordinates</span>
-            x = NODE(:,1);
-            y = NODE(:,2);
-
-            <span class="comment">% Vector with the shape functions</span>
-            Nv = this.shapeFnc(Xn);
-
-            <span class="comment">% Initialize output</span>
-            X = [0.0, 0.0];
-
-            <span class="comment">% Interpolation the position</span>
-            X(1) = Nv(1)*x(1) + Nv(2)*x(2);
-            X(2) = Nv(1)*y(1) + Nv(2)*y(2);
+            Nv = this.shapeFnc(Xn);  <span class="comment">% 1x2</span>
+            X = Nv * NODE;           <span class="comment">% 1x2</span>
          <span class="keyword">end</span>
 
          <span class="comment">% ----------------------------------------------------------------</span>
@@ -219,7 +193,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 ##### SOURCE BEGIN #####
 %% Shape_Bar Class
 % This class inherits from the base class 'Shape' to implement the behavior of a linear bar isoparametric element.
-% 
+%
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
 %
@@ -251,7 +225,7 @@ classdef Shape_Bar < Shape
          function Nm = shapeFncMtrx(this,Xn)
              % Vector with the shape functions
              N = this.shapeFnc(Xn);
-            
+
              % Shape function matrix
              Nm = [N(1)  0.0   N(2)  0.0 ;
                    0.0   N(1)  0.0   N(2)];
@@ -269,7 +243,7 @@ classdef Shape_Bar < Shape
             % Compute the shape function derivatives wrt to the natural
             % coordinate system
             dNdxn = this.shapeFncDrv(Xn);
-            
+
             % Jacobian matrix
             J = dNdxn*X;
          end
@@ -285,30 +259,15 @@ classdef Shape_Bar < Shape
          %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
          % Compute the derivatives of the shape functions matrix.
          function [dNdx,detJ] = dNdxMatrix(this,X,Xn)
-            % Jacobian matrix
-            J = this.JacobianMtrx(X,Xn);
-
-            % Determinant of the Jacobian matrix
-            detJ = norm(J);
-
-            % Compute the derivatives of the shape functions wrt to the
-            % natural coordinate system
-            dNdxn = this.shapeFncDrv(Xn);
-
-            % Compute the derivatives of the shape functions wrt to the
-            % global cartesian coordinate system
-            dNdx = J\dNdxn;
-         end
-
-         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-         % Compute the strain-displacement matrix.
-         function [B] = BMatrix(~,dNdx)
-            B = zeros(4,4*2);
-            for i = 1:4
-                B(1,2*i-1) = dNdx(1,i); 
-                B(2,2*i)   = dNdx(2,i);
-                B(4,2*i-1) = dNdx(2,i); B(4,2*i) = dNdx(1,i);
+            % Geometry
+            dNdxn = this.shapeFncDrv(Xn);   % 1x2
+            detJ = this.detJacobian(X,Xn);
+            if detJ <= eps
+                error('Shape_Bar:dNdxMatrix:DegenerateElement', ...
+                      'Degenerate bar element: node coordinates are coincident or very close.');
             end
+
+            dNdx = (dNdxn / detJ);   % 1x2
          end
 
          %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -324,15 +283,15 @@ classdef Shape_Bar < Shape
                  nIntPoints = 1;
              elseif intOrder == 1
                  % X          = [-0.577350269189626 0.577350269189626];
-                 X          = [-1.0, 1.0];  
+                 X          = [-1.0, 1.0];
                  w          = [ 1.0, 1.0];
                  nIntPoints = 2;
              elseif intOrder == 2
-                 X          = [-1.0 , 0.0, 1.0];  
+                 X          = [-1.0 , 0.0, 1.0];
                  w          = [ 0.5, 1.0, 0.5];
                  nIntPoints = 3;
              elseif intOrder == 3
-                 X          = [-1.0 , -1/3, 1/3, 1.0];  
+                 X          = [-1.0 , -1/3, 1/3, 1.0];
                  w          = [ 1/3, 4/3 , 4/3, 1/3];
                  nIntPoints = 4;
              end
@@ -344,26 +303,15 @@ classdef Shape_Bar < Shape
          % Input:
          %   NODE : matrix with the x and y coordinates of the nodes of a
          %          bar element
-         %   Xn   : vector with the xi and eta coordinates of a point in 
+         %   Xn   : vector with the xi and eta coordinates of a point in
          %          the natural coordinate system
          %
          % Output:
-         %   X : vector with the x and y coordinates of a point in the 
+         %   X : vector with the x and y coordinates of a point in the
          %       global coordinate system
          function X = coordNaturalToCartesian(this,NODE,Xn)
-            % Extract the nodal coordinates
-            x = NODE(:,1);
-            y = NODE(:,2);
-            
-            % Vector with the shape functions
-            Nv = this.shapeFnc(Xn);
-            
-            % Initialize output
-            X = [0.0, 0.0];
-            
-            % Interpolation the position
-            X(1) = Nv(1)*x(1) + Nv(2)*x(2);
-            X(2) = Nv(1)*y(1) + Nv(2)*y(2);
+            Nv = this.shapeFnc(Xn);  % 1x2
+            X = Nv * NODE;           % 1x2
          end
 
          % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -371,7 +319,7 @@ classdef Shape_Bar < Shape
          % global cartesian coordinate system
          % MUST BE IMPLEMENTED.
          function Xn = coordCartesianToNatural(~,~,~)
-            Xn = [];  
+            Xn = [];
          end
     end
 end

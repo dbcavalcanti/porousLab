@@ -50,6 +50,8 @@ classdef EnrichedElement_M < RegularElement_M
         condenseEnrDofs              = true;
         symmetricForm                = true;
         stressIntCoeff               = [];
+        useNodalEnrDofs              = false;
+        nNodalEnrDofs                = 4;
     end
     %% Constructor method
     methods
@@ -59,7 +61,7 @@ classdef EnrichedElement_M < RegularElement_M
                 isAxisSymmetric,isPlaneStress, ...
                 addRelRotationMode,addTangentialStretchingMode, ...
                 addNormalStretchingMode, condenseEnrDofs,...
-                subDivInt, symmetricForm)
+                subDivInt, symmetricForm, useNodalEnrDofs)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
@@ -69,13 +71,14 @@ classdef EnrichedElement_M < RegularElement_M
             this.condenseEnrDofs              = condenseEnrDofs;
             this.subDivInt                    = subDivInt;
             this.symmetricForm                = symmetricForm;
+            this.useNodalEnrDofs              = useNodalEnrDofs;
         end
     end
     
     %% Public methods
     methods
         %------------------------------------------------------------------
-        % Computes the element data for the current element based on wether
+        % Computes the element data for the current element based on whether
         % the element contains a discontinuity or not.
         % 
         % Outputs:
@@ -93,6 +96,34 @@ classdef EnrichedElement_M < RegularElement_M
                [Ke, Ce, fi, fe, dfidu] = enrichedElementData(this);
            end
             
+        end
+
+        % -----------------------------------------------------------------
+        % Update state variables.
+        function updateStateVar(this)
+            updateStateVar@RegularElement_M(this);
+            % Loop through the discontinuities
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities == 0, return, end
+            for i = 1:nDiscontinuities
+                this.discontinuity(i).updateStateVar();
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.gle;
+
+            resetDisplacements@RegularElement_M(this);
+
+            % Loop through the discontinuities
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities == 0, return, end
+            for i = 1:nDiscontinuities
+                this.discontinuity(i).resetDisplacements();
+            end
         end
 
         %------------------------------------------------------------------
@@ -263,7 +294,11 @@ classdef EnrichedElement_M < RegularElement_M
 
             nEnrDofs          = this.getNumberEnrichedDofs();
             nDiscontinuities  = this.getNumberOfDiscontinuities();
-            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nLocalDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nDofDiscontinuity = nLocalDofDiscontinuity;
+            if this.useNodalEnrDofs
+                nDofDiscontinuity = this.nNodalEnrDofs;
+            end
 
             % Initialize the output data 
             Kd = zeros(nEnrDofs,nEnrDofs);
@@ -404,7 +439,12 @@ classdef EnrichedElement_M < RegularElement_M
         % Gets the number of enriched degrees of freedom
         function nEnrDof = getNumberEnrichedDofs(this)
             nEnrDof = this.getNumberOfDiscontinuities();
-            nEnrDof = nEnrDof * this.getNumberOfDofPerDiscontinuity();
+            nLocalDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nDofDiscontinuity = nLocalDofDiscontinuity;
+            if this.useNodalEnrDofs
+                nDofDiscontinuity = this.nNodalEnrDofs;
+            end
+            nEnrDof = nEnrDof * nDofDiscontinuity;
         end
 
         %------------------------------------------------------------------
@@ -463,10 +503,14 @@ classdef EnrichedElement_M < RegularElement_M
         % depending on the configuration
         function Gc = kinematicEnrichment(this, Bu,Xn) 
             nDiscontinuities  = this.getNumberOfDiscontinuities();
-            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nLocalDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nDofDiscontinuity = nLocalDofDiscontinuity;
+            if this.useNodalEnrDofs
+                nDofDiscontinuity = this.nNodalEnrDofs;
+            end
             Gc = zeros(4,nDofDiscontinuity * nDiscontinuities);
             for i = 1:nDiscontinuities    
-                Gci = zeros(4,nDofDiscontinuity);
+                Gci = zeros(4,nLocalDofDiscontinuity);
                 % Get the discontinuity orientation vectors
                 m = this.discontinuity(i).tangentialVector();
                 n = this.discontinuity(i).normalVector();
@@ -518,7 +562,9 @@ classdef EnrichedElement_M < RegularElement_M
                 end
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
-                Gc(:,cols) = Gci;
+                % Get transformation matrix from local to global
+                T = this.discontinuity(i).getDofTransformationMtrx();
+                Gc(:,cols) = Gci * T;
             end
         end
 
@@ -541,8 +587,12 @@ classdef EnrichedElement_M < RegularElement_M
             
             % Initialize variables
             nDiscontinuities  = this.getNumberOfDiscontinuities();
-            nDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
-            jumpOrder         = this.displacementJumpOrder();
+            nLocalDofDiscontinuity = this.getNumberOfDofPerDiscontinuity();
+            nDofDiscontinuity = nLocalDofDiscontinuity;
+            if this.useNodalEnrDofs
+                nDofDiscontinuity = this.nNodalEnrDofs;
+            end
+            jumpOrder = this.displacementJumpOrder();
             Gv = zeros(4,nDofDiscontinuity * nDiscontinuities);
 
             % Get the stress interpolation coefficients
@@ -580,8 +630,11 @@ classdef EnrichedElement_M < RegularElement_M
 
                 % Assemble the matrix associated with discontinuity i
                 cols = nDofDiscontinuity*(i-1)+1 : nDofDiscontinuity*i;
-                Gv(:,cols) = Gi;
 
+                % Get transformation matrix from local to global
+                T = this.discontinuity(i).getDofTransformationMtrx();
+
+                Gv(:,cols) = Gi * T;
             end
 
         end

@@ -175,7 +175,7 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Add contribution of the gravity forces to the external force vct
+        % Add contribution of the gravity forces to the external force vector
         function fe = addGravityForces(this, fe, Xn, c)
 
             % Get gravity vector
@@ -249,6 +249,12 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to get old the nodal values of the displacement
+        function uOld = getOldNodalDisplacement(this)
+            uOld = this.ueOld(1:this.nglu);
+        end
+
+        %------------------------------------------------------------------
         % Function to compute the displacement field in the element.
         function u = displacementField(this,X)
         %
@@ -271,6 +277,23 @@ classdef RegularElement_M < RegularElement
             % Regular displacement field
             u = Nu*uv;
         
+        end
+
+        %------------------------------------------------------------------
+        % Function to reset the displacements and strains
+        function udofs = resetDisplacements(this)
+
+            udofs = this.glu;
+
+            % Reset the displacements
+            this.ue(1:this.nglu) = 0.0;
+            this.ueOld(1:this.nglu) = 0.0;
+
+            % Reset the strains
+            for i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(4,1);
+                this.intPoint(i).strainOld = zeros(4,1);
+            end
         end
 
         %------------------------------------------------------------------

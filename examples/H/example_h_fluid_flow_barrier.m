@@ -51,7 +51,7 @@ Dy = [8.0; 3.0];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
 % Set fracture material properties
-fracture.fluid = water;
+fracture.liquidFluid = water;
 fracture.initialAperture = 1.0e-3;
 fracture.leakoff = 1.0e-19;
 

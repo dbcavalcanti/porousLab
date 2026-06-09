@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>FEMPlot Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="FEMPlot.m"><style type="text/css">
+      --><title>FEMPlot Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="FEMPlot.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -207,6 +207,40 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Plots the field along a discontinuity</span>
+        <span class="keyword">function</span> plotFieldAlongDiscontinuity(this, S, F, field, axisPlot, ax)
+
+            <span class="comment">% Initialize, plot and configure the figure</span>
+            cla(ax);
+            hold(ax, <span class="string">'on'</span>);
+            box(ax, <span class="string">'on'</span>);
+            grid(ax, <span class="string">'on'</span>);
+
+            <span class="comment">% Set the limits</span>
+            fmin = min(F);
+            fmax = max(F);
+            pad = max(0.02*(fmax-fmin),max(0.001*mean(F),0.01));
+
+            <span class="comment">% Plota conforme o eixo escolhido</span>
+            <span class="keyword">if</span> strcmp(axisPlot, <span class="string">'y'</span>)
+                plot(ax, F, S, this.DEFAULT_COLOR, <span class="string">'LineWidth'</span>, this.DEFAULT_LINE_WIDTH);
+                xlabel(ax, field);
+                ylabel(ax, <span class="string">'Longitudinal distance (m)'</span>);
+                xlim(ax, [fmin-pad, fmax+pad]);
+            <span class="keyword">elseif</span> strcmp(axisPlot, <span class="string">'x'</span>)
+                plot(ax, S, F, this.DEFAULT_COLOR, <span class="string">'LineWidth'</span>, this.DEFAULT_LINE_WIDTH);
+                ylabel(ax, field);
+                xlabel(ax, <span class="string">'Longitudinal distance (m)'</span>);
+                ylim(ax, [fmin-pad, fmax+pad]);
+            <span class="keyword">end</span>
+
+            <span class="comment">% Aplica formata&ccedil;&atilde;o</span>
+            set(ax, <span class="string">'FontName'</span>, this.DEFAULT_FONT_NAME);
+            set(ax, <span class="string">'FontSize'</span>, this.DEFAULT_FONT_SIZE);
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Combines faces, vertices, and vertex data from all elements in the model.</span>
         <span class="keyword">function</span> [allFaces, allVertices, allVertexData] = getElementsPatches(this)
 
@@ -252,13 +286,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% FEMPlot Class
-% This class provides methods to visualize graphical results from Finite 
-% Element Method (FEM) analysis. It includes functionalities to plot 
-% meshes, evaluate fields along segments, and compute bounding boxes for 
+% This class provides methods to visualize graphical results from Finite
+% Element Method (FEM) analysis. It includes functionalities to plot
+% meshes, evaluate fields along segments, and compute bounding boxes for
 % models.
 %
 %% Methods
-% * *getBoundingBox*: Computes the bounding box of the model with a 
+% * *getBoundingBox*: Computes the bounding box of the model with a
 %                     tolerance.
 % * *plotMesh*: Plots the continuum elements of the mesh. It also
 %               configures the figure wth default font, size and colormap.
@@ -299,13 +333,13 @@ classdef FEMPlot < handle
             end
         end
     end
-    
+
     %% Public methods
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Computes the bounding box of the model with a tolerance.
         % Note:
-        %   - The tolerance is calculated as 10% of the absolute difference 
+        %   - The tolerance is calculated as 10% of the absolute difference
         %     between the maximum and minimum x-coordinates of the model's nodes.
         %
         function bbox = getBoundingBox(this)
@@ -336,29 +370,29 @@ classdef FEMPlot < handle
                 axes(ax);       % Define o eixo alvo
                 cla(ax);        % Limpa o conteúdo
             end
-        
+
             hold(ax, 'on');
-        
+
             % Get patches
             [Faces, Vertices, VertexData] = this.getElementsPatches();
-        
+
             % Plot the continuum elements
             patch(ax, 'Faces', Faces, ...
                       'Vertices', Vertices, ...
                       'FaceVertexCData', VertexData, ...
-                      'FaceColor', this.DEFAULT_FACE_COLOR, ...  
+                      'FaceColor', this.DEFAULT_FACE_COLOR, ...
                       'LineWidth', this.DEFAULT_EDGES_THICKNESS, ...
                       'LineStyle', '-', ...
                       'Marker', this.DEFAULT_MARKER_TYPE);
-        
+
             % Set the colormap
             colormap(ax, this.DEFAULT_COLORMAP_TYPE);
-        
+
             % Get the bounding box
             bbox = this.getBoundingBox();
             xlim(ax, [bbox(1) bbox(3)]);
             ylim(ax, [bbox(2) bbox(4)]);
-        
+
             % Formatting the figure
             box(ax, 'on');
             grid(ax, 'on');
@@ -381,17 +415,17 @@ classdef FEMPlot < handle
 
             % Calculate the pressure field in the points of the segment
             for i = 1:npts
-                
+
                 % Longitudinal coordinate of the point X(i) wrt to Xi
                 S(i) = sqrt((X(i,1) - Xi(1))*(X(i,1) - Xi(1)) + (X(i,2) - Xi(2))*(X(i,2) - Xi(2)));
-                
+
                 % Find in each element this point is inside
                 elem = findElementInMesh(this.model.NODE, this.model.ELEM, X(i,:));
-                
+
                 % Calculate the given field in the point X using the
                 % shape function of the element
                 F(i) = this.model.evaluateField(field, elem, X(i,:));
-                
+
             end
 
             % Initialize, plot and configure the figure
@@ -399,7 +433,7 @@ classdef FEMPlot < handle
             hold(ax, 'on');
             box(ax, 'on');
             grid(ax, 'on');
-            
+
             % Plota conforme o eixo escolhido
             if strcmp(axisPlot, 'y')
                 plot(ax, F, S, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
@@ -410,7 +444,41 @@ classdef FEMPlot < handle
                 ylabel(ax, field);
                 xlabel(ax, 'Longitudinal distance (m)');
             end
-            
+
+            % Aplica formatação
+            set(ax, 'FontName', this.DEFAULT_FONT_NAME);
+            set(ax, 'FontSize', this.DEFAULT_FONT_SIZE);
+
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Plots the field along a discontinuity
+        function plotFieldAlongDiscontinuity(this, S, F, field, axisPlot, ax)
+
+            % Initialize, plot and configure the figure
+            cla(ax);
+            hold(ax, 'on');
+            box(ax, 'on');
+            grid(ax, 'on');
+
+            % Set the limits
+            fmin = min(F);
+            fmax = max(F);
+            pad = max(0.02*(fmax-fmin),max(0.001*mean(F),0.01));
+
+            % Plota conforme o eixo escolhido
+            if strcmp(axisPlot, 'y')
+                plot(ax, F, S, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                xlabel(ax, field);
+                ylabel(ax, 'Longitudinal distance (m)');
+                xlim(ax, [fmin-pad, fmax+pad]);
+            elseif strcmp(axisPlot, 'x')
+                plot(ax, S, F, this.DEFAULT_COLOR, 'LineWidth', this.DEFAULT_LINE_WIDTH);
+                ylabel(ax, field);
+                xlabel(ax, 'Longitudinal distance (m)');
+                ylim(ax, [fmin-pad, fmax+pad]);
+            end
+
             % Aplica formatação
             set(ax, 'FontName', this.DEFAULT_FONT_NAME);
             set(ax, 'FontSize', this.DEFAULT_FONT_SIZE);
@@ -420,29 +488,29 @@ classdef FEMPlot < handle
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Combines faces, vertices, and vertex data from all elements in the model.
         function [allFaces, allVertices, allVertexData] = getElementsPatches(this)
-            
+
             % Initialize combined matrices
             allFaces      = {};      % Combined faces connectivity
             allVertices   = [];      % Combined vertices coordinates
             allVertexData = [];      % Combined vertex data
             vertexOffset  = 0;       % Offset for face indices due to combined vertices
-            
+
             % Loop through all elements to build combined matrices
             for el = 1:this.model.nelem
                 % Get the current element and its results
                 element = this.model.element(el).type;
                 res = element.result;
-                
+
                 % Adjust face indices for combined vertices
                 faces = res.faces + vertexOffset;
 
                 % Store the faces as a cell array to handle different numbers of faces
                 allFaces{end+1} = faces;
-                
+
                 % Append to combined matrices
                 allVertices   = [allVertices; res.vertices];
                 allVertexData = [allVertexData; res.vertexData];
-                
+
                 % Update vertex offset for the next element
                 vertexOffset = vertexOffset + size(res.vertices, 1);
             end
@@ -451,11 +519,11 @@ classdef FEMPlot < handle
             % by padding with NaNs or zeros to ensure uniform row sizes
             maxFaces = max(cellfun(@numel, allFaces));  % Find the maximum number of faces
             paddedFaces = NaN(numel(allFaces), maxFaces);  % Pre-allocate matrix with NaNs
-            
+
             for i = 1:numel(allFaces)
                 paddedFaces(i, 1:numel(allFaces{i})) = allFaces{i};  % Pad each row
             end
-            
+
             allFaces = paddedFaces;  % Use the padded faces matrix
         end
     end

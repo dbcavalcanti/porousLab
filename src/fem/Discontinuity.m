@@ -1,5 +1,5 @@
 %% Discontinuity Class
-% This in an abstract class that defines a discontinuity in a finite element mesh.
+% This is an abstract class that defines a discontinuity in a finite element mesh.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
@@ -15,7 +15,7 @@ classdef Discontinuity < handle
 
         % Geometry tools 
         useRepel = false;          % Flag to enable/disable the repel process
-        repelTol = 1.0e-2;         % Node repel tolerance
+        repelTol = 1.0e-1;         % Node repel tolerance
         savePerturbNodes = false;  % Flag to save the perturbed nodes
 
         % Topology
@@ -25,13 +25,23 @@ classdef Discontinuity < handle
         % Properties:
         % The properties must be included in the data structure
         % constructed in the createMaterialDataStructure method
+        porousMedia         = [];
+        porosity            = [];
         cohesiveLaw         = [];
-        fluid               = [];
+        liquidFluid         = [];
+        gasFluid            = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        maximumClosure      = [];
+        frictionAngle       = [];
+        dilationAngle       = [];
+        cohesion            = [];
+        tensionCutOff       = [];
+        conductive          = true;
         leakoff             = 1.0;
+        transversalPerm     = 1.0;
     end
 
     %% Constructor method
@@ -123,15 +133,24 @@ classdef Discontinuity < handle
         end
 
         %------------------------------------------------------------------
-        % Create material data strcture.
+        % Create material data structure.
         function mat = createMaterialDataStructure(this)
-            mat = struct('fluid',this.fluid,...
+            mat = struct('porousMedia',this.porousMedia,...
+                         'porosity', this.porosity,...
+                         'liquidFluid',this.liquidFluid,...
+                         'gasFluid',this.gasFluid,...
                          'cohesiveLaw',this.cohesiveLaw, ...
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
                          'shearStiffness',this.shearStiffness,...
                          'contactPenalization',this.contactPenalization,...
-                         'leakoff',this.leakoff);
+                         'maximumClosure',this.maximumClosure,...
+                         'frictionAngle',this.frictionAngle,...
+                         'dilationAngle', this.dilationAngle,...
+                         'cohesion', this.cohesion,...
+                         'tensionCutOff',this.tensionCutOff,...
+                         'leakoff',this.leakoff, ...
+                         'transversalPermeability', this.transversalPerm);
         end
 
         %------------------------------------------------------------------
@@ -143,7 +162,7 @@ classdef Discontinuity < handle
         %------------------------------------------------------------------
         % Plot original polyline.
         function plotOriginalGeometry(this)
-            plot(this.X(:,1), this.X(:,2), '-.xk');
+            plot(this.X(:,1), this.X(:,2), '-.k');
         end
 
         %------------------------------------------------------------------
@@ -152,7 +171,7 @@ classdef Discontinuity < handle
             for i = 1:size(this.Xlin, 1)-1
                 if (this.elemID(i) > 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
-                    plot(seg(:,1), seg(:,2), '-.r', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
+                    plot(seg(:,1), seg(:,2), '-.k', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
                 end
             end
         end
@@ -375,7 +394,7 @@ classdef Discontinuity < handle
             for i = 1:size(NODE, 1)
                 node = NODE(i,:); % Current mesh node
 
-                % Distance to detect and perturn nodes
+                % Distance to detect and perturb nodes
                 repelDistance = this.repelTol * Lc(i);
 
                 % Check if this node is close to any node in Xlin
@@ -391,7 +410,7 @@ classdef Discontinuity < handle
                     % If the node is too close, repel it
                     if distance < repelDistance
 
-                        % Get the pertubation direction
+                        % Get the perturbation direction
                         if abs(node(1) - xmin) < 1.0e-12
                             pert_dir = [0.0 , 1.0];
                         elseif abs(node(1) - xmax) < 1.0e-12

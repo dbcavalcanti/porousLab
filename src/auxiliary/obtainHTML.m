@@ -36,7 +36,7 @@ if ~exist(outputFolder, 'dir')
     mkdir(outputFolder);
 end
 
-%% Obtain all the repository follwing the specified criteria
+%% Obtain all files in the repository following the specified criteria
 % Get a list of all .m files in the porousLab repository (all subdirectories)
 mFiles = dir(fullfile(repoFolder, '**', '*.m')); % Recursively finds all .m files
 

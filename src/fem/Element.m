@@ -1,5 +1,5 @@
 %% Element Class
-% This in an abstract class that defines a finite element.
+% This is an abstract class that defines a finite element.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)

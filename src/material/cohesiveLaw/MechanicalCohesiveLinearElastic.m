@@ -24,7 +24,7 @@
 classdef MechanicalCohesiveLinearElastic < handle  
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        nstVar = 0;   % Number of state variables
+        nstVar = 1;   % Number of state variables
     end
     %% Constructor method
     methods
@@ -46,7 +46,20 @@ classdef MechanicalCohesiveLinearElastic < handle
             % Stress vector
             stress = De * (ip.strain - ip.strainOld) + ip.stressOld;
 
-        end    
+        end   
+
+        %------------------------------------------------------------------
+        % Compute the elastic constitutive matrix
+        function De = elasticConstitutiveMatrix(this,material,ip)
+
+            % Elastic material properties
+            ks = material.shearStiffness;
+            kn = this.closureModel(material,ip);
+            
+            % Assemble constitutive matrix
+            De = [ ks   0.0;
+                   0.0   kn ];
+        end 
     end
     %% Public methods
     methods (Static)
@@ -56,24 +69,27 @@ classdef MechanicalCohesiveLinearElastic < handle
             flag = false;
         end
         %------------------------------------------------------------------
-        % Compute the elastic constitutive matrix
-        function De = elasticConstitutiveMatrix(material,ip)
-
-            % Elastic material properties
+        function initializeAperture(material, ip)
+            ip.statevar(1) = material.initialAperture;
+            ip.statevarOld(1) = material.initialAperture;
+        end
+        
+        %------------------------------------------------------------------
+        % Compute the normal stiffness based on the closure model
+        function kn = closureModel(material,ip)
+            w0 = material.initialAperture;
             kn = material.normalStiffness;
-            ks = material.shearStiffness;
-
-            % Normal jump
-            dn = ip.strain(2);
-
-            % Closure model
-            if dn < -1.0e-6
-                kn = kn * 1.0e3;
+            wn = ip.strain(2) + w0;
+            if wn < 0
+                if strcmp(material.contactPenalization,'constant')
+                    kn = kn * 1.0E4;
+                elseif strcmp(material.contactPenalization,'bartonBandis')
+                    wmax = material.maximumClosure;
+                    wn = max(wn,-wmax + 1.0E-6);
+                    kn = wmax * wmax * kn / ((wn + wmax) * (wn + wmax));
+                end
             end
 
-            % Assemble constitutive matrix
-            De = [ ks   0.0;
-                   0.0   kn ];
-        end 
+        end
     end
 end

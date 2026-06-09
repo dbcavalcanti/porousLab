@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>MechanicalElastoPlasticDruckerPrager Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="MechanicalElastoPlasticDruckerPrager.m"><style type="text/css">
+      --><title>MechanicalElastoPlasticDruckerPrager Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="MechanicalElastoPlasticDruckerPrager.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>MechanicalElastoPlasticDruckerPrager Class</h1><!--introduction--><p>This class implements the Drucker-Prager criteria for the elasto-plastic material law. It provides methods for evaluating stress, constitutive matrices, yield conditions, flow vectors, and their gradients, as well as handling plastic strain updates.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Constructor method</a></li><li><a href="#6">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>eval</b>: Computes the stress vector and the constitutive matrix for the           material at a given integration point. Handles both elastic           and plastic steps.</li><li><b>alternativeStressIntegration</b>: Implements an alternative stress                                   integration algorithm for the material.</li><li><b>getMohrCoulombCorrespondence</b>: Computes the Mohr-Coulomb                                   correspondence parameters for the                                   material.</li><li><b>yieldCondition</b>: Defines the yield function based on the Drucker-                     Prager criteria.</li><li><b>yieldStressGradient</b>: Computes the gradient of the yield function                          with respect to the stress vector.</li><li><b>flowVector</b>: Computes the flow vector for the plastic potential.</li><li><b>flowVectorGradient</b>: Computes the gradient of the flow vector with                         respect to the stress vector.</li><li><b>pseudoInv</b>: Computes the pseudoinverse of a given matrix using SVD.</li><li><b>hardening</b>: Returns the hardening value.</li><li><b>hardeningStressGradient</b>: Returns the gradient of the hardening law                              with respect to the stress vector</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> MechanicalElastoPlasticDruckerPrager &lt; MechanicalElastoPlastic
+  </style></head><body><div class="content"><h1>MechanicalElastoPlasticDruckerPrager Class</h1><!--introduction--><p>This class implements the Drucker-Prager criteria for the elasto-plastic material law. It provides methods for evaluating stress, constitutive matrices, yield conditions, flow vectors, and their gradients, as well as handling plastic strain updates.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Constructor method</a></li><li><a href="#6">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>eval</b>: Computes the stress vector and the constitutive matrix for the           material at a given integration point. Handles both elastic           and plastic steps.</li><li><b>alternativeStressIntegration</b>: Implements an alternative stress                                   integration algorithm for the material.</li><li><b>getMohrCoulombCorrespondence</b>: Computes the Mohr-Coulomb                                   correspondence parameters for the                                   material.</li><li><b>yieldCondition</b>: Defines the yield function based on the Drucker-                     Prager criteria.</li><li><b>yieldStressGradient</b>: Computes the gradient of the yield function                          with respect to the stress vector.</li><li><b>flowVector</b>: Computes the flow vector for the plastic potential.</li><li><b>flowStressGradient</b>: Computes the gradient of the flow vector with                         respect to the stress vector.</li><li><b>pseudoInv</b>: Computes the pseudoinverse of a given matrix using SVD.</li><li><b>stateEvolution</b>: Computes the hardening/softening law.</li><li><b>stateStressGradient</b>: Computes the gradient of the hardening/softening                          law with respect to the stress vector.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00.</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> MechanicalElastoPlasticDruckerPrager &lt; MechanicalElastoPlastic
 </pre><h2 id="5">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = MechanicalElastoPlasticDruckerPrager()
@@ -135,7 +135,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 stress = s + p * Id;
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
-                dn = this.flowVectorGradient(material,ip,stress);
+                dn = this.flowStressGradient(material,ip,stress,[]);
                 Psi = this.pseudoInv(Ce + lambda * dn);
                 Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
             <span class="keyword">else</span>
@@ -174,7 +174,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Yield function definition</span>
-        <span class="keyword">function</span> f = yieldCondition(this,material,~,stress)
+        <span class="keyword">function</span> f = yieldCondition(this,material,~,stress,~)
             <span class="comment">% Material parameters</span>
             [eta, xi] = this.getMohrCoulombCorrespondence(material);
             <span class="comment">% Stress invariants</span>
@@ -186,7 +186,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Gradient of the yield function wrt to the stress vector</span>
-        <span class="keyword">function</span> df = yieldStressGradient(this,material,ip,stress)
+        <span class="keyword">function</span> df = yieldStressGradient(this,material,ip,stress,~)
             <span class="comment">% Material parameters</span>
             eta = this.getMohrCoulombCorrespondence(material);
             <span class="comment">% Deviatoric stress invariant</span>
@@ -209,8 +209,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Gradient of the yield function wrt to the state variables vector</span>
+        <span class="keyword">function</span> dfda = yieldStateGradient(~,~,~,~,~)
+            dfda = zeros(0,1);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Flow vector</span>
-        <span class="keyword">function</span> n = flowVector(this,material,ip,stress)
+        <span class="keyword">function</span> n = flowVector(this,material,ip,stress,~)
             <span class="comment">% Material parameters</span>
             [~,~,etaB] = this.getMohrCoulombCorrespondence(material);
             <span class="comment">% Deviatoric stress invariant</span>
@@ -234,7 +240,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Flow vector gradient</span>
-        <span class="keyword">function</span> dn = flowVectorGradient(this,~,ip,stress)
+        <span class="keyword">function</span> dn = flowStressGradient(this,~,ip,stress,~)
             <span class="comment">% Deviatoric stress invariant</span>
             J2   = this.stressInvariantJ2(stress);
             dJ2  = this.gradientJ2(stress);
@@ -257,6 +263,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Flow vector gradient wrt to the state variables vector</span>
+        <span class="keyword">function</span> dnda = flowStateGradient(~,~,ip,~,~)
+            dnda = zeros(ip.nVar,0);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Computes the pseudoinverse of a given matrix using SVD</span>
         <span class="keyword">function</span> Ai = pseudoInv(~,A)
             <span class="comment">% Assume A is your input matrix</span>
@@ -276,15 +288,21 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Returns the hardening value</span>
-        <span class="keyword">function</span> h = hardening(~,~,~,~)
-            h = 0.0;
+        <span class="comment">% Internal/state variables evolution</span>
+        <span class="keyword">function</span> h = stateEvolution(~,~,~,~,~)
+            h = zeros(0,1);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Gradient of the hardening law wrt to the stress vector</span>
-        <span class="keyword">function</span> dh = hardeningStressGradient(~,~,~,~)
-            dh = 0.0;
+        <span class="comment">% Gradient of the internal/state variables law wrt to the stress vector</span>
+        <span class="keyword">function</span> dhds = stateStressGradient(~,~,ip,~,~)
+            dhds = zeros(0,ip.nVar);
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Gradient of the internal/state variables law wrt to the state variables</span>
+        <span class="keyword">function</span> dhda = stateStateGradient(~,~,~,~,~)
+            dhda = zeros(0,0);
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
@@ -298,25 +316,25 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % as handling plastic strain updates.
 %
 %% Methods
-% * *eval*: Computes the stress vector and the constitutive matrix for the 
-%           material at a given integration point. Handles both elastic 
+% * *eval*: Computes the stress vector and the constitutive matrix for the
+%           material at a given integration point. Handles both elastic
 %           and plastic steps.
-% * *alternativeStressIntegration*: Implements an alternative stress 
+% * *alternativeStressIntegration*: Implements an alternative stress
 %                                   integration algorithm for the material.
-% * *getMohrCoulombCorrespondence*: Computes the Mohr-Coulomb 
-%                                   correspondence parameters for the 
+% * *getMohrCoulombCorrespondence*: Computes the Mohr-Coulomb
+%                                   correspondence parameters for the
 %                                   material.
 % * *yieldCondition*: Defines the yield function based on the Drucker-
 %                     Prager criteria.
-% * *yieldStressGradient*: Computes the gradient of the yield function 
+% * *yieldStressGradient*: Computes the gradient of the yield function
 %                          with respect to the stress vector.
 % * *flowVector*: Computes the flow vector for the plastic potential.
-% * *flowVectorGradient*: Computes the gradient of the flow vector with 
+% * *flowStressGradient*: Computes the gradient of the flow vector with
 %                         respect to the stress vector.
 % * *pseudoInv*: Computes the pseudoinverse of a given matrix using SVD.
-% * *hardening*: Returns the hardening value.
-% * *hardeningStressGradient*: Returns the gradient of the hardening law 
-%                              with respect to the stress vector  
+% * *stateEvolution*: Computes the hardening/softening law.
+% * *stateStressGradient*: Computes the gradient of the hardening/softening
+%                          law with respect to the stress vector.
 %
 %% Author
 % Danilo Cavalcanti
@@ -325,7 +343,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 %
 %% Class Definition
-classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic  
+classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
     %% Constructor method
     methods
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -388,18 +406,18 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
             % Plastic multiplier
             lambda = f / (G + K * eta * etaB);
 
-            % Stress update to the smooth part of the cone 
+            % Stress update to the smooth part of the cone
             factor = 1.0 - G * lambda / sqrt(J2);
-            if J2 > 0.0    
+            if J2 > 0.0
                 s = factor * s;
                 p = p - lambda * etaB * K;
                 stress = s + p * Id;
                 df = this.yieldStressGradient(material,ip,stress);
                 n  = this.flowVector(material,ip,stress);
-                dn = this.flowVectorGradient(material,ip,stress);
+                dn = this.flowStressGradient(material,ip,stress,[]);
                 Psi = this.pseudoInv(Ce + lambda * dn);
                 Dt  = Psi - ((Psi * n) * df' * Psi)/((df' * Psi) * n);
-            else 
+            else
                 % Return to the apex of the surface
                 stress = (xi * coh / eta) * Id;
                 Dt = zeros(4,4);
@@ -435,7 +453,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Yield function definition
-        function f = yieldCondition(this,material,~,stress)
+        function f = yieldCondition(this,material,~,stress,~)
             % Material parameters
             [eta, xi] = this.getMohrCoulombCorrespondence(material);
             % Stress invariants
@@ -447,7 +465,7 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Gradient of the yield function wrt to the stress vector
-        function df = yieldStressGradient(this,material,ip,stress)
+        function df = yieldStressGradient(this,material,ip,stress,~)
             % Material parameters
             eta = this.getMohrCoulombCorrespondence(material);
             % Deviatoric stress invariant
@@ -470,8 +488,14 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Gradient of the yield function wrt to the state variables vector
+        function dfda = yieldStateGradient(~,~,~,~,~)
+            dfda = zeros(0,1);
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Flow vector
-        function n = flowVector(this,material,ip,stress)
+        function n = flowVector(this,material,ip,stress,~)
             % Material parameters
             [~,~,etaB] = this.getMohrCoulombCorrespondence(material);
             % Deviatoric stress invariant
@@ -495,8 +519,8 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Flow vector gradient
-        function dn = flowVectorGradient(this,~,ip,stress)
-            % Deviatoric stress invariant 
+        function dn = flowStressGradient(this,~,ip,stress,~)
+            % Deviatoric stress invariant
             J2   = this.stressInvariantJ2(stress);
             dJ2  = this.gradientJ2(stress);
             d2J2 = this.hessianJ2();
@@ -518,11 +542,17 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Flow vector gradient wrt to the state variables vector
+        function dnda = flowStateGradient(~,~,ip,~,~)
+            dnda = zeros(ip.nVar,0);
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Computes the pseudoinverse of a given matrix using SVD
         function Ai = pseudoInv(~,A)
             % Assume A is your input matrix
             [U, S, V] = svd(A);  % Compute the SVD of A
-            
+
             % Invert the non-zero singular values in S
             S_inv = zeros(size(S'));  % Initialize a matrix for the pseudoinverse of S
             tolerance = 1e-10;  % A tolerance for small singular values
@@ -531,24 +561,31 @@ classdef MechanicalElastoPlasticDruckerPrager < MechanicalElastoPlastic
                     S_inv(i, i) = 1 / S(i, i);  % Inverse of the singular value
                 end
             end
-            
+
             % Compute the pseudoinverse of A
             Ai = V * S_inv * U';
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Returns the hardening value
-        function h = hardening(~,~,~,~)
-            h = 0.0;
+        % Internal/state variables evolution
+        function h = stateEvolution(~,~,~,~,~)
+            h = zeros(0,1);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Gradient of the hardening law wrt to the stress vector
-        function dh = hardeningStressGradient(~,~,~,~)
-            dh = 0.0;
+        % Gradient of the internal/state variables law wrt to the stress vector
+        function dhds = stateStressGradient(~,~,ip,~,~)
+            dhds = zeros(0,ip.nVar);
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Gradient of the internal/state variables law wrt to the state variables
+        function dhda = stateStateGradient(~,~,~,~,~)
+            dhda = zeros(0,0);
         end
 
     end
 end
+
 ##### SOURCE END #####
 --></body></html>

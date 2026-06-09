@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>RegularElement_HM class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RegularElement_HM.m"><style type="text/css">
+      --><title>RegularElement_HM class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="RegularElement_HM.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -158,7 +158,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 <span class="comment">% Assemble the B-matrix for the mechanical part</span>
-                Bu = this.shape.BMatrix(Bp);
+                Bu = this.BMatrix(Bp);
 
                 <span class="comment">% Pressure values at the integration point</span>
                 pIP = Np * pl;
@@ -188,7 +188,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 K = K + Bu' * Duu * Bu * c;
 
                 <span class="comment">% Internal force vector</span>
-                fiu = fiu + Bu' * (stress - biot * pIP * m) * c;
+                fiu = fiu + Bu' * stress * c;
 
                 <span class="comment">% Compute the hydromechanical coupling matrices</span>
                 Q = Q + Np' * biot * m' * Bu * c;
@@ -218,10 +218,10 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">end</span>
 
             <span class="comment">% Assemble the element permeability</span>
-            Ke = [ Ouu , Opu';
+            Ke = [ Ouu , -Q';
                    Opu,  H ];
 
-            dfidu = [ K , -Q';
+            dfidu = [ K , Opu';
                      Opu, Opp ];
 
             <span class="comment">% Assemble the element compressibility matrix</span>
@@ -252,7 +252,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Add contribution of the gravity forces to the external force vct</span>
+        <span class="comment">% Add contribution of the gravity forces to the external force vector</span>
         <span class="keyword">function</span> [feu,fep] = addGravityForces(this,feu,fep,Np,Bp,kh,pl,c)
 
             <span class="comment">% Get gravity vector</span>
@@ -316,27 +316,27 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% RegularElement_HM class
-% This class defines a single-phase hydromechanical finite element. It 
-% extends the _RegularElement_ class and incorporates additional 
+% This class defines a single-phase hydromechanical finite element. It
+% extends the _RegularElement_ class and incorporates additional
 % attributes and methods specific to hydromechanical analysis.
 %
 %% Methods
-% * *initializeIntPoints*: Initializes the integration points for the 
-%                          element using the shape function and material 
+% * *initializeIntPoints*: Initializes the integration points for the
+%                          element using the shape function and material
 %                          properties.
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
+% * *elementData*: Assembles the element stiffness matrix, damping matrix,
+%                  internal force vector, external force vector, and
+%                  derivative of internal force with respect to
 %                  displacement.
-% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
-%                                  matrix based on the element volume and 
+% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility
+%                                  matrix based on the element volume and
 %                                  compressibility coefficients.
-% * *addGravityForces*: Adds the contribution of gravity forces to the 
+% * *addGravityForces*: Adds the contribution of gravity forces to the
 %                       external force vector.
 % * *getNodalDisplacement*: Retrieves the nodal displacement values.
 % * *getNodalPressure*: Retrieves the nodal liquid pressure values.
-% * *pressureField*: Computes the pressure field inside the element at a 
-%                    given position in the global Cartesian coordinate 
+% * *pressureField*: Computes the pressure field inside the element at a
+%                    given position in the global Cartesian coordinate
 %                    system.
 %
 %% Author
@@ -344,9 +344,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 %
 %% Version History
 % Version 1.00.
-% 
+%
 %% Class definition
-classdef RegularElement_HM < RegularElement_M    
+classdef RegularElement_HM < RegularElement_M
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         glp        = [];            % Liquid phase pressure dofs
@@ -367,7 +367,7 @@ classdef RegularElement_HM < RegularElement_M
             this.ngle = length(this.gle);
         end
     end
-    
+
     %% Public methods
     methods
 
@@ -390,14 +390,14 @@ classdef RegularElement_HM < RegularElement_M
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % This function assembles the element matrices and vectors 
+        % This function assembles the element matrices and vectors
         %
         % Output:
         %    Ke : element "stiffness" matrix
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force with 
+        % dfidu : element matrix of derivative of the internal force with
         %         respect to displacement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
@@ -420,7 +420,7 @@ classdef RegularElement_HM < RegularElement_M
             % Initialize the internal force vector
             fiu = zeros(this.nglu, 1);
             fip = zeros(this.nglp, 1);
-            
+
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
             pl = this.getNodalPressure();
@@ -436,12 +436,12 @@ classdef RegularElement_HM < RegularElement_M
 
                 % Shape function matrix
                 Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
-               
+
                 % Compute the B matrix at the int. point and the detJ
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
-                Bu = this.shape.BMatrix(Bp);
+                Bu = this.BMatrix(Bp);
 
                 % Pressure values at the integration point
                 pIP = Np * pl;
@@ -451,7 +451,7 @@ classdef RegularElement_HM < RegularElement_M
 
                 % Compute the stress vector and the constitutive matrix
                 [stress,Duu] = this.intPoint(i).mechanicalLaw();
-        
+
                 % Compute the permeability matrix
                 kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
 
@@ -460,22 +460,22 @@ classdef RegularElement_HM < RegularElement_M
 
                 % Get Biot's coefficient
                 biot = this.intPoint(i).constitutiveMdl.biotCoeff();
-        
+
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
                     c = c * this.shape.axisSymmetricFactor(Np,this.node);
                 end
-                
+
                 % Compute the stiffness sub-matrix
                 K = K + Bu' * Duu * Bu * c;
 
                 % Internal force vector
-                fiu = fiu + Bu' * (stress - biot * pIP * m) * c;
+                fiu = fiu + Bu' * stress * c;
 
                 % Compute the hydromechanical coupling matrices
                 Q = Q + Np' * biot * m' * Bu * c;
-        
+
                 % Compute permeability sub-matrices
                 H = H + Bp' * kh * Bp * c;
 
@@ -485,7 +485,7 @@ classdef RegularElement_HM < RegularElement_M
                 elseif (this.massLumping == false)
                     S = S + Np' * comp * Np * c;
                 end
-                
+
                 % Compute the gravity forces
                 if (this.gravityOn)
                     [feu,fep] = this.addGravityForces(feu,fep,Np,Bp,kh,pIP,c);
@@ -501,12 +501,12 @@ classdef RegularElement_HM < RegularElement_M
             end
 
             % Assemble the element permeability
-            Ke = [ Ouu , Opu';
+            Ke = [ Ouu , -Q';
                    Opu,  H ];
 
-            dfidu = [ K , -Q';
+            dfidu = [ K , Opu';
                      Opu, Opp ];
-            
+
             % Assemble the element compressibility matrix
             Ce = [ Ouu , Opu';
                     Q ,   S ];
@@ -516,7 +516,7 @@ classdef RegularElement_HM < RegularElement_M
 
             % Assemble element external force vector
             fe = [feu; fep];
-            
+
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -535,7 +535,7 @@ classdef RegularElement_HM < RegularElement_M
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Add contribution of the gravity forces to the external force vct
+        % Add contribution of the gravity forces to the external force vector
         function [feu,fep] = addGravityForces(this,feu,fep,Np,Bp,kh,pl,c)
 
             % Get gravity vector
@@ -553,7 +553,7 @@ classdef RegularElement_HM < RegularElement_M
             % Compute the contribution of the gravitational forces
             feu = feu + Nu' * rhos * grav * c;
             fep = fep + Bp' * kh * rhol * grav * c;
-            
+
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -580,10 +580,10 @@ classdef RegularElement_HM < RegularElement_M
         % Output:
         %   p   : pressure evaluated in "X"
             if nargin > 2, this.ue = ue; end
-        
+
             % Natural coordinate system
             Xn = this.shape.coordCartesianToNatural(this.node,X);
-            
+
             % Vector with the shape functions
             Nm = this.shape.shapeFncMtrx(Xn);
 
@@ -592,9 +592,10 @@ classdef RegularElement_HM < RegularElement_M
 
             % capillary field
             p = Nm*pl;
-        
+
         end
     end
 end
+
 ##### SOURCE END #####
 --></body></html>

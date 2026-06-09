@@ -1,5 +1,5 @@
 %% IntPoint Class
-% This in an abstract class that defines an integration point object.
+% This is an abstract class that defines an integration point object.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)

@@ -1,5 +1,5 @@
 %% DiscontinuityElement Class
-% This in an abstract class that defines a discontinuity element in a finite element mesh.
+% This is an abstract class that defines a discontinuity element in a finite element mesh.
 % It provides methods to compute geometric and physical properties of the discontinuity.
 % 
 %% Authors
@@ -15,9 +15,12 @@ classdef DiscontinuityElement < handle
         mat        = [];    % Material object
         intOrder   = 2;     % Order of the numerical integration
         dof        = [];    % Degrees of freedom vector
-        ndof       = 1;     % Number of dofs
-        nIntPoints = 1;     % Number of integration points
+        dofOld     = [];    % Old degrees of freedom
+        ndof       = 0;     % Number of dofs
         intPoint   = [];    % Vector with integration point objects       
+        nIntPoints = 1;     % Number of integration points
+        useNodalEnrDofs = false;
+        nNodalDofs      = [];    % Number of nodal enrichment dofs
     end
 
     %% Constructor method
@@ -41,7 +44,7 @@ classdef DiscontinuityElement < handle
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force wrt displacement
+% dfidu : element matrix of derivative of the internal force with respect to displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     end
 
@@ -77,6 +80,14 @@ classdef DiscontinuityElement < handle
         end
 
         %------------------------------------------------------------------
+        % Rotation from global to local
+        function R = rotationFromGlobalToLocal(this)
+            m = this.tangentialVector();
+            R = [ m(1) , m(2);   % cs  , sn
+                 -m(2) , m(1)];  % -sn , cs
+        end
+
+        %------------------------------------------------------------------
         % Compute heaviside function associated with the discontinuity at a given point.
         function h = heaviside(this,X)
             n  = this.normalVector();
@@ -93,8 +104,15 @@ classdef DiscontinuityElement < handle
         end
 
         %------------------------------------------------------------------
+        % Set degrees of freedom vector.
+        function setDofs(this,dofs)
+            this.dof = dofs;
+        end
+
+        %------------------------------------------------------------------
         % Update state variables.
         function updateStateVar(this)
+            this.dofOld = this.dof;
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();

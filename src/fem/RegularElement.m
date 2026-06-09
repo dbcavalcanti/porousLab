@@ -1,5 +1,5 @@
 %% RegularElement Class
-% This in an abstract class that defines a regular finite element in a finite element mesh.
+% This is an abstract class that defines a regular finite element in a finite element mesh.
 % It provides properties and methods to define the element's geometry, material properties,
 % numerical integration, and other characteristics required for finite element analysis.
 %
@@ -75,7 +75,7 @@ classdef RegularElement < handle
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force wrt displacement
+% dfidu : element matrix of derivative of the internal force with respect to displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this);
     end
 

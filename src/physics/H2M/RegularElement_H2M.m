@@ -5,24 +5,15 @@
 % incorporates additional attributes and methods specific to 
 % hydromechanical coupling in porous media.
 %
-% 
 %% Methods
 % * *initializeIntPoints*: Initializes the integration points for the 
 %                          element using the shape function and material 
 %                          properties.
-% * *elementData*: Assembles the element stiffness matrix, damping matrix, 
-%                  internal force vector, external force vector, and 
-%                  derivative of internal force with respect to 
-%                  displacement.
-% * *permeabilityTensors*: Computes the permeability tensors for the 
-%                          element.
-% * *compressibilityCoeffs*: Computes the compressibility coefficients 
-%                            for the element.
-% * *lumpedCompressibilityMatrix*: Computes the lumped compressibility 
-%                                  matrices based on the element volume 
-%                                  and compressibility coefficients.
-% * *addGravityForces*: Adds the contribution of gravity forces to the 
-%                       external force vector.
+% * *elementData*: Assembles the coupled mechanical, liquid-pressure, and
+%                  gas-pressure residual and tangent terms, including
+%                  deformation, advective flow, gravity, storage,
+%                  saturation, density, and relative permeability
+%                  contributions.
 % * *getNodalDisplacement*: Retrieves the nodal displacement values.
 % * *getNodalLiquidPressure*: Retrieves the nodal liquid pressure values.
 % * *getNodalGasPressure*: Retrieves the nodal gas pressure values.
@@ -46,15 +37,12 @@
 % Version 1.00.
 % 
 %% Class definition
-classdef RegularElement_H2M < RegularElement    
+classdef RegularElement_H2M < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glu        = [];            % Displacement dofs
         glp        = [];            % Liquid phase pressure dofs
         glpg       = [];            % Gas phase pressure dofs
-        nglu       = 0;             % Number of regular u-dof
         nglp       = 0;             % Number of regular p-dof
-        anm        = 'PlaneStrain'; % Analysis model
     end
     %% Constructor method
     methods
@@ -62,25 +50,17 @@ classdef RegularElement_H2M < RegularElement
         function this = RegularElement_H2M(node, elem, t, ...
                 mat, intOrder, glu, glp, glpg, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress)
-            this = this@RegularElement(node, elem, t, ...
-                mat, intOrder, massLumping, lumpStrategy, ...
-                isAxisSymmetric);
-            this.glu      = glu;
+            this = this@RegularElement_M(node, elem, t, ...
+                mat, intOrder, glu, massLumping, lumpStrategy, ...
+                isAxisSymmetric,isPlaneStress);
             this.glp      = glp;
             this.glpg     = glpg;
             this.gle      = [glu, glp, glpg];
             if (length(this.glp) ~= length(this.glpg))
                 error('Wrong number of pressure dofs');
             end
-            this.nglu     = length(this.glu);
             this.nglp     = length(this.glp);
             this.ngle     = length(this.gle);
-            if isPlaneStress
-                this.anm = 'PlaneStress';
-            end
-            if isAxisSymmetric
-                this.anm = 'AxisSymmetrical';
-            end
         end
     end
     
@@ -118,39 +98,91 @@ classdef RegularElement_H2M < RegularElement
         %
         function [Ke, Ce, fi, fe, dfidu] = elementData(this)
 
-            % Initialize the sub-matrices
-            Kuu = zeros(this.nglu, this.nglu);
-            Hll = zeros(this.nglp, this.nglp);
-            Hlg = zeros(this.nglp, this.nglp);
-            Hgl = zeros(this.nglp, this.nglp);
-            Hgg = zeros(this.nglp, this.nglp);
-            Qul = zeros(this.nglp, this.nglu);
-            Qug = zeros(this.nglp, this.nglu);
-            Sll = zeros(this.nglp, this.nglp);
-            Slg = zeros(this.nglp, this.nglp);
-            Sgl = zeros(this.nglp, this.nglp);
-            Sgg = zeros(this.nglp, this.nglp);
+            % Get constitutive model
+            constModel = this.intPoint(1).constitutiveMdl;
 
-            % Auxiliar zero-matrices and vectors
-            Opu = zeros(this.nglp, this.nglu);
-            Ouu = zeros(this.nglu, this.nglu);
-            Opp = zeros(this.nglp, this.nglp);
+            % Get gravity vector
+            grav = this.g * this.mat.porousMedia.b;
 
-            % Initialize external force vector
-            feu = zeros(this.nglu, 1);
-            fel = zeros(this.nglp, 1);
-            feg = zeros(this.nglp, 1);
+            % Get the porous matrix density
+            rhos = this.mat.porousMedia.getDensity();
 
-            % Initialize the internal force vector
-            fiu  = zeros(this.nglu, 1);
-            fil = zeros(this.nglp, 1);
-            fig = zeros(this.nglp, 1);
+            % Get the fluid viscosity
+            mul = this.mat.liquidFluid.mu;
+            mug = this.mat.gasFluid.mu;
+
+            % Get porosity
+            phi = constModel.porousMedia.phi;
+
+            % Get the fluids bulk modulus
+            Klb  = constModel.liquidFluid.getBulkModulus();
+            Kgb  = 1e25; %constModel.gasFluid.getBulkModulus();
             
             % Vector of the nodal dofs
             u  = this.getNodalDisplacement();
-            pc = this.getNodalCapillaryPressure();
-            pg = this.getNodalGasPressure();
             pl = this.getNodalLiquidPressure();
+            pg = this.getNodalGasPressure();
+            pc = pg - pl;
+
+            % Vector with the old nodal dofs
+            plOld = this.getOldNodalLiquidPressure(); 
+            pgOld = this.getOldNodalGasPressure();
+            pcOld = pgOld - plOld;
+
+            % Fill nodal state variables
+            Sl      = zeros(this.nnd_el,1);
+            SlOld   = zeros(this.nnd_el,1);
+            dSldpc  = zeros(this.nnd_el,1);
+            rhol    = zeros(this.nnd_el,1);
+            rhog    = zeros(this.nnd_el,1);
+            rholOld = zeros(this.nnd_el,1);
+            rhogOld = zeros(this.nnd_el,1);
+            for i = 1:this.nnd_el
+                % Liquid saturation degree
+                Sl(i)      = constModel.saturationDegree(pc(i));
+                SlOld(i)   = constModel.saturationDegree(pcOld(i));
+                % Liquid saturation derivative wrt pc
+                dSldpc(i)  = constModel.derivativeSaturationDegree(pc(i));
+                % Get fluid densities
+                rhol(i)    = this.mat.liquidFluid.getDensity(pl(i));
+                rholOld(i) = this.mat.liquidFluid.getDensity(plOld(i));
+                rhog(i)    = this.mat.gasFluid.getDensity(pg(i));
+                rhogOld(i) = this.mat.gasFluid.getDensity(pgOld(i));
+            end
+
+            % Auxiliary derivatives
+            dpcdpg = 1.0;
+            dpcdpl = -1.0;
+            
+            % Derivative of the mean saturation wrt the nodal saturation
+            dSlmSli = 1.0/this.nnd_el;
+
+            % Gas saturation
+            Sg = 1.0 - Sl;
+            SgOld = 1.0 - SlOld;
+            
+            % Derivative of the mean liquid saturation wrt the pressure
+            dSlmdpl = dSlmSli * dSldpc * dpcdpl;
+            dSlmdpg = dSlmSli * dSldpc * dpcdpg;
+
+            % Nodal mass increment
+            Dml = Sl .* rhol - SlOld .* rholOld;
+            Dmg = Sg .* rhog - SgOld .* rhogOld;
+
+            % Compute the relative permeability
+            [klr, kgr] = constModel.relativePermeabilities(mean(Sl));
+
+            % Derivative of the relative permeability wrt the saturation
+            [dklrdSlm, dkgrdSlm] = constModel.derivativeRelPerm(mean(Sl));
+
+            % Derivative of the relative permeability wrt the pressure
+            dklrdPl = dklrdSlm * dSlmdpl;
+            dklrdPg = dklrdSlm * dSlmdpg;
+            dkgrdPl = dkgrdSlm * dSlmdpl;
+            dkgrdPg = dkgrdSlm * dSlmdpg;
+
+            % Average bulk density
+            rhoavg = (1.0 - phi) * rhos + phi * (mean(Sl) * mean(rhol) + mean(Sg) * mean(rhog));
 
             % Initialize 2D identity vector
             m = [1.0 ; 1.0 ; 1.0 ; 0.0];
@@ -158,44 +190,34 @@ classdef RegularElement_H2M < RegularElement
             % Initialize the volume of the element
             vol = 0.0;
 
-            % Numerical integration of the sub-matrices
+            % Numerical integration terms
+            fiu = zeros(this.nglu,1);
+            dfiudu = zeros(this.nglu,this.nglu);
+            H = zeros(this.nglp, this.nglp);
+            Q = zeros(this.nglu, this.nglp);
+            fgravu = zeros(this.nglu, 1);
+            fgravp = zeros(this.nglp, 1);
+            fv = zeros(this.nglp, 1);
             for i = 1:this.nIntPoints
 
                 % Shape function matrix
                 Np = this.shape.shapeFncMtrx(this.intPoint(i).X);
+
+                % Shape function matrix to interpolate the displacements
+                Nu = this.shape.NuMtrx(Np);
                
                 % Compute the B matrix at the int. point and the detJ
                 [Bp, detJ] = this.shape.dNdxMatrix(this.node,this.intPoint(i).X);
 
                 % Assemble the B-matrix for the mechanical part
                 Bu = this.BMatrix(Bp);
-
-                % Pressure values at the integration point
-                pcIP = Np * pc;
-                pgIP = Np * pg;
-                plIP = Np * pl;
-
+               
                 % Compute the strain vector
                 this.intPoint(i).strain = Bu * u;
 
                 % Compute the stress vector and the constitutive matrix
                 [stress,Duu] = this.intPoint(i).mechanicalLaw();
 
-                % Compute the saturation degree at the integration point
-                Sl = this.intPoint(i).constitutiveMdl.saturationDegree(pcIP);
-        
-                % Compute the permeability matrix
-                [kll, klg, kgl, kgg] = this.permeabilityTensors(this.intPoint(i),pgIP,pcIP,Sl);
-
-                % Get compressibility coefficients
-                [cul, cug, cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(i),pgIP,pcIP,Sl);
-
-                % Get Biot's coefficient
-                biot = this.intPoint(i).constitutiveMdl.biotCoeff();
-
-                % Total pore-pressure acting at the solid matrix
-                psIP = plIP * Sl + pgIP * (1.0 - Sl);
-        
                 % Numerical integration coefficient
                 c = this.intPoint(i).w * detJ * this.t;
                 if this.isAxisSymmetric
@@ -203,138 +225,105 @@ classdef RegularElement_H2M < RegularElement
                 end
                 
                 % Compute the stiffness sub-matrix
-                Kuu = Kuu + Bu' * Duu * Bu * c;
+                dfiudu = dfiudu + Bu' * Duu * Bu * c;
 
                 % Internal force vector
-                fiu = fiu + Bu' * (stress - biot * psIP * m) * c;
+                fiu = fiu + Bu' * stress * c;
 
-                % Compute the hydromechanical coupling matrices
-                Qul = Qul + Np' * cul * m' * Bu * c;
-                Qug = Qug + Np' * cug * m' * Bu * c;
-        
-                % Compute permeability sub-matrices
-                Hll = Hll + Bp' * kll * Bp * c;
-                Hlg = Hlg + Bp' * klg * Bp * c;
-                Hgl = Hgl + Bp' * kgl * Bp * c;
-                Hgg = Hgg + Bp' * kgg * Bp * c;
+                % Get porous media and fluid parameters
+                K = this.mat.porousMedia.intrinsicPermeabilityMatrix();
 
-                % Compute compressibility matrices
-                if ((this.massLumping) && (this.lumpStrategy == 1))
-                    Sll = Sll + diag(cll*Np*c);
-                    Sgg = Sgg + diag(cgg*Np*c);
-                    Slg = Slg + diag(clg*Np*c);
-                    Sgl = Sgl + diag(cgl*Np*c);
-                elseif (this.massLumping == false)
-                    Sll = Sll + Np' * cll * Np * c;
-                    Sgg = Sgg + Np' * cgg * Np * c;
-                    Slg = Slg + Np' * clg * Np * c;
-                    Sgl = Sgl + Np' * cgl * Np * c;
-                end
+                % Compute permeability matrix
+                H = H + Bp' * K * Bp * c;
                 
-                % Compute the gravity forces
-                if (this.gravityOn)
-                    [feu,fel,feg] = this.addGravityForces(feu,fel,feg,Np,Bp,kll,kgg,pgIP-pcIP,pgIP,c);
-                end
+                % Gravity force
+                fgravu = fgravu + Nu' * rhoavg * grav * c;
+                fgravp = fgravp + Bp' * K * grav * c;
+
+                % Compute the hydromechanical coupling matrix
+                Q = Q + Bu' * m * Np * c;
+                
+                % Volumetric strain rate
+                devdt = m' * (this.intPoint(i).strain - this.intPoint(i).strainOld) / this.DTime;
+
+                % Volumetric strain forces
+                fv = fv + Np' * devdt * c;
 
                 % Compute the element volume
                 vol = vol + c;
             end
 
-            % Compute the lumped mass matrix
-            if ((this.massLumping) && (this.lumpStrategy == 2))
-                [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol);
+            % Mechanical internal force: add contribution of the
+            % pore-pressures
+            fiu = fiu - mean(Sl) * Q * pl - mean(Sg) * Q * pg;
+
+            % Derivatives of the mechanical internal force wrt to the
+            % pressures
+            dfiudpl = Q * pc * dSlmdpl' - mean(Sl) * Q;
+            dfiudpg = Q * pc * dSlmdpg' - mean(Sg) * Q;
+
+            % Advective forces
+            fil = (klr / mul) * H * pl;
+            fig = (kgr / mug) * H * pg;
+
+            % Derivatives of the advective forces
+            Hll = (klr / mul) * H;
+            Hgg = (kgr / mug) * H;
+            Hll = Hll + (H * pl) * dklrdPl' /mul;
+            Hlg = (H * pl) * dklrdPg' /mul;
+            Hgl = (H * pg) * dkgrdPl' /mug;
+            Hgg = Hgg + (H * pg) * dkgrdPg' /mug;
+
+            % Volumetric strain forces
+            fil = fil + mean(Sl) * fv;
+            fig = fig + mean(Sg) * fv;
+
+            % Derivatives of the volumetric strain forces
+            dfildu = mean(Sl) * Q' / this.DTime;
+            dfigdu = mean(Sg) * Q' / this.DTime;
+            Hll = Hll + fv * dSlmdpl';
+            Hlg = Hlg + fv * dSlmdpg';
+            Hgl = Hgl - fv * dSlmdpl';
+            Hgg = Hgg - fv * dSlmdpg';
+
+            % Storage terms
+            masscoeff = phi * (vol / this.nnd_el) / this.DTime;
+            fil = fil + (Dml ./ rhol) * masscoeff;
+            fig = fig + (Dmg ./ rhog) * masscoeff;
+            Cll = ((SlOld .* rholOld ./ rhol) / Klb - dSldpc) * masscoeff;
+            Clg = (dSldpc) * masscoeff;
+            Cgg = ((SgOld .* rhogOld ./ rhog) / Kgb - dSldpc) * masscoeff;
+
+            % Derivatives of the residual of the fluid flow equations
+            dfildpl = Hll + diag(Cll);
+            dfildpg = Hlg + diag(Clg);
+            dfigdpl = Hgl + diag(Clg);
+            dfigdpg = Hgg + diag(Cgg);
+
+            % Compute the gravity forces
+            if (this.gravityOn)
+                fiu = fiu - fgravu;
+                fil = fil - (klr / mul) * mean(rhol) * fgravp;
+                fig = fig - (kgr / mug) * mean(rhog) * fgravp;
+                dfildpl = dfildpl - (1.0/mul) * fgravp * (mean(rhol) * dklrdPl + (klr * dSlmSli / Klb) * rhol)';
+                dfildpg = dfildpg - (1.0/mul) * fgravp * (mean(rhol) * dklrdPg)';
+                dfigdpl = dfigdpl - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPl)';
+                dfigdpg = dfigdpg - (1.0/mug) * fgravp * (mean(rhog) * dkgrdPg + (kgr * dSlmSli / Kgb) * rhog)';
             end
-
+            
             % Assemble the element matrices
-            Ke = [ Ouu ,  Opu', Opu'; 
-                   Opu ,  Hll , Hlg;
-                   Opu ,  Hgl , Hgg ];
-
-            Ce = [  Ouu , Opu', Opu';
-                    Qul , Sll , Slg ;
-                    Qug , Sgl , Sgg ];
-
-            dfidu = [ Kuu , -Qul', -Qug';
-                      Opu,   Opp ,  Opp ;
-                      Opu,   Opp ,  Opp ;];
+            dfidu = [ dfiudu, dfiudpl , dfiudpg;
+                      dfildu, dfildpl , dfildpg;
+                      dfigdu, dfigdpl , dfigdpg ];
 
             % Assemble element internal force vector
             fi = [fiu; fil; fig];
 
-            % Assemble element external force vector
-            fe = [feu; fel; feg];
+            % Initialize matrices that are not being used
+            fe = zeros(this.ngle, 1);
+            Ce = zeros(this.ngle, this.ngle);
+            Ke = zeros(this.ngle, this.ngle);
             
-        end
-
-        % -----------------------------------------------------------------
-        % Compute the permeability tensors
-        function [kll, klg, kgl, kgg] = permeabilityTensors(~,ip,pg,pc,Sl)
-             [kll, klg, kgl, kgg] = ip.constitutiveMdl.permeabilityMtrcs(Sl,pg-pc,pg);
-        end
-
-        % -----------------------------------------------------------------
-        % Compute the compressibility coefficients
-        function [cul, cug, cll, clg, cgl, cgg] = compressibilityCoeffs(~,ip,pg,pc,Sl)
-             [cll, clg, cgl, cgg] =  ip.constitutiveMdl.compressibilityCoeffs(Sl,pg-pc,pg);
-             [cul, cug] = ip.constitutiveMdl.mechanicalCompressibilityCoeffs(Sl);
-        end
-
-        %------------------------------------------------------------------
-        % Compute the lumped mass matrices
-        function [Sll,Slg,Sgl,Sgg] = lumpedCompressibilityMatrices(this, pc, pg, vol)
-
-            % Shape function matrix
-            Np = this.shape.shapeFncMtrx([0.0,0.0]);
-
-            % Pressure values at the integration point
-            pcIP = Np * pc;
-            pgIP = Np * pg;
-
-            % Compute the saturation degree at the integration point
-            Sl = this.intPoint(1).constitutiveMdl.saturationDegree(pcIP);
-
-            % Get compressibility coefficients
-            [cll, clg, cgl, cgg] = this.compressibilityCoeffs(this.intPoint(1),pgIP,pcIP,Sl);
-
-            % Mass distribution factor
-            factor = vol / this.nnd_el;
-
-            % Compressibility matrices
-            Sll = cll * factor * eye(this.nglp,this.nglp);
-            Slg = clg * factor * eye(this.nglp,this.nglp);
-            Sgl = cgl * factor * eye(this.nglp,this.nglp);
-            Sgg = cgg * factor * eye(this.nglp,this.nglp);
-
-        end
-
-        %------------------------------------------------------------------
-        % Add contribution of the gravity forces to the external force vct
-        function [feu,fel,feg] = addGravityForces(this,feu,fel,feg,Np,Bp,kl,kg,pl,pg,c)
-
-            % Get gravity vector
-            grav = this.g * this.mat.porousMedia.b;
-
-            % Shape function matrix
-            Nu = this.shape.NuMtrx(Np);
-
-            % Get the porous matrix density
-            rhos = this.mat.porousMedia.getDensity();
-
-            % Get fluid densities
-            rhol = this.mat.liquidFluid.getDensity(pl);
-            rhog = this.mat.gasFluid.getDensity(pg);
-
-            % Compute the contribution of the gravitational forces
-            feu = feu + Nu' * rhos * grav * c;
-            fel = fel + Bp' * kl * rhol * grav * c;
-            feg = feg + Bp' * kg * rhog * grav * c;
-            
-        end
-
-        %------------------------------------------------------------------
-        % Function to get the nodal values of the displacement
-        function u = getNodalDisplacement(this)
-            u = this.ue(1:this.nglu);
         end
 
         %------------------------------------------------------------------
@@ -346,10 +335,25 @@ classdef RegularElement_H2M < RegularElement
         end
 
         %------------------------------------------------------------------
+        % Function to get the old nodal values of the liquid pressure
+        function plOld = getOldNodalLiquidPressure(this)
+            a = this.nglu + 1;
+            b = this.nglu + this.nglp;
+            plOld = this.ueOld(a:b);
+        end
+
+        %------------------------------------------------------------------
         % Function to get the nodal values of the gas pressure
         function pg = getNodalGasPressure(this)
             a = this.nglu + this.nglp + 1;
             pg = this.ue(a:end);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the old nodal values of the gas pressure
+        function pgOld = getOldNodalGasPressure(this)
+            a = this.nglu + this.nglp + 1;
+            pgOld = this.ueOld(a:end);
         end
 
         %------------------------------------------------------------------
@@ -358,6 +362,14 @@ classdef RegularElement_H2M < RegularElement
             pl = this.getNodalLiquidPressure();
             pg = this.getNodalGasPressure();
             pc = pg - pl;
+        end
+
+        %------------------------------------------------------------------
+        % Function to get the old nodal values of the capillary pressure
+        function pcOld = getOldNodalCapillaryPressure(this)
+            plOld = this.getOldNodalLiquidPressure();
+            pgOld = this.getOldNodalGasPressure();
+            pcOld = pgOld - plOld;
         end
 
         %------------------------------------------------------------------

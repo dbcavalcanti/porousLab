@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>RelativePermeabilityLiakopoulosLiquid Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="RelativePermeabilityLiakopoulosLiquid.m"><style type="text/css">
+      --><title>RelativePermeabilityLiakopoulosLiquid Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="RelativePermeabilityLiakopoulosLiquid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -90,7 +90,19 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 klr = 1.0;
             <span class="keyword">else</span>
                 klr = 1.0 - this.a * (1.0 - Sl)^this.b;
-                klr = max(klr,porousMedia.klrmin);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Compute the liquid phase relative permeability</span>
+        <span class="keyword">function</span> dkrdSl = derivative(this, Sl, ~)
+            <span class="keyword">if</span> (Sl &lt; this.Slmin)
+                dkrdSl = 0.0;
+            <span class="keyword">elseif</span> (Sl &gt; 1.0)
+                dkrdSl = 0.0;
+            <span class="keyword">else</span>
+                Sl = min(max(Sl,this.Slmin),1.0);
+                dkrdSl = this.a * this.b * (1.0 - Sl)^(this.b - 1.0);
             <span class="keyword">end</span>
         <span class="keyword">end</span>
 
@@ -105,8 +117,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % relative permeability of the liquid phase.
 %
 %% Method
-% * *calculate*: Computes the liquid phase relative permeability klr based 
-%                on the liquid saturation Sl and the porous media 
+% * *calculate*: Computes the liquid phase relative permeability klr based
+%                on the liquid saturation Sl and the porous media
 %                properties.
 %
 %% Author
@@ -116,9 +128,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 %
 %% Class Definition
-classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability  
+classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
     %% Properties
-    % Parameters taken from OGS-6. 
+    % Parameters taken from OGS-6.
     % OGS reference:
     % Asadi, R., Ataie-Ashtiani, B. (2015): A Comparison of finite volume
     % formulations and coupling strategies for two-phase flow in deforming
@@ -148,10 +160,22 @@ classdef RelativePermeabilityLiakopoulosLiquid < RelativePermeability
                 klr = 1.0;
             else
                 klr = 1.0 - this.a * (1.0 - Sl)^this.b;
-                klr = max(klr,porousMedia.klrmin);
             end
         end
-        
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Compute the liquid phase relative permeability
+        function dkrdSl = derivative(this, Sl, ~)
+            if (Sl < this.Slmin)
+                dkrdSl = 0.0;
+            elseif (Sl > 1.0)
+                dkrdSl = 0.0;
+            else
+                Sl = min(max(Sl,this.Slmin),1.0);
+                dkrdSl = this.a * this.b * (1.0 - Sl)^(this.b - 1.0);
+            end
+        end
+
     end
 end
 ##### SOURCE END #####

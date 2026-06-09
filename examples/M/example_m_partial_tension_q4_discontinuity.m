@@ -2,7 +2,7 @@
 %
 % Block crossed by strong discontinuity. Stretching mode.
 %
-% Reference DOI: 10.1016/j.cma.2009.07.013
+% Reference DOI: 10.1016/j.cma.2011.05.008
 %
 % Physics:
 % * Mechanical (M)
@@ -17,7 +17,6 @@ mdl = Model_M();
 
 % Set model options
 mdl.isPlaneStress     = true;
-mdl.condenseEnrDofs   = false;
 mdl.subDivIntegration = true;
 mdl.symmetricSDAEFEM  = false;
 
@@ -64,7 +63,7 @@ fracture.shearStiffness  = 0.0;    % Pa/m
 fracture.normalStiffness = 0.0;    % Pa/m
 
 % Add fractures to model
-discontinuityData = struct('addStretchingMode', true, 'addRelRotationMode', true);
+discontinuityData = struct('addTangentialStretchingMode', true, 'addRelRotationMode', true, 'addNormalStretchingMode', false);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS

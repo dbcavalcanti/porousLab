@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>DiscontinuityElement_H Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="DiscontinuityElement_H.m"><style type="text/css">
+      --><title>DiscontinuityElement_H Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="DiscontinuityElement_H.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -76,7 +76,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = DiscontinuityElement_H(node, mat)
             this = this@DiscontinuityElement(node, mat)
-            this.ndof = this.ndof_jump;
+            this.ndof = this.ndof_jump + this.ndof_int;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
@@ -186,22 +186,22 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% DiscontinuityElement_H Class
-% This class defines a hydraulic discontinuity element for modeling 
-% discontinuities in porous media mechanics. It inherits from the 
-% _DiscontinuityElement_ base class and provides specific implementations 
+% This class defines a hydraulic discontinuity element for modeling
+% discontinuities in porous media mechanics. It inherits from the
+% _DiscontinuityElement_ base class and provides specific implementations
 % for handling hydraulic discontinuities.
 %
 %% Methods
-% * *initializeIntPoints*: Initializes the integration points for the 
-%                          discontinuity element. Retrieves integration 
-%                          points' coordinates and weights, and creates 
-%                          _IntPoint_ objects with the associated material 
+% * *initializeIntPoints*: Initializes the integration points for the
+%                          discontinuity element. Retrieves integration
+%                          points' coordinates and weights, and creates
+%                          _IntPoint_ objects with the associated material
 %                          model.
-% * *elementData*: Computes the element stiffness matrix, internal force 
-%                  vector, and other element data based on the input 
-%                  displacement vector. Performs numerical integration 
+% * *elementData*: Computes the element stiffness matrix, internal force
+%                  vector, and other element data based on the input
+%                  displacement vector. Performs numerical integration
 %                  over the integration points.
-% 
+%
 %% Author
 % Danilo Cavalcanti
 %
@@ -209,7 +209,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 %
 %% Class Definition
-classdef DiscontinuityElement_H < DiscontinuityElement    
+classdef DiscontinuityElement_H < DiscontinuityElement
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         ndof_jump = 1;      % Pressure jump dofs
@@ -220,7 +220,7 @@ classdef DiscontinuityElement_H < DiscontinuityElement
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         function this = DiscontinuityElement_H(node, mat)
             this = this@DiscontinuityElement(node, mat)
-            this.ndof = this.ndof_jump;
+            this.ndof = this.ndof_jump + this.ndof_int;
         end
     end
 
@@ -249,16 +249,16 @@ classdef DiscontinuityElement_H < DiscontinuityElement
         % Computes the element stiffness matrix, internal force vector and
         % other optional outputs using numerical integration over the
         % element
-        % 
+        %
         % Outputs:
         %   Ke    - Element stiffness matrix.
         %   Ce    - Element damping matrix.
         %   fi    - Internal force vector.
         %   fe    - External force vector.
-        %   dfidu - Derivative of internal force with respect to 
+        %   dfidu - Derivative of internal force with respect to
         %           displacement.
         function [Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi, fi, fe, dfidu] = elementData(this, celem, id)
-            
+
             % Declare output matrices that won't be used
             fi = []; fe = []; dfidu = [];
 

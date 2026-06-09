@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>DiscontinuityElement_M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="DiscontinuityElement_M.m"><style type="text/css">
+      --><title>DiscontinuityElement_M Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="DiscontinuityElement_M.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -69,24 +69,31 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>DiscontinuityElement_M Class</h1><!--introduction--><p>This class defines a mechanical discontinuity element that extends the <i>DiscontinuityElement</i> base class. It includes additional functionality for handling stretching and relative rotation modes, as well as methods for initializing integration points and computing element data.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Methods</a></li><li><a href="#2">Author</a></li><li><a href="#3">Version History</a></li><li><a href="#4">Class Definition</a></li><li><a href="#5">Public attributes</a></li><li><a href="#6">Constructor method</a></li><li><a href="#7">Public methods</a></li></ul></div><h2 id="1">Methods</h2><div><ul><li><b>addStretchingMode</b>: Enables or disables the stretching mode based on                        the flag.</li><li><b>addRelRotationMode</b>: Enables or disables the relative rotation mode                         based on the flag.</li><li><b>initializeIntPoints</b>: Initializes the integration points for the                          discontinuity element. Retrieves integration                          points' coordinates and weights, and creates                          <i>IntPoint</i> objects with the associated material                          model.</li><li><b>elementData</b>: Computes the element stiffness matrix, internal force                  vector, and other element data based on the input                  displacement vector. Performs numerical integration                  over the integration points.</li><li><b>enrichmentInterpolationMatrix</b>: Computes the enrichment interpolation                                    matrix for the given integration point                                    coordinates, reference point, and                                    tangential vector.</li></ul></div><h2 id="2">Author</h2><p>Danilo Cavalcanti</p><h2 id="3">Version History</h2><p>Version 1.00: Initial version (January 2024).</p><h2 id="4">Class Definition</h2><pre class="codeinput"><span class="keyword">classdef</span> DiscontinuityElement_M &lt; DiscontinuityElement
 </pre><h2 id="5">Public attributes</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
-        stretchingMode  = false;
-        relRotationMode = false;
+        tangentialStretchingMode = false;
+        normalStretchingMode     = false;
+        relRotationMode          = false;
+        DP                       = [];
     <span class="keyword">end</span>
 </pre><h2 id="6">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="keyword">function</span> this = DiscontinuityElement_M(node, mat)
             this = this@DiscontinuityElement(node, mat)
             this.ndof = 2;
+            this.nNodalDofs = 4;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre><h2 id="7">Public methods</h2><pre class="codeinput">    methods
 
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Enables the stretching mode. If enables, the number of degrees of</span>
-        <span class="comment">% freedom increases by 1</span>
-        <span class="keyword">function</span> addStretchingMode(this,flag)
-            this.stretchingMode = flag;
-            <span class="keyword">if</span> flag == true
+        <span class="comment">% freedom increases by 1 or 2</span>
+        <span class="keyword">function</span> addStretchingMode(this,flagTangential, flagNormal)
+            this.tangentialStretchingMode = flagTangential;
+            this.normalStretchingMode = flagNormal;
+            <span class="keyword">if</span> flagTangential == true
+                this.ndof = this.ndof + 1;
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> flagNormal == true
                 this.ndof = this.ndof + 1;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -98,6 +105,50 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             this.relRotationMode = flag;
             <span class="keyword">if</span> flag == true
                 this.ndof = this.ndof + 1;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Function to reset the displacements and strains</span>
+        <span class="keyword">function</span> resetDisplacements(this)
+            <span class="comment">% Reset the strains</span>
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(2,1);
+                this.intPoint(i).strainOld = zeros(2,1);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Displacement jump order</span>
+        <span class="keyword">function</span> n = displacementJumpOrder(this)
+            n = 0;
+            <span class="keyword">if</span> (this.tangentialStretchingMode || this.normalStretchingMode || this.relRotationMode)
+                n = 1;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Matrix that transforms the nodal dofs into the local dofs</span>
+        <span class="keyword">function</span> MR = getDofTransformationMtrx(this)
+            <span class="keyword">if</span> this.useNodalEnrDofs == false
+                MR = eye(this.ndof);
+            <span class="keyword">else</span>
+                ld = this.ld();
+                M = [ 0.5    ,  0.0    , 0.5    , 0.0;
+                      0.0    ,  0.5    , 0.0    , 0.5;
+                     -1.0/ld ,  0.0    , 1.0/ld , 0.0;
+                      0.0    , -1.0/ld , 0.0    , 1.0/ld];
+                mn = this.rotationFromGlobalToLocal();
+                R  = blkdiag(mn,mn);
+                MR = M * R;
+                lin = [1,2];
+                <span class="keyword">if</span> this.tangentialStretchingMode
+                    lin = [lin,3];
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> this.relRotationMode
+                    lin = [lin,4];
+                <span class="keyword">end</span>
+                MR = MR(lin,:);
             <span class="keyword">end</span>
         <span class="keyword">end</span>
 
@@ -138,8 +189,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             Ce = []; fe = []; dfidu = [];
 
             <span class="comment">% Initialize the matrices for the numerical integration</span>
-            Ke = zeros(this.ndof,this.ndof);
-            fi = zeros(this.ndof,1);
+            <span class="keyword">if</span> this.useNodalEnrDofs
+                ndofs = this.nNodalDofs;
+            <span class="keyword">else</span>
+                ndofs = this.ndof;
+            <span class="keyword">end</span>
+            Ke = zeros(ndofs,ndofs);
+            fi = zeros(ndofs,1);
 
             <span class="comment">% Get the lenght of the discontinuity</span>
             ld = this.ld();
@@ -150,6 +206,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="comment">% Get the discontinuity tangential vector</span>
             m = this.tangentialVector();
 
+            <span class="comment">% Transformation matrix to use the nodal degrees of freedom</span>
+            M = this.getDofTransformationMtrx();
+
             <span class="comment">% Initialize output matrices</span>
             <span class="keyword">for</span> i = 1:this.nIntPoints
 
@@ -157,10 +216,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
 
                 <span class="comment">% Get the shape function matrix</span>
-                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+                Ndl = this.enrichmentInterpolationMatrix(X,Xr,m);
+                <span class="keyword">if</span> this.useNodalEnrDofs
+                    Nd = this.nodalEnrichmentInterpolationMatrix(this.intPoint(i).X);
+                <span class="keyword">else</span>
+                    Nd = Ndl;
+                <span class="keyword">end</span>
 
                 <span class="comment">% Compute the strain vector</span>
-                this.intPoint(i).strain = Nd * ae;
+                this.intPoint(i).strain = Ndl * M * ae;
 
                 <span class="comment">% Compute the stress vector and the constitutive matrix</span>
                 [td,Td] = this.intPoint(i).mechanicalLaw();
@@ -169,10 +233,10 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 c = 0.5 * ld * this.intPoint(i).w * this.t;
 
                 <span class="comment">% Compute the stiffness sub-matrix</span>
-                Ke = Ke + Nd' * Td * Nd * c;
+                Ke = Ke + (Nd' * Td * Nd) * c;
 
                 <span class="comment">% Compute the internal force vector</span>
-                fi = fi + Nd' * td * c;
+                fi = fi + (Nd' * td) * c;
 
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -188,7 +252,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">if</span> this.ndof &gt; 2
                 s = m' * (X' - Xr');
                 c = 3;
-                <span class="keyword">if</span> this.stretchingMode
+                <span class="keyword">if</span> this.tangentialStretchingMode
                     Nd(1,c) = s;
                     c = c + 1;
                 <span class="keyword">end</span>
@@ -197,6 +261,162 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
         <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Computes the enrichment interpolation matrix for the given</span>
+        <span class="comment">% integration point coordinate. This shape function is used</span>
+        <span class="comment">% whenever nodal dofs are used. The direct use of this shape</span>
+        <span class="comment">% function avoid undesired coupling terms in the dofs that appear</span>
+        <span class="comment">% from the transformation from global to local dofs.</span>
+        <span class="keyword">function</span> Nd = nodalEnrichmentInterpolationMatrix(this,xi)
+            mn = this.rotationFromGlobalToLocal();
+            R  = blkdiag(mn,mn);
+            Nd = 0.5*[1.0-xi , 0.0   , 1.0+xi, 0.0;
+                      0.0    , 1.0-xi, 0.0   , 1.0+xi]*R;
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Projection matrix</span>
+        <span class="keyword">function</span> P = projectionMatrix(this)
+            n = this.normalVector();
+            P = [n(1) , 0.0;
+                 0.0  , n(2);
+                 0.0  , 0.0;
+                 n(2) , n(1)];
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Integrate the polynomial stress interpolation of the continuum</span>
+        <span class="comment">% along the discontinuity</span>
+        <span class="keyword">function</span> S = intPolynomialStressIntp(this, celem)
+
+            <span class="comment">% Initialize variables</span>
+            jumpOrder     = this.displacementJumpOrder();
+            dimPolyStress = celem.shape.dimPolynomialStressInterp();
+            S = zeros(dimPolyStress, jumpOrder + 1);
+
+            <span class="comment">% Get the discontinuity geometric properties</span>
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            ld = this.ld();
+
+            <span class="comment">% Numerical integration</span>
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+
+                <span class="comment">% Numerical integration term. The determinant is ld/2.</span>
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                <span class="comment">% Continuum stress interpolation polynomial</span>
+                p = celem.shape.polynomialStress(X);
+
+                <span class="keyword">if</span> (jumpOrder == 0)
+                    S = S + p * c;
+                <span class="keyword">elseif</span> (jumpOrder == 1)
+                    <span class="comment">% Tangential coordinate</span>
+                    s = m' * (X' - Xr');
+                    S = S + [p , s*p] * c;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get specified field. Fill the coordinate matrix and the field.</span>
+        <span class="keyword">function</span> [X, f] = getField(this,field,~,~)
+            <span class="keyword">if</span> strcmp(field,<span class="string">'Sn'</span>)
+                [X, f] = this.getCohesiveStresses(2);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'St'</span>)
+                [X, f] = this.getCohesiveStresses(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Dn'</span>)
+                [X, f] = this.getDisplacementJump(2);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Dt'</span>)
+                [X, f] = this.getDisplacementJump(1);
+            <span class="keyword">elseif</span> strcmp(field,<span class="string">'Aperture'</span>)
+                [X, f] = this.getAperture();
+            <span class="keyword">else</span>
+                X = []; f = [];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get cohesive stresses component</span>
+        <span class="keyword">function</span> [X, f] = getCohesiveStresses(this,stressId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                <span class="comment">% Get cohesive stresses</span>
+                f(i) = this.intPoint(i).stress(stressId);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get cohesive stresses component</span>
+        <span class="keyword">function</span> [X, f] = getAperture(this)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                <span class="comment">% Get aperture component</span>
+                f(i) = 1.0E3 * this.intPoint(i).statevar(1); <span class="comment">% Convert to mm</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get cohesive stresses component</span>
+        <span class="keyword">function</span> [X, f] = getDisplacementJump(this,strainId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                <span class="comment">% Get strain component</span>
+                f(i) = this.intPoint(i).strain(strainId);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="keyword">function</span> fe = porePressureForce(this, pd)
+
+            <span class="comment">% Initialize the matrices for the numerical integration</span>
+            fe = zeros(this.ndof,1);
+
+            <span class="comment">% Get the lenght of the discontinuity</span>
+            ld = this.ld();
+
+            <span class="comment">% Get the discontinuity geometry</span>
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            n  = [0;1];
+
+            <span class="comment">% Initialize output matrices</span>
+            <span class="keyword">for</span> i = 1:this.nIntPoints
+
+                <span class="comment">% Shape function vector</span>
+                N = this.shape.shapeFnc(this.intPoint(i).X);
+
+                <span class="comment">% Cartesian coordinates of the integration point</span>
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                <span class="comment">% Get the shape function matrix</span>
+                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+
+                <span class="comment">% Numerical integration term. The determinant is ld/2.</span>
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                <span class="comment">% Pore-pressure at the integration point</span>
+                pdi = N * pd;
+
+                <span class="comment">% Compute the internal force vector</span>
+                fe = fe + Nd' * n * pdi * c;
+
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
     <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
@@ -208,24 +428,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % for initializing integration points and computing element data.
 %
 %% Methods
-% * *addStretchingMode*: Enables or disables the stretching mode based on 
+% * *addStretchingMode*: Enables or disables the stretching mode based on
 %                        the flag.
-% * *addRelRotationMode*: Enables or disables the relative rotation mode 
+% * *addRelRotationMode*: Enables or disables the relative rotation mode
 %                         based on the flag.
-% * *initializeIntPoints*: Initializes the integration points for the 
-%                          discontinuity element. Retrieves integration 
-%                          points' coordinates and weights, and creates 
-%                          _IntPoint_ objects with the associated material 
+% * *initializeIntPoints*: Initializes the integration points for the
+%                          discontinuity element. Retrieves integration
+%                          points' coordinates and weights, and creates
+%                          _IntPoint_ objects with the associated material
 %                          model.
-% * *elementData*: Computes the element stiffness matrix, internal force 
-%                  vector, and other element data based on the input 
-%                  displacement vector. Performs numerical integration 
+% * *elementData*: Computes the element stiffness matrix, internal force
+%                  vector, and other element data based on the input
+%                  displacement vector. Performs numerical integration
 %                  over the integration points.
-% * *enrichmentInterpolationMatrix*: Computes the enrichment interpolation 
+% * *enrichmentInterpolationMatrix*: Computes the enrichment interpolation
 %                                    matrix for the given integration point
-%                                    coordinates, reference point, and 
+%                                    coordinates, reference point, and
 %                                    tangential vector.
-% 
+%
 %% Author
 % Danilo Cavalcanti
 %
@@ -233,11 +453,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00: Initial version (January 2024).
 %
 %% Class Definition
-classdef DiscontinuityElement_M < DiscontinuityElement    
+classdef DiscontinuityElement_M < DiscontinuityElement
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        stretchingMode  = false;
-        relRotationMode = false;
+        tangentialStretchingMode = false;
+        normalStretchingMode     = false;
+        relRotationMode          = false;
+        DP                       = [];
     end
     %% Constructor method
     methods
@@ -245,6 +467,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         function this = DiscontinuityElement_M(node, mat)
             this = this@DiscontinuityElement(node, mat)
             this.ndof = 2;
+            this.nNodalDofs = 4;
         end
     end
 
@@ -253,10 +476,14 @@ classdef DiscontinuityElement_M < DiscontinuityElement
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Enables the stretching mode. If enables, the number of degrees of
-        % freedom increases by 1
-        function addStretchingMode(this,flag)
-            this.stretchingMode = flag;
-            if flag == true
+        % freedom increases by 1 or 2
+        function addStretchingMode(this,flagTangential, flagNormal)
+            this.tangentialStretchingMode = flagTangential;
+            this.normalStretchingMode = flagNormal;
+            if flagTangential == true
+                this.ndof = this.ndof + 1;
+            end
+            if flagNormal == true
                 this.ndof = this.ndof + 1;
             end
         end
@@ -270,7 +497,51 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 this.ndof = this.ndof + 1;
             end
         end
-        
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Function to reset the displacements and strains
+        function resetDisplacements(this)
+            % Reset the strains
+            for i = 1:this.nIntPoints
+                this.intPoint(i).strain    = zeros(2,1);
+                this.intPoint(i).strainOld = zeros(2,1);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Displacement jump order
+        function n = displacementJumpOrder(this)
+            n = 0;
+            if (this.tangentialStretchingMode || this.normalStretchingMode || this.relRotationMode)
+                n = 1;
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Matrix that transforms the nodal dofs into the local dofs
+        function MR = getDofTransformationMtrx(this)
+            if this.useNodalEnrDofs == false
+                MR = eye(this.ndof);
+            else
+                ld = this.ld();
+                M = [ 0.5    ,  0.0    , 0.5    , 0.0;
+                      0.0    ,  0.5    , 0.0    , 0.5;
+                     -1.0/ld ,  0.0    , 1.0/ld , 0.0;
+                      0.0    , -1.0/ld , 0.0    , 1.0/ld];
+                mn = this.rotationFromGlobalToLocal();
+                R  = blkdiag(mn,mn);
+                MR = M * R;
+                lin = [1,2];
+                if this.tangentialStretchingMode
+                    lin = [lin,3];
+                end
+                if this.relRotationMode
+                    lin = [lin,4];
+                end
+                MR = MR(lin,:);
+            end
+        end
+
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Initializes the integration points for the element obtaining the
         % coordinates and weights
@@ -294,22 +565,27 @@ classdef DiscontinuityElement_M < DiscontinuityElement
         % Computes the element stiffness matrix, internal force vector and
         % other optional outputs using numerical integration over the
         % element
-        % 
+        %
         % Outputs:
         %   Ke    - Element stiffness matrix.
         %   Ce    - Element damping matrix.
         %   fi    - Internal force vector.
         %   fe    - External force vector.
-        %   dfidu - Derivative of internal force with respect to 
+        %   dfidu - Derivative of internal force with respect to
         %           displacement.
         function [Ke, Ce, fi, fe, dfidu] = elementData(this, ae)
-            
+
             % Declare output matrices that won't be used
             Ce = []; fe = []; dfidu = [];
 
             % Initialize the matrices for the numerical integration
-            Ke = zeros(this.ndof,this.ndof);
-            fi = zeros(this.ndof,1);
+            if this.useNodalEnrDofs
+                ndofs = this.nNodalDofs;
+            else
+                ndofs = this.ndof;
+            end
+            Ke = zeros(ndofs,ndofs);
+            fi = zeros(ndofs,1);
 
             % Get the lenght of the discontinuity
             ld = this.ld();
@@ -320,17 +596,25 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             % Get the discontinuity tangential vector
             m = this.tangentialVector();
 
+            % Transformation matrix to use the nodal degrees of freedom
+            M = this.getDofTransformationMtrx();
+
             % Initialize output matrices
             for i = 1:this.nIntPoints
 
-                % Cartesian coordinates of the integration point 
+                % Cartesian coordinates of the integration point
                 X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
 
                 % Get the shape function matrix
-                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+                Ndl = this.enrichmentInterpolationMatrix(X,Xr,m);
+                if this.useNodalEnrDofs
+                    Nd = this.nodalEnrichmentInterpolationMatrix(this.intPoint(i).X);
+                else
+                    Nd = Ndl;
+                end
 
                 % Compute the strain vector
-                this.intPoint(i).strain = Nd * ae;
+                this.intPoint(i).strain = Ndl * M * ae;
 
                 % Compute the stress vector and the constitutive matrix
                 [td,Td] = this.intPoint(i).mechanicalLaw();
@@ -339,10 +623,10 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 c = 0.5 * ld * this.intPoint(i).w * this.t;
 
                 % Compute the stiffness sub-matrix
-                Ke = Ke + Nd' * Td * Nd * c;
+                Ke = Ke + (Nd' * Td * Nd) * c;
 
                 % Compute the internal force vector
-                fi = fi + Nd' * td * c;
+                fi = fi + (Nd' * td) * c;
 
             end
         end
@@ -358,7 +642,7 @@ classdef DiscontinuityElement_M < DiscontinuityElement
             if this.ndof > 2
                 s = m' * (X' - Xr');
                 c = 3;
-                if this.stretchingMode
+                if this.tangentialStretchingMode
                     Nd(1,c) = s;
                     c = c + 1;
                 end
@@ -367,6 +651,162 @@ classdef DiscontinuityElement_M < DiscontinuityElement
                 end
             end
         end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Computes the enrichment interpolation matrix for the given
+        % integration point coordinate. This shape function is used
+        % whenever nodal dofs are used. The direct use of this shape
+        % function avoid undesired coupling terms in the dofs that appear
+        % from the transformation from global to local dofs.
+        function Nd = nodalEnrichmentInterpolationMatrix(this,xi)
+            mn = this.rotationFromGlobalToLocal();
+            R  = blkdiag(mn,mn);
+            Nd = 0.5*[1.0-xi , 0.0   , 1.0+xi, 0.0;
+                      0.0    , 1.0-xi, 0.0   , 1.0+xi]*R;
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Projection matrix
+        function P = projectionMatrix(this)
+            n = this.normalVector();
+            P = [n(1) , 0.0;
+                 0.0  , n(2);
+                 0.0  , 0.0;
+                 n(2) , n(1)];
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Integrate the polynomial stress interpolation of the continuum
+        % along the discontinuity
+        function S = intPolynomialStressIntp(this, celem)
+
+            % Initialize variables
+            jumpOrder     = this.displacementJumpOrder();
+            dimPolyStress = celem.shape.dimPolynomialStressInterp();
+            S = zeros(dimPolyStress, jumpOrder + 1);
+
+            % Get the discontinuity geometric properties
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            ld = this.ld();
+
+            % Numerical integration
+            for i = 1:this.nIntPoints
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Cartesian coordinates of the integration point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Continuum stress interpolation polynomial
+                p = celem.shape.polynomialStress(X);
+
+                if (jumpOrder == 0)
+                    S = S + p * c;
+                elseif (jumpOrder == 1)
+                    % Tangential coordinate
+                    s = m' * (X' - Xr');
+                    S = S + [p , s*p] * c;
+                end
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get specified field. Fill the coordinate matrix and the field.
+        function [X, f] = getField(this,field,~,~)
+            if strcmp(field,'Sn')
+                [X, f] = this.getCohesiveStresses(2);
+            elseif strcmp(field,'St')
+                [X, f] = this.getCohesiveStresses(1);
+            elseif strcmp(field,'Dn')
+                [X, f] = this.getDisplacementJump(2);
+            elseif strcmp(field,'Dt')
+                [X, f] = this.getDisplacementJump(1);
+            elseif strcmp(field,'Aperture')
+                [X, f] = this.getAperture();
+            else
+                X = []; f = [];
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get cohesive stresses component
+        function [X, f] = getCohesiveStresses(this,stressId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get cohesive stresses
+                f(i) = this.intPoint(i).stress(stressId);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get cohesive stresses component
+        function [X, f] = getAperture(this)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get aperture component
+                f(i) = 1.0E3 * this.intPoint(i).statevar(1); % Convert to mm
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get cohesive stresses component
+        function [X, f] = getDisplacementJump(this,strainId)
+            X = zeros(this.nIntPoints,2);
+            f = zeros(this.nIntPoints,1);
+            for i = 1:this.nIntPoints
+                % Cartesian coordinates of the integration point
+                X(i,:) = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+                % Get strain component
+                f(i) = this.intPoint(i).strain(strainId);
+            end
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        function fe = porePressureForce(this, pd)
+
+            % Initialize the matrices for the numerical integration
+            fe = zeros(this.ndof,1);
+
+            % Get the lenght of the discontinuity
+            ld = this.ld();
+
+            % Get the discontinuity geometry
+            Xr = this.referencePoint();
+            m  = this.tangentialVector();
+            n  = [0;1];
+
+            % Initialize output matrices
+            for i = 1:this.nIntPoints
+
+                % Shape function vector
+                N = this.shape.shapeFnc(this.intPoint(i).X);
+
+                % Cartesian coordinates of the integration point
+                X = this.shape.coordNaturalToCartesian(this.node,this.intPoint(i).X);
+
+                % Get the shape function matrix
+                Nd = this.enrichmentInterpolationMatrix(X,Xr,m);
+
+                % Numerical integration term. The determinant is ld/2.
+                c = 0.5 * ld * this.intPoint(i).w * this.t;
+
+                % Pore-pressure at the integration point
+                pdi = N * pd;
+
+                % Compute the internal force vector
+                fe = fe + Nd' * n * pdi * c;
+
+            end
+        end
+
     end
 end
 ##### SOURCE END #####
