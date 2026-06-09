@@ -324,8 +324,8 @@ classdef EnrichedElementConductive_HM < RegularElement_HM
                 [fidi, Kddi, Qadi, Hddi, Sddi,~,~,~] = this.discontinuity(i).elementData(a(dofs_a));
 
                 % Assemble the contribution of this discontinuity
-                fid(dofs_a) = fid(dofs_d) + fidi;
-                Kdd(dofs_a, dofs_a) = Kdd(dofs_d, dofs_d) + Kddi;
+                fid(dofs_a) = fid(dofs_a) + fidi;
+                Kdd(dofs_a, dofs_a) = Kdd(dofs_a, dofs_a) + Kddi;
                 Qad(dofs_a, dofs_d) = Qad(dofs_a, dofs_d) + Qadi;
                 Hdd(dofs_d, dofs_d) = Hdd(dofs_d, dofs_d) + Hddi;
                 Sdd(dofs_d, dofs_d) = Sdd(dofs_d, dofs_d) + Sddi;
@@ -403,10 +403,9 @@ classdef EnrichedElementConductive_HM < RegularElement_HM
         % Adds the discontinuities dofs to the element dof vector
         function addEnrichmentToDofVector(this)
             nDiscontinuities = this.getNumberOfDiscontinuities();
-            ndofa_d = this.getNumberOfDisplacementDofPerDiscontinuity();
             dof_a = [];
             for i = 1:nDiscontinuities
-                dof_a = [dof_a, this.discontinuity(i).dof(1:ndofa_d)];
+                dof_a = [dof_a, this.discontinuity(i).dof];
             end
             this.gle = [this.gle, dof_a];
             this.ngle = length(this.gle);

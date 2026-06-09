@@ -369,8 +369,8 @@ classdef EnrichedElement_HM < RegularElement_HM
                 [fidi, Kddi, Qadi, Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi,~,~,~] = this.discontinuity(i).elementData(a(dofs_a),this,i);
 
                 % Assemble the contribution of this discontinuity
-                fid(dofs_a) = fid(dofs_d) + fidi;
-                Kdd(dofs_a, dofs_a) = Kdd(dofs_d, dofs_d) + Kddi;
+                fid(dofs_a) = fid(dofs_a) + fidi;
+                Kdd(dofs_a, dofs_a) = Kdd(dofs_a, dofs_a) + Kddi;
                 Qad(dofs_a, dofs_d) = Qad(dofs_a, dofs_d) + Qadi;
                 Hdd(dofs_d, dofs_d) = Hdd(dofs_d, dofs_d) + Hddi;
                 Sdd(dofs_d, dofs_d) = Sdd(dofs_d, dofs_d) + Sddi;

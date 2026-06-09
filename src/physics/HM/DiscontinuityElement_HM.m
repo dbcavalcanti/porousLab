@@ -9,66 +9,22 @@
 % Version 1.00.
 %
 %% Class Definition
-classdef DiscontinuityElement_HM < DiscontinuityElement_M    
+classdef DiscontinuityElement_HM < DiscontinuityElementConductive_HM    
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
-        ndof_u    = 2;      % Displacement jump dofs
         ndof_jump = 1;      % Pressure jump dofs
-        ndof_int  = 2;      % Discontinuity internal pressure dofs
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = DiscontinuityElement_HM(node, mat)
-            this = this@DiscontinuityElement_M(node, mat)
+            this = this@DiscontinuityElementConductive_HM(node, mat)
             this.ndof = this.ndof_u + this.ndof_jump + this.ndof_int;
         end
     end
 
     %% Public methods
     methods
-
-        %------------------------------------------------------------------
-        % Enables the stretching mode. If enables, the number of degrees of
-        % freedom increases by 1 or 2
-        function addStretchingMode(this,flagTangential, flagNormal)
-            addStretchingMode@DiscontinuityElement_M(this,flagTangential, flagNormal);
-            if flagTangential == true
-                this.ndof_u = this.ndof_u + 1;
-            end
-            if flagNormal == true
-                this.ndof_u = this.ndof_u + 1;
-            end
-        end
-
-        %------------------------------------------------------------------
-        % Enables the rotation mode. If enables, the number of degrees of
-        % freedom increases by 1
-        function addRelRotationMode(this,flag)
-            addRelRotationMode@DiscontinuityElement_M(this,flag);
-            if flag == true
-                this.ndof_u = this.ndof_u + 1;
-            end
-        end
-
-        %------------------------------------------------------------------
-        % Initializes the integration points for the element obtaining the
-        % coordinates and weights
-        function initializeIntPoints(this)
-
-            % Get integration points coordinates and weights
-            [X,w,this.nIntPoints] = this.shape.getIntegrationPoints(1);
-
-            % Initialize the integration points objects
-            intPts(this.nIntPoints,1) = IntPoint();
-            for i = 1:this.nIntPoints
-                constModel = MaterialDiscontinuity_HM(this.mat);
-                intPts(i) = IntPoint(X(:,i),w(i), constModel);
-                intPts(i).initializeMechanicalAnalysisModel('Interface');
-            end
-            this.intPoint = intPts;
-
-        end
 
         %------------------------------------------------------------------
         % Computes the element stiffness matrix, internal force vector and
@@ -183,35 +139,5 @@ classdef DiscontinuityElement_HM < DiscontinuityElement_M
             Ldji = Ljdi';
         end
 
-        %------------------------------------------------------------------
-        % Computes the enrichment interpolation matrix for the given
-        % integration point coordinates, reference point and tangential
-        % vector
-        function Na = displacementJumpInterpolation(this,X,Xr,m)
-            Na = zeros(2,this.ndof_u);
-            Na(1,1) = 1.0;
-            Na(2,2) = 1.0;
-            if this.ndof_u > 2
-                s = m' * (X' - Xr');
-                c = 3;
-                if this.tangentialStretchingMode
-                    Na(1,c) = s;
-                    c = c + 1;
-                end
-                if this.relRotationMode
-                    Na(2,c) = s;
-                end
-            end
-        end
-
-        %------------------------------------------------------------------
-        % Get specified field. Fill the coordinate matrix and the field.
-        function [X, f] = getField(this,field,dof_values,celem)
-            [X, f] = getField@DiscontinuityElement_M(this,field,celem);
-            if strcmp(field,'Pressure')
-                X = this.node;
-                f = dof_values(this.ndof_u + this.ndof_jump+1:end);
-            end
-        end
     end
 end
