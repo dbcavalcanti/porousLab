@@ -1,4 +1,4 @@
-%% DiscontinuityElement_HM Class
+%% DiscontinuityElementConductive_HM Class
 %
 %% Methods
 % 

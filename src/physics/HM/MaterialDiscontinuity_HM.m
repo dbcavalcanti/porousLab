@@ -23,7 +23,7 @@ classdef MaterialDiscontinuity_HM < handle
     properties (SetAccess = public, GetAccess = public)
         initialAperture = 0.0;
         leakoff         = 1.0;
-        fluid           = Fluid();
+        liquidFluid     = Fluid();
         parameters      = [];
         mechanical      = [];
     end  
@@ -38,7 +38,7 @@ classdef MaterialDiscontinuity_HM < handle
                 'shearStiffness',     matData.shearStiffness,...
                 'contactPenalization',matData.contactPenalization);
             this.initialAperture = matData.initialAperture;
-            this.fluid = matData.fluid;
+            this.liquidFluid = matData.liquidFluid;
             this.leakoff = matData.leakoff;
             % Mechanical constitutive behavior
             if strcmp('elastic',matData.cohesiveLaw)
@@ -91,7 +91,7 @@ classdef MaterialDiscontinuity_HM < handle
         % cubic's law
         function kl = longitudinalPermeability(this,ip)
             w = this.getAperture(ip);
-            kl = w*w*w/12.0/this.fluid.mu;
+            kl = w*w*w/12.0/this.liquidFluid.mu;
         end
 
         %------------------------------------------------------------------
@@ -99,7 +99,7 @@ classdef MaterialDiscontinuity_HM < handle
         % based on its aperture and fluid properties.
         function c = compressibility(this)
             w = this.initialAperture();
-            c = w / this.fluid.K;
+            c = w / this.liquidFluid.K;
         end
 
     end

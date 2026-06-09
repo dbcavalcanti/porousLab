@@ -15,11 +15,12 @@ mdl = Model_HM();
 
 % Set model options
 mdl.subDivIntegration = true;
+mdl.symmetricSDAEFEM  = true;
 
 %% MESH
 
 % Create mesh
-[node, elem] = regularMesh(1.0, 1.0, 11, 11);
+[node, elem] = regularMesh(1.0, 1.0, 27, 27);
 
 % Set mesh to model
 mdl.setMesh(node, elem);
@@ -64,21 +65,21 @@ fracture = Discontinuity(fracture_geom, true);
 % Set fracture material properties
 fracture.cohesiveLaw     = 'elastic';
 fracture.shearStiffness  = 1.0e6;
-fracture.normalStiffness = 1.0e6;
-fracture.initialAperture = 1.0e-3;
-fracture.fluid           = water;
+fracture.normalStiffness = 2.0e7;
+fracture.initialAperture = 2.4038e-04;
+fracture.liquidFluid     = water;
 fracture.leakoff         = 1.0;
 
 % Add fractures to model
-discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
+discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', true);
 mdl.addPreExistingDiscontinuities(fracture, discontinuityData);
 
 %% PROCESS
 
 % Analysis parameters
-ti = 1.0;    % Initial time
-dt = 1.0;    % Time step
-tf = 10.0;  % Final time
+ti = 0.0;    % Initial time
+dt = 0.5;    % Time step
+tf = 60.48;  % Final time
 
 % Run analysis
 anl = Anl_Transient("Newton");
@@ -92,5 +93,5 @@ mdl.plotField('Pressure');
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
-mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'y');
+% mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'y');
 mdl.plotFieldAlongDiscontinuiy('Pressure',1,'y');
