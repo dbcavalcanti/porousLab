@@ -56,7 +56,7 @@ PorousLab is released under the [MIT license][mit_license_link].
 It allows the program to be freely used by anyone for modification, private use, commercial use, and distribution, only requiring preservation of copyright and license notices.
 No liability and warranty are provided.
 
-[release-image]: https://img.shields.io/badge/release-1.0.0-green.svg?style=flat
+[release-image]: https://img.shields.io/badge/release-1.1.0-green.svg?style=flat
 [release-link]: https://github.com/dbcavalcanti/porousLab/releases
 [license-image]: https://img.shields.io/badge/license-MIT-green.svg?style=flat
 [license-link]: LICENSE
