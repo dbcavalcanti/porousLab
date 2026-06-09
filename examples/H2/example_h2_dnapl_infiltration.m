@@ -1,6 +1,7 @@
 %% DESCRIPTION
 %
-% Dense non-liquid phase infiltration problem using the Pc-Pg two-phase flow formulation.
+% Dense non-liquid phase infiltration problem using the two-phase flow
+% formulation.
 %
 % References:
 % * Wang et al (2015). A parallel finite element method for two-phase flow processes in porous media: OpenGeoSys with PETSc. Environ Earth Sci, 73:2269–2285.

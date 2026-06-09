@@ -1,6 +1,6 @@
 %% DESCRIPTION
 %
-% Kueper and Frind problem using the Pc-Pg two-phase flow formulation.
+% Kueper and Frind problem using the two-phase flow formulation.
 %
 % Physics:
 % * Two-phase hydraulic (H2)
