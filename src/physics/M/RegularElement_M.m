@@ -505,5 +505,25 @@ classdef RegularElement_M < RegularElement
             e2 = c - r;
 
         end
+
+        %------------------------------------------------------------------
+        % Function to compute the volumetric strain rate of an element
+        % It returns the mean value of the element
+        function DvolstrainDt = volumetricStrainRate(this)
+            
+            % Initialize the volumetric strain rate
+            DvolstrainDt = 0.0;
+            
+            % Initialize 2D identity vector
+            m = [1.0 ; 1.0 ; 1.0 ; 0.0];
+
+            % Compute the mean value
+            for i = 1:this.nIntPoints
+                volStrain    = m'*this.intPoint(i).strain;
+                volStrainOld = m'*this.intPoint(i).strainOld;
+                DvolstrainDt_ip = (volStrain - volStrainOld) / this.DTime;
+                DvolstrainDt = DvolstrainDt + DvolstrainDt_ip / this.nIntPoints;
+            end
+        end
     end
 end
