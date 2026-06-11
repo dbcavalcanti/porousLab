@@ -66,8 +66,14 @@ classdef Material_HM < handle
 
         % -----------------------------------------------------------------
         % Returns the permeability tensor
-        function kh = permeabilityTensor(this)
-            kh = this.porousMedia.intrinsicPermeabilityMatrix();
+        function kh = intrinsicPermeability(this,phi)
+            kh = this.porousMedia.intrinsicPermeability(phi);
+        end
+
+        % -----------------------------------------------------------------
+        % Returns the permeability tensor
+        function kh = permeabilityTensor(this,phi)
+            kh = this.porousMedia.intrinsicPermeabilityMatrix(phi);
             kh = kh / this.fluid.mu;
         end
 

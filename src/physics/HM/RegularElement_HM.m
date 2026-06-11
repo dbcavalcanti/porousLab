@@ -158,7 +158,7 @@ classdef RegularElement_HM < RegularElement_M
                 [stress,Duu] = this.intPoint(i).mechanicalLaw();
         
                 % Compute the permeability matrix
-                kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
+                kh = this.intPoint(i).constitutiveMdl.permeabilityTensor(this.porosityOld);
 
                 % Get compressibility coefficient
                 comp = this.intPoint(i).constitutiveMdl.compressibilityCoeff(this.porosityOld);

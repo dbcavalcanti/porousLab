@@ -53,7 +53,8 @@ classdef PorousMedia < handle & matlab.mixin.Copyable
         DamageThreshold      = [];              % Damage threshold
         FractureEnergyMode1  = [];              % Fracture energy associated with mode 1 (N/m)
         rho                  = [];              % Density (kg/m3)
-        K                    = 0.0;             % Intrinsic permeability (m2)  
+        K                    = 0.0;             % Intrinsic permeability (m2) 
+        permeabilityModel    = 'constant';      % Permeability model
         phi                  = 0.0;             % Porosity
         biot                 = 1.0;             % Biot's coefficient
         Ks                   = 1.0e25;          % Solid bulk modulus (Pa)
@@ -119,9 +120,37 @@ classdef PorousMedia < handle & matlab.mixin.Copyable
         end
 
         % -----------------------------------------------------------------
+        % Function to get the intrinsic permeability
+        function K = intrinsicPermeability(this,porosity)
+            if ((nargin < 2) || isempty(porosity))
+                porosity = this.phi;
+            end
+            if strcmp(this.permeabilityModel,'constant')
+                K = this.K;
+            elseif  strcmp(this.permeabilityModel,'KozenyCarman')
+                K = permeabilityKozenyCarman(this,porosity);
+            else
+                K = this.K;
+            end
+        end
+
+        % -----------------------------------------------------------------
+        % Function to compute the intrinsic permeability following the
+        % Kozeny-Carman relation
+        function k = permeabilityKozenyCarman(this, phi)
+            k0 = this.K;
+            phi0 = this.phi;
+            k = k0 * ((phi/phi0)^3) * ((1.0 - phi0)/(1.0 - phi))^2;
+        end
+
+        % -----------------------------------------------------------------
         % Create the intrinsic permeability matrix
-        function Km = intrinsicPermeabilityMatrix(this)
-            Km = this.K * eye(2);
+        function Km = intrinsicPermeabilityMatrix(this, porosity)
+            if ((nargin < 2) || isempty(porosity))
+                porosity = this.phi;
+            end
+            Kv = this.intrinsicPermeability(porosity);
+            Km = Kv * eye(2);
         end
 
         % -----------------------------------------------------------------
