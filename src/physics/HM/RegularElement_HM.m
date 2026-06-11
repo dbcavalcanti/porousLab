@@ -32,22 +32,31 @@
 classdef RegularElement_HM < RegularElement_M    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
-        glp        = [];            % Liquid phase pressure dofs
-        nglp       = 0;             % Number of regular p-dof
+        glp         = [];           % Liquid phase pressure dofs
+        nglp        = 0;            % Number of regular p-dof
+        % Elements attributes
+        updatePorosityFlag = false;     % Flag to update the porosity
+        porosity           = 0.0;       % Porosity at the current time-step
+        porosityOld        = 0.0;       % Porosity at the previously converged time-step
+        minPorosity        = 1.0e-8;    % Minimum porosity value
+        maxPorosity        = 1.0;       % Maximum porosity value
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = RegularElement_HM(node, elem, t, ...
                 mat, intOrder, glu, glp, massLumping, lumpStrategy, ...
-                isAxisSymmetric,isPlaneStress)
+                isAxisSymmetric,isPlaneStress, updatePorosityFlag)
             this = this@RegularElement_M(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric,isPlaneStress);
+            % Degrees of freedom
             this.glp  = glp;
             this.gle  = [glu, glp];
             this.nglp = length(this.glp);
             this.ngle = length(this.gle);
+            % Element attribute update flag
+            this.updatePorosityFlag = updatePorosityFlag;
         end
     end
     
@@ -70,6 +79,19 @@ classdef RegularElement_HM < RegularElement_M
             end
             this.intPoint = intPts;
 
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the elements attributes
+        function initializeElementAttributes(this)
+            this.porosityOld = this.mat.porousMedia.phi;
+            this.porosity    = this.porosityOld;
+        end
+
+        %------------------------------------------------------------------
+        % Update the elements attributes
+        function updateElementAttributes(this)
+            this.porosityOld = this.porosity;
         end
 
         %------------------------------------------------------------------
@@ -139,7 +161,7 @@ classdef RegularElement_HM < RegularElement_M
                 kh = this.intPoint(i).constitutiveMdl.permeabilityTensor();
 
                 % Get compressibility coefficient
-                comp = this.intPoint(i).constitutiveMdl.compressibilityCoeff();
+                comp = this.intPoint(i).constitutiveMdl.compressibilityCoeff(this.porosityOld);
 
                 % Get Biot's coefficient
                 biot = this.intPoint(i).constitutiveMdl.biotCoeff();
@@ -199,7 +221,27 @@ classdef RegularElement_HM < RegularElement_M
 
             % Assemble element external force vector
             fe = [feu; fep];
+
+            % Compute current porosity
+            this.updatePorosity();
             
+        end
+
+        %------------------------------------------------------------------
+        % Update the value of the current porosity
+        function updatePorosity(this)
+            if (this.updatePorosityFlag == false), return, end
+            DphiDt = this.porosityRate();
+            phi = this.porosityOld + DphiDt * this.DTime;
+            this.porosity = min(max(phi,this.minPorosity),this.maxPorosity);
+        end
+
+        %------------------------------------------------------------------
+        % Compute the porosity rate using an explicit approximation
+        function DphiDt = porosityRate(this)
+            phiOld = this.porosityOld;
+            DvolstrainDt = this.volumetricStrainRate();
+            DphiDt = (1.0 - phiOld) * DvolstrainDt;
         end
 
         %------------------------------------------------------------------

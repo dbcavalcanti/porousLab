@@ -73,10 +73,9 @@ classdef Material_HM < handle
 
         % -----------------------------------------------------------------
         % Computes the compressibility coefficient
-        function comp = compressibilityCoeff(this)
+        function comp = compressibilityCoeff(this, phi)
             % Get material parameters
             biot = this.porousMedia.biot;     % Biot's coefficient
-            phi  = this.porousMedia.phi;      % Porosity
             Ks   = this.porousMedia.Ks;       % Solid bulk modulus
             Kf   = this.fluid.K;              % Fluid bulk modulus
             % Compute the compressibility
