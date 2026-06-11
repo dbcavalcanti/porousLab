@@ -425,6 +425,9 @@ classdef Model < handle
 
                 % Initialize integration points
                 this.initializeIntegrationPoints();
+
+                % Initialize elements attributes
+                this.initializeElementsAttributes();
                 
                 % Compute auxiliar variables for assemblage of sparse matrices
                 this.initializeSparseMtrxAssemblageVariables();
@@ -445,6 +448,14 @@ classdef Model < handle
         function initializeIntegrationPoints(this)
             for el = 1 : this.nelem
                 this.element(el).type.initializeIntPoints();
+            end
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the elements attributes
+        function initializeElementsAttributes(this)
+            for el = 1 : this.nelem
+                this.element(el).type.initializeElementAttributes();
             end
         end
 
@@ -952,6 +963,8 @@ classdef Model < handle
                 fieldValue = this.element(el).type.liquidSaturationField(X);
             elseif strcmp(field,'GasSaturation')
                 fieldValue = this.element(el).type.gasSaturationField(X);
+            elseif strcmp(field,'Porosity')
+                fieldValue = this.element(el).type.porosity;
             end
         end
 

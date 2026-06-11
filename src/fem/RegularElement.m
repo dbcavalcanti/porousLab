@@ -82,6 +82,16 @@ classdef RegularElement < handle
     %% Public methods
     methods
         %------------------------------------------------------------------
+        % Initialize the elements attributes
+        function initializeElementAttributes(~)
+        end
+
+        %------------------------------------------------------------------
+        % Initialize the elements attributes
+        function updateElementAttributes(~)
+        end
+
+        %------------------------------------------------------------------
         % Assemble element matrices and vectors.
         function [Ae,be] = elementLinearSystem(this,nlscheme)
             [Ke,Ce,fi,fe,dfidu] = this.elementData();
@@ -96,6 +106,7 @@ classdef RegularElement < handle
                 this.intPoint(i).updateStressVct();
                 this.intPoint(i).updateStrainVct();
             end
+            this.updateElementAttributes();
         end
 
         %------------------------------------------------------------------
