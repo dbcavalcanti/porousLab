@@ -55,9 +55,10 @@ classdef NonlinearScheme_Picard < NonlinearScheme
 
         %------------------------------------------------------------------
         % Evaluate the solution increment and updates the solution vector.
-        function [X,dx] = eval(this,A,b,X,dxOld,freedof,iter)
+        function [X,dx] = eval(this,A,b,X,dxOld,mdl,iter)
             XOld = X;
-            X(freedof) = A\b;
+            freedof = mdl.doffree;
+            X(freedof) = mdl.solveLinearSystem(A,b);
             if this.applyRelaxation
                 if iter > 1
                     this.updateRelaxation(X,XOld,dxOld);
@@ -69,7 +70,8 @@ classdef NonlinearScheme_Picard < NonlinearScheme
 
         %------------------------------------------------------------------
         % Check for convergence of the nonlinear scheme.
-        function convFlg = convergence(this,X,~,dX,~, doffree,iter,echo)
+        function convFlg = convergence(this,X,~,dX,~, mdl,iter,echo)
+            doffree = mdl.doffree;
             % Evaluate error
             normError = norm(dX(doffree));
             if this.normalizeError

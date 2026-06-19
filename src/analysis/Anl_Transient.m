@@ -92,10 +92,10 @@ classdef Anl_Transient < Anl
                         [A,b] = mdl.applyDirichletBC(A,b,X,this.nlscheme);
 
                         % Update variables
-                        [X,dx] = this.nlscheme.eval(A,b,X,dx,mdl.doffree,iter);
+                        [X,dx] = this.nlscheme.eval(A,b,X,dx,mdl,iter);
 
                         % Check convergence
-                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl.doffree,iter,this.echo);
+                        convFlg = this.nlscheme.convergence(X,XOld,dx,b,mdl,iter,this.echo);
                         if convFlg == true
                             break;
                         end

@@ -41,16 +41,16 @@ classdef NonlinearScheme_Newton < NonlinearScheme
 
         %------------------------------------------------------------------
         % Evaluate the solution increment and updates the solution vector.
-        function [X,dx] = eval(this,J,r,X,~,freedof,~)
+        function [X,dx] = eval(this,J,r,X,~,mdl,~)
             % Compute increment of variables
-            if this.scaleLinearSystem
+            if this.scaleLinearSystem && (mdl.masterSlaveFlag == false)
                 dx = this.solveScaledSystem(J,-r);
             else
-                dx = -J\r;
+                dx = mdl.solveLinearSystem(J,-r);
             end
 
             % Update variables
-            X(freedof) = X(freedof) + dx;
+            X(mdl.doffree) = X(mdl.doffree) + dx;
         end
         
         %------------------------------------------------------------------
@@ -70,20 +70,23 @@ classdef NonlinearScheme_Newton < NonlinearScheme
             As = S * A * S;                             
             bs = S * b;
             % Solve
-            y  = As \ bs;                               
+            y = As \ bs;
             % Unscale back
             x  = S * y;                                 
         end
 
         %------------------------------------------------------------------
         % Check for convergence of the nonlinear scheme.
-        function convFlg = convergence(this,~,XOld,dx,r,~,iter,echo)
+        function convFlg = convergence(this,~,XOld,dx,r,mdl,iter,echo)
             normXOld = norm(XOld);
             if normXOld < 1.0e-16, normXOld = 1.0; end
+            r = mdl.projectMasterSlaveResidual(r);
+            normR = norm(r);
+            normDx = norm(dx)/normXOld;
             if echo
-                fprintf("\t\t iter.: %3d , ||R|| = %7.3e  , ||dx||/||X0|| = %7.3e \n",iter,norm(r),norm(dx)/normXOld);
+                fprintf("\t\t iter.: %3d , ||R|| = %7.3e  , ||dx||/||X0|| = %7.3e \n",iter,normR,normDx);
             end    
-            if ((norm(r) < this.tol) || (norm(dx)/normXOld) < this.tol) && (iter > 1)
+            if (normR < this.tol) && (normDx < this.tol) && (iter > 1)
                 convFlg = true;
             else
                 convFlg = false;

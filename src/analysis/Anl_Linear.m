@@ -42,7 +42,7 @@ classdef Anl_Linear < Anl
             b = Fext(mdl.doffree) - Fi(mdl.doffree) - A(mdl.doffree,mdl.doffixed) * mdl.U(mdl.doffixed);
 
             % Solve linear system
-            mdl.U(mdl.doffree) = A(mdl.doffree,mdl.doffree)\b;
+            mdl.U(mdl.doffree) = mdl.solveLinearSystem(A(mdl.doffree,mdl.doffree), b);
 
             % Save final result
             for i = 1:mdl.nelem

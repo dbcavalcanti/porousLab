@@ -353,6 +353,15 @@ classdef Model_M < Model
         end
 
         % -----------------------------------------------------------------
+        % Set master-slave condition
+        function setMasterSlaveDisplacements(this,masterNode,slaveNodes,dir)
+            if nargin < 4
+                error('Master node, slave nodes, and direction must be provided.');
+            end
+            this.setMasterSlaveDOFs(masterNode,slaveNodes,dir);
+        end
+
+        % -----------------------------------------------------------------
         % Initializes an array of discontinuity segments
         function seg = initializeDiscontinuitySegArray(~,n)
             seg(n,1) = DiscontinuityElement_M([],[]);

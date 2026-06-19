@@ -119,6 +119,9 @@ classdef Model < handle
         nNodalEnrDofs       = 0;             % Number of nodal enrichment dofs (used if useNodalEnrDofs == true)
         subDivIntegration   = false;         % Flag to apply a sub-division of the element to define the integration points
         initializeMdl       = false;         % Flag to check if the model has been initialized
+        masterSlaveDOFs     = [];            % Struct array with master-slave DOF groups
+        masterSlaveFlag     = false;         % Master-slave flag
+        masterSlaveT        = [];            % Master-slave transformation matrix
     end
     
     %% Constructor method
@@ -226,6 +229,188 @@ classdef Model < handle
                 this.doffree(countFree) = this.dofenr(i);
                 countFree = countFree + 1;
             end
+        end
+
+        %------------------------------------------------------------------
+        % Store a standard nodal master-slave DOF constraint group
+        function setMasterSlaveDOFs(this,masterNode,slaveNodes,dofIds)
+            if nargin < 4
+                error('Master node, slave nodes, and DOF IDs must be provided.');
+            end
+            if this.initializeMdl
+                error('Master-slave constraints must be set before preComputations.');
+            end
+
+            if length(unique(slaveNodes)) ~= length(slaveNodes)
+                error('A slave node cannot be repeated in the same master-slave group.');
+            end
+            if any(slaveNodes == masterNode)
+                error('The master node cannot also be included as a slave node.');
+            end
+
+            dofIds = dofIds(:).';
+
+            for i = 1:length(this.masterSlaveDOFs)
+                if isempty(intersect(dofIds,this.masterSlaveDOFs(i).dofIds))
+                    continue
+                end
+                if any(this.masterSlaveDOFs(i).slaveNodes == masterNode)
+                    error('A master node cannot already be a slave node for the same DOF ID.');
+                end
+                if any(slaveNodes == this.masterSlaveDOFs(i).masterNode)
+                    error('A slave node cannot already be a master node for the same DOF ID.');
+                end
+                if any(ismember(slaveNodes,this.masterSlaveDOFs(i).slaveNodes))
+                    error('A slave node cannot be assigned to more than one master for the same DOF ID.');
+                end
+            end
+
+            group = struct( ...
+                'masterNode', masterNode, ...
+                'slaveNodes', slaveNodes, ...
+                'dofIds', dofIds, ...
+                'masterDofs', [], ...
+                'slaveDofs', [], ...
+                'masterFreeIndices', [], ...
+                'slaveFreeIndices', []);
+
+            if isempty(this.masterSlaveDOFs)
+                this.masterSlaveDOFs = group;
+            else
+                this.masterSlaveDOFs(end+1) = group;
+            end
+            this.masterSlaveFlag = true;
+            this.masterSlaveT = [];
+        end
+
+        %------------------------------------------------------------------
+        % Resolve stored master-slave node/component pairs into DOF data
+        function resolveMasterSlaveDOFs(this)
+            if isempty(this.masterSlaveDOFs)
+                this.masterSlaveFlag = false;
+                this.masterSlaveT = [];
+                return
+            end
+            if isempty(this.ID)
+                return
+            end
+
+            allMasterDofs = [];
+            allSlaveDofs = [];
+
+            for i = 1:length(this.masterSlaveDOFs)
+                dofIds = this.masterSlaveDOFs(i).dofIds;
+                masterNode = this.masterSlaveDOFs(i).masterNode;
+                slaveNodes = this.masterSlaveDOFs(i).slaveNodes;
+
+                if any(dofIds < 1) || any(dofIds > this.ndof_nd)
+                    error('At least one master-slave DOF ID is outside the nodal DOF range.');
+                end
+
+                masterDofs = this.ID(masterNode,dofIds);
+                slaveDofs = this.ID(slaveNodes,dofIds);
+
+                if any(ismember(slaveDofs(:),masterDofs(:)))
+                    error('The master DOF cannot also be included as a slave DOF.');
+                end
+                if any(ismember(masterDofs(:),this.doffixed)) || any(ismember(slaveDofs(:),this.doffixed))
+                    error('Master-slave constraints currently require master and slave DOFs to be free.');
+                end
+
+                [masterIsFree, masterFreeIndices] = ismember(masterDofs,this.doffree);
+                [slaveAreFree, slaveFreeIndices] = ismember(slaveDofs,this.doffree);
+                if any(~masterIsFree(:)) || any(~slaveAreFree(:))
+                    error('Could not map master-slave DOFs to the free DOF vector.');
+                end
+
+                this.masterSlaveDOFs(i).masterDofs = masterDofs(:).';
+                this.masterSlaveDOFs(i).slaveDofs = slaveDofs;
+                this.masterSlaveDOFs(i).masterFreeIndices = masterFreeIndices(:).';
+                this.masterSlaveDOFs(i).slaveFreeIndices = slaveFreeIndices;
+
+                allMasterDofs = [allMasterDofs; masterDofs(:)];
+                allSlaveDofs = [allSlaveDofs; slaveDofs(:)];
+            end
+
+            if length(unique(allSlaveDofs)) ~= length(allSlaveDofs)
+                error('A slave DOF cannot be assigned to more than one master DOF.');
+            end
+            if any(ismember(allMasterDofs,allSlaveDofs))
+                error('A master DOF cannot also be a slave DOF.');
+            end
+
+            this.masterSlaveFlag = true;
+            this.masterSlaveT = [];
+        end
+
+        %------------------------------------------------------------------
+        % Create the free-space master-slave transformation matrix
+        function T = getMasterSlaveMatrix(this)
+            nFree = length(this.doffree);
+            if isempty(this.masterSlaveDOFs) || (this.masterSlaveFlag == false)
+                T = speye(nFree);
+                return
+            end
+            if ~isempty(this.masterSlaveT)
+                T = this.masterSlaveT;
+                return
+            end
+
+            if nFree == 0
+                error('Free DOFs must be initialized before creating the master-slave matrix.');
+            end
+
+            for i = 1:length(this.masterSlaveDOFs)
+                if isempty(this.masterSlaveDOFs(i).masterFreeIndices) || isempty(this.masterSlaveDOFs(i).slaveFreeIndices)
+                    this.resolveMasterSlaveDOFs();
+                    break
+                end
+            end
+
+            slaveFreeIndices = [];
+            for i = 1:length(this.masterSlaveDOFs)
+                slaveFreeIndices = [slaveFreeIndices; this.masterSlaveDOFs(i).slaveFreeIndices(:)];
+            end
+            slaveFreeIndices = unique(slaveFreeIndices);
+
+            independentFreeIndices = setdiff((1:nFree).', slaveFreeIndices, 'stable');
+            nIndependentFree = length(independentFreeIndices);
+
+            independentCols = (1:nIndependentFree).';
+            colOfFreeIndex = zeros(nFree,1);
+            colOfFreeIndex(independentFreeIndices) = independentCols;
+
+            rowIds = independentFreeIndices;
+            colIds = independentCols;
+            values = ones(nIndependentFree,1);
+
+            for i = 1:length(this.masterSlaveDOFs)
+                masterCols = colOfFreeIndex(this.masterSlaveDOFs(i).masterFreeIndices);
+                masterCols = masterCols(:).';
+                if any(masterCols == 0)
+                    error('A master DOF cannot be removed from the independent DOF set.');
+                end
+
+                slaveRows = this.masterSlaveDOFs(i).slaveFreeIndices;
+                slaveCols = repmat(masterCols, size(slaveRows,1), 1);
+
+                rowIds = [rowIds; slaveRows(:)];
+                colIds = [colIds; slaveCols(:)];
+                values = [values; ones(numel(slaveRows),1)];
+            end
+
+            T = sparse(rowIds, colIds, values, nFree, nIndependentFree);
+            this.masterSlaveT = T;
+        end
+
+        %------------------------------------------------------------------
+        % Project a free-DOF residual into the independent master-slave space
+        function r = projectMasterSlaveResidual(this,r)
+            if isempty(this.masterSlaveDOFs) || (this.masterSlaveFlag == false)
+                return
+            end
+            T = this.getMasterSlaveMatrix();
+            r = T' * r;
         end
 
         %------------------------------------------------------------------
@@ -393,6 +578,7 @@ classdef Model < handle
         function updateDirichletBC(this)
             this.applyDirichletBCtoDOFVct();
             this.createNodeDofIdMtrx();
+            this.resolveMasterSlaveDOFs();
         end
         
         %------------------------------------------------------------------
@@ -416,6 +602,9 @@ classdef Model < handle
     
                 % Create nodes DOF ids matrix
                 this.createNodeDofIdMtrx();
+
+                % Resolve stored master-slave node/component pairs
+                this.resolveMasterSlaveDOFs();
     
                 % Initialize elements
                 this.initializeElements();
@@ -770,10 +959,28 @@ classdef Model < handle
         end
 
         %------------------------------------------------------------------
-        % Appply the Dirichlet boundary conditions
+        % Apply the Dirichlet boundary conditions
         function [Aff,bf] = applyDirichletBC(this, A, b, X, nlscheme)
             Aff = A(this.doffree,this.doffree);
             bf  = nlscheme.applyBCtoRHS(A, b, X, this.doffree,this.doffixed);
+        end
+
+        %------------------------------------------------------------------
+        % Solve linear system A * x = b
+        % The matrix A and vector b already have only the free DOFs
+        function x = solveLinearSystem(this, A, b)
+            if (this.masterSlaveFlag == false)
+                x = A \ b;
+            else
+                T = this.getMasterSlaveMatrix();
+                % Reduce the linear system  with the free independent DOFs
+                Ared = T' * A * T;
+                bred = T' * b;
+                % Solve free independent DOFs
+                xred = Ared \ bred;
+                % Recover the full DOFs vector
+                x = T * xred;
+            end
         end
 
         %------------------------------------------------------------------

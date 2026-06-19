@@ -40,11 +40,11 @@ classdef NonlinearScheme < handle
 
         %------------------------------------------------------------------
         % Evaluates the solution increment and updates the solution vector.
-        [X,dx] = eval(this,J,r,X,dx,freedof,iter);
+        [X,dx] = eval(this,J,r,X,dx,mdl,iter);
 
         %------------------------------------------------------------------
         % Check for convergence of the nonlinear scheme.
-        convFlg = convergence(this,X,XOld,dx,b,doffree,iter);
+        convFlg = convergence(this,X,XOld,dx,b,mdl,iter);
     end
 
     %% Public methods
