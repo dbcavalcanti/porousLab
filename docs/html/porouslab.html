@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>PorousLab - FEM framework for multiphysics problems in porous media</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="porouslab.m"><style type="text/css">
+      --><title>PorousLab - FEM framework for multiphysics problems in porous media</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="porouslab.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>PorousLab - FEM framework for multiphysics problems in porous media</h1><p>This is the main function of PorousLab. To run a simulation, call this function by passing the full path to the simulation script as input argument. If no input argument is provided, a dialog appears for manual selection of the simulation script.</p><pre class="codeinput"><span class="keyword">function</span> porouslab(varargin)
+  </style></head><body><div class="content"><h1>PorousLab - FEM framework for multiphysics problems in porous media</h1><p>This is the main function of PorousLab. To run a simulation, call this function by passing the full path to the simulation script as input argument. If no input argument is provided, a dialog appears for manual selection of the simulation script.</p><pre class="codeinput"><span class="keyword">function</span> mdl = porouslab(varargin)
     clc; clearvars <span class="string">-except</span> <span class="string">varargin</span>; close <span class="string">all</span>;
     addpath(genpath(pwd));
     print_header;
@@ -96,6 +96,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
     addpath(file_path);
     run(file_name);
+
+    <span class="comment">% Get output variables</span>
+    vars = whos;
+    ws = struct();
+    <span class="keyword">for</span> k = 1:length(vars)
+        varName = vars(k).name;
+        ws.(varName) = eval(varName);
+    <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -105,7 +113,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % To run a simulation, call this function by passing the full path to the simulation script as input argument.
 % If no input argument is provided, a dialog appears for manual selection of the simulation script.
 %
-function porouslab(varargin)
+function mdl = porouslab(varargin)
     clc; clearvars -except varargin; close all;
     addpath(genpath(pwd));
     print_header;
@@ -134,6 +142,14 @@ function porouslab(varargin)
 
     addpath(file_path);
     run(file_name);
+
+    % Get output variables
+    vars = whos;
+    ws = struct();
+    for k = 1:length(vars)
+        varName = vars(k).name;
+        ws.(varName) = eval(varName);
+    end
 end
 
 ##### SOURCE END #####

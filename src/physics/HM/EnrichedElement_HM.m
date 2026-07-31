@@ -1,8 +1,9 @@
-%% EnrichedElement_H class
-% This class extends the _RegularElement_H_ class to define a finite 
-% element for single-phase fluid flow that incorporates enriched elements 
-% to handle discontinuities. It provides methods to compute element data, 
-% manage discontinuities, and calculate enriched degrees of freedom.
+%% EnrichedElement_HM Class
+% This class extends the _RegularElement_HM_ class to define a
+% hydro-mechanical finite element with displacement and pressure
+% enrichments for discontinuities. It provides methods to compute enriched
+% element data, manage discontinuity segments, and calculate enriched
+% degrees of freedom.
 %
 %% Methods
 % * *elementData*: Computes the element data (stiffness matrix, damping 
@@ -75,7 +76,7 @@ classdef EnrichedElement_HM < RegularElement_HM
         end
 
         %------------------------------------------------------------------
-        % Computes the element data for the current element based on wether
+        % Computes the element data for the current element based on whether
         % the element contains a discontinuity or not.
         % 
         % Outputs:
@@ -369,8 +370,8 @@ classdef EnrichedElement_HM < RegularElement_HM
                 [fidi, Kddi, Qadi, Hddi, Sddi, Lcci, Lcji, Lcdi, Ljci, Ljji, Ljdi, Ldci, Ldji, Lddi,~,~,~] = this.discontinuity(i).elementData(a(dofs_a),this,i);
 
                 % Assemble the contribution of this discontinuity
-                fid(dofs_a) = fid(dofs_d) + fidi;
-                Kdd(dofs_a, dofs_a) = Kdd(dofs_d, dofs_d) + Kddi;
+                fid(dofs_a) = fid(dofs_a) + fidi;
+                Kdd(dofs_a, dofs_a) = Kdd(dofs_a, dofs_a) + Kddi;
                 Qad(dofs_a, dofs_d) = Qad(dofs_a, dofs_d) + Qadi;
                 Hdd(dofs_d, dofs_d) = Hdd(dofs_d, dofs_d) + Hddi;
                 Sdd(dofs_d, dofs_d) = Sdd(dofs_d, dofs_d) + Sddi;

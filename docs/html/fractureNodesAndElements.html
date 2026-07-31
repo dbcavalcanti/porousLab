@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>fractureNodesAndElements Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="fractureNodesAndElements.m"><style type="text/css">
+      --><title>fractureNodesAndElements Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="fractureNodesAndElements.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -221,10 +221,10 @@ globalCounter = 1;
 ##### SOURCE BEGIN #####
 %% fractureNodesAndElements Function
 % This function identifies the intersection points between fracture
-% segments and the continuum finite element mesh. It divides the fracture 
-% segments into smaller segments based on the intersections and assigns 
-% properties such as aperture and leakoff to each segment. The function 
-% also identifies crack tip nodes and assigns their status based on the 
+% segments and the continuum finite element mesh. It divides the fracture
+% segments into smaller segments based on the intersections and assigns
+% properties such as aperture and leakoff to each segment. The function
+% also identifies crack tip nodes and assigns their status based on the
 % input flags.
 %
 %% Inputs
@@ -284,13 +284,13 @@ for i = 1:nFract
             id(2) = 1;
         end
     end
-    
+
     % Initialize local counter
     localCounter = 1;
     isolateNode = [];
 
     % Loop through the continuum elements REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-    for el = 1:nElem 
+    for el = 1:nElem
 
         % Get the number of edges of the element
         nEdges = size(ELEM,2);
@@ -332,7 +332,7 @@ for i = 1:nFract
         % if sum(dEdgeNodes) > 0
         %     % Find the indices of the 1's in the vector
         %     onesIndices = find(dEdgeNodes == 1);
-        % 
+        %
         %     % Check if the 1's are in alternate positions
         %     checkIsolateNode = (onesIndices(2) - onesIndices(1)) ~= 2;
         %     isolateNode = [isolateNode;checkIsolateNode;checkIsolateNode];
@@ -349,7 +349,7 @@ for i = 1:nFract
     % isolateNode = isolateNode(I);
     [~,I]   = uniquetol(tNd,1e-9);
     NODE_Di = NODE_Di(I,:);
-    % 
+    %
     % if length(isolateNode)>3
     %     isolateNodeUnique = zeros(2 + (length(isolateNode)-2)/2,1);
     %     isolateNodeUnique(1) = isolateNode(1);
@@ -357,7 +357,7 @@ for i = 1:nFract
     %     ii = 2;
     %     for kk = 2:2:(length(isolateNode)-1)
     %         if isolateNode(kk) || isolateNode(kk+1)
-    %             isolateNodeUnique(ii) = true; 
+    %             isolateNodeUnique(ii) = true;
     %         end
     %         ii = ii + 1;
     %     end
@@ -394,7 +394,7 @@ for i = 1:nFract
     NODE_D      = [NODE_D; NODE_Di];
     FRACT       = [FRACT;  FRACT_i];
     NODE_D_TIPS = [NODE_D_TIPS; NODE_D_TIPSi];
-    
+
     globalCounter = globalCounter + 1;
 
     NODE_Di = [];

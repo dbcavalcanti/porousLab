@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>DiscontinuityElement Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="DiscontinuityElement.m"><style type="text/css">
+      --><title>DiscontinuityElement Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="DiscontinuityElement.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>DiscontinuityElement Class</h1><!--introduction--><p>This in an abstract class that defines a discontinuity element in a finite element mesh. It provides methods to compute geometric and physical properties of the discontinuity.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Abstract methods</a></li><li><a href="#6">Public methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> DiscontinuityElement &lt; handle
+  </style></head><body><div class="content"><h1>DiscontinuityElement Class</h1><!--introduction--><p>This is an abstract class that defines a discontinuity element in a finite element mesh. It provides methods to compute geometric and physical properties of the discontinuity.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Abstract methods</a></li><li><a href="#6">Public methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> DiscontinuityElement &lt; handle
 </pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         shape      = [];    <span class="comment">% Object of the Shape class</span>
         node       = [];    <span class="comment">% Nodes of the fem mesh</span>
@@ -75,9 +75,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         mat        = [];    <span class="comment">% Material object</span>
         intOrder   = 2;     <span class="comment">% Order of the numerical integration</span>
         dof        = [];    <span class="comment">% Degrees of freedom vector</span>
-        ndof       = 1;     <span class="comment">% Number of dofs</span>
-        nIntPoints = 1;     <span class="comment">% Number of integration points</span>
+        dofOld     = [];    <span class="comment">% Old degrees of freedom</span>
+        ndof       = 0;     <span class="comment">% Number of dofs</span>
         intPoint   = [];    <span class="comment">% Vector with integration point objects</span>
+        nIntPoints = 1;     <span class="comment">% Number of integration points</span>
+        useNodalEnrDofs = false;
+        nNodalDofs      = [];    <span class="comment">% Number of nodal enrichment dofs</span>
     <span class="keyword">end</span>
 </pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
@@ -97,7 +100,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%    Ce : element "damping" matrix</span>
         <span class="comment">%    fe : element "external force" vector</span>
         <span class="comment">%    fi : element "internal force" vector</span>
-        <span class="comment">% dfidu : element matrix of derivative of the internal force wrt displacement</span>
+<span class="comment">% dfidu : element matrix of derivative of the internal force with respect to displacement</span>
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     <span class="keyword">end</span>
 </pre><h2 id="6">Public methods</h2><pre class="codeinput">    methods
@@ -131,6 +134,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Rotation from global to local</span>
+        <span class="keyword">function</span> R = rotationFromGlobalToLocal(this)
+            m = this.tangentialVector();
+            R = [ m(1) , m(2);   <span class="comment">% cs  , sn</span>
+                 -m(2) , m(1)];  <span class="comment">% -sn , cs</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Compute heaviside function associated with the discontinuity at a given point.</span>
         <span class="keyword">function</span> h = heaviside(this,X)
             n  = this.normalVector();
@@ -147,8 +158,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Set degrees of freedom vector.</span>
+        <span class="keyword">function</span> setDofs(this,dofs)
+            this.dof = dofs;
+        <span class="keyword">end</span>
+
+        <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Update state variables.</span>
         <span class="keyword">function</span> updateStateVar(this)
+            this.dofOld = this.dof;
             <span class="keyword">for</span> i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();
@@ -160,14 +178,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% DiscontinuityElement Class
-% This in an abstract class that defines a discontinuity element in a finite element mesh.
+% This is an abstract class that defines a discontinuity element in a finite element mesh.
 % It provides methods to compute geometric and physical properties of the discontinuity.
-% 
+%
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
-% 
+%
 %% Class definition
-classdef DiscontinuityElement < handle    
+classdef DiscontinuityElement < handle
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         shape      = [];    % Object of the Shape class
@@ -176,9 +194,12 @@ classdef DiscontinuityElement < handle
         mat        = [];    % Material object
         intOrder   = 2;     % Order of the numerical integration
         dof        = [];    % Degrees of freedom vector
-        ndof       = 1;     % Number of dofs
+        dofOld     = [];    % Old degrees of freedom
+        ndof       = 0;     % Number of dofs
+        intPoint   = [];    % Vector with integration point objects
         nIntPoints = 1;     % Number of integration points
-        intPoint   = [];    % Vector with integration point objects       
+        useNodalEnrDofs = false;
+        nNodalDofs      = [];    % Number of nodal enrichment dofs
     end
 
     %% Constructor method
@@ -202,7 +223,7 @@ classdef DiscontinuityElement < handle
         %    Ce : element "damping" matrix
         %    fe : element "external force" vector
         %    fi : element "internal force" vector
-        % dfidu : element matrix of derivative of the internal force wrt displacement
+% dfidu : element matrix of derivative of the internal force with respect to displacement
         [Ke,Ce,fi,fe,dfidu] = elementData(this,ae);
     end
 
@@ -238,6 +259,14 @@ classdef DiscontinuityElement < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Rotation from global to local
+        function R = rotationFromGlobalToLocal(this)
+            m = this.tangentialVector();
+            R = [ m(1) , m(2);   % cs  , sn
+                 -m(2) , m(1)];  % -sn , cs
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Compute heaviside function associated with the discontinuity at a given point.
         function h = heaviside(this,X)
             n  = this.normalVector();
@@ -254,8 +283,15 @@ classdef DiscontinuityElement < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Set degrees of freedom vector.
+        function setDofs(this,dofs)
+            this.dof = dofs;
+        end
+
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Update state variables.
         function updateStateVar(this)
+            this.dofOld = this.dof;
             for i = 1:this.nIntPoints
                 this.intPoint(i).updateStateVar();
                 this.intPoint(i).updateStressVct();

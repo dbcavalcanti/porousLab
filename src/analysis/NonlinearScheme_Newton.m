@@ -41,12 +41,38 @@ classdef NonlinearScheme_Newton < NonlinearScheme
 
         %------------------------------------------------------------------
         % Evaluate the solution increment and updates the solution vector.
-        function [X,dx] = eval(~,J,r,X,~,freedof,~)
+        function [X,dx] = eval(this,J,r,X,~,freedof,~)
             % Compute increment of variables
-            dx = -J\r;
+            if this.scaleLinearSystem
+                dx = this.solveScaledSystem(J,-r);
+            else
+                dx = -J\r;
+            end
 
             % Update variables
             X(freedof) = X(freedof) + dx;
+        end
+        
+        %------------------------------------------------------------------
+        % Scale and solve the linear system A * x = b
+        function x = solveScaledSystem(~,A,b)
+            % Get size of the system
+            n  = size(A,1);
+            % Get the absolute value of the diagonal terms in A
+            d  = abs(diag(A));
+            % Tiny number in A's precision
+            epsd = eps(class(full(1)));                
+            % Scale factors
+            s  = 1 ./ sqrt(max(d, epsd));
+            % Scaling matrix
+            S  = spdiags(s, 0, n, n);
+            % Sym. scaled system
+            As = S * A * S;                             
+            bs = S * b;
+            % Solve
+            y  = As \ bs;                               
+            % Unscale back
+            x  = S * y;                                 
         end
 
         %------------------------------------------------------------------

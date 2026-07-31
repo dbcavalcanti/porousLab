@@ -1,18 +1,14 @@
-%% MechanicalCohesiveLinearElastic Class
-% This class implements a linear elastic cohesive law for mechanical 
-% materials. It provides methods to compute the stress vector and the 
-% constitutive matrix based on the material properties and the strain 
-% state at integration points.
+%% MechanicalCohesiveMohrCoulomb Class
+% This class implements a Mohr-Coulomb cohesive law for mechanical
+% discontinuities. It evaluates elastic trial stresses and applies the
+% shear and tension cut-off return rules when the interface reaches the
+% cohesive strength.
 %
 %% Methods
-% * *eval*: Computes the stress vector and the constitutive matrix for the 
+% * *eval*: Computes the interface stress vector and tangent matrix for the
 %           given material and integration point.
-% * *isElastoPlastic*: Static method that indicates that the material is 
-%                      not elasto-plastic.
-% * *elasticConstitutiveMatrix*: Static method that computes the elastic 
-%                                constitutive matrix based on the material 
-%                                properties and the strain state at the 
-%                                integration point.
+% * *isElastoPlastic*: Static method that indicates that the material is
+%                      elasto-plastic.
 %
 %% Author
 % Danilo Cavalcanti
@@ -63,7 +59,7 @@ classdef MechanicalCohesiveMohrCoulomb < MechanicalCohesiveLinearElastic
             % Current shear strength
             tsr = c - tn * tanPhi;
 
-            % Mohr-Coumlomb yield criteria
+            % Mohr-Coulomb yield criterion
             fMC = abs(ts) - tsr;
 
             % Evaluate the tension-cut-off surface

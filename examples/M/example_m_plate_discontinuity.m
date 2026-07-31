@@ -21,7 +21,7 @@ mdl = Model_M();
 mdl.isPlaneStress   = true;
 mdl.condenseEnrDofs = false;
 mdl.useNodalEnrDofs = true;
-% mdl.symmetricSDAEFEM  = false;
+mdl.symmetricSDAEFEM  = true;
 
 %% MESH
 
@@ -41,8 +41,8 @@ mdl.t = 1.0e-3;
 
 % Create porous media
 rock = PorousMedia('rock');   
-rock.Young = 1.0e+14;  % Young modulus (kPa)
-rock.nu    = 0.0;     % Poisson ratio
+rock.Young = 1.0e+14;  % Young modulus (Pa)
+rock.nu    = 0.0;      % Poisson ratio
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -53,23 +53,23 @@ mdl.setMaterial(rock);
 mdl.setDisplacementDirichletBCAtBorder('bottom', [0.0, 0.0]);
 
 % Loads
-% mdl.addLoadAtPoint([0.0,2.0], [-0.5, 1.5]);    
+mdl.addLoadAtPoint([0.0,2.0], [-0.5, 1.5]);    
 % mdl.addLoadAtPoint([2.0,2.0], [ 0.0, 2.0]);    
-mdl.addLoadAtPoint([0.0,2.0], [0.0, 1.0]);   
+% mdl.addLoadAtPoint([0.0,2.0], [0.0, 1.0]);   
 
 %% DISCONTINUITIES
 
 % Create discontinuities 
 Dx = [0.00; 2.00e-3];  % X-coordinates of polyline defining the fracture
-% Dy = [0.25; 1.75];  % Y-coordinates of polyline defining the fracture
-Dy = [1.0e-3; 1.0e-3];  % Y-coordinates of polyline defining the fracture
+Dy = [0.25e-3; 1.75e-3];  % Y-coordinates of polyline defining the fracture
+% Dy = [1.0e-3; 1.0e-3];  % Y-coordinates of polyline defining the fracture
 fracture = Discontinuity([Dx, Dy], true);
 
 % Set fracture material properties
 fracture.cohesiveLaw     = 'elastic';
 fracture.initialAperture = 0.0;
-fracture.shearStiffness  = 1.0e14;
-fracture.normalStiffness = 1.0e6;
+fracture.shearStiffness  = 1.0e9;
+fracture.normalStiffness = 1.0e9;
 
 % Add fractures to model
 discontinuityData = struct('addTangentialStretchingMode', false, ...

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Discontinuity Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Discontinuity.m"><style type="text/css">
+      --><title>Discontinuity Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Discontinuity.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Discontinuity Class</h1><!--introduction--><p>This in an abstract class that defines a discontinuity in a finite element mesh.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Public methods</a></li><li><a href="#6">Private methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> Discontinuity &lt; handle
+  </style></head><body><div class="content"><h1>Discontinuity Class</h1><!--introduction--><p>This is an abstract class that defines a discontinuity in a finite element mesh.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Authors</a></li><li><a href="#2">Class definition</a></li><li><a href="#3">Public properties</a></li><li><a href="#4">Constructor method</a></li><li><a href="#5">Public methods</a></li><li><a href="#6">Private methods</a></li></ul></div><h2 id="1">Authors</h2><div><ul><li>Danilo Cavalcanti (<a href="mailto:dborges@cimne.upc.edu">dborges@cimne.upc.edu</a>)</li></ul></div><h2 id="2">Class definition</h2><pre class="codeinput"><span class="keyword">classdef</span> Discontinuity &lt; handle
 </pre><h2 id="3">Public properties</h2><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
         <span class="comment">% Geometry</span>
         X    = [];  <span class="comment">% Nodes defining the polyline</span>
@@ -76,7 +76,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
         <span class="comment">% Geometry tools</span>
         useRepel = false;          <span class="comment">% Flag to enable/disable the repel process</span>
-        repelTol = 1.0e-2;         <span class="comment">% Node repel tolerance</span>
+        repelTol = 1.0e-1;         <span class="comment">% Node repel tolerance</span>
         savePerturbNodes = false;  <span class="comment">% Flag to save the perturbed nodes</span>
 
         <span class="comment">% Topology</span>
@@ -86,13 +86,23 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">% Properties:</span>
         <span class="comment">% The properties must be included in the data structure</span>
         <span class="comment">% constructed in the createMaterialDataStructure method</span>
+        porousMedia         = [];
+        porosity            = [];
         cohesiveLaw         = [];
-        fluid               = [];
+        liquidFluid         = [];
+        gasFluid            = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        maximumClosure      = [];
+        frictionAngle       = [];
+        dilationAngle       = [];
+        cohesion            = [];
+        tensionCutOff       = [];
+        conductive          = true;
         leakoff             = 1.0;
+        transversalPerm     = 1.0;
     <span class="keyword">end</span>
 </pre><h2 id="4">Constructor method</h2><pre class="codeinput">    methods
         <span class="comment">%------------------------------------------------------------------</span>
@@ -180,15 +190,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
-        <span class="comment">% Create material data strcture.</span>
+        <span class="comment">% Create material data structure.</span>
         <span class="keyword">function</span> mat = createMaterialDataStructure(this)
-            mat = struct(<span class="string">'fluid'</span>,this.fluid,<span class="keyword">...</span>
+            mat = struct(<span class="string">'porousMedia'</span>,this.porousMedia,<span class="keyword">...</span>
+                         <span class="string">'porosity'</span>, this.porosity,<span class="keyword">...</span>
+                         <span class="string">'liquidFluid'</span>,this.liquidFluid,<span class="keyword">...</span>
+                         <span class="string">'gasFluid'</span>,this.gasFluid,<span class="keyword">...</span>
                          <span class="string">'cohesiveLaw'</span>,this.cohesiveLaw, <span class="keyword">...</span>
                          <span class="string">'initialAperture'</span>,this.initialAperture, <span class="keyword">...</span>
                          <span class="string">'normalStiffness'</span>,this.normalStiffness, <span class="keyword">...</span>
                          <span class="string">'shearStiffness'</span>,this.shearStiffness,<span class="keyword">...</span>
                          <span class="string">'contactPenalization'</span>,this.contactPenalization,<span class="keyword">...</span>
-                         <span class="string">'leakoff'</span>,this.leakoff);
+                         <span class="string">'maximumClosure'</span>,this.maximumClosure,<span class="keyword">...</span>
+                         <span class="string">'frictionAngle'</span>,this.frictionAngle,<span class="keyword">...</span>
+                         <span class="string">'dilationAngle'</span>, this.dilationAngle,<span class="keyword">...</span>
+                         <span class="string">'cohesion'</span>, this.cohesion,<span class="keyword">...</span>
+                         <span class="string">'tensionCutOff'</span>,this.tensionCutOff,<span class="keyword">...</span>
+                         <span class="string">'leakoff'</span>,this.leakoff, <span class="keyword">...</span>
+                         <span class="string">'transversalPermeability'</span>, this.transversalPerm);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
@@ -200,7 +219,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="comment">%------------------------------------------------------------------</span>
         <span class="comment">% Plot original polyline.</span>
         <span class="keyword">function</span> plotOriginalGeometry(this)
-            plot(this.X(:,1), this.X(:,2), <span class="string">'-.xk'</span>);
+            plot(this.X(:,1), this.X(:,2), <span class="string">'-.k'</span>);
         <span class="keyword">end</span>
 
         <span class="comment">%------------------------------------------------------------------</span>
@@ -209,7 +228,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">for</span> i = 1:size(this.Xlin, 1)-1
                 <span class="keyword">if</span> (this.elemID(i) &gt; 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
-                    plot(seg(:,1), seg(:,2), <span class="string">'-.r'</span>, <span class="string">'Marker'</span>, <span class="string">'o'</span>, <span class="string">'MarkerSize'</span>, 1.0, <span class="string">'LineWidth'</span>, 1.5);
+                    plot(seg(:,1), seg(:,2), <span class="string">'-.k'</span>, <span class="string">'Marker'</span>, <span class="string">'o'</span>, <span class="string">'MarkerSize'</span>, 1.0, <span class="string">'LineWidth'</span>, 1.5);
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -291,6 +310,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
                 <span class="comment">% Find the element that contains this segment</span>
                 eID = this.findElementContainingSegment(NODE,ELEM,seg);
+                <span class="keyword">if</span> eID == 0
+                    error(<span class="string">'Error finding element that contains discontinuity segment'</span>);
+                <span class="keyword">end</span>
 
                 <span class="comment">% Store element ID</span>
                 elemIDs = [elemIDs;eID];
@@ -427,7 +449,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="keyword">for</span> i = 1:size(NODE, 1)
                 node = NODE(i,:); <span class="comment">% Current mesh node</span>
 
-                <span class="comment">% Distance to detect and perturn nodes</span>
+                <span class="comment">% Distance to detect and perturb nodes</span>
                 repelDistance = this.repelTol * Lc(i);
 
                 <span class="comment">% Check if this node is close to any node in Xlin</span>
@@ -443,7 +465,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                     <span class="comment">% If the node is too close, repel it</span>
                     <span class="keyword">if</span> distance &lt; repelDistance
 
-                        <span class="comment">% Get the pertubation direction</span>
+                        <span class="comment">% Get the perturbation direction</span>
                         <span class="keyword">if</span> abs(node(1) - xmin) &lt; 1.0e-12
                             pert_dir = [0.0 , 1.0];
                         <span class="keyword">elseif</span> abs(node(1) - xmax) &lt; 1.0e-12
@@ -475,13 +497,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Discontinuity Class
-% This in an abstract class that defines a discontinuity in a finite element mesh.
+% This is an abstract class that defines a discontinuity in a finite element mesh.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)
-% 
+%
 %% Class definition
-classdef Discontinuity < handle    
+classdef Discontinuity < handle
     %% Public properties
     properties (SetAccess = public, GetAccess = public)
         % Geometry
@@ -489,9 +511,9 @@ classdef Discontinuity < handle
         Xlin = [];  % Nodes of the "linearized" polyline
         PERT = [];  % Nodes from the mesh that were perturbed
 
-        % Geometry tools 
+        % Geometry tools
         useRepel = false;          % Flag to enable/disable the repel process
-        repelTol = 1.0e-2;         % Node repel tolerance
+        repelTol = 1.0e-1;         % Node repel tolerance
         savePerturbNodes = false;  % Flag to save the perturbed nodes
 
         % Topology
@@ -501,13 +523,23 @@ classdef Discontinuity < handle
         % Properties:
         % The properties must be included in the data structure
         % constructed in the createMaterialDataStructure method
+        porousMedia         = [];
+        porosity            = [];
         cohesiveLaw         = [];
-        fluid               = [];
+        liquidFluid         = [];
+        gasFluid            = [];
         initialAperture     = [];
         normalStiffness     = [];
         shearStiffness      = [];
         contactPenalization = [];
+        maximumClosure      = [];
+        frictionAngle       = [];
+        dilationAngle       = [];
+        cohesion            = [];
+        tensionCutOff       = [];
+        conductive          = true;
         leakoff             = 1.0;
+        transversalPerm     = 1.0;
     end
 
     %% Constructor method
@@ -599,15 +631,24 @@ classdef Discontinuity < handle
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
-        % Create material data strcture.
+        % Create material data structure.
         function mat = createMaterialDataStructure(this)
-            mat = struct('fluid',this.fluid,...
+            mat = struct('porousMedia',this.porousMedia,...
+                         'porosity', this.porosity,...
+                         'liquidFluid',this.liquidFluid,...
+                         'gasFluid',this.gasFluid,...
                          'cohesiveLaw',this.cohesiveLaw, ...
                          'initialAperture',this.initialAperture, ...
                          'normalStiffness',this.normalStiffness, ...
                          'shearStiffness',this.shearStiffness,...
                          'contactPenalization',this.contactPenalization,...
-                         'leakoff',this.leakoff);
+                         'maximumClosure',this.maximumClosure,...
+                         'frictionAngle',this.frictionAngle,...
+                         'dilationAngle', this.dilationAngle,...
+                         'cohesion', this.cohesion,...
+                         'tensionCutOff',this.tensionCutOff,...
+                         'leakoff',this.leakoff, ...
+                         'transversalPermeability', this.transversalPerm);
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -619,7 +660,7 @@ classdef Discontinuity < handle
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
         % Plot original polyline.
         function plotOriginalGeometry(this)
-            plot(this.X(:,1), this.X(:,2), '-.xk');
+            plot(this.X(:,1), this.X(:,2), '-.k');
         end
 
         %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
@@ -628,7 +669,7 @@ classdef Discontinuity < handle
             for i = 1:size(this.Xlin, 1)-1
                 if (this.elemID(i) > 0)
                     seg = [this.Xlin(i,:); this.Xlin(i+1,:)];
-                    plot(seg(:,1), seg(:,2), '-.r', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
+                    plot(seg(:,1), seg(:,2), '-.k', 'Marker', 'o', 'MarkerSize', 1.0, 'LineWidth', 1.5);
                 end
             end
         end
@@ -691,7 +732,7 @@ classdef Discontinuity < handle
                 intersectionPoints = [intersectionPoints;intersectionPointsSegment(order,:)];
             end
 
-            % Store intersection points in Xlin  
+            % Store intersection points in Xlin
             this.Xlin = uniquetol(intersectionPoints,1.0e-9,'ByRows',true);
         end
 
@@ -712,6 +753,9 @@ classdef Discontinuity < handle
 
                 % Find the element that contains this segment
                 eID = this.findElementContainingSegment(NODE,ELEM,seg);
+                if eID == 0
+                    error('Error finding element that contains discontinuity segment');
+                end
 
                 % Store element ID
                 elemIDs = [elemIDs;eID];
@@ -828,7 +872,7 @@ classdef Discontinuity < handle
         function repelNodes(this,model)
             % Get mesh from model
             NODE = model.NODE;
-            
+
             % Get the mean characteristic lengths of the elements associated with each node
             Lc = model.getNodeCharacteristicLength();
 
@@ -848,7 +892,7 @@ classdef Discontinuity < handle
             for i = 1:size(NODE, 1)
                 node = NODE(i,:); % Current mesh node
 
-                % Distance to detect and perturn nodes
+                % Distance to detect and perturb nodes
                 repelDistance = this.repelTol * Lc(i);
 
                 % Check if this node is close to any node in Xlin
@@ -864,7 +908,7 @@ classdef Discontinuity < handle
                     % If the node is too close, repel it
                     if distance < repelDistance
 
-                        % Get the pertubation direction
+                        % Get the perturbation direction
                         if abs(node(1) - xmin) < 1.0e-12
                             pert_dir = [0.0 , 1.0];
                         elseif abs(node(1) - xmax) < 1.0e-12

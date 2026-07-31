@@ -63,7 +63,7 @@ end
 
 % Set fracture material properties
 for i = 1:nd
-    fractures(i).fluid = water;
+    fractures(i).liquidFluid = water;
     fractures(i).initialAperture = 1.0e-3;
 end
 

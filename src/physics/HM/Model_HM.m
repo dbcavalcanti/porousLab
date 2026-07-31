@@ -48,6 +48,7 @@ classdef Model_HM < Model_M
     properties (SetAccess = public, GetAccess = public)
         %% Embedded related data
         updateAperture = false;
+        discontinuityTransversalFlow = false;
     end
     %% Constructor method
     methods
@@ -64,10 +65,10 @@ classdef Model_HM < Model_M
     methods
 
         %------------------------------------------------------------------
-        % Sets de material properties
+        % Sets the material properties
         function setMaterial(this,porousMedia,fluid)
             if nargin < 3
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics HM requires 2 attribute(s): porousMedia, fluid.');
                 error('Error in setMaterial.');
             end
@@ -104,13 +105,23 @@ classdef Model_HM < Model_M
                                 this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
                                 this.isPlaneStress);
                 else
-                    elements(el) = EnrichedElementConductive_HM(...
-                            this.NODE(this.ELEM{el},:), this.ELEM{el},...
-                            this.t, emat, this.intOrder,udofs,pdofs, ...
-                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
-                            this.isPlaneStress,this.addRelRotationMode, ...
-                            this.addTangentialStretchingMode, this.addNormalStretchingMode,...
-                            this.subDivIntegration, this.symmetricSDAEFEM);
+                    if (this.discontinuityTransversalFlow == true)
+                        elements(el) = EnrichedElement_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                                this.subDivIntegration, this.symmetricSDAEFEM);
+                    else
+                        elements(el) = EnrichedElementConductive_HM(...
+                                this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                                this.t, emat, this.intOrder,udofs,pdofs, ...
+                                this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                this.isPlaneStress,this.addRelRotationMode, ...
+                                this.addTangentialStretchingMode, this.addNormalStretchingMode,...
+                                this.subDivIntegration, this.symmetricSDAEFEM);
+                    end
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -193,14 +204,23 @@ classdef Model_HM < Model_M
 
         % -----------------------------------------------------------------
         % Initializes an array of discontinuity segments
-        function seg = initializeDiscontinuitySegArray(~,n)
-            seg(n,1) = DiscontinuityElement_HM([],[]);
+        function seg = initializeDiscontinuitySegArray(this,n)
+            seg = [];
+            if (this.discontinuityTransversalFlow == true)
+                seg(n,1) = DiscontinuityElement_HM([],[]);
+            else
+                seg(n,1) = DiscontinuityElementConductive_HM([],[]);
+            end
         end
 
         % -----------------------------------------------------------------
         % Initializes a single discontinuity segment
-        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
-            seg = DiscontinuityElementConductive_HM(nodeD,matD);
+        function seg = initializeDiscontinuitySegment(this,nodeD,matD)
+            if (this.discontinuityTransversalFlow == true)
+                seg = DiscontinuityElement_HM(nodeD,matD);
+            else
+                seg = DiscontinuityElementConductive_HM(nodeD,matD);
+            end
         end
 
     end

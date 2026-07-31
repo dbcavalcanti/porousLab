@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>fractureMesh Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="fractureMesh.m"><style type="text/css">
+      --><title>fractureMesh Function</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="fractureMesh.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -198,7 +198,7 @@ idTop     = intersect(idTop,idNode);
 idCenter = setdiff(idNode,[idCorners,idBorders]);
 
 <span class="comment">% -------------------------------------------------------------------------</span>
-<span class="comment">% Apply a pertubation to the center nodes</span>
+<span class="comment">% Apply a perturbation to the center nodes</span>
 
 <span class="comment">% Compute the normal vector of the discontinuity</span>
 <span class="comment">% Defined considering nf = ez x mf, where ez = [0 0 1]</span>
@@ -214,7 +214,7 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
         <span class="comment">% Heaviside function</span>
         dX = NODE(idCenter(i),:) - xDCenter;
 
-        <span class="comment">% Pertubation sign</span>
+        <span class="comment">% Perturbation sign</span>
         pertSign = sign(nf * dX');
         <span class="keyword">if</span> pertSign &gt;= 0, pertSign = 1; <span class="keyword">end</span>
 
@@ -223,7 +223,7 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
 <span class="keyword">end</span>
 
 <span class="comment">% -------------------------------------------------------------------------</span>
-<span class="comment">% Apply a pertubation to the corner nodes</span>
+<span class="comment">% Apply a perturbation to the corner nodes</span>
 <span class="comment">% ptol = 0.0;</span>
 <span class="keyword">if</span> isempty(idCorners) == false
     <span class="keyword">if</span> isempty(idLeftBottom) == false
@@ -262,7 +262,7 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
 
 
 <span class="comment">% -------------------------------------------------------------------------</span>
-<span class="comment">% Apply a pertubation to the border nodes</span>
+<span class="comment">% Apply a perturbation to the border nodes</span>
 
 <span class="keyword">if</span> isempty(idBorders) == false
     <span class="keyword">if</span> isempty(idLeft) == false
@@ -287,9 +287,9 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% fractureMesh Function
-% This function creates a fracture mesh by dividing a fracture segment 
-% based on the continuum finite element mesh. It does not assume that the 
-% continuum mesh is structured. The function also perturbs nodes to avoid 
+% This function creates a fracture mesh by dividing a fracture segment
+% based on the continuum finite element mesh. It does not assume that the
+% continuum mesh is structured. The function also perturbs nodes to avoid
 % coinciding nodes between the fracture and continuum meshes.
 %
 %% Inputs
@@ -326,7 +326,7 @@ function [NODE_D, FRACT, NODE_D_TIPS, NODE, W, LEAKOFF] = fractureMesh(NODE, ELE
 if nargin < 10
     FixedPf           = false;
     FixedDisplJump    = true;
-    FixedPressureJump = true; 
+    FixedPressureJump = true;
     ptol              = 1.0e-2;
 end
 if nargin < 11
@@ -342,7 +342,7 @@ end
 % end
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-% First trial 
+% First trial
 [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, ...
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump);
 
@@ -354,20 +354,20 @@ Lce=zeros(size(ELEM,1),1);
 for el = 1:size(ELEM,1)
 
     % Vertices of the element el coordinates
-    vx = NODE(ELEM(el,:),1); 
+    vx = NODE(ELEM(el,:),1);
     vy = NODE(ELEM(el,:),2);
 
-    % Number of vertices 
-    nv = length(ELEM(el,:)); 
+    % Number of vertices
+    nv = length(ELEM(el,:));
 
     % Shifted vertices
     vxS = vx([2:nv 1]);
-    vyS = vy([2:nv 1]); 
+    vyS = vy([2:nv 1]);
 
     % Compute the area of the element (trapezoidal rule)
     temp = vx.*vyS - vy.*vxS;
     Ae   = 0.5*sum(temp);
-    
+
     % Characteristic lenght (quadrilateral elements)
     Lce(el) = sqrt(Ae);
 end
@@ -387,7 +387,7 @@ for i = 1:size(NODE,1)
 end
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-% Check if there is a node of the fracture mesh that coincides with the 
+% Check if there is a node of the fracture mesh that coincides with the
 % nodes from the continuum mesh
 LCMNode = repmat(lcmNode',size(NODE_D,1),1);
 NDIST = zeros(size(NODE_D,1),size(NODE,1));
@@ -451,7 +451,7 @@ idTop     = intersect(idTop,idNode);
 idCenter = setdiff(idNode,[idCorners,idBorders]);
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-% Apply a pertubation to the center nodes
+% Apply a perturbation to the center nodes
 
 % Compute the normal vector of the discontinuity
 % Defined considering nf = ez x mf, where ez = [0 0 1]
@@ -463,11 +463,11 @@ xDCenter = (XD(SEGD(2),:) + XD(SEGD(1),:))/2.0;
 
 if isempty(idCenter) == false
     for i = 1:length(idCenter)
-        
+
         % Heaviside function
         dX = NODE(idCenter(i),:) - xDCenter;
 
-        % Pertubation sign
+        % Perturbation sign
         pertSign = sign(nf * dX');
         if pertSign >= 0, pertSign = 1; end
 
@@ -476,7 +476,7 @@ if isempty(idCenter) == false
 end
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-% Apply a pertubation to the corner nodes
+% Apply a perturbation to the corner nodes
 % ptol = 0.0;
 if isempty(idCorners) == false
     if isempty(idLeftBottom) == false
@@ -515,7 +515,7 @@ end
 
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
-% Apply a pertubation to the border nodes
+% Apply a perturbation to the border nodes
 
 if isempty(idBorders) == false
     if isempty(idLeft) == false
@@ -537,5 +537,6 @@ end
 [NODE_D, FRACT, NODE_D_TIPS, W, LEAKOFF] = fractureNodesAndElements(NODE, ELEM, XD, ...
     SEGD,aperture,leakoff, TIP, FixedPressureJump, FixedPf, FixedDisplJump);
 end
+
 ##### SOURCE END #####
 --></body></html>

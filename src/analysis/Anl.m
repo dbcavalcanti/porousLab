@@ -1,5 +1,5 @@
 %% Anl Class
-% This in an abstract class that defines an analysis object.
+% This is an abstract class that defines an analysis object.
 %
 %% Authors
 % * Danilo Cavalcanti (dborges@cimne.upc.edu)

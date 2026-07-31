@@ -31,7 +31,7 @@
 % Version 1.00.
 %
 %% Class Definition
-classdef PorousMedia < handle    
+classdef PorousMedia < handle & matlab.mixin.Copyable    
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         id                   = '';
@@ -69,7 +69,7 @@ classdef PorousMedia < handle
         SlPc_umat            = [];              % User material curve saturation law
         klr_umat             = [];              % User material curve liquid relative permeability
         kgr_umat             = [];              % User material curve gas relative permeability
-        m                    = 1;               % Expoent for the polynomial relationships
+        m                    = 1;               % Exponent for the polynomial relationships
     end
     properties (SetAccess = protected, GetAccess = public)
         klrmin               = 1.0e-9;          % Minimum liquid relative permeability
@@ -109,6 +109,13 @@ classdef PorousMedia < handle
         % Compute the effective saturation degree
         function Se = effectiveSaturationDegree(this,Sl)
             Se = (Sl - this.Slr)/(1.0 - this.Slr - this.Sgr);
+        end
+
+        % -----------------------------------------------------------------
+        % Compute the derivative of the effective saturation degree wrt the
+        % liquid saturation degree
+        function dSedSl = derivativeEffectiveSaturationDegree(this)
+            dSedSl = 1.0/(1.0 - this.Slr - this.Sgr);
         end
 
         % -----------------------------------------------------------------

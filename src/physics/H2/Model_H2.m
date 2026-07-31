@@ -19,13 +19,13 @@
 % * *setGasPressureDirichletBCAtBorder*: Sets pressure Dirichlet boundary 
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
-% * *setGasPressureNuemannBCAtNode*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtNode*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific node.
-% * *setGasPressureNuemannBCAtPoint*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtPoint*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific point.
-% * *setGasPressureNuemannBCAtBorder*: Sets pressure Nuemann boundary 
+% * *setGasPressureNeumannBCAtBorder*: Sets pressure Neumann boundary
 %                                      conditions for gas-phase pore 
 %                                      pressure at a specific border.
 % * *setInitialGasPressureAtDomain*: Sets the initial gas-phase pressure 
@@ -60,7 +60,7 @@ classdef Model_H2 < Model_H
         % Sets the material properties
         function setMaterial(this,porousMedia,liquidFluid,gasFluid)
             if nargin < 4
-                disp('Error in setMaterial: insuficient number of inputs.');
+                disp('Error in setMaterial: insufficient number of inputs.');
                 disp('Physics H2 requires 3 attribute(s): porousMedia, liquidFluid, gasFluid.');
                 error('Error in setMaterial.');
             end
@@ -95,10 +95,17 @@ classdef Model_H2 < Model_H
                         'gasFluid',this.mat.gasFluid);
                 pl_dofs = this.getElementDofs(el,1);
                 pg_dofs = this.getElementDofs(el,2);
-                elements(el) = RegularElement_H2(...
+                if (this.enriched == false)
+                    elements(el) = RegularElement_H2(...
                             this.NODE(this.ELEM{el},:), this.ELEM{el},...
                             this.t, emat, this.intOrder, pl_dofs, pg_dofs, ...
                             this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                else
+                    elements(el) = EnrichedElement_H2(...
+                            this.NODE(this.ELEM{el},:), this.ELEM{el},...
+                            this.t, emat, this.intOrder, pl_dofs, pg_dofs, ...
+                            this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
                 end
@@ -123,8 +130,9 @@ classdef Model_H2 < Model_H
         % -----------------------------------------------------------------
         % Prescribe a gas-phase pressure Dirichlet boundary condition at 
         % a border
-        function setGasPressureDirichletBCAtBorder(this, border, value)
-            this.setDirichletBCAtBorder(border, 2, value);
+        function setGasPressureDirichletBCAtBorder(this, border, value, range)
+            if (nargin < 4), range = []; end
+            this.setDirichletBCAtBorder(border, 2, value, range);
         end
 
         % -----------------------------------------------------------------
@@ -158,6 +166,18 @@ classdef Model_H2 < Model_H
         % Sets the initial gas-phase pressure value at a node
         function setInitialGasPressureAtNode(this, nodeId, value)
             this.setInitialDofAtNode(nodeId, 2, value);
+        end
+
+        % -----------------------------------------------------------------
+        % Initializes an array of discontinuity segments
+        function seg = initializeDiscontinuitySegArray(~,n)
+            seg(n,1) = DiscontinuityElement_H2([],[]);
+        end
+
+        % -----------------------------------------------------------------
+        % Initializes a single discontinuity segment
+        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
+            seg = DiscontinuityElement_H2(nodeD,matD);
         end
     end
 

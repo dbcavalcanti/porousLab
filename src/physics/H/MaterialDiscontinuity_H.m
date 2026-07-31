@@ -23,14 +23,14 @@ classdef MaterialDiscontinuity_H < handle
     properties (SetAccess = public, GetAccess = public)
         initialAperture = 0.0;
         leakoff         = 1.0;
-        fluid           = Fluid();
+        liquidFluid     = Fluid();
     end  
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = MaterialDiscontinuity_H(matData)
             this.initialAperture = matData.initialAperture;
-            this.fluid = matData.fluid;
+            this.liquidFluid = matData.liquidFluid;
             this.leakoff = matData.leakoff;
         end
     end
@@ -38,11 +38,10 @@ classdef MaterialDiscontinuity_H < handle
     methods
 
         %------------------------------------------------------------------
-        % Computes the longitudinal permeability coefficient based on the
-        % cubic's law
+        % Computes the longitudinal permeability coefficient
         function kl = longitudinalPermeability(this)
             w = this.initialAperture();
-            kl = w*w*w/12.0/this.fluid.mu;
+            kl = this.cubicLaw(w,this.liquidFluid.mu);
         end
 
         %------------------------------------------------------------------
@@ -50,8 +49,17 @@ classdef MaterialDiscontinuity_H < handle
         % based on its aperture and fluid properties.
         function c = compressibility(this)
             w = this.initialAperture();
-            c = w / this.fluid.K;
+            c = w / this.liquidFluid.K;
         end
 
+    end
+    %% Static methods
+    methods(Static)
+        %------------------------------------------------------------------
+        % Computes the longitudinal permeability coefficient based on the
+        % cubic's law
+        function kl = cubicLaw(w,mu)
+            kl = w*w*w/12.0/mu;
+        end
     end
 end

@@ -33,4 +33,12 @@ function mdl = porouslab(varargin)
 
     addpath(file_path);
     run(file_name);
+
+    % Get output variables
+    vars = whos;
+    ws = struct();
+    for k = 1:length(vars)
+        varName = vars(k).name;
+        ws.(varName) = eval(varName);
+    end
 end

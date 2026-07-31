@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Fluid Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2025-06-05"><meta name="DC.source" content="Fluid.m"><style type="text/css">
+      --><title>Fluid Class</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-06-09"><meta name="DC.source" content="Fluid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -94,17 +94,22 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="keyword">function</span> rho = getDensity(this,~)
             rho = this.rho;
         <span class="keyword">end</span>
+        <span class="comment">%------------------------------------------------------------------</span>
+        <span class="comment">% Get the fluid bulk modulus based on the ideal Gas law</span>
+        <span class="keyword">function</span> K = getBulkModulus(this,~)
+            K = this.K;
+        <span class="keyword">end</span>
     <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Fluid Class
-% This class defines a fluid object with properties such as density, 
-% viscosity, and compressibility. It provides methods to access these 
+% This class defines a fluid object with properties such as density,
+% viscosity, and compressibility. It provides methods to access these
 % properties and allows initialization with specific values.
 %
 %% Methods
-% * *Fluid*: Constructor to initialize the fluid object. If only the id is 
+% * *Fluid*: Constructor to initialize the fluid object. If only the id is
 %           provided, other properties are set to their default values.
 % * *getDensity*: Returns the density of the fluid.
 %
@@ -115,7 +120,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Version 1.00.
 %
 %% Class Definition
-classdef Fluid < handle  
+classdef Fluid < handle
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         id   = '';
@@ -129,7 +134,7 @@ classdef Fluid < handle
         % Initialization of the fluid
         function this = Fluid(id, density, viscosity, compressibility)
             if nargin == 1
-                this.id = id; 
+                this.id = id;
             elseif nargin > 1
                 this.id   = id;
                 this.rho  = density;
@@ -144,6 +149,11 @@ classdef Fluid < handle
         % Get the density of the fluid
         function rho = getDensity(this,~)
             rho = this.rho;
+        end
+        %REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+        % Get the fluid bulk modulus based on the ideal Gas law
+        function K = getBulkModulus(this,~)
+            K = this.K;
         end
     end
 end

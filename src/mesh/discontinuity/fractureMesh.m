@@ -163,7 +163,7 @@ idTop     = intersect(idTop,idNode);
 idCenter = setdiff(idNode,[idCorners,idBorders]);
 
 % -------------------------------------------------------------------------
-% Apply a pertubation to the center nodes
+% Apply a perturbation to the center nodes
 
 % Compute the normal vector of the discontinuity
 % Defined considering nf = ez x mf, where ez = [0 0 1]
@@ -179,7 +179,7 @@ if isempty(idCenter) == false
         % Heaviside function
         dX = NODE(idCenter(i),:) - xDCenter;
 
-        % Pertubation sign
+        % Perturbation sign
         pertSign = sign(nf * dX');
         if pertSign >= 0, pertSign = 1; end
 
@@ -188,7 +188,7 @@ if isempty(idCenter) == false
 end
 
 % -------------------------------------------------------------------------
-% Apply a pertubation to the corner nodes
+% Apply a perturbation to the corner nodes
 % ptol = 0.0;
 if isempty(idCorners) == false
     if isempty(idLeftBottom) == false
@@ -227,7 +227,7 @@ end
 
 
 % -------------------------------------------------------------------------
-% Apply a pertubation to the border nodes
+% Apply a perturbation to the border nodes
 
 if isempty(idBorders) == false
     if isempty(idLeft) == false

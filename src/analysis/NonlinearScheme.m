@@ -1,5 +1,5 @@
 %% NonlinearScheme Class
-% This in an abstract class that defines a nonlinear scheme object.
+% This is an abstract class that defines a nonlinear scheme object.
 % It serves as a base class for implementing nonlinear solution schemes in numerical analysis.
 % The class provides a set of abstract methods that must be implemented by subclasses,
 % as well as some public properties and methods for managing convergence tolerance and error normalization.
@@ -13,6 +13,7 @@ classdef NonlinearScheme < handle
     properties (SetAccess = public, GetAccess = public)
         tol = 1.0e-5;
         normalizeError = false;
+        scaleLinearSystem = false;
     end
 
     %% Constructor method

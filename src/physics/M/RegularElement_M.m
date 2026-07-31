@@ -175,7 +175,7 @@ classdef RegularElement_M < RegularElement
         end
 
         %------------------------------------------------------------------
-        % Add contribution of the gravity forces to the external force vct
+        % Add contribution of the gravity forces to the external force vector
         function fe = addGravityForces(this, fe, Xn, c)
 
             % Get gravity vector
@@ -246,6 +246,12 @@ classdef RegularElement_M < RegularElement
         % Function to get the nodal values of the displacement
         function u = getNodalDisplacement(this)
             u = this.ue(1:this.nglu);
+        end
+
+        %------------------------------------------------------------------
+        % Function to get old the nodal values of the displacement
+        function uOld = getOldNodalDisplacement(this)
+            uOld = this.ueOld(1:this.nglu);
         end
 
         %------------------------------------------------------------------
