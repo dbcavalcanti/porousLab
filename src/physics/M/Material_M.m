@@ -38,6 +38,8 @@ classdef Material_M < handle
                 this.mechanical = MechanicalElastoPlasticVonMises();
             elseif strcmp('druckerPrager',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalElastoPlasticDruckerPrager();
+            elseif strcmp('modifiedCamClay',matData.porousMedia.mechanical)
+                this.mechanical = MechanicalElastoPlasticModifiedCamClay();
             elseif strcmp('elasticDruckerPrager',matData.porousMedia.mechanical)
                 this.mechanical = MechanicalNonlinearElasticDruckerPrager();
             elseif strcmp('mohrCoulomb', matData.porousMedia.mechanical)

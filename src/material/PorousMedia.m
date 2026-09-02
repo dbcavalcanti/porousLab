@@ -45,6 +45,9 @@ classdef PorousMedia < handle & matlab.mixin.Copyable
         stressIntAlgorithm   = 'implicit';      % Stress integration algorithm
         MCmatch              = 'planestrain';   % How the DP surfaces match the MC ones
         friction             = [];              % Friction coefficient
+        mccSwellingSlope     = [];              % Slope of swelling line in the modified Cam Clay model
+        mccVirginCompressionSlope = [];         % Slope of virgin compression line in the modified Cam Clay model
+        mccCriticalStateSlope = [];             % Slope of the critical state line in the modified Cam Clay model
         asympt               = [];              % Asymptotic model
         eref                 = [];              % Reference strain for asymptotic model
         sy                   = [];              % Isotropic tensile limit (Pa)

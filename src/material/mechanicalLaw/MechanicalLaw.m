@@ -137,6 +137,48 @@ classdef MechanicalLaw < handle
         end
 
         %------------------------------------------------------------------
+        % Pressure stress (positive in compression)
+        function p = pressureStress(this,stress)
+            p = -this.hydrostaticStress(stress);
+        end
+
+        %------------------------------------------------------------------
+        % Gradient of the pressure stress with respect to the stress tensor
+        function dpdstress = gradientPressureStress(this)
+            m = this.secondOrderIdentityVoigt();
+            dpdstress = -m/3.0;
+        end
+
+        %------------------------------------------------------------------
+        % Voigt representation of the second-order identity tensor: 
+        function m = secondOrderIdentityVoigt(~)
+            m = [1.0; 1.0; 1.0; 0.0];
+        end
+
+        %------------------------------------------------------------------
+        % Voigt representation of the fourth-order identity tensor: 
+        function Iv = volumetricProjectorVoigt(this)
+            m = this.secondOrderIdentityVoigt();
+            Iv = m * m';
+        end
+
+        %------------------------------------------------------------------
+        % Voigt representation of the symmetric fourth-order identity 
+        % tensor.
+        function symIdentity = fourthOrderSymTensor(~)
+            symIdentity = diag([1.0, 1.0, 1.0, 0.5]);
+        end
+
+        %------------------------------------------------------------------
+        % Voigt representation of the fourth-order deviatoric projection 
+        % tensor: Idev = I - Ivol/3
+        function Idev = deviatoricMap(this)
+            Isym = this.fourthOrderSymTensor();
+            Iv = this.volumetricProjectorVoigt();
+            Idev = Isym - Iv / 3.0;
+        end
+
+        %------------------------------------------------------------------
         % Deviatoric stress
         function sd = deviatoricStress(this,stress)
             sh = this.hydrostaticStress(stress);
@@ -406,14 +448,6 @@ classdef MechanicalLaw < handle
             dJ2(4) = 2.0 * exy;
         end
 
-        %------------------------------------------------------------------
-        % Fourth order symmetric tensor
-        function I4 = fourthOrderSymTensor(~)
-            I4 = [ 1.0 , 0.0 , 0.0 , 0.0;
-                   0.0 , 1.0 , 0.0 , 0.0;
-                   0.0 , 0.0 , 1.0 , 0.0;
-                   0.0 , 0.0 , 0.0 , 0.5 ];
-        end
     end
     %% Static methods
     methods (Static)
