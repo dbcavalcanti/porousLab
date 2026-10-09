@@ -275,33 +275,63 @@ classdef Discontinuity < handle
         %   segment: 2x2 matrix defining the segment (two consecutive points in Xlin)
         % Outputs:
         %   elemID: ID of the element containing the segment
-        function eID = findElementContainingSegment(this,NODE,ELEM,segment)
+        function eID = findElementContainingSegment(~,NODE,ELEM,segment)
+            eID = 0;
+            onBoundary = false;
+            midpoint = mean(segment,1);
+            points = [midpoint; segment];
+
             % Iterate over each element
             for i = 1:size(ELEM, 1)
-                count = 0;
-                edges = this.extractEdgesElement(ELEM{i});
-
-                % Iterate over each edge of the mesh
-                for j = 1:size(edges, 1)
-                    % Define current edge of the mesh
-                    edge = [NODE(edges(j,1),:); NODE(edges(j,2),:)];
-
-                    % Compute intersection point between polyline segment and edge
-                    intersect = intersectionSegment(segment,edge);
-
-                    % If there is an intersection, add the point to the list
-                    if intersect
-                        count = count + 1;
-                    end
+                % Use the corner nodes for the element polygon
+                n = length(ELEM{i});
+                if n == 6 || n == 8
+                    n = n/2;
                 end
-                if count > 1
-                    eID = i;
-                    return
+                vertices = NODE(ELEM{i}(1:n),:);
+                lower = min(vertices,[],1);
+                upper = max(vertices,[],1);
+                tol = 1.0e-10 * max(upper-lower) + ...
+                    32*eps(max(abs(vertices(:))));
+
+                % Discard elements whose bounding box excludes the midpoint
+                if any(midpoint < lower-tol) || any(midpoint > upper+tol)
+                    continue;
                 end
+                inside = inpolygon(points(:,1),points(:,2), ...
+                    vertices(:,1),vertices(:,2));
+
+                % Allow roundoff at endpoints on the element boundary
+                distance = inf(3,1);
+                for j = 1:n
+                    start = vertices(j,:);
+                    edge = vertices(mod(j,n)+1,:) - start;
+                    position = (points-start)*edge'/dot(edge,edge);
+                    position = min(max(position,0.0),1.0);
+                    offset = points - (start + position*edge);
+                    distance = min(distance,sqrt(sum(offset.^2,2)));
+                end
+                if ~all(inside | distance <= tol)
+                    continue;
+                end
+
+                % A segment on an edge does not have a unique interior host
+                if distance(1) <= tol
+                    onBoundary = true;
+                    continue;
+                end
+                if eID > 0
+                    error('Discontinuity:AmbiguousHost', ...
+                        'Discontinuity segment lies inside more than one element.');
+                end
+                eID = i;
             end
 
-            % If no element is found, return an error
-            eID = 0;
+            if eID == 0 && onBoundary
+                error('Discontinuity:SegmentOnMeshEdge', ...
+                    ['Discontinuity segment lies on a mesh edge. ', ...
+                     'Use a mesh that the discontinuity crosses in the element interiors.']);
+            end
         end
 
         %------------------------------------------------------------------
