@@ -25,6 +25,7 @@ classdef Anl_NonlinearQuasiStatic < Anl
         Uplot         = [];      % Matrix of nodal displacement vectors of all steps/modes
         lbdplot       = [];      % Vector of load ratios of all steps
         echo          = true;    % Flag to print in the command window
+        totalIterations = 0;     % Global iterations in the latest run, including failed steps
     end
 
     %% Constructor method
@@ -79,6 +80,9 @@ classdef Anl_NonlinearQuasiStatic < Anl
         % steps, convergence checks, and state variables updates.
         function run(this,mdl)
             disp("*** Performing quasi-static nonlinear analysis...")
+
+            % Reset iteration count for this run
+            this.totalIterations = 0;
 
             % Initialize model object
             mdl.preComputations();
@@ -167,6 +171,8 @@ classdef Anl_NonlinearQuasiStatic < Anl
                 conv = 0;
 
                 while (conv == 0 && iter <= this.max_iter)
+                    this.totalIterations = this.totalIterations + 1;
+
                     % Vector of external and internal forces
                     Fext = lbd * Fref;
                     [~,~,Fint,~,K] = mdl.globalMatrices(U);
