@@ -21,6 +21,8 @@
 %                                     considering the enabled enrichment 
 %                                     modes.
 % * *addDiscontinuitySegment*: Adds a discontinuity segment to the element.
+% * *pressureField*: Computes the matrix pressure, including the pressure
+%                    jumps across embedded discontinuities.
 %% Author
 % Danilo Cavalcanti
 %
@@ -32,17 +34,18 @@ classdef EnrichedElement_H < RegularElement_H
     %% Public attributes
     properties (SetAccess = public, GetAccess = public)
         discontinuity = [];
-        condenseInternalPressure = false;
+        condenseInternalPressure = true;
     end
     %% Constructor method
     methods
         %------------------------------------------------------------------
         function this = EnrichedElement_H(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
-                isAxisSymmetric)
+                isAxisSymmetric,condenseDiscontinuityPressure)
             this = this@RegularElement_H(node, elem, t, ...
                 mat, intOrder, glu, massLumping, lumpStrategy, ...
                 isAxisSymmetric);
+            this.condenseInternalPressure = condenseDiscontinuityPressure;
         end
     end
     
@@ -77,17 +80,26 @@ classdef EnrichedElement_H < RegularElement_H
                Ojd = zeros(size(Hjj,1), size(Hdd,1));
                od  = zeros(size(Hdd,1),1);
 
-               % Add contribution of the coupling matrices
-               Hcc = Hcc + Lcc;
-               Hcj = Hcj + Lcj;
-               Hjc = Hjc + Ljc;
-               Hjj = Hjj + Ljj;
-               Hdd = Hdd + Ldd;
+               % Assemble the flow matrix
+               if this.condenseInternalPressure
+                   D = [Tdc, Tdj];
+                   Ke = [Hcc, Hcj; Hjc, Hjj] + D' * Hdd * D;
 
-               % Assemble matrices
-               Ke = [  Hcc,  Hcj, -Lcd;
-                       Hjc,  Hjj, -Ljd;
-                      -Ldc, -Ldj,  Hdd];
+                   % With endpoint quadrature and equal leakoff on both
+                   % faces, the constrained internal pressure leaves only
+                   % the jump penalty, integral(leakoff/2 ds). Assemble it
+                   % directly to avoid cancellation of large coupling terms.
+                   for i = 1:this.getNumberOfDiscontinuities()
+                       pint_dofs = 2*(i-1)+1 : 2*i;
+                       jump_dof = this.nglp + i;
+                       penalty = sum(sum(Ldd(pint_dofs,pint_dofs))) / 4;
+                       Ke(jump_dof,jump_dof) = Ke(jump_dof,jump_dof) + penalty;
+                   end
+               else
+                   Ke = [ Hcc+Lcc, Hcj+Lcj,   -Lcd;
+                          Hjc+Ljc, Hjj+Ljj,   -Ljd;
+                             -Ldc,    -Ldj, Hdd+Ldd];
+               end
 
                Ce = [ Scc,  Scj,  Ocd;
                       Sjc,  Sjj,  Ojd;
@@ -100,7 +112,6 @@ classdef EnrichedElement_H < RegularElement_H
                % Condense the internal pressure dofs
                if this.condenseInternalPressure
                    T = this.condensationMatrix(Tdc, Tdj);
-                   Ke = T' * Ke * T;
                    Ce = T' * Ce * T;
                    fi = T' * fi;
                    fe = T' * fe;
@@ -108,6 +119,30 @@ classdef EnrichedElement_H < RegularElement_H
                
                
            end
+        end
+
+        %------------------------------------------------------------------
+        % Computes the matrix pressure, including all discontinuity jumps.
+        % X is given in global cartesian coordinates; ue is optional.
+        % Internal fracture pressures are separate from this matrix field.
+        function p = pressureField(this,X,ue)
+            if nargin > 2, this.ue = ue; end
+
+            % Natural coordinates and regular shape functions
+            Xn = this.shape.coordCartesianToNatural(this.node,X);
+            Np = this.shape.shapeFncMtrx(Xn);
+
+            % Nodal contribution
+            p = Np * this.getNodalPressure();
+
+            % Jump dofs follow the nodal pressures in both the condensed
+            % and explicit internal-pressure formulations.
+            nDiscontinuities = this.getNumberOfDiscontinuities();
+            if nDiscontinuities > 0
+                Nenr = this.enrichedShapeFncMtrx(Np,X);
+                pj = this.ue(this.nglp+(1:nDiscontinuities));
+                p = p + Nenr * pj;
+            end
         end
 
         %------------------------------------------------------------------
@@ -216,7 +251,7 @@ classdef EnrichedElement_H < RegularElement_H
         function T = condensationMatrix(this, Tdc, Tdj)
             % Number of dofs of each type
             ndof_c = this.nglp;
-            ndof_j = size(Tdc, 2);
+            ndof_j = size(Tdj, 2);
             % Auxiliary matrices
             Icc = eye(ndof_c);
             Ijj = eye(ndof_j);
@@ -309,7 +344,10 @@ classdef EnrichedElement_H < RegularElement_H
         % Calculates the number of degrees of freedom per discontinuity for
         % the enriched element
         function n = getNumberOfDofPerDiscontinuity(this)
-            n = 2;  
+            n = 1;
+            if ~this.condenseInternalPressure
+                n = n + 2;
+            end
         end
 
         %------------------------------------------------------------------
@@ -327,10 +365,14 @@ classdef EnrichedElement_H < RegularElement_H
                 dof_j = [dof_j, this.discontinuity(i).dof(1)];
                 dof_d = [dof_d, this.discontinuity(i).dof(2:end)];
             end
-            if isempty(dof_j)||isempty(dof_d)
+            if isempty(dof_j)
                 return
             end
-            this.gle = [this.gle, dof_j, dof_d];
+            if this.condenseInternalPressure
+                this.gle = [this.glp, dof_j];
+            else
+                this.gle = [this.glp, dof_j, dof_d];
+            end
             this.ngle = length(this.gle);
         end
 

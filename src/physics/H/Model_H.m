@@ -55,6 +55,7 @@
 classdef Model_H < Model    
     properties (SetAccess = public, GetAccess = public)
         equivalentContinuum = false;
+        condenseDiscontinuityPressure = true;
     end
     %% Constructor method
     methods
@@ -115,7 +116,8 @@ classdef Model_H < Model
                     elements(el) = EnrichedElement_H(...
                                     this.NODE(this.ELEM{el},:), this.ELEM{el},...
                                     this.t, emat, this.intOrder,dof_e, ...
-                                    this.massLumping, this.lumpStrategy, this.isAxisSymmetric);
+                                    this.massLumping, this.lumpStrategy, this.isAxisSymmetric, ...
+                                    this.condenseDiscontinuityPressure);
                 end
                 if this.gravityOn
                     elements(el).type.gravityOn = true;
@@ -187,8 +189,11 @@ classdef Model_H < Model
 
         % -----------------------------------------------------------------
         % Initializes a single discontinuity segment
-        function seg = initializeDiscontinuitySegment(~,nodeD,matD)
+        function seg = initializeDiscontinuitySegment(this,nodeD,matD)
             seg = DiscontinuityElement_H(nodeD,matD);
+            if this.condenseDiscontinuityPressure
+                seg.ndof = seg.ndof_jump;
+            end
         end
 
         %------------------------------------------------------------------
