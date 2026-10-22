@@ -65,12 +65,22 @@ mdl.setPressureDirichletBCAtBorder('top', 0.0);
 % Analysis parameters
 ti = 0.0;    % Initial time
 dt = 1.0;    % Time step
-tf = 100.0;  % Final time
+tf = 500.0;  % Final time
 
-% Run analysis
+% Analysis setting
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf);
+
+% Begin time measurement
+caseTimer = tic;
+
+% Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', anl.totalIterations);
 
 %% POST-PROCESS
 

@@ -71,20 +71,23 @@ discontinuityData = struct('addTangentialStretchingMode', false, ...
 mdl.addPreExistingDiscontinuities(fracture,discontinuityData);
 
 %% PROCESS
-tic;
 
 % Analysis parameters
 ti = 0.0;    % Initial time
 dt = 1.0;    % Time step
 tf = 1.0;   % Final time
 
-% Run analysis
+% Set transient analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf);
-anl.run(mdl);
 
-mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
-mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
+% Begin time measurement
+caseTimer = tic;
+anl.run(mdl);
+initialIterations = anl.totalIterations;
+
+% mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
+% mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
 
 % mdl.resetDisplacements();
 mdl.resetPressureDirichletBC();
@@ -100,13 +103,20 @@ mdl.updateDirichletBC();
 
 % clear anl
 % anl = Anl_Transient("Newton");
-anl.setUpTransientSolver(0.0, 0.01, 500.0, 1, 0.0001, true);
+anl.setUpTransientSolver(0.0, 0.01, 2000.0, 1, 0.0001, true);
 
 anl.run(mdl);
 
-elapsedTime = toc;
+% Time measurement
+elapsedTime = toc(caseTimer);
 fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', initialIterations + anl.totalIterations);
+
 %% POST-PROCESS
+
+% Plot mesh and fracture
+mdl.plotField('Model'); hold on;
+fracture.plotIntersectedGeometry();
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
@@ -114,7 +124,7 @@ Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
 mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
 mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
 
-% Relative error at the final time, measured from the inlet pressure step.
+% RMSE at the final time, measured from the inlet pressure step.
 % Run only after the transient analysis has converged to anl.tf.
 comparisonTime = anl.tf - anl.ti;
 disc = mdl.discontinuitySet(1);
@@ -136,14 +146,10 @@ end
     water.mu, fracture.normalStiffness, fracture.initialAperture, ...
     initialPressure, inletPressure);
 
-% E_rel,q = 100*sqrt(sum((q_PorousLab-q_ref).^2)/sum(q_ref.^2)).
-numerical = [pressureNum, apertureNum_mm];
-reference = [pressureRef, apertureRef_mm];
-referenceNormSquared = sum(reference.^2, 1);
-relativeError = 100*sqrt(sum((numerical-reference).^2, 1) ./ referenceNormSquared);
-relativeError(referenceNormSquared == 0) = NaN;
-finalTimeErrors = table(repmat(comparisonTime,2,1), ...
-    ["Pressure"; "Aperture"], relativeError', ...
-    'VariableNames', {'Time_s','Field','RelativeError_percent'});
-fprintf('\nRelative errors against the semi-analytical solution:\n');
+% RMSE in MPa for pressure and mm for aperture, as in the manuscript.
+pressureRMSE = 1.0e-6*sqrt(mean((pressureNum-pressureRef).^2));
+apertureRMSE = sqrt(mean((apertureNum_mm-apertureRef_mm).^2));
+finalTimeErrors = table(comparisonTime, pressureRMSE, apertureRMSE, ...
+    'VariableNames', {'Time_s','PressureRMSE_MPa','ApertureRMSE_mm'});
+fprintf('\nRMSE against the semi-analytical solution:\n');
 disp(finalTimeErrors);

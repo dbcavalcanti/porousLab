@@ -39,7 +39,7 @@ rock.nu            = 0.48;             % Poisson ratio
 rock.cohesion      = 490.0;            % Cohesion (kPa)
 rock.frictionAngle = 20*pi/180;        % Friction angle (rad)
 rock.dilationAngle = 20*pi/180;        % Dilation angle (rad)
-% rock.stressIntAlgorithm = 'alternative';
+rock.stressIntAlgorithm = 'alternative';
 
 % Set materials to model
 mdl.setMaterial(rock);
@@ -74,9 +74,16 @@ anl.tol           = 1.0e-4;
 ndId = mdl.closestNodeToPoint([0.0, 5.0]);
 anl.setPlotDof(ndId, 2);
 
+% Begin time measurement
+caseTimer = tic;
+
 % Run analysis
 anl.run(mdl);
 
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', anl.totalIterations);
 %% POST-PROCESS
 
 % Plot Load Factor vs Displacement

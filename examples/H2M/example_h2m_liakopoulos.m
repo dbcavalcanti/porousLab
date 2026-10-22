@@ -37,7 +37,6 @@ mdl.setMesh(node, elem);
 
 % Create fluids
 water = Fluid('water');
-water.K = 2.2e9;      % Bulk modulus (Pa)
 
 gas = IdealGas('gas');
 gas.mu = 1.8e-5;        % Viscosity (Pa*s)
@@ -78,6 +77,9 @@ mdl.setGasPressureDirichletBCAtBorder('top',    101325.0);
 mdl.setGasPressureDirichletBCAtBorder('bottom', 101325.0);
 mdl.setInitialGasPressureAtDomain(101325.0);
 
+% Begin time measurement
+caseTimer = tic;
+
 % Initialize the stresses
 mdl.preComputations();
 for el = 1:mdl.nelem
@@ -90,19 +92,26 @@ end
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.001;     % Initial time
-dt        = 0.001;     % Time step
-tf        = 300.0;    % Final time
+ti        = 0.01;     % Initial time
+dt        = 0.01;     % Time step
+tf        = 7200.0;    % Final time
 dtmax     = 60.0;     % Maximum time step
 dtmin     = 0.0001;   % Minimum time step
 adaptStep = true;     % Adaptive step size
 
-% Run analysis
+% Analysis setting
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.setScaleLinearSystem(true);
 anl.maxIter = 15;
+
+% Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', anl.totalIterations);
 
 %% POST-PROCESS
 

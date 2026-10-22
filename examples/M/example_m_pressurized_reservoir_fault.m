@@ -79,8 +79,8 @@ fault = Discontinuity(Xd, true);
 
 % Set fracture material properties
 fault.cohesiveLaw     = 'elastic';
-fault.shearStiffness  = 1.0e15;       % Pa/m
 fault.normalStiffness = 1.0e15;       % Pa/m
+fault.shearStiffness  = fault.normalStiffness * (1 - 2*rock.nu)/(2*(1-rock.nu)); % Pa/m
 
 % Add fractures to model
 discontinuityData = struct('addTangentialStretchingMode', false, 'addNormalStretchingMode', false, 'addRelRotationMode', false);
@@ -88,10 +88,13 @@ mdl.addPreExistingDiscontinuities(fault);
 
 %% PROCESS
 
-% Run analysis
 anl = Anl_Linear();
-anl.run(mdl);
 
+% Begin time measurement
+caseTimer = tic;
+
+% Run analysis
+anl.run(mdl);
 mdl.resetDisplacements();
 
 % Parameters
@@ -106,6 +109,10 @@ mdl.setPorePressureField(P);
 
 % Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
 
 %% POST-PROCESS
 
@@ -165,4 +172,43 @@ plot(sn_anal,s_anal,'ok','DisplayName','Analytical');
 
 mdl.plotField('Uy');
 mdl.plotField('Ux');
+
+% RMSE at the continuum points used for the analytical curves.
+sx_num = zeros(npts,1);
+sy_num = zeros(npts,1);
+for i = 1:npts
+    X = [0.5*Lx, y_plot(i)];
+    elem = findElementInMesh(mdl.NODE, mdl.ELEM, X);
+    sx_num(i) = mdl.evaluateField('Sx', elem, X);
+    sy_num(i) = mdl.evaluateField('Sy', elem, X);
+end
+
+% Sample the fault stresses at the same integration points as the model.
+disc = mdl.discontinuitySet(1);
+nSegments = disc.getNumberOfDiscontinuitySegments();
+sn_num = []; st_num = []; sn_ref = []; st_ref = [];
+for j = 1:nSegments
+    [Xip, sn_j] = disc.segment(j).getField('Sn', [], []);
+    [~, st_j] = disc.segment(j).getField('St', [], []);
+    sn_num = [sn_num; sn_j]; %#ok<AGROW>
+    st_num = [st_num; st_j]; %#ok<AGROW>
+
+    sy_j = (-70.0e6 + 35.0e6) * ones(size(Xip,1),1);
+    sy_j(Xip(:,2) >= 350.0 & Xip(:,2) <= 650.0) = -70.0e6 + 35.0e6 + 20.0e6;
+    sx_j = K0 * sy_j;
+    sn_ref = [sn_ref; Rot(2,1)^2*sx_j + Rot(2,2)^2*sy_j]; %#ok<AGROW>
+    st_ref = [st_ref; Rot(1,1)*Rot(2,1)*sx_j + Rot(1,2)*Rot(2,2)*sy_j]; %#ok<AGROW>
+end
+
+% RMSE in MPa, with each sampled point given equal weight.
+numerical = {sx_num, sy_num, st_num, sn_num};
+reference = {sx_anal, sy_anal, st_ref, sn_ref};
+stressRMSE = zeros(4,1);
+for i = 1:4
+    stressRMSE(i) = 1.0e-6*sqrt(mean((numerical{i}-reference{i}).^2));
+end
+stressErrors = table(["Sx"; "Sy"; "St"; "Sn"], stressRMSE, ...
+    'VariableNames', {'Field','RMSE_MPa'});
+fprintf('\nRMSE against the analytical solution:\n');
+disp(stressErrors);
 

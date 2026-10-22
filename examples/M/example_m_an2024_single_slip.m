@@ -27,7 +27,7 @@ mdl.t = 1.0;          % Out-of-plane thickness (m)
 Lx           = 200.0;   % Horizontal dimension (m)
 Ly           = 200.0;   % Vertical dimension (m)
 Lf           = 10.0;    % Fracture length (m)
-nSegments    = 32;      % Divisions along the horizontal reference fracture
+nSegments    = 128;     % Divisions along the horizontal reference fracture
 h            = Lf/nSegments;
 growthFactor = 1.35;
 alpha        = pi/6.0/2*3;  % Fracture inclination (rad)
@@ -91,7 +91,17 @@ anl.max_lratio    = 1.0;
 anl.max_step      = 4;
 anl.max_iter      = 40;
 anl.tol           = 1.0e-8;
+
+% Begin time measurement
+caseTimer = tic;
+
+% Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', anl.totalIterations);
 
 %% POST-PROCESS
 

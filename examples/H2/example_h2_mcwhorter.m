@@ -72,18 +72,28 @@ mdl.setInitialGasPressureAtDomain(pg_ini);
 %% PROCESS
 
 % Analysis parameters
-ti        = 0.001;      % Initial time
+ti        = 0.0;        % Initial time
 dt        = 0.001;      % Time step
 tf        = 1000;       % Final time
 dtmax     = 5.0;        % Maximum time step
 dtmin     = 0.0000001;  % Minimum time step
 adaptStep = true;       % Adaptive step size
 
-% Run analysis
+% Set up analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf, dtmax, dtmin, adaptStep);
 anl.maxIter = 20;
+
+% Begin time measurement
+caseTimer = tic;
+
+% Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', anl.totalIterations);
 
 %% POST-PROCESS
 
