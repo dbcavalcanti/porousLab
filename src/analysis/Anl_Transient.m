@@ -21,6 +21,7 @@ classdef Anl_Transient < Anl
         maxAttempts = 10;     % Maximum attempts to converge
         desiredIter = 5;      % Desired number of iterations
         echo        = true;   % Flag to print in the command window
+        totalIterations = 0; % Global iterations in the latest run, including rejected attempts
     end
 
     %% Constructor method
@@ -52,6 +53,9 @@ classdef Anl_Transient < Anl
         % TODO: Improve it to avoid unnecessary iterations
         function run(this,mdl)
             disp("*** Performing transient nonlinear analysis...")
+
+            % Reset iteration count for this run
+            this.totalIterations = 0;
 
             % Initialize model object
             mdl.preComputations();
@@ -85,6 +89,8 @@ classdef Anl_Transient < Anl
                     iter = 1;
 
                     while true
+                        this.totalIterations = this.totalIterations + 1;
+
                         % Compute model global matrices
                         [A,b] = mdl.getLinearSystem(X,XOld,this.nlscheme,this.dt);
 

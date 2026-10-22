@@ -12,6 +12,7 @@
 
 % Create model
 mdl = Model_H();
+mdl.condenseDiscontinuityPressure = false;
 
 %% MESH
 

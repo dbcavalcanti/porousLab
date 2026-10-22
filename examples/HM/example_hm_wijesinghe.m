@@ -47,7 +47,9 @@ mdl.setDisplacementDirichletBCAtBorder('right',  [0.0, NaN]);
 mdl.addLoadAtBorder('top', 2, -50.0e6);
 
 % Pressure
-mdl.setPressureDirichletBCAtDomain(11.0e6);
+initialPressure = 11.0e6;  % Pa
+inletPressure = 11.9e6;    % Pa, applied after equilibration
+mdl.setPressureDirichletBCAtDomain(initialPressure);
 
 %% DISCONTINUITY
 
@@ -64,7 +66,9 @@ fracture.initialAperture = 1.0e-5;
 fracture.liquidFluid     = water;
 
 % Add fractures to model
-mdl.addPreExistingDiscontinuities(fracture);
+discontinuityData = struct('addTangentialStretchingMode', false, ...
+                           'addRelRotationMode', true);
+mdl.addPreExistingDiscontinuities(fracture,discontinuityData);
 
 %% PROCESS
 
@@ -73,13 +77,17 @@ ti = 0.0;    % Initial time
 dt = 1.0;    % Time step
 tf = 1.0;   % Final time
 
-% Run analysis
+% Set transient analysis
 anl = Anl_Transient("Newton");
 anl.setUpTransientSolver(ti, dt, tf);
-anl.run(mdl);
 
-mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
-mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
+% Begin time measurement
+caseTimer = tic;
+anl.run(mdl);
+initialIterations = anl.totalIterations;
+
+% mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
+% mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
 
 % mdl.resetDisplacements();
 mdl.resetPressureDirichletBC();
@@ -87,27 +95,61 @@ mdl.setUpdateAperture(true);
 
 for i = 1:mdl.nnodes
     if (mdl.NODE(i,1)<1.0e-12 && (abs(mdl.NODE(i,2)-0.5))<0.03)
-        mdl.setPressureDirichletBCAtNode(i,11.9e6);
+        mdl.setPressureDirichletBCAtNode(i,inletPressure);
     end
 end
-mdl.setPressureDirichletBCAtBorder('right', 11.0e6);
+mdl.setPressureDirichletBCAtBorder('right', initialPressure);
 mdl.updateDirichletBC();
 
 % clear anl
 % anl = Anl_Transient("Newton");
-anl.setUpTransientSolver(0.0, 0.01, 500.0, 1, 0.0001, true);
+anl.setUpTransientSolver(0.0, 0.01, 2000.0, 1, 0.0001, true);
 
 anl.run(mdl);
 
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
+fprintf('Total iterations: %d\n', initialIterations + anl.totalIterations);
+
 %% POST-PROCESS
 
-% Plot contours
-mdl.plotField('Pressure');
+% Plot mesh and fracture
+mdl.plotField('Model'); hold on;
+fracture.plotIntersectedGeometry();
 
 % Plot graphs
 Xi = [0.0, 0.0]; Xf = [0.0, 1.0];
 % mdl.plotFieldAlongSegment('Pressure', Xi, Xf, 500, 'x');
 mdl.plotFieldAlongDiscontinuiy('Aperture',1,'x');
 mdl.plotFieldAlongDiscontinuiy('Pressure',1,'x');
-mdl.plotFieldAlongDiscontinuiy('Sn',1,'x');
-mdl.plotFieldAlongDiscontinuiy('Dn',1,'x');
+
+% RMSE at the final time, measured from the inlet pressure step.
+% Run only after the transient analysis has converged to anl.tf.
+comparisonTime = anl.tf - anl.ti;
+disc = mdl.discontinuitySet(1);
+nSegments = disc.getNumberOfDiscontinuitySegments();
+xError = []; pressureNum = []; apertureNum_mm = [];
+for j = 1:nSegments
+    seg = disc.segment(j);
+    host = mdl.element(disc.elemID(j)).type;
+    % Sample both fields at the same fracture integration points.
+    [Xip, bj_mm] = seg.getAperture();
+    pj = seg.getPorePressure(Xip, host);
+    xError = [xError; Xip(:,1)-disc.X(1,1)]; %#ok<AGROW>
+    pressureNum = [pressureNum; pj]; %#ok<AGROW>
+    apertureNum_mm = [apertureNum_mm; bj_mm]; %#ok<AGROW>
+end
+% Each segment integration point is one sample, including shared endpoints.
+% Aperture updates were disabled during equilibration, so bi is unchanged.
+[apertureRef_mm, pressureRef] = wijesingheReference(xError, comparisonTime, ...
+    water.mu, fracture.normalStiffness, fracture.initialAperture, ...
+    initialPressure, inletPressure);
+
+% RMSE in MPa for pressure and mm for aperture, as in the manuscript.
+pressureRMSE = 1.0e-6*sqrt(mean((pressureNum-pressureRef).^2));
+apertureRMSE = sqrt(mean((apertureNum_mm-apertureRef_mm).^2));
+finalTimeErrors = table(comparisonTime, pressureRMSE, apertureRMSE, ...
+    'VariableNames', {'Time_s','PressureRMSE_MPa','ApertureRMSE_mm'});
+fprintf('\nRMSE against the semi-analytical solution:\n');
+disp(finalTimeErrors);

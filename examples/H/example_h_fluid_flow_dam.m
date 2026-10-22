@@ -18,8 +18,6 @@
 % Create model
 mdl = Model_H();
 
-mdl.intOrder = 3;
-
 %% MESH
 
 % Create mesh
@@ -81,9 +79,17 @@ mdl.addPreExistingDiscontinuities(fractures);
 
 %% PROCESS
 
-% Run analysis
 anl = Anl_Linear();
+
+% Begin time measurement
+caseTimer = tic;
+
+% Run analysis
 anl.run(mdl);
+
+% Time measurement
+elapsedTime = toc(caseTimer);
+fprintf('Elapsed time: %.3f seconds\n', elapsedTime);
 
 %% POST-PROCESS
 

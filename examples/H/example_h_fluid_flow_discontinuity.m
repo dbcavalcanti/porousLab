@@ -14,7 +14,7 @@
 mdl = Model_H();
 
 mdl.equivalentContinuum = true;
-mdl.condenseEnrDofs = true;
+mdl.condenseDiscontinuityPressure = true;
 
 %% MESH
 
